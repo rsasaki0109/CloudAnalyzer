@@ -1,0 +1,707 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "points": 878920,
+  "bounds": [
+    3567.662353515625,
+    73441.3125,
+    3.188999891281128,
+    3956.874267578125,
+    73910.6796875,
+    37.35900115966797
+  ],
+  "keepEvery": 1,
+  "cases": [
+    {
+      "method": "sor",
+      "excludedFirstUse": {
+        "baselineMillis": 843.5999999046326,
+        "optimizedMillis": 809.1999999284744,
+        "baselineCache": {
+          "job": 1,
+          "points": 878920,
+          "parts": 8,
+          "bytes": 58041728,
+          "pending": false,
+          "reuses": 0
+        },
+        "optimizedCache": {
+          "job": 1,
+          "points": 878920,
+          "parts": 8,
+          "bytes": 58041728,
+          "pending": false,
+          "reuses": 0
+        },
+        "resultParity": true,
+        "outputPoints": 822878,
+        "exportedBytes": 19749221
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 772,
+          "optimizedMillis": 726,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 1
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 1
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 760,
+          "optimizedMillis": 695.6000000238419,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 2
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 2
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 762.5,
+          "optimizedMillis": 646.5,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 3
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 3
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 722.2000000476837,
+          "optimizedMillis": 679.2000000476837,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 4
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 4
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 689.3999999761581,
+          "optimizedMillis": 681.6999999284744,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 5
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 5
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 686.5,
+          "optimizedMillis": 652.1000000238419,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 6
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 6
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 693.2000000476837,
+          "optimizedMillis": 671.3000000715256,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 7
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 7
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 659.8999999761581,
+          "optimizedMillis": 628.1999999284744,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 8
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 8
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 640.6999999284744,
+          "optimizedMillis": 598.6000000238419,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 9
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 9
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 636.6000000238419,
+          "optimizedMillis": 596.8999999761581,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 10
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 10
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 821.8000000715256,
+          "optimizedMillis": 597.0999999046326,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 11
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 11
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1077.3999999761581,
+          "optimizedMillis": 778,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 12
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 12
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 661.8999999761581,
+          "optimizedMillis": 608.7999999523163,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 13
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 13
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 646.7999999523163,
+          "optimizedMillis": 675.2999999523163,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 14
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 14
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 758.7999999523163,
+          "optimizedMillis": 734.6999999284744,
+          "baselineCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 15
+          },
+          "optimizedCache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 15
+          },
+          "resultParity": true,
+          "outputPoints": 822878,
+          "exportedBytes": 19749221
+        }
+      ]
+    }
+  ],
+  "phases": {
+    "parts": 8,
+    "openPoints": 30948,
+    "crossQueries": [
+      2269,
+      3863,
+      3736,
+      5194,
+      5298,
+      5602,
+      3669,
+      1847
+    ],
+    "candidateRows": 62426,
+    "warmups": [
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 103.09999990463257,
+        "optimizedMillis": 35.300000071525574,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 65.60000002384186,
+        "optimizedMillis": 27.5,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 54.800000071525574,
+        "optimizedMillis": 27.699999928474426,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 48.89999997615814,
+        "optimizedMillis": 25.800000071525574,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 86.29999995231628,
+        "optimizedMillis": 21,
+        "resultParity": true
+      }
+    ],
+    "trials": [
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 53.40000009536743,
+        "optimizedMillis": 21.200000047683716,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 45.800000071525574,
+        "optimizedMillis": 15.900000095367432,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 43.5,
+        "optimizedMillis": 25.399999976158142,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 68.80000007152557,
+        "optimizedMillis": 28.700000047683716,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 49,
+        "optimizedMillis": 17.299999952316284,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 57.200000047683716,
+        "optimizedMillis": 15.5,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 43.40000009536743,
+        "optimizedMillis": 28.700000047683716,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 41.60000002384186,
+        "optimizedMillis": 19.899999976158142,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baselineMillis": 46.800000071525574,
+        "optimizedMillis": 21.5,
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "baselineMillis": 48.89999997615814,
+        "optimizedMillis": 20,
+        "resultParity": true
+      }
+    ],
+    "note": "Only finishSorMeans is timed on identical real kernel outputs. Independent old/current helper modules retain the exact full-sort oracle. Every f64 mean bit matches. Packing, sequential preparation/kernels, parsing, checking and cleanup are excluded. These isolated joins omit message transfer, concurrent pool scheduling and SOR output indexing; do not infer whole-RPC savings from them."
+  },
+  "schemaVersion": 1,
+  "comparison": "cpu-sor-sorted-prefix",
+  "createdAt": "2026-10-12T23:32:17.044Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\sor-prefix-baseline-20261013\\dist",
+      "worker": "worker-Mjj4VtXs.js",
+      "wasm": "ca_wasm_bg-DJwJtfU1.wasm",
+      "artifactHashes": {
+        "c2c-worker-C3PZT6B9.js": "4a2d65b9d711566c5fae42415f675a41329fcec6391f5401b3f4e25fe5d03d77",
+        "ca_wasm_bg-DJwJtfU1.wasm": "45bb7264f46e9cd0694bda126e1e4b9db0411180ba7b1efaf4a56ff0a2edf06f",
+        "worker-Mjj4VtXs.js": "77ed52e756b92cd64eb2628db2623c27be6e67fb8cd8ab82cf557c453612eebb"
+      }
+    },
+    "optimized": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-9laxeVup.js",
+      "wasm": "ca_wasm_bg-DJwJtfU1.wasm",
+      "artifactHashes": {
+        "c2c-worker-C3PZT6B9.js": "4a2d65b9d711566c5fae42415f675a41329fcec6391f5401b3f4e25fe5d03d77",
+        "ca_wasm_bg-DJwJtfU1.wasm": "45bb7264f46e9cd0694bda126e1e4b9db0411180ba7b1efaf4a56ff0a2edf06f",
+        "worker-9laxeVup.js": "c6659f58ca757c96f90b9accb6cb62e40d0fca7b53b515c67daa3680b73a17c6"
+      }
+    }
+  },
+  "scriptSha256": "e50187d103b5e52553b75160b8a9982534bbf0421fbf4d64517b4bba4dc54d4c",
+  "sourceSha256": "5f7121f3b2f3d39161cd10994bac450724e2213105ff4307b345605b63fe44a3",
+  "glueSha256": "20f862485518c7e7bb4c9c52595ddf0b5f25304d5081ac4765697c77be3a00fd",
+  "sourceHashes": {
+    "web/src/knn-join.ts": "5f7121f3b2f3d39161cd10994bac450724e2213105ff4307b345605b63fe44a3",
+    "web/src/worker.ts": "d39805b393c83e80a87514f11b113acece881c17b5631a937dd36be77c41cec9",
+    "web/src/knn-preparation.ts": "5a2a8f8e3e26750efddb9467ada4b5cd8e0de48a2c16b4a074c0564feb1337d9",
+    "web/src/protocol.ts": "0db66a8b8e87fb53fde5ce2e9f26accca76dce919700b07bac3678ca7a360d43",
+    "web/src/c2c-worker.ts": "fb90d8b07c6ed821b2295024624fd1ee5d11ff2df3822e97e49816c3e60db880",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809"
+  },
+  "baselineHelperPath": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\sor-prefix-baseline-20261013\\web\\src\\knn-join.ts",
+  "baselineHelperSha256": "80cc0d63942e78323bf103682264045c12e42a62dc5aeb5e78329189fa4aed0f",
+  "settings": {
+    "k": 24,
+    "ratio": 1,
+    "knnCache": true,
+    "knnBounds": false
+  },
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "input": {
+    "path": "notes/c2c-real-autoware/compared.ply",
+    "name": "compared.ply",
+    "bytes": 21094203,
+    "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "note": "Full unchanged measured input, k=24, SOR ratio=1. Two independent production analysis workers compare the preceding reusable full-sort join with the guarded sorted-prefix join. Both request knnCache:true, knnBounds:false; exact incrementing reuse counters, stable preparation jobs, equal lanes/capacities and nonpending caches under 128 MiB are required. Only the main worker differs; lane and WASM hashes must match. Each pair checks kept count and every exported PLY byte. One excluded first-use pair and five excluded alternating warm-up pairs precede ten alternating timed pairs unless overridden. First use is not a cold median. Whole RPC includes local/cross-part kernels, packing, messages, merge, summary/filtering and output indexing; startup/load, cache diagnostics, validation/export/removal excluded. Separate isolated joins follow worker termination and check every f64 mean bit on the same real sorted kernel lists. No builds/tests/scans during timing. Full input, manifest, original measured source, six current sources, archived helper, glue, script and both worker/pool/WASM builds hashed before/after. CPU clocks/power/GC/other apps uncontrolled; even-odd source subsets are not independent surveys or accuracy ground truth. No GPU metadata or request fields added."
+}

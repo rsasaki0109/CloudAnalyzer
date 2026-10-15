@@ -1,0 +1,444 @@
+{
+  "schemaVersion": 1,
+  "comparison": "registration-target-normal-reuse",
+  "createdAt": "2026-10-15T00:39:19.345101+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/registration.py": "0a12c3628b9b783ecfad6cafa3368b18eeac17d319a745e45fb16ab9418c744d",
+    "cloudanalyzer/ca/scan_match_debug.py": "1d7e40bc4bd297592e6fcc57bd3487e378aa0451007820f1444e76892beb1d34",
+    "cloudanalyzer/ca/slam_debug.py": "f0c2881c2d0212975074d65f8f4ba3d9e8ab428388aa0be170ec604c06da1c8c",
+    "cloudanalyzer/ca/io.py": "10c1c542a4ad4a70052d947b48c499f2dbf5b9d6d2a49e900dfe40494f61ebff",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_registration_target_normals.py": "bbc4816e1f48ad5b3049d53615e2d52ca7f65d858f73eafb1862214959886d25",
+    "cloudanalyzer/tests/test_slam_map_reuse.py": "fb0df53682faaa8fde8978296670672877190e925e18118c8519bc4ce8706d71",
+    "cloudanalyzer/tests/test_slam_debug.py": "c767f9c72ba7bbbffc9c650fca38b3579bdd3fbb13c6cc75c0159679cdd9f859",
+    "cloudanalyzer/tests/test_registration.py": "1659511919f720662059f5c8a9927aace308b26fc751ce5801cd491c5dd13e99",
+    "cloudanalyzer/tests/test_scan_match_debug.py": "d469b75feb27c0fe4a653e2322b57e2505bf20f8f6793aab2763e456a4718a89",
+    "cloudanalyzer/tests/test_metrics.py": "c39328335ea83c01217a234b1119e509a225378e8de15e9dded981a88d25765e",
+    "cloudanalyzer/scripts/benchmark_registration_target_normals.py": "a1f17c12311b70ffca31ae4841ac9c59d1ea7cd4af68b4acac1b73901182595c"
+  },
+  "inputs": {
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+      "bytes": 1583,
+      "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\registration-target-normals-20261015\\registration-baseline.py",
+      "bytes": 3242,
+      "sha256": "b14e9a6a2afa4c9924ace43b2576f8b18aa4537795e4678e100a2f07927584b7"
+    },
+    "registration_record": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\scan-match\\real-source\\windows-autoware-planning-distance-reuse-initial.json",
+      "bytes": 44467,
+      "sha256": "d4ad055ddf06bca3e795654ce01a1ab592c56afd599855c983e41e6a90fc0100"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    },
+    "registrationSnapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-autoware-planning-initial-20261014\\registration.npz",
+      "bytes": 126566470,
+      "sha256": "9ca9eeab70c789df728eef8f3a20c453330da5c14d7514f2bc56d5ccabcd1695"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "normalLibrary": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+    "bytes": 151434752,
+    "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1
+  },
+  "attempts": 3,
+  "repeats": 3,
+  "warmupRounds": 1,
+  "parity": {
+    "fresh": {
+      "millis": 12725.6758,
+      "solverInputs": [
+        {
+          "sourceNormalsSha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117",
+          "targetNormalsSha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        },
+        {
+          "sourceNormalsSha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117",
+          "targetNormalsSha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        },
+        {
+          "sourceNormalsSha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117",
+          "targetNormalsSha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        }
+      ],
+      "outputFields": [
+        {
+          "fitness": 0.99926614481409,
+          "rmse": 0.15061526760091418,
+          "transformation": [
+            [
+              0.9999999967589376,
+              6.439665202908037e-05,
+              -4.832391405708197e-05,
+              -4.611516280663842
+            ],
+            [
+              -6.439527446177965e-05,
+              0.9999999975202718,
+              2.850797670647399e-05,
+              0.2440321801243989
+            ],
+            [
+              4.832574975553624e-05,
+              -2.8504864782384008e-05,
+              0.9999999984260478,
+              1.9201375689467413
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "alignedPointsSha256": "0248936e0a61a6c3c282b6a0456e8072ea4f200742ac110a52a0c015a0387b94",
+          "alignedNormalsSha256": "78b00769ffe27c21eccf59eb994f4601b71bc0b03e72a463b6fddfab77400639"
+        },
+        {
+          "fitness": 0.99926614481409,
+          "rmse": 0.15061526760091418,
+          "transformation": [
+            [
+              0.9999999967589376,
+              6.439665202908037e-05,
+              -4.832391405708197e-05,
+              -4.611516280663842
+            ],
+            [
+              -6.439527446177965e-05,
+              0.9999999975202718,
+              2.850797670647399e-05,
+              0.2440321801243989
+            ],
+            [
+              4.832574975553624e-05,
+              -2.8504864782384008e-05,
+              0.9999999984260478,
+              1.9201375689467413
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "alignedPointsSha256": "0248936e0a61a6c3c282b6a0456e8072ea4f200742ac110a52a0c015a0387b94",
+          "alignedNormalsSha256": "78b00769ffe27c21eccf59eb994f4601b71bc0b03e72a463b6fddfab77400639"
+        },
+        {
+          "fitness": 0.99926614481409,
+          "rmse": 0.15061526760091418,
+          "transformation": [
+            [
+              0.9999999967589376,
+              6.439665202908037e-05,
+              -4.832391405708197e-05,
+              -4.611516280663842
+            ],
+            [
+              -6.439527446177965e-05,
+              0.9999999975202718,
+              2.850797670647399e-05,
+              0.2440321801243989
+            ],
+            [
+              4.832574975553624e-05,
+              -2.8504864782384008e-05,
+              0.9999999984260478,
+              1.9201375689467413
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "alignedPointsSha256": "0248936e0a61a6c3c282b6a0456e8072ea4f200742ac110a52a0c015a0387b94",
+          "alignedNormalsSha256": "78b00769ffe27c21eccf59eb994f4601b71bc0b03e72a463b6fddfab77400639"
+        }
+      ],
+      "normalArrays": {
+        "source": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\registration-target-normals-autoware-initial-20261015\\fresh-source-normals.bin",
+          "bytes": 21094080,
+          "sha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117"
+        },
+        "target": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\registration-target-normals-autoware-initial-20261015\\fresh-target-normals.bin",
+          "bytes": 21094104,
+          "sha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        }
+      },
+      "normalSnapshotBytes": 0
+    },
+    "reuse": {
+      "millis": 8793.0617,
+      "solverInputs": [
+        {
+          "sourceNormalsSha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117",
+          "targetNormalsSha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        },
+        {
+          "sourceNormalsSha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117",
+          "targetNormalsSha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        },
+        {
+          "sourceNormalsSha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117",
+          "targetNormalsSha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        }
+      ],
+      "outputFields": [
+        {
+          "fitness": 0.99926614481409,
+          "rmse": 0.15061526760091418,
+          "transformation": [
+            [
+              0.9999999967589376,
+              6.439665202908037e-05,
+              -4.832391405708197e-05,
+              -4.611516280663842
+            ],
+            [
+              -6.439527446177965e-05,
+              0.9999999975202718,
+              2.850797670647399e-05,
+              0.2440321801243989
+            ],
+            [
+              4.832574975553624e-05,
+              -2.8504864782384008e-05,
+              0.9999999984260478,
+              1.9201375689467413
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "alignedPointsSha256": "0248936e0a61a6c3c282b6a0456e8072ea4f200742ac110a52a0c015a0387b94",
+          "alignedNormalsSha256": "78b00769ffe27c21eccf59eb994f4601b71bc0b03e72a463b6fddfab77400639"
+        },
+        {
+          "fitness": 0.99926614481409,
+          "rmse": 0.15061526760091418,
+          "transformation": [
+            [
+              0.9999999967589376,
+              6.439665202908037e-05,
+              -4.832391405708197e-05,
+              -4.611516280663842
+            ],
+            [
+              -6.439527446177965e-05,
+              0.9999999975202718,
+              2.850797670647399e-05,
+              0.2440321801243989
+            ],
+            [
+              4.832574975553624e-05,
+              -2.8504864782384008e-05,
+              0.9999999984260478,
+              1.9201375689467413
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "alignedPointsSha256": "0248936e0a61a6c3c282b6a0456e8072ea4f200742ac110a52a0c015a0387b94",
+          "alignedNormalsSha256": "78b00769ffe27c21eccf59eb994f4601b71bc0b03e72a463b6fddfab77400639"
+        },
+        {
+          "fitness": 0.99926614481409,
+          "rmse": 0.15061526760091418,
+          "transformation": [
+            [
+              0.9999999967589376,
+              6.439665202908037e-05,
+              -4.832391405708197e-05,
+              -4.611516280663842
+            ],
+            [
+              -6.439527446177965e-05,
+              0.9999999975202718,
+              2.850797670647399e-05,
+              0.2440321801243989
+            ],
+            [
+              4.832574975553624e-05,
+              -2.8504864782384008e-05,
+              0.9999999984260478,
+              1.9201375689467413
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "alignedPointsSha256": "0248936e0a61a6c3c282b6a0456e8072ea4f200742ac110a52a0c015a0387b94",
+          "alignedNormalsSha256": "78b00769ffe27c21eccf59eb994f4601b71bc0b03e72a463b6fddfab77400639"
+        }
+      ],
+      "normalArrays": {
+        "source": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\registration-target-normals-autoware-initial-20261015\\reuse-source-normals.bin",
+          "bytes": 21094080,
+          "sha256": "1a1d5ea30c9b4372755d0e9ad483f922ef30718d5c226ed90d953e9d8434a117"
+        },
+        "target": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\registration-target-normals-autoware-initial-20261015\\reuse-target-normals.bin",
+          "bytes": 21094104,
+          "sha256": "c79ab77131601b2b60c4dce3572f5b70761416b4c1446012fc6fe848f7cddf04"
+        }
+      },
+      "normalSnapshotBytes": 21094104
+    }
+  },
+  "firstUse": {
+    "fresh": {
+      "millis": 11121.3666,
+      "solverInputs": [],
+      "outputFields": [],
+      "normalArrays": {},
+      "normalSnapshotBytes": 0
+    },
+    "reuse": {
+      "millis": 7461.2981,
+      "solverInputs": [],
+      "outputFields": [],
+      "normalArrays": {},
+      "normalSnapshotBytes": 21094104
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 10377.3428,
+        "reuse": 7176.1264
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 6956.741,
+        "fresh": 11569.4648
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 11026.4312,
+        "reuse": 7151.8363
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 7244.7763,
+        "fresh": 10818.5684
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 11026.4312,
+    "reuseMedianMillis": 7151.8363,
+    "pairedShorteningPercent": 35.139156357317134,
+    "fasterTrials": 3
+  },
+  "policy": {
+    "sourceNormalPreparations": 3,
+    "freshTargetNormalPreparations": 3,
+    "reusedTargetNormalPreparations": 1,
+    "radius": 0.5,
+    "maxNeighbors": 30
+  },
+  "note": "Complete preparation for three default repeated calls on the same full real-source scan/map: cloud copies, source/target normal estimation, cached validation/copies, fixed actual recorded ICP result, transformed output and cleanup. No point coordinates are generated, perturbed or additionally thinned. The same recorded ICP solve is supplied at the Open3D solver boundary, after actual normal preparation. Actual solve iterations, loading, ranking/NN diagnostics, artifact/PLY work, capture hashing and writes are excluded from timing summaries. Source normals are recomputed each attempt. A traced parity pair, excluded first pair and one warm-up pair precede alternating timed pairs; all observations remain. This isolates registration preparation, not full ICP/GICP or SLAM performance. Native solver correctness is checked separately; no bit-identical parallel live-solver output or GPU speed claim."
+}

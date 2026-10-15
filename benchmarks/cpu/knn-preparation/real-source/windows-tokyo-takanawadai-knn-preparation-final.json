@@ -1,0 +1,1122 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "points": 941933,
+  "bounds": [
+    -9341,
+    -40867,
+    26.039749999999998,
+    -9261,
+    -40746,
+    93.8015
+  ],
+  "keepEvery": 1,
+  "cases": [
+    {
+      "method": "normals",
+      "excludedFirstUse": {
+        "freshMillis": 695.5,
+        "preparedMillis": 665,
+        "cache": {
+          "job": 1,
+          "points": 941933,
+          "parts": 8,
+          "bytes": 62200604,
+          "pending": false,
+          "reuses": 0
+        },
+        "resultParity": true,
+        "archivedParity": true,
+        "outputPoints": 941933
+      },
+      "archivedOracle": {
+        "points": 941933,
+        "bytes": 11303196
+      },
+      "warmups": [
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 721.4000000357628,
+          "preparedMillis": 599.3999999761581,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 1
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 695.6000000238419,
+          "preparedMillis": 657.9000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 2
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 721.0999999642372,
+          "preparedMillis": 652.3000000119209,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 3
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 723.8000000119209,
+          "preparedMillis": 747.8000000119209,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 4
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 712.0999999642372,
+          "preparedMillis": 715.5999999642372,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 5
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 698.6999999880791,
+          "preparedMillis": 667.3000000119209,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 6
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 815.3000000119209,
+          "preparedMillis": 654.1999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 7
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 712.2999999523163,
+          "preparedMillis": 656.1999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 8
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 737.8000000119209,
+          "preparedMillis": 630.6000000238419,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 9
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 701.5,
+          "preparedMillis": 649.1000000238419,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 10
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 747.1999999880791,
+          "preparedMillis": 641.5,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 11
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 728.1999999880791,
+          "preparedMillis": 658.6000000238419,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 12
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 774.1000000238419,
+          "preparedMillis": 647.1999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 13
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 760.8999999761581,
+          "preparedMillis": 695.1000000238419,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 14
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 731.5999999642372,
+          "preparedMillis": 688.9000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 941933,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 15
+          }
+        }
+      ]
+    },
+    {
+      "method": "sor",
+      "excludedFirstUse": {
+        "freshMillis": 877.3000000119209,
+        "preparedMillis": 839.3000000119209,
+        "cache": {
+          "job": 1,
+          "points": 941933,
+          "parts": 8,
+          "bytes": 62200604,
+          "pending": false,
+          "reuses": 0
+        },
+        "resultParity": true,
+        "archivedParity": true,
+        "outputPoints": 874565,
+        "exportedBytes": 20989709
+      },
+      "archivedOracle": {
+        "points": 874565,
+        "bytes": 20989709
+      },
+      "warmups": [
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 876.1999999880791,
+          "preparedMillis": 775.1000000238419,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 1
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 915.0999999642372,
+          "preparedMillis": 803.5,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 2
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 888.7000000476837,
+          "preparedMillis": 809.1999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 3
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 758.6000000238419,
+          "preparedMillis": 771.3000000119209,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 4
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 839.7000000476837,
+          "preparedMillis": 973.3000000119209,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 5
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 867.1999999880791,
+          "preparedMillis": 787.4000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 6
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 888.1999999880791,
+          "preparedMillis": 754.4000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 7
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 830.1000000238419,
+          "preparedMillis": 757,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 8
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 902.1999999880791,
+          "preparedMillis": 808.5,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 9
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 840.8000000119209,
+          "preparedMillis": 760.6999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 10
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 856.4000000357628,
+          "preparedMillis": 746,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 11
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 892.4000000357628,
+          "preparedMillis": 765.7000000476837,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 12
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 833,
+          "preparedMillis": 814.5999999642372,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 13
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 824.2999999523163,
+          "preparedMillis": 748.7999999523163,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 14
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 823.4000000357628,
+          "preparedMillis": 767.1999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 874565,
+          "exportedBytes": 20989709,
+          "cache": {
+            "job": 1,
+            "points": 941933,
+            "parts": 8,
+            "bytes": 62200604,
+            "pending": false,
+            "reuses": 15
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "same-build-cpu-knn-preparation",
+  "createdAt": "2026-10-12T05:58:05.900Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\knn-preparation-baseline-20261012\\dist",
+      "worker": "worker-C8RuKzXn.js",
+      "artifactHashes": {
+        "c2c-worker-Bygl9p01.js": "74232abf342402a8d2c221a669333055bad0245b2f75f04befdeb34337d4163b",
+        "ca_wasm_bg-B9WDv0qt.wasm": "390ef24b4453c8179d8fbae994226eff475318de5360a1985fffc8a47542f345",
+        "worker-C8RuKzXn.js": "b50fe839cf6a9de7f7e1313d749da1c21849829886b3b67cc8acd700b2374827"
+      }
+    },
+    "optimized": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-Bi2ftahU.js",
+      "artifactHashes": {
+        "c2c-worker-Cm5O4znW.js": "c2fd1e8a56fcc67a7cc6353fbee6d00d259b5409d5e66319ef26f3a20b8f43a0",
+        "ca_wasm_bg-dx7fFc55.wasm": "e08cc5c9d9702c1fd09767f0adfd9c6d2c86f249075f99ead53feb13cd88a520",
+        "worker-Bi2ftahU.js": "e85af60d8505d3f217cfabfb642d88863043d7072ddd11b5d4526819d7fc882c"
+      }
+    }
+  },
+  "scriptSha256": "291fce708ae975b3873d48c1749f67fb438a74fd9f341d9840ef091493d6ef6e",
+  "sourceHashes": {
+    "web/src/knn-preparation.ts": "125fe1078a70fa9402449786f0841c4b145856356be37e0a1fd1720624b72464",
+    "web/src/worker.ts": "7b15ad8a34eb23fde25894cd8749a94fbd973f3adbf63a597a31aba08ff5ffb5",
+    "web/src/c2c-worker.ts": "e1e487cc399df962ec6b5da2b42810909c63e09c4b4684b425a6cb19c963d990",
+    "web/src/pool.ts": "b92c0720a1b5dcf13bdeb4cbe19216a580a4a8b409065f6413138fcce2ad2b17",
+    "rust/crates/ca-core/src/filter.rs": "b059b2ee4c03942fe6e551e54886ef1573cbaadc21013b2f00e597ddb81bdfb0",
+    "rust/crates/ca-core/src/normals.rs": "ac355d2d89e166eae4a26bced07c7c04e9749bf983b99c23b118ba7d0d57d5eb",
+    "rust/crates/ca-wasm/src/lib.rs": "5e368de37e713797a96a4c42ca13b8fe8f9366af84309ffefe70c886c06e2f9a"
+  },
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "input": {
+    "path": "notes/c2c-real-tokyo/compared.ply",
+    "name": "compared.ply",
+    "bytes": 22606515,
+    "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "note": "Two current-build analysis workers compare knnCache:false versus true, with separate source clouds and pools. An archived pre-change build supplies one untimed full-output oracle per method, then terminates before timing. Every pair checks all normal f32 bits or kept count and byte-identical SOR PLY against both the fresh current build and archived output. Full unchanged measured input, k=24, normals up, SOR ratio=1. Pool startup/loading excluded. One excluded first-use pair per method, five excluded alternating warm-up pairs, ten alternating timed pairs unless overridden. First-use samples are not cold medians. Whole RPC includes native search/PCA/filter, partition/tree/order construction as applicable, messages, joins, output copies, SOR filtered-cloud indexing. Cache diagnostics/verification/exports/result removal outside timing. Fresh controls must retain no preparation; prepared controls must reuse the same group, with exact incremental reuse counts and actual retained capacities plus root index/region bytes at most 128 MiB. Parameters/results not cached. Eligibility uses a conservative preallocation estimate; native capacity checks follow preparation. One idle source group plus leased in-flight groups; this is not a total process-memory cap. No builds/tests/scans run during timing. Input/manifest/source/script/both-build artifact hashes checked before/after. CPU clocks/power/GC/other apps uncontrolled. Measured subsets are not independent surveys or ground truth. No GPU metadata collected."
+}

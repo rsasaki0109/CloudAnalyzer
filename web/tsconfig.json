@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
-    "types": ["vite/client"],
+    "types": ["vite/client", "@webgpu/types"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

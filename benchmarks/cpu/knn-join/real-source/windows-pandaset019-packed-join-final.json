@@ -1,0 +1,756 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "points": 531908,
+  "bounds": [
+    -248.849609375,
+    -167.49281311035156,
+    -5.325576305389404,
+    135.99053955078125,
+    225.13357543945312,
+    38.40226364135742
+  ],
+  "keepEvery": 1,
+  "cases": [
+    {
+      "method": "normals",
+      "excludedFirstUse": {
+        "baselineMillis": 585.8999999761581,
+        "optimizedMillis": 538.8000000119209,
+        "resultParity": true,
+        "outputPoints": 531908
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 577.8000000119209,
+          "optimizedMillis": 537.6999999880791,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 549.4000000357628,
+          "optimizedMillis": 555.7999999523163,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 552.6000000238419,
+          "optimizedMillis": 528.3999999761581,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 580.0999999642372,
+          "optimizedMillis": 563.6999999880791,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1733,
+          "optimizedMillis": 617.5,
+          "resultParity": true,
+          "outputPoints": 531908
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 860.3000000119209,
+          "optimizedMillis": 558.6000000238419,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 557,
+          "optimizedMillis": 641.8000000119209,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 611.5,
+          "optimizedMillis": 587.3999999761581,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 490.7000000476837,
+          "optimizedMillis": 530.5999999642372,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 540.3999999761581,
+          "optimizedMillis": 545,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 524.7999999523163,
+          "optimizedMillis": 514.7000000476837,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 696.6999999880791,
+          "optimizedMillis": 560.3000000119209,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 606.4000000357628,
+          "optimizedMillis": 549.2999999523163,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 622.1999999880791,
+          "optimizedMillis": 598.6999999880791,
+          "resultParity": true,
+          "outputPoints": 531908
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 589,
+          "optimizedMillis": 533.8999999761581,
+          "resultParity": true,
+          "outputPoints": 531908
+        }
+      ]
+    },
+    {
+      "method": "sor",
+      "excludedFirstUse": {
+        "baselineMillis": 569.3999999761581,
+        "optimizedMillis": 539.6000000238419,
+        "resultParity": true,
+        "outputPoints": 498305,
+        "exportedBytes": 11959469
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 563.7999999523163,
+          "optimizedMillis": 577.8000000119209,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 589.3999999761581,
+          "optimizedMillis": 625.9000000357628,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 619.6000000238419,
+          "optimizedMillis": 587.1999999880791,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 618.3999999761581,
+          "optimizedMillis": 588.5,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 624.8999999761581,
+          "optimizedMillis": 555,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 593.1000000238419,
+          "optimizedMillis": 568.1999999880791,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 580.8000000119209,
+          "optimizedMillis": 579.5999999642372,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 615.6000000238419,
+          "optimizedMillis": 540.1000000238419,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 648.7999999523163,
+          "optimizedMillis": 561.6000000238419,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 653,
+          "optimizedMillis": 662.1999999880791,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 611.1000000238419,
+          "optimizedMillis": 646.8999999761581,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 728.8000000119209,
+          "optimizedMillis": 845.1000000238419,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 712.3000000119209,
+          "optimizedMillis": 704.3000000119209,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 659,
+          "optimizedMillis": 645.3999999761581,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 672.3999999761581,
+          "optimizedMillis": 619.3000000119209,
+          "resultParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469
+        }
+      ]
+    }
+  ],
+  "phases": {
+    "parts": 5,
+    "openPoints": 19275,
+    "crossQueries": [
+      2781,
+      4727,
+      4426,
+      4278,
+      3715
+    ],
+    "singleObservations": {
+      "partitionMillis": 7.699999988079071,
+      "preparation": [
+        {
+          "pointCopyMillis": 1.5,
+          "treeMillis": 26.19999998807907,
+          "localMillis": 396.69999998807907,
+          "normalKernelIncludingTreeMillis": 482.19999998807907
+        },
+        {
+          "pointCopyMillis": 1,
+          "treeMillis": 21.399999976158142,
+          "localMillis": 276.19999998807907,
+          "normalKernelIncludingTreeMillis": 364.69999998807907
+        },
+        {
+          "pointCopyMillis": 0.9000000357627869,
+          "treeMillis": 23.899999976158142,
+          "localMillis": 296.60000002384186,
+          "normalKernelIncludingTreeMillis": 330.69999998807907
+        },
+        {
+          "pointCopyMillis": 1.199999988079071,
+          "treeMillis": 27.5,
+          "localMillis": 348.89999997615814,
+          "normalKernelIncludingTreeMillis": 398.5
+        },
+        {
+          "pointCopyMillis": 0.9000000357627869,
+          "treeMillis": 14.899999976158142,
+          "localMillis": 237,
+          "normalKernelIncludingTreeMillis": 308.4000000357628
+        }
+      ],
+      "crossMillis": [
+        6.900000035762787,
+        16.399999976158142,
+        18.69999998807907,
+        20.30000001192093,
+        10.300000011920929
+      ]
+    },
+    "warmups": [
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 25.600000023841858,
+          "mergeMillis": 57.299999952316284,
+          "scatterMillis": 11.5
+        },
+        "baseline": {
+          "packingMillis": 37.30000001192093,
+          "mergeMillis": 71.10000002384186,
+          "scatterMillis": 53.89999997615814
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 28.30000001192093,
+          "mergeMillis": 51.5,
+          "scatterMillis": 38.69999998807907
+        },
+        "optimized": {
+          "packingMillis": 6.5,
+          "mergeMillis": 33.80000001192093,
+          "scatterMillis": 3.899999976158142
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 9.399999976158142,
+          "mergeMillis": 37.700000047683716,
+          "scatterMillis": 5.699999988079071
+        },
+        "baseline": {
+          "packingMillis": 14.099999964237213,
+          "mergeMillis": 54.90000003576279,
+          "scatterMillis": 51.30000001192093
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 19.19999998807907,
+          "mergeMillis": 50.40000003576279,
+          "scatterMillis": 37.59999996423721
+        },
+        "optimized": {
+          "packingMillis": 14,
+          "mergeMillis": 44,
+          "scatterMillis": 9.600000023841858
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 6.100000023841858,
+          "mergeMillis": 41.39999997615814,
+          "scatterMillis": 8
+        },
+        "baseline": {
+          "packingMillis": 23.400000035762787,
+          "mergeMillis": 41.39999997615814,
+          "scatterMillis": 42.5
+        },
+        "resultParity": true
+      }
+    ],
+    "trials": [
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 9.699999988079071,
+          "mergeMillis": 35.30000001192093,
+          "scatterMillis": 47.60000002384186
+        },
+        "optimized": {
+          "packingMillis": 5.5,
+          "mergeMillis": 26.599999964237213,
+          "scatterMillis": 7.100000023841858
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 6,
+          "mergeMillis": 26.600000023841858,
+          "scatterMillis": 7
+        },
+        "baseline": {
+          "packingMillis": 27.600000023841858,
+          "mergeMillis": 49.80000001192093,
+          "scatterMillis": 61
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 11,
+          "mergeMillis": 40.30000001192093,
+          "scatterMillis": 42.69999998807907
+        },
+        "optimized": {
+          "packingMillis": 8.100000023841858,
+          "mergeMillis": 32.299999952316284,
+          "scatterMillis": 4.700000047683716
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 5.899999976158142,
+          "mergeMillis": 27.400000035762787,
+          "scatterMillis": 4.5
+        },
+        "baseline": {
+          "packingMillis": 19.69999998807907,
+          "mergeMillis": 35,
+          "scatterMillis": 37.69999998807907
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 9.100000023841858,
+          "mergeMillis": 45.19999998807907,
+          "scatterMillis": 44
+        },
+        "optimized": {
+          "packingMillis": 7.100000023841858,
+          "mergeMillis": 23.899999976158142,
+          "scatterMillis": 4.600000023841858
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 4.699999988079071,
+          "mergeMillis": 18.700000047683716,
+          "scatterMillis": 5.199999988079071
+        },
+        "baseline": {
+          "packingMillis": 11.300000011920929,
+          "mergeMillis": 33.19999998807907,
+          "scatterMillis": 61.39999997615814
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 20.899999976158142,
+          "mergeMillis": 47.19999998807907,
+          "scatterMillis": 41.700000047683716
+        },
+        "optimized": {
+          "packingMillis": 5,
+          "mergeMillis": 21.399999976158142,
+          "scatterMillis": 4.199999988079071
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 4.600000023841858,
+          "mergeMillis": 19.299999952316284,
+          "scatterMillis": 3.600000023841858
+        },
+        "baseline": {
+          "packingMillis": 9.099999964237213,
+          "mergeMillis": 34.40000003576279,
+          "scatterMillis": 37.5
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "baseline",
+          "optimized"
+        ],
+        "baseline": {
+          "packingMillis": 10.5,
+          "mergeMillis": 36.30000001192093,
+          "scatterMillis": 41
+        },
+        "optimized": {
+          "packingMillis": 4.899999976158142,
+          "mergeMillis": 21.19999998807907,
+          "scatterMillis": 3.600000023841858
+        },
+        "resultParity": true
+      },
+      {
+        "order": [
+          "optimized",
+          "baseline"
+        ],
+        "optimized": {
+          "packingMillis": 8.800000011920929,
+          "mergeMillis": 29.100000023841858,
+          "scatterMillis": 6.099999964237213
+        },
+        "baseline": {
+          "packingMillis": 24.69999998807907,
+          "mergeMillis": 45.40000003576279,
+          "scatterMillis": 43.30000001192093
+        },
+        "resultParity": true
+      }
+    ],
+    "note": "Sequential diagnostic kernels on the full measured cloud indexed via Cloud.buildIndex; these are not production pool phase timings. Isolated JavaScript packing, merge and scatter compare identical real kernel outputs; no message transfer is timed here. Preparation observations are single samples, not medians; normal kernel includes its own tree and Morton order. Production whole RPCs above include packing, message transfer, kernels, merge/scatter, output copies, and SOR filtered-cloud indexing. Do not add these isolated sequential observations to estimate parallel latency."
+  },
+  "schemaVersion": 1,
+  "comparison": "cpu-knn-packed-joins",
+  "createdAt": "2026-10-12T05:17:44.949Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\knn-join-baseline-20261012\\dist",
+      "worker": "worker-C8ygN4MU.js",
+      "wasm": "ca_wasm_bg-B9WDv0qt.wasm",
+      "artifactHashes": {
+        "c2c-worker-Bygl9p01.js": "74232abf342402a8d2c221a669333055bad0245b2f75f04befdeb34337d4163b",
+        "ca_wasm_bg-B9WDv0qt.wasm": "390ef24b4453c8179d8fbae994226eff475318de5360a1985fffc8a47542f345",
+        "worker-C8ygN4MU.js": "76d0ea3062843b6f4680820b2ed1c62a2234b491724caa1ccbd788c130b99fd0"
+      }
+    },
+    "optimized": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-C8RuKzXn.js",
+      "wasm": "ca_wasm_bg-B9WDv0qt.wasm",
+      "artifactHashes": {
+        "c2c-worker-Bygl9p01.js": "74232abf342402a8d2c221a669333055bad0245b2f75f04befdeb34337d4163b",
+        "ca_wasm_bg-B9WDv0qt.wasm": "390ef24b4453c8179d8fbae994226eff475318de5360a1985fffc8a47542f345",
+        "worker-C8RuKzXn.js": "b50fe839cf6a9de7f7e1313d749da1c21849829886b3b67cc8acd700b2374827"
+      }
+    }
+  },
+  "scriptSha256": "fe2f6291ae30e73a69eeec51dc2e2c63eb93bedfaafa8ae2cb284a9ae25cc891",
+  "sourceSha256": "80cc0d63942e78323bf103682264045c12e42a62dc5aeb5e78329189fa4aed0f",
+  "glueSha256": "f59eddbc4d3c0aac56066e3997aac9e1c383c614eadcb368b83f42b5df1017c6",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "input": {
+    "path": "notes/c2c-real-pandaset/compared.ply",
+    "name": "compared.ply",
+    "bytes": 12765915,
+    "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "note": "Unchanged full measured input, k=24, normals up, SOR ratio=1. Each method has two isolated production analysis workers and identical pool policy; lane worker and WASM hashes must match. Pool startup/loading excluded. One excluded first-use pair, five excluded alternating warm-up pairs and ten timed pairs unless repeats overridden. Whole RPC wall time includes computation, messages, typed-array copies and SOR output indexing. Every pair checks all normal f32 bits or byte-identical SOR PLY/kept count; exports, validation, result removal excluded. Separate join diagnostics run only after production workers terminate. No builds/tests/scans run during timing. All input, manifest, source, glue, script and artifact hashes checked before/after. CPU clocks/power/GC and other apps uncontrolled; source subsets are not independent surveys or ground truth. No GPU information collected."
+}

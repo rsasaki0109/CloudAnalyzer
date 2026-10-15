@@ -1,0 +1,670 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 531908,
+    "filePoints": 531908,
+    "keepEvery": 1,
+    "bounds": [
+      -249.30506896972656,
+      -165.7618865966797,
+      -5.276854515075684,
+      141.1042938232422,
+      222.24327087402344,
+      38.41987991333008
+    ]
+  },
+  "compared": {
+    "points": 531908,
+    "filePoints": 531908,
+    "keepEvery": 1,
+    "bounds": [
+      -248.849609375,
+      -167.49281311035156,
+      -5.325576305389404,
+      135.99053955078125,
+      225.13357543945312,
+      38.40226364135742
+    ]
+  },
+  "warmParams": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.35,
+    "maxDepth": 0.7,
+    "coreSpacing": 0.25
+  },
+  "serialMillis": [
+    1095.3999999761581,
+    1323.8999999761581
+  ],
+  "cases": [
+    {
+      "scheduling": "auto",
+      "warmups": [
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 393.7999999523163,
+          "coldMillis": 379.89999997615814,
+          "controlWarmMillis": 524.6000000238419,
+          "warmMillis": 422.60000002384186,
+          "controlColdWorkerMillis": 393.30000001192093,
+          "coldWorkerMillis": 379.60000002384186,
+          "controlWarmWorkerMillis": 522.1999999880791,
+          "warmWorkerMillis": 421.39999997615814,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 389.30000001192093,
+          "coldMillis": 409,
+          "controlWarmMillis": 520.8000000119209,
+          "warmMillis": 413,
+          "controlColdWorkerMillis": 389,
+          "coldWorkerMillis": 408.5999999642372,
+          "controlWarmWorkerMillis": 520.5,
+          "warmWorkerMillis": 410.30000001192093,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 389,
+          "coldMillis": 391.80000001192093,
+          "controlWarmMillis": 617.8000000119209,
+          "warmMillis": 442.69999998807907,
+          "controlColdWorkerMillis": 388.80000001192093,
+          "coldWorkerMillis": 391.5999999642372,
+          "controlWarmWorkerMillis": 617.2000000476837,
+          "warmWorkerMillis": 442.30000001192093,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 399.10000002384186,
+          "coldMillis": 427.10000002384186,
+          "controlWarmMillis": 532.5999999642372,
+          "warmMillis": 450.69999998807907,
+          "controlColdWorkerMillis": 399,
+          "coldWorkerMillis": 426.7000000476837,
+          "controlWarmWorkerMillis": 532.3000000119209,
+          "warmWorkerMillis": 448.39999997615814,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 430.30000001192093,
+          "coldMillis": 388.69999998807907,
+          "controlWarmMillis": 546.7999999523163,
+          "warmMillis": 392.60000002384186,
+          "controlColdWorkerMillis": 430,
+          "coldWorkerMillis": 388.60000002384186,
+          "controlWarmWorkerMillis": 546.5,
+          "warmWorkerMillis": 392.39999997615814,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 450.2999999523163,
+          "coldMillis": 444.0999999642372,
+          "controlWarmMillis": 602.7000000476837,
+          "warmMillis": 459.10000002384186,
+          "controlColdWorkerMillis": 450.0999999642372,
+          "coldWorkerMillis": 443.7999999523163,
+          "controlWarmWorkerMillis": 602.3999999761581,
+          "warmWorkerMillis": 456.0999999642372,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 399.69999998807907,
+          "coldMillis": 411.19999998807907,
+          "controlWarmMillis": 564.2000000476837,
+          "warmMillis": 424.5999999642372,
+          "controlColdWorkerMillis": 399.39999997615814,
+          "coldWorkerMillis": 411,
+          "controlWarmWorkerMillis": 563.8000000119209,
+          "warmWorkerMillis": 424.30000001192093,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 415.80000001192093,
+          "coldMillis": 425.39999997615814,
+          "controlWarmMillis": 502.30000001192093,
+          "warmMillis": 438.9000000357628,
+          "controlColdWorkerMillis": 415.5,
+          "coldWorkerMillis": 425.19999998807907,
+          "controlWarmWorkerMillis": 502.19999998807907,
+          "warmWorkerMillis": 435.5,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 412.5,
+          "coldMillis": 391.19999998807907,
+          "controlWarmMillis": 538.0999999642372,
+          "warmMillis": 400.60000002384186,
+          "controlColdWorkerMillis": 412,
+          "coldWorkerMillis": 390.80000001192093,
+          "controlWarmWorkerMillis": 537.8000000119209,
+          "warmWorkerMillis": 400.39999997615814,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 394.7999999523163,
+          "coldMillis": 404,
+          "controlWarmMillis": 529.4000000357628,
+          "warmMillis": 398.69999998807907,
+          "controlColdWorkerMillis": 394.5,
+          "coldWorkerMillis": 403.80000001192093,
+          "controlWarmWorkerMillis": 529.2000000476837,
+          "warmWorkerMillis": 392.2999999523163,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 402.4000000357628,
+          "coldMillis": 419.60000002384186,
+          "controlWarmMillis": 593.1000000238419,
+          "warmMillis": 405.39999997615814,
+          "controlColdWorkerMillis": 402.10000002384186,
+          "coldWorkerMillis": 419.4000000357628,
+          "controlWarmWorkerMillis": 592.8000000119209,
+          "warmWorkerMillis": 405.39999997615814,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 400.80000001192093,
+          "coldMillis": 431.10000002384186,
+          "controlWarmMillis": 565.5,
+          "warmMillis": 438.0999999642372,
+          "controlColdWorkerMillis": 400.5999999642372,
+          "coldWorkerMillis": 430.7999999523163,
+          "controlWarmWorkerMillis": 565.2999999523163,
+          "warmWorkerMillis": 435.10000002384186,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 405.4000000357628,
+          "coldMillis": 437.19999998807907,
+          "controlWarmMillis": 544.8000000119209,
+          "warmMillis": 444.5999999642372,
+          "controlColdWorkerMillis": 405.30000001192093,
+          "coldWorkerMillis": 436.80000001192093,
+          "controlWarmWorkerMillis": 544.4000000357628,
+          "warmWorkerMillis": 444.2000000476837,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "control",
+            "cached"
+          ],
+          "controlColdMillis": 377.30000001192093,
+          "coldMillis": 418.10000002384186,
+          "controlWarmMillis": 520.0999999642372,
+          "warmMillis": 435.10000002384186,
+          "controlColdWorkerMillis": 376.89999997615814,
+          "coldWorkerMillis": 417.69999998807907,
+          "controlWarmWorkerMillis": 520,
+          "warmWorkerMillis": 432.39999997615814,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        },
+        {
+          "order": [
+            "cached",
+            "control"
+          ],
+          "controlColdMillis": 448.30000001192093,
+          "coldMillis": 430.60000002384186,
+          "controlWarmMillis": 595.8000000119209,
+          "warmMillis": 471.2999999523163,
+          "controlColdWorkerMillis": 448.2000000476837,
+          "coldWorkerMillis": 430.60000002384186,
+          "controlWarmWorkerMillis": 595.5,
+          "warmWorkerMillis": 471,
+          "workers": 3,
+          "treeCacheHit": true,
+          "coldNormalCacheHit": false,
+          "warmNormalCacheHit": true,
+          "normalCacheBytes": 11902296,
+          "cores": 212541,
+          "finiteDistances": [
+            96853,
+            138587
+          ],
+          "undefinedDistances": [
+            115688,
+            73954
+          ],
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": [
+            7014079,
+            7014079
+          ]
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "m3c2-bounded-normal-reuse",
+  "createdAt": "2026-10-11T22:32:10.506Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "artifactHashes": {
+    "c2c-worker-BodzXnvN.js": "0ce1d3a5783c8dfc539b298432b2603019bb8959b8543247c8ef0377174b9fd6",
+    "ca_wasm_bg-DpLDQmEf.wasm": "590b3ad7196918077e73de86449be1a2d62c530018f88ff768a205ef8130677d",
+    "worker-CCukDfe2.js": "6abf26ecf58831251ee0c772982fa7331aecdd3cf1bf08733f56aa7a09dcd051"
+  },
+  "scriptSha256": "0a1303ef22635182d7ad004a1821e9cb8a86f8d423e9f0d426cf272e0827eb64",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "maxPoints": 2000000,
+  "warmupRounds": 5,
+  "repeats": 10,
+  "note": "Supplied measured point clouds with unchanged coordinates and original measured core selection. Whole files load by default; smaller max-points budgets select original file records and report counts/stride. One production analysis worker plus pool, unchanged lane policy capped at min(4, hardwareConcurrency-1). Each trial loads a fresh reference identity and prepares its exact immutable trees with normal reuse disabled outside timers. All four timed calls reuse these trees. Control fits normals afresh for profile A and for profile B (projection radius and half-depth multiplied by 1.4). Candidate cold A captures one ordered-core/normal set; warm B reuses those normals but recomputes both cylinders, distance and LoD95 for the changed projection. Five excluded warm-up trials precede ten trials with alternating control/candidate block order. The cache key includes every original f64 core bit in order, normal-radius bits and radius-pruning flag; it is local to the immutable tree pair. Normal fits including undefined results are retained with their validity tags; no distances, confidence bounds or final clouds are cached. Additional core/normal storage is bounded at 64 MiB across a prepared pair, 56 bytes per selected core; the unchanged 256 MiB input-tree scheduling estimate remains separate and excludes source/core/result storage, allocator/GC/retained heap pages, other workflows and concurrent jobs. Complete RPC timings include new core selection/attributes, binding copies, normal fitting or exact-key check, fresh projection/summary, joining and output indexing. Input loading, tree preparation, pool startup, validation and exports are excluded. Four timed results must match their corresponding excluded serial profile in f32 distance/LoD95/significance bits and complete PLY bytes. Source/manifest, script and production artifact hashes are checked before/after measurement; existing reports cannot be overwritten. Disabled controls skip normal reuse and can retain an already allocated normal set. CPU clocks, power, GC and other applications are uncontrolled. Measured-source subsets are not independent surveys or change-detection ground truth."
+}

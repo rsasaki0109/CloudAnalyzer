@@ -1,0 +1,490 @@
+{
+  "schemaVersion": 1,
+  "comparison": "compare-requested-colors",
+  "createdAt": "2026-10-15T02:03:24.564326+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/compare.py": "1a154fe91ab00664d77ab9aebf2859b779b3754c84b1de52ac9b2199913e786a",
+    "cloudanalyzer/ca/io.py": "81466b64f9af7f784f7799c94870e755c256552e2f7c13f90add2a74c062601e",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/registration.py": "7eb22bbab5ce993962478e59f2746225d506c9239b36aba118f4aaf8c715be5b",
+    "cloudanalyzer/ca/visualization.py": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030",
+    "cloudanalyzer/ca/report.py": "b8a1da6485fa1974e7db8d1f0e01ee57a1f057d8a7d03e6920925386b4579683",
+    "cloudanalyzer/ca/log.py": "e3f8546f64fe2a417f97f7502e1a758f83559f2f75eada6764472500b428f929",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_compare_color_consumers.py": "dbb60f2002de75e0057136fea67c9fb2eca088c774f0e5167b51c9f752a039f0",
+    "cloudanalyzer/tests/test_compare.py": "df40df5afdf91027401ae5e3de630872bc103b34c3dfcb17b6e330f856489ceb",
+    "cloudanalyzer/tests/test_diff.py": "f4a0ea2048137236c289cd79110c2a93dbed71632f3caf6aafa247918f5ea368",
+    "cloudanalyzer/tests/test_metrics.py": "c39328335ea83c01217a234b1119e509a225378e8de15e9dded981a88d25765e",
+    "cloudanalyzer/tests/test_visualization.py": "b28b1124b90fd79210a415f596bbdeb2ba6886d27ef8700aa5ccea568aa64b99",
+    "cloudanalyzer/tests/test_cli.py": "31dcb5a5902c74ab76940974247f5d22eeccc1412027cc2a657783f512d82461",
+    "cloudanalyzer/scripts/benchmark_compare_color.py": "cf84ed7a7c44d54c1a6943d6328d3fe4e6d5b7bf90088e01854e6af591cfc6e2"
+  },
+  "nativeSourceHashes": {
+    "rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+    "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+    "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+    "rust/crates/ca-py/src/lib.rs": "1dbc9733aa85bfcf441732897e4ceeb575201672ddddddc0285d67a97cba1b1b",
+    "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+    "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+    "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85",
+    "rust/crates/ca-py/Cargo.toml": "6909895540f76e07bd63dfdcb199ee119bfd06416cfc117feb05dcfdf4018328",
+    "rust/crates/ca-py/Cargo.lock": "e1a914c99b0e3ffcf62e85125c077047b093e4abefe57e7423a9e8812765d344",
+    "rust/crates/ca-py/pyproject.toml": "50987fd7a703bfab649bc9490f2036cb3781a2acc2c206b76ad604e0486bf41b",
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "4f4c1313deac36d10c509697e54c5483e40a3378f80ed45e4e588b9ab370b3ec",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "ffbac8b261941251c9c0fb2b5b439c71c401aeeb33e48ee8de1393c4c0413446",
+    "rust/crates/ca-py/tests/test_prepared_mesh.py": "f89bb5323b5ded0b674eecbd1bf3615511cda24c9445979f84d105ddae83e387",
+    "rust/crates/ca-py/scripts/benchmark_prepared_mesh.py": "aaef94ed02f5a42555ce12b8ce21e9695b0811a84623f4d45d4cad1097ce7f5a",
+    "rust/crates/ca-py/src/bag.rs": "9103ede327fc7dd080ff394e81023576a4a456511bb587258959fb5fde482aa2",
+    "rust/crates/ca-py/src/copc_spatial.rs": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+    "rust/crates/ca-py/src/odometry.rs": "bf580c742d70c1b41b16dc1a86b93b1a2ea859d4cf3604e02483ee332c22d1cf",
+    "rust/crates/ca-py/src/pose_graph.rs": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+    "rust/crates/ca-py/src/vector_map.rs": "2f94baa82b4380a62d5014698d3e2bc80a5cd8899d8799a5f67eae4d7cec6aea",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/tests/c2c_reference.rs": "6708a0b69d138753cf8ce6bfd38b41eb1729204c246ae05cc028f5c94a359b52",
+    "rust/crates/ca-py/tests/test_prepared_reference.py": "9bad65bd47db72a79f21438f961753397b43c23bae38eb8ba915d5878dad8bf2",
+    "rust/crates/ca-py/scripts/benchmark_prepared_reference.py": "73befa31442b8ff3c07651a43bf1103fcada3ddf25558a4f21269badf1df62a3"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+      "bytes": 1583,
+      "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-requested-colors-20261015\\compare-baseline.py",
+      "bytes": 3063,
+      "sha256": "5ef7386760683df39f7e7c468b23b82897d794e4cfbe35b5272f979801bbd3c4"
+    },
+    "build_index": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-20261014\\build.json",
+      "bytes": 4291,
+      "sha256": "77bd0f2574646721a7c27c47a5f0f9acef320340e4cb5ee2a7eb5bad6aca89cc"
+    },
+    "distance_record": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\scan-match\\real-source\\windows-autoware-planning-distance-reuse-initial.json",
+      "bytes": 44467,
+      "sha256": "d4ad055ddf06bca3e795654ce01a1ab592c56afd599855c983e41e6a90fc0100"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    },
+    "coordinateSnapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-autoware-planning-initial-20261014\\registration.npz",
+      "bytes": 126566470,
+      "sha256": "9ca9eeab70c789df728eef8f3a20c453330da5c14d7514f2bc56d5ccabcd1695"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6823424,
+    "sha256": "8a63601c290af5403f08a3c040c9e5d99e816b687bd0a0dfeea13015fb9a9a49"
+  },
+  "normalLibrary": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+    "bytes": 151434752,
+    "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1
+  },
+  "repeats": 10,
+  "warmupRounds": 2,
+  "parity": {
+    "always": {
+      "millis": 2081.3481,
+      "report": {
+        "source_points": 878920,
+        "target_points": 878921,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "queryCalls": 1,
+      "colorCalls": 1,
+      "captured": {
+        "distance": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\always-distance-0.bin",
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e"
+        },
+        "colors": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\always-colors-0.bin",
+          "bytes": 21094080,
+          "sha256": "41f5f126019b9f76acb41c7b4effa131df5ce16995e0da71fff3086bb33a0031"
+        }
+      },
+      "outputFiles": {}
+    },
+    "requested": {
+      "millis": 530.0125,
+      "report": {
+        "source_points": 878920,
+        "target_points": 878921,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "queryCalls": 1,
+      "colorCalls": 0,
+      "captured": {
+        "distance": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\requested-distance-0.bin",
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e"
+        }
+      },
+      "outputFiles": {}
+    }
+  },
+  "outputParity": {
+    "always": {
+      "millis": 2411.1695,
+      "report": {
+        "source_points": 878920,
+        "target_points": 878921,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {
+        "json": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\files-always\\report.json",
+          "bytes": 432,
+          "sha256": "5c75c96d01f1012d15ee1aa83eef1ef2fb57b805d3c3978d7601bf54345403e4"
+        },
+        "md": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\files-always\\report.md",
+          "bytes": 180,
+          "sha256": "d0fd1243f6c51649144afac2bda18ecd0096cf8f9a9398e65e2a7be9d36e238c"
+        }
+      }
+    },
+    "requested": {
+      "millis": 459.7124,
+      "report": {
+        "source_points": 878920,
+        "target_points": 878921,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {
+        "json": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\files-requested\\report.json",
+          "bytes": 432,
+          "sha256": "5c75c96d01f1012d15ee1aa83eef1ef2fb57b805d3c3978d7601bf54345403e4"
+        },
+        "md": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-autoware-initial-20261015\\files-requested\\report.md",
+          "bytes": 180,
+          "sha256": "d0fd1243f6c51649144afac2bda18ecd0096cf8f9a9398e65e2a7be9d36e238c"
+        }
+      }
+    }
+  },
+  "firstUse": {
+    "always": {
+      "millis": 2539.064,
+      "report": {
+        "source_points": 878920,
+        "target_points": 878921,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {}
+    },
+    "requested": {
+      "millis": 442.4178,
+      "report": {
+        "source_points": 878920,
+        "target_points": 878921,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {}
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2437.4658,
+        "requested": 389.0287
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 409.3452,
+        "always": 2913.4678
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2909.4589,
+        "requested": 707.8188
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 463.0349,
+        "always": 3108.2681
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 3114.2454,
+        "requested": 557.1948
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 489.9754,
+        "always": 3305.3343
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 3136.1981,
+        "requested": 483.8473
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 746.2853,
+        "always": 2903.0892
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 3025.4501,
+        "requested": 657.8794
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 594.5936,
+        "always": 2436.4894
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2644.538,
+        "requested": 513.3352
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 461.339,
+        "always": 2556.082
+      }
+    }
+  ],
+  "summary": {
+    "alwaysMedianMillis": 2967.4545,
+    "requestedMedianMillis": 535.265,
+    "pairedShorteningPercent": 81.27008690592456,
+    "pairedSavedMedianMillis": 2284.6054000000004,
+    "fasterTrials": 10
+  },
+  "note": "Complete run_compare function with method=None, threshold=.5, no snapshot or report-file output during timing. Actual full unchanged-coordinate real-source inputs are loaded through the existing bulk-capable I/O path; native NN construction/search, statistics, report creation and cleanup execute normally. No registration, solver replay, replaced NN arrays, generated points, perturbations or further thinning. The old path also constructs unused colors; the candidate skips them. Separate parity calls verify complete JSON/Markdown file bytes. Tracing/capture writes, file-output parity, imports/hashes and CLI serialization are excluded from summaries. A traced parity pair and excluded first-use pair precede two warm-up pairs and ten default alternating timed pairs. Logging disabled for both; all observations retained. Warmed pages; no cold-ingestion, peak RSS, registered/snapshot-producing comparison, whole CLI or GPU performance claim."
+}

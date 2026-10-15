@@ -1,0 +1,488 @@
+{
+  "fixture": "grid",
+  "backend": "cpu",
+  "poolPrepareMillis": 2897,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 4.599999964237213,
+          "selectedMillis": 5.800000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 6.100000023841858,
+          "selectedMillis": 4.400000035762787,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 6,
+          "selectedMillis": 6.299999952316284,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 5,
+          "selectedMillis": 6.800000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 4.800000011920929,
+          "selectedMillis": 5.199999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 4.5,
+          "selectedMillis": 4.300000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 5.199999988079071,
+          "selectedMillis": 4.600000023841858,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 5.799999952316284,
+          "selectedMillis": 6.300000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 6,
+          "selectedMillis": 6,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 5.599999964237213,
+          "selectedMillis": 5.300000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 49.69999998807907,
+          "selectedMillis": 65.19999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 51.80000001192093,
+          "selectedMillis": 51.700000047683716,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 64.20000004768372,
+          "selectedMillis": 55.90000003576279,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 60,
+          "selectedMillis": 63.69999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 50.89999997615814,
+          "selectedMillis": 53,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 41.200000047683716,
+          "selectedMillis": 55.40000003576279,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 49,
+          "selectedMillis": 40.89999997615814,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 50.80000001192093,
+          "selectedMillis": 51.89999997615814,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 49.69999998807907,
+          "selectedMillis": 50.19999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 42.5,
+          "selectedMillis": 49,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 273,
+          "selectedMillis": 254,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 227.30000001192093,
+          "selectedMillis": 244.19999998807907,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 257.80000001192093,
+          "selectedMillis": 281.7999999523163,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 257.69999998807907,
+          "selectedMillis": 249,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 245,
+          "selectedMillis": 253.10000002384186,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 242,
+          "selectedMillis": 266.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 248.5,
+          "selectedMillis": 242,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 239.10000002384186,
+          "selectedMillis": 239.39999997615814,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 280.89999997615814,
+          "selectedMillis": 233,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 258.60000002384186,
+          "selectedMillis": 236.39999997615814,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 2000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 572.3000000119209,
+          "selectedMillis": 587.1999999880791,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 584.5,
+          "selectedMillis": 604.4000000357628,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 559.1999999880791,
+          "selectedMillis": 632.3999999761581,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 528.6999999880791,
+          "selectedMillis": 570.0999999642372,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 559,
+          "selectedMillis": 571.2000000476837,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 579.3000000119209,
+          "selectedMillis": 566.1999999880791,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 554.6999999880791,
+          "selectedMillis": 599.3999999761581,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 592,
+          "selectedMillis": 579.8000000119209,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 567.3000000119209,
+          "selectedMillis": 655,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 579.4000000357628,
+          "selectedMillis": 572.6999999880791,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T03:57:36.045Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "summary",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "104d0f727cb9bf1a48683392d39fa6bbe200b01592df1b70600cc7a921d8dc1a",
+  "poolWorkerSha256": "5b56f12721b478782166b152d2b07b93c082d2af08f80f678fa84f2a139f5a89",
+  "wasmSha256": "349fb5e70e8abbe84aec7eaf4497faa48135791aa534a3da331ae1cf3d896d94",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Synthetic UTM wavy grid or seeded 50x50x10m scatter, 0.05m vertical offset. Ordinary production CPU C2C, same snapshots, spatial partitions, Morton query order, reference construction and worker counts. Await the already-started automatic CPU pool warm-up before any fixture/trial; its time is recorded separately and excluded. Five unmeasured full-sort/median-selection warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no real-source or cross-machine speed claim. Only median calculation differs: sortedMillis uses full total_cmp sorting, selectedMillis selects the upper middle and (for even sizes) the maximum lower-partition value. The input reduction order and midpoint arithmetic are identical. Both CPU controls use scalar leaves and progressive joining; GPU controls use default prefetch, bounds, SIMD verification, batches and workgroups with reference/device reuse. GPU phase intervals exclude final summaries and can overlap; do not add them to infer wall time."
+}

@@ -1,0 +1,197 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "cores": 10000,
+      "workers": 1,
+      "coldSerialMillis": 100.89999997615814,
+      "coldParallelMillis": 135.80000001192093,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": "serial-first",
+          "serialMillis": 148.30000001192093,
+          "parallelMillis": 134.69999998807907,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 126.5,
+          "parallelMillis": 182.69999998807907,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0
+        },
+        {
+          "order": "serial-first",
+          "serialMillis": 133.69999998807907,
+          "parallelMillis": 122.39999997615814,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 172.5,
+          "parallelMillis": 122.19999998807907,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 40000,
+      "cores": 40000,
+      "workers": 4,
+      "coldSerialMillis": 1132.300000011921,
+      "coldParallelMillis": 414,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": "serial-first",
+          "serialMillis": 551.1000000238419,
+          "parallelMillis": 233,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 702.8000000119209,
+          "parallelMillis": 220.30000001192093,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0
+        },
+        {
+          "order": "serial-first",
+          "serialMillis": 545.6000000238419,
+          "parallelMillis": 269.0999999642372,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 919.3000000119209,
+          "parallelMillis": 229.5,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "cores": 100000,
+      "workers": 4,
+      "coldSerialMillis": 1959.300000011921,
+      "coldParallelMillis": 614.8999999761581,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": "serial-first",
+          "serialMillis": 1446,
+          "parallelMillis": 754,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 1460.8999999761581,
+          "parallelMillis": 721.3000000119209,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0
+        },
+        {
+          "order": "serial-first",
+          "serialMillis": 1764.800000011921,
+          "parallelMillis": 698.2999999523163,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 1729.2000000476837,
+          "parallelMillis": 740,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 200000,
+      "cores": 200000,
+      "workers": 4,
+      "coldSerialMillis": 4660.599999964237,
+      "coldParallelMillis": 1460.2999999523163,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": "serial-first",
+          "serialMillis": 2975.099999964237,
+          "parallelMillis": 765.1999999880791,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 1455.5,
+          "parallelMillis": 661.8999999761581,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0
+        },
+        {
+          "order": "serial-first",
+          "serialMillis": 1398.8999999761581,
+          "parallelMillis": 637,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0
+        },
+        {
+          "order": "parallel-first",
+          "serialMillis": 1662.0999999642372,
+          "parallelMillis": 667.5,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T00:06:45.132Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "9f2d1a9ee1f11d175c145759fe88fd2df9f86bfb5323fe2ac93bf8aa9c7e8355",
+  "poolWorkerSha256": "3f8e9bc7ef82f568e0357ddf4592775bece3a4367e5aadb9b9c8c1f8225174f8",
+  "wasmSha256": "ded1a69cee0f4106bcb614b711bedfe0868f3226f105213b8c8a56d63a1b468d",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0
+  },
+  "fixture": "UTM wavy grid, 0.1m spacing, 0.07m vertical offset",
+  "note": "Synthetic data. Serial and automatic CPU modes run sequentially, alternating order. Both modes are warmed before trials. Timings include core selection, input snapshots/copies, per-worker tree builds, computation, assembly and result indexing; file load/export and UI rendering are excluded. Automatic mode uses serial for small or memory-heavy jobs. Exact result attributes are checked each trial; full PLY bytes checked on warm-up. Other applications and CPU power/clocks are uncontrolled."
+}

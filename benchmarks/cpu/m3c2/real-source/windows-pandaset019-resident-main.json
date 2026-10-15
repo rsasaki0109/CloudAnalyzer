@@ -1,0 +1,451 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 531908,
+    "filePoints": 531908,
+    "keepEvery": 1,
+    "bounds": [
+      -249.30506896972656,
+      -165.7618865966797,
+      -5.276854515075684,
+      141.1042938232422,
+      222.24327087402344,
+      38.41987991333008
+    ]
+  },
+  "compared": {
+    "points": 531908,
+    "filePoints": 531908,
+    "keepEvery": 1,
+    "bounds": [
+      -248.849609375,
+      -167.49281311035156,
+      -5.325576305389404,
+      135.99053955078125,
+      225.13357543945312,
+      38.40226364135742
+    ]
+  },
+  "cases": [
+    {
+      "scheduling": "auto",
+      "warmups": [
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1286.9000000357628,
+          "residentMillis": 1192.0999999642372,
+          "poolOnlyWorkerMillis": 1286.5999999642372,
+          "residentWorkerMillis": 1189,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1304.800000011921,
+          "residentMillis": 822,
+          "poolOnlyWorkerMillis": 1304.0999999642372,
+          "residentWorkerMillis": 821.7000000476837,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1304,
+          "residentMillis": 875.0999999642372,
+          "poolOnlyWorkerMillis": 1303.4000000357628,
+          "residentWorkerMillis": 874.7000000476837,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1257.9000000357628,
+          "residentMillis": 902.6999999880791,
+          "poolOnlyWorkerMillis": 1257.5,
+          "residentWorkerMillis": 902.1999999880791,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1424.5,
+          "residentMillis": 867.4000000357628,
+          "poolOnlyWorkerMillis": 1424.199999988079,
+          "residentWorkerMillis": 867,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1443.199999988079,
+          "residentMillis": 883.1999999880791,
+          "poolOnlyWorkerMillis": 1442.800000011921,
+          "residentWorkerMillis": 882.6000000238419,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1403.800000011921,
+          "residentMillis": 950.1999999880791,
+          "poolOnlyWorkerMillis": 1403.4000000357628,
+          "residentWorkerMillis": 949.8000000119209,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1317.0999999642372,
+          "residentMillis": 718.1000000238419,
+          "poolOnlyWorkerMillis": 1316.9000000357628,
+          "residentWorkerMillis": 717.7999999523163,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1063.5,
+          "residentMillis": 813.0999999642372,
+          "poolOnlyWorkerMillis": 1063.300000011921,
+          "residentWorkerMillis": 812.9000000357628,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1042.7000000476837,
+          "residentMillis": 754.8999999761581,
+          "poolOnlyWorkerMillis": 1042.300000011921,
+          "residentWorkerMillis": 754.7999999523163,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1049.1000000238419,
+          "residentMillis": 711.5,
+          "poolOnlyWorkerMillis": 1048.8999999761581,
+          "residentWorkerMillis": 711.2999999523163,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1110.5999999642372,
+          "residentMillis": 775.6999999880791,
+          "poolOnlyWorkerMillis": 1110.300000011921,
+          "residentWorkerMillis": 775.3999999761581,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1092.199999988079,
+          "residentMillis": 709.1999999880791,
+          "poolOnlyWorkerMillis": 1092,
+          "residentWorkerMillis": 709.0999999642372,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "poolOnly",
+            "resident"
+          ],
+          "poolOnlyMillis": 1027.8999999761581,
+          "residentMillis": 792.6000000238419,
+          "poolOnlyWorkerMillis": 1027.800000011921,
+          "residentWorkerMillis": 792.3999999761581,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        },
+        {
+          "order": [
+            "resident",
+            "poolOnly"
+          ],
+          "poolOnlyMillis": 1091.5,
+          "residentMillis": 782.8999999761581,
+          "poolOnlyWorkerMillis": 1091.4000000357628,
+          "residentWorkerMillis": 782.6999999880791,
+          "controlWorkers": 1,
+          "workers": 2,
+          "mainWorker": true,
+          "inputBudgetBytes": 221273728,
+          "cores": 212541,
+          "finiteDistances": 96853,
+          "undefinedDistances": 115688,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 7014079
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "m3c2-resident-main-lane",
+  "createdAt": "2026-10-11T16:09:42.458Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "artifactHashes": {
+    "c2c-worker-D-Qfto05.js": "91143bf818cbf35a265f1aa567c86ed225382fd3f242cec5411485b23989ccab",
+    "ca_wasm_bg-DfoBjP_C.wasm": "25ba5977e2382f5533b80211e1f92d3b4c81ae3931a2ba94edc06d9f6d733f2c",
+    "worker-CwqWnkwZ.js": "97882eba32b3849f9e5fda22dcb68152cf5a57cef8da5be510802417cd8c360c"
+  },
+  "scriptSha256": "02ffdc622fea226eb521128d55ad2fce760286a704392d4c79d93ef6b6a3005e",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "scheduling": "auto",
+  "maxPoints": 2000000,
+  "warmupRounds": 5,
+  "repeats": 10,
+  "note": "Supplied measured point clouds, one production analysis worker and pool. The default 2000000-point budget loads these inputs completely; a smaller explicit budget selects every keepEvery-th original file point, recorded with original/loaded counts. Five warm-up pairs precede alternating sequential comparisons. Core spacing selects original measured points without averaging or generating coordinates. Every call times plan/core selection, snapshots/copying, tree construction, exact f64 M3C2 computation, joining, attributes, result LOD indexing and RPCs; loading, pool startup, validation and exports are excluded. No trees, normals or results are cached. Both modes disable experimental radius pruning and preserve the same kernel, cyclic partitioning and core selection. Pool-only uses the previous 128 bytes per input point per pool lane estimate. Resident mode uses the analysis worker only when its borrowed Cloud inputs admit one additional lane within the same 256 MiB estimate, using 80 bytes per input point for that lane's tree construction and 128 for each pool lane. Core/result/source storage, retained heap pages and concurrent jobs are excluded, as in the existing scheduling estimate; it is not a total memory cap. Worker totals stay within min(4, hardwareConcurrency-1). Every pair must match distance, LoD95, significance bits and complete exported PLY bytes. Source/manifest, production artifact and script hashes are checked before and after timing. Other applications, CPU clocks, power and GC are uncontrolled. These measured-source subsets are not independent surveys or change-detection ground truth."
+}

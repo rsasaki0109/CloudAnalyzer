@@ -67,8 +67,9 @@ def run_compare(
             thresh_result["total"], thresh_result["exceed_ratio"] * 100,
         )
 
-    # 4. Colorize
-    colorize(source, distances)
+    # 4. Colors are consumed only by a requested snapshot.
+    if snapshot_path:
+        colorize(source, distances)
 
     # 5. Save outputs
     data = make_json(

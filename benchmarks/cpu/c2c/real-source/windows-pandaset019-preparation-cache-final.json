@@ -1,0 +1,384 @@
+{
+  "fixture": "files",
+  "backend": "cpu",
+  "poolPrepareMillis": 2687.800000011921,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 531908,
+      "reference": {
+        "points": 531908,
+        "filePoints": 531908,
+        "keepEvery": 1,
+        "bounds": [
+          -249.30506896972656,
+          -165.7618865966797,
+          -5.276854515075684,
+          141.1042938232422,
+          222.24327087402344,
+          38.41987991333008
+        ],
+        "timings": {
+          "parse": 36.39999997615814,
+          "index": 50.10000002384186,
+          "workers": 1,
+          "prepare": 27.80000001192093
+        }
+      },
+      "compared": {
+        "points": 531908,
+        "filePoints": 531908,
+        "keepEvery": 1,
+        "bounds": [
+          -248.849609375,
+          -167.49281311035156,
+          -5.325576305389404,
+          135.99053955078125,
+          225.13357543945312,
+          38.40226364135742
+        ],
+        "timings": {
+          "parse": 30.5,
+          "index": 48.89999997615814,
+          "workers": 1,
+          "prepare": 13.200000047683716
+        }
+      },
+      "cpuCacheSetup": {
+        "uncachedMillis": 181.19999998807907,
+        "cachedFirstMillis": 163.0999999642372,
+        "workers": 5,
+        "cached": true,
+        "reused": false,
+        "inputBytes": 38713496,
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "order": [
+            "uncached",
+            "cached"
+          ],
+          "uncachedMillis": 165.10000002384186,
+          "cachedMillis": 53.09999996423721,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cached",
+            "uncached"
+          ],
+          "uncachedMillis": 183.10000002384186,
+          "cachedMillis": 52.19999998807907,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "uncached",
+            "cached"
+          ],
+          "uncachedMillis": 164.89999997615814,
+          "cachedMillis": 51.59999996423721,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cached",
+            "uncached"
+          ],
+          "uncachedMillis": 171.10000002384186,
+          "cachedMillis": 55.80000001192093,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "uncached",
+            "cached"
+          ],
+          "uncachedMillis": 159.89999997615814,
+          "cachedMillis": 49.90000003576279,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cached",
+            "uncached"
+          ],
+          "uncachedMillis": 165.30000001192093,
+          "cachedMillis": 51,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "uncached",
+            "cached"
+          ],
+          "uncachedMillis": 163.30000001192093,
+          "cachedMillis": 48.60000002384186,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cached",
+            "uncached"
+          ],
+          "uncachedMillis": 170.60000002384186,
+          "cachedMillis": 53.60000002384186,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "uncached",
+            "cached"
+          ],
+          "uncachedMillis": 176.69999998807907,
+          "cachedMillis": 50.39999997615814,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cached",
+            "uncached"
+          ],
+          "uncachedMillis": 162.10000002384186,
+          "cachedMillis": 57.80000001192093,
+          "workers": 5,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "controlCached": false,
+          "optimizedCached": true,
+          "cacheReused": true,
+          "cacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T13:02:04.439Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "cpu-preparation-cache",
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "benchmarkScriptSha256": "d768be8a0879f9e6e3c44b97f5094cfb3d105127070602127abdfae509e054a8",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "01bb588d6291cab6cff57e6842af53488ba3e0d22a83d94ba3c7e5249801174c",
+  "poolWorkerSha256": "73124711329934dcf01fc659df1c490cba009c17e1cd1b8515883e4d69bb798c",
+  "wasmSha256": "b49e945097dd022c7a633af57118298b0c559fbcd29999101264e26b4012b479",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Parallel CPU C2C preparation reuse for the same immutable compared/reference identities. The uncached control repeats spatial partitioning, coordinate transfers, reference tree construction and Morton ordering on every call. The cached control retains each lane's exact queries, Morton order and reference tree, plus main-worker output indices. Both controls use identical partitions, worker counts, scalar leaves, progressive joining and adaptive exact summaries. Each call starts a new nearest-hit seed and computes every distance; result distances are not cached. cpuCacheSetup separately records the first uncached and first cached call, including preparation. Five warm-up pairs precede alternating timed pairs; every timed cached call must reuse preparation. Times include all per-call work and exact summaries; CPU pool prewarming, loading and rendering are excluded. Every pair must match displayed f32 distance bits and reported f64 statistics. One idle prepared pair is retained, with independent active snapshots during source edits/removal or pair replacement. Retention adds resident memory; WASM capacity may remain at its high-water mark after release. CPU clocks, power and other applications are uncontrolled; no cross-machine speed guarantee. Input hashes and provenance are recorded for supplied files. The prepared pair remains resident during uncached control calls in the same pool; allocation/locality and host effects are not isolated. cacheInputBytes reports coordinate and output-index element bytes, excluding derived tree nodes, slot indices, Morton order, spare capacity and allocator metadata."
+}

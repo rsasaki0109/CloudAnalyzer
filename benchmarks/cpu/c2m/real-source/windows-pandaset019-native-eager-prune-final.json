@@ -1,0 +1,791 @@
+{
+  "schemaVersion": 1,
+  "comparison": "native-c2m-eager-prune",
+  "createdAt": "2026-10-13T12:38:09.297Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-eager-prune-baseline-20261013",
+      "exe": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-eager-prune-baseline-20261013\\bench_c2m_source.exe",
+      "exeSha256": "21005eb0180356bfcb8577e37ba16f164ed5d482551ebf45b49d894c0dc583dd",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sourceHashes": {
+        "rust/crates/ca-core/src/distance.rs": "5c0007caf00ceef745401fe768fb23cab8169a7b3ae35d13b269c5262ab3d24a",
+        "rust/crates/ca-core/src/mesh.rs": "971f71fd383510f026c9ae434abe3a92d67214d213cc3ee9aaa4a23b2140372d",
+        "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+        "rust/crates/ca-py/src/lib.rs": "8b31ac4e3f5b5e90d23c1afe924c2c356339321bc7eb07306f0ee3b6bafc2113",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85"
+      }
+    },
+    "pruned": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-eager-prune-measured-20261013",
+      "exe": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-eager-prune-measured-20261013\\bench_c2m_source.exe",
+      "exeSha256": "0c50a892af0aa318f6855ec80e06de2a927b3361c1f4897517cc2f8d43319abb",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sourceHashes": {
+        "rust/crates/ca-core/src/distance.rs": "3383fc6588ed5a03b073ce1065db00b75e1181ebc49a4f2d63d03c92c54a5fef",
+        "rust/crates/ca-core/src/mesh.rs": "971f71fd383510f026c9ae434abe3a92d67214d213cc3ee9aaa4a23b2140372d",
+        "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+        "rust/crates/ca-py/src/lib.rs": "8b31ac4e3f5b5e90d23c1afe924c2c356339321bc7eb07306f0ee3b6bafc2113",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85"
+      }
+    }
+  },
+  "scriptSha256": "caea6e8680c615afa9f2c670e917765e278cd550cfa3d0633224f97d98b88599",
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba",
+      "points": 531908
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23",
+      "points": 531908
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "mesh": {
+    "chunkSize": 4096,
+    "kind": "ready",
+    "maxEdge": 0.28163367334270417,
+    "queryOrder": "original decoded PLY order; unchanged XYZ",
+    "queryPoints": 531908,
+    "referencePoints": 531908,
+    "removed": 219473,
+    "threads": 12,
+    "triangles": 844324,
+    "vertices": 501097
+  },
+  "geometry": {
+    "bytes": 23002748,
+    "sha256": "5ed1f0ac26ab678d59e2a72c5f8ca61a7e2199b3c57f268592b1fecdf59bc8b1"
+  },
+  "oracle": {
+    "distanceBytes": 4255264,
+    "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+    "scalarPlyBytes": 14893599,
+    "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+    "count": 531908,
+    "statisticsBits": [
+      "3e201ed27811a1c7",
+      "404b7795536f8287",
+      "3fbf56a0925123b8",
+      "3fe3a282c37e0601",
+      "3fe33d757e6b1433",
+      "3f9a6cbddc4c9874"
+    ]
+  },
+  "firstUse": {
+    "baseline": {
+      "elapsedMillis": 258.83099999999996,
+      "distanceBytes": 4255264,
+      "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+      "scalarPlyBytes": 14893599,
+      "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+      "count": 531908,
+      "statisticsBits": [
+        "3e201ed27811a1c7",
+        "404b7795536f8287",
+        "3fbf56a0925123b8",
+        "3fe3a282c37e0601",
+        "3fe33d757e6b1433",
+        "3f9a6cbddc4c9874"
+      ],
+      "resultParity": true
+    },
+    "pruned": {
+      "elapsedMillis": 262.6098,
+      "distanceBytes": 4255264,
+      "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+      "scalarPlyBytes": 14893599,
+      "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+      "count": 531908,
+      "statisticsBits": [
+        "3e201ed27811a1c7",
+        "404b7795536f8287",
+        "3fbf56a0925123b8",
+        "3fe3a282c37e0601",
+        "3fe33d757e6b1433",
+        "3f9a6cbddc4c9874"
+      ],
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 264.984,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 267.20149999999995,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 267.08029999999997,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 287.8033,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 272.707,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 272.17999999999995,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 281.4326,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 271.8966,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 269.3797,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 282.00079999999997,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 291.6099,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 276.3352,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 282.8212,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 281.4649,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 291.656,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 272.7756,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 274.7527,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 279.8002,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 280.6452,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 275.84229999999997,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 283.0471,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 284.1929,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 298.9896,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 278.2781,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 275.4547,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 286.4043,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "pruned",
+        "baseline"
+      ],
+      "pruned": {
+        "elapsedMillis": 288.9895,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 279.92289999999997,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "pruned"
+      ],
+      "baseline": {
+        "elapsedMillis": 281.6704,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      },
+      "pruned": {
+        "elapsedMillis": 278.5029,
+        "distanceBytes": 4255264,
+        "distanceSha256": "574778646a45a6346fc3dbb40959f3852897e555529181aad3e328cca33081cc",
+        "scalarPlyBytes": 14893599,
+        "scalarPlySha256": "e27641c16f8f43e41cf0c06ad0f35c91df9189842661789ec41fbecd1ae25acf",
+        "count": 531908,
+        "statisticsBits": [
+          "3e201ed27811a1c7",
+          "404b7795536f8287",
+          "3fbf56a0925123b8",
+          "3fe3a282c37e0601",
+          "3fe33d757e6b1433",
+          "3f9a6cbddc4c9874"
+        ],
+        "resultParity": true
+      }
+    }
+  ],
+  "summary": {
+    "baselineMedianMillis": 277.30665,
+    "prunedMedianMillis": 285.29859999999996,
+    "medianPairedReductionPercent": -2.5380349527867163,
+    "fasterTrials": 2,
+    "trials": 10
+  },
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured-source XYZ, not independent surveys or accuracy ground truth. Native PLY order is preserved and differs from browser LOD indexing. Full-input production Delaunay TIN uses automatic edge rejection without extra thinning or transformed/generated coordinates. Independent archived native baseline supplies complete f64 distance bits, six f64 statistics bits and scalar PLY oracle, then exits before timing. Separate baseline/candidate contexts use identical TIN, original 4096-point Morton query chunks and fixed Rayon thread count. Whole native cloud_to_mesh_par includes fresh BVH construction, original serial Morton preparation/sorting, parallel queries, compact result allocation and serial scatter, BVH destruction and pool installation. Both builds keep adopted compact results, stack reuse, cached traversal bounds, indexed mesh preparation, bottom-up bounds and parallel construction enabled, with rejected seed, Morton and parallel restoration experiments disabled. Candidate tests each computed child lower bound against the current best squared distance before queuing it. Children whose lower bound is already greater than or equal to best are omitted because strict hit insertion can only decrease best. NaN comparisons retain the preceding false rejection and queue the child. Remaining children keep the original near-first visitation, cached f64 bounds, leaf order, duplicate seed test and strict hit insertion. Pop-time pruning remains for queued children after later hits reduce best. No new buffer, persistent cache, unsafe access, floating-point regrouping or precision conversion is introduced. Per-chunk stack reservation can be smaller; retained BVH payload and final output capacity stay unchanged. Only native parallel C2M selects the candidate. Native C2C and sequential/prepared/WASM/hinted paths keep their preceding traversal policy. Additional push-time comparisons and all allocation/traversal/scatter/destruction costs are included in whole timing. Loading, meshing, pool construction, first use, five alternating warmups, f64/statistics/PLY serialization and verification and cleanup are excluded. Ten alternating timed pairs are retained without outlier removal. No builds/tests/scans/edits run alongside timing. Archived sources, executables, compiler, script, inputs/manifests/original PCD are checked before/after. Clocks, power, scheduling, other applications, allocator, code layout and retained pages are uncontrolled. No isolated stack/search, Python conversion, C2C, browser, WASM or GPU speedup claim. No GPU model identifiers collected."
+}

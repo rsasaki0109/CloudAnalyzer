@@ -1,0 +1,404 @@
+{
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "fixture": "UTM wavy grid, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 179.39999997615814,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 3.5,
+          "gpuMillis": 170.4000000357628,
+          "verifyMillis": 4.300000011920929,
+          "batches": 1,
+          "referenceReused": false,
+          "certified": 7678,
+          "prefetch": true,
+          "verifyBounds": true
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 7.5,
+          "gpuMillis": 8.600000023841858,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.10000002384185791,
+            "gpuMillis": 5.799999952316284,
+            "verifyMillis": 2.199999988079071,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 7678,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 5.5,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 2.300000011920929,
+              "verifyMillis": 2.800000011920929,
+              "batches": 1,
+              "referenceReused": true,
+              "certified": 5805,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 7.800000011920929,
+          "gpuMillis": 6.800000011920929,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0,
+            "gpuMillis": 4.399999976158142,
+            "verifyMillis": 2.300000011920929,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 7678,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 7.5,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0,
+              "gpuMillis": 4.399999976158142,
+              "verifyMillis": 2.599999964237213,
+              "batches": 1,
+              "referenceReused": true,
+              "certified": 5805,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 7.199999988079071,
+          "gpuMillis": 5.200000047683716,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0,
+            "gpuMillis": 2.600000023841858,
+            "verifyMillis": 2.299999952316284,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 7678,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 7.399999976158142,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0,
+              "gpuMillis": 4.5,
+              "verifyMillis": 2.699999988079071,
+              "batches": 1,
+              "referenceReused": true,
+              "certified": 5805,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "fixture": "UTM wavy grid, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 165.69999998807907,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 62.5,
+          "gpuMillis": 90.39999997615814,
+          "verifyMillis": 31.100000023841858,
+          "batches": 2,
+          "referenceReused": false,
+          "certified": 71569,
+          "prefetch": true,
+          "verifyBounds": true
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 95.29999995231628,
+          "gpuMillis": 41,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.2999999523162842,
+            "gpuMillis": 28.80000001192093,
+            "verifyMillis": 30.100000023841858,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 71569,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 47,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.40000003576278687,
+              "gpuMillis": 34.19999998807907,
+              "verifyMillis": 32.10000002384186,
+              "batches": 2,
+              "referenceReused": true,
+              "certified": 55068,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 91.90000003576279,
+          "gpuMillis": 55.60000002384186,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.40000003576278687,
+            "gpuMillis": 43.199999928474426,
+            "verifyMillis": 43.1000000834465,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 71569,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 58.19999998807907,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.30000001192092896,
+              "gpuMillis": 45,
+              "verifyMillis": 46.60000002384186,
+              "batches": 2,
+              "referenceReused": true,
+              "certified": 55068,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 87.39999997615814,
+          "gpuMillis": 41.69999998807907,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.2999999523162842,
+            "gpuMillis": 29.80000001192093,
+            "verifyMillis": 31.000000059604645,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 71569,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 54.40000003576279,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.9000000357627869,
+              "gpuMillis": 40.39999997615814,
+              "verifyMillis": 33.59999996423721,
+              "batches": 2,
+              "referenceReused": true,
+              "certified": 55068,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "fixture": "UTM wavy grid, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 544.3999999761581,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 234.5,
+          "gpuMillis": 296,
+          "verifyMillis": 165.30000019073486,
+          "batches": 16,
+          "referenceReused": false,
+          "certified": 771505,
+          "prefetch": true,
+          "verifyBounds": true
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 284.19999998807907,
+          "gpuMillis": 223.60000002384186,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 3.300000011920929,
+            "gpuMillis": 207.9000000357628,
+            "verifyMillis": 163.70000004768372,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 771505,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 282.4000000357628,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 3.800000011920929,
+              "gpuMillis": 266.69999998807907,
+              "verifyMillis": 204.5999999642372,
+              "batches": 16,
+              "referenceReused": true,
+              "certified": 616268,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 292.19999998807907,
+          "gpuMillis": 220.30000001192093,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.300000011920929,
+            "gpuMillis": 206.9000000357628,
+            "verifyMillis": 162.5,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 771505,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 267.5,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 2.799999952316284,
+              "gpuMillis": 254.80000001192093,
+              "verifyMillis": 205.299999833107,
+              "batches": 16,
+              "referenceReused": true,
+              "certified": 616268,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 311.80000001192093,
+          "gpuMillis": 225.30000001192093,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 3.400000035762787,
+            "gpuMillis": 208.69999998807907,
+            "verifyMillis": 165.9000000357628,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 771505,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 261,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 4.199999988079071,
+              "gpuMillis": 245.0999999642372,
+              "verifyMillis": 199.60000002384186,
+              "batches": 16,
+              "referenceReused": true,
+              "certified": 616268,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-10-10T22:41:27.410Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "a55066d6b3b88514ba70db2c6eb78280c3d8939d0efb0df4483c16752d1a3b5f",
+  "wasmSha256": "76d840668201163786d53d1cc9dffc2dc2fb02155797612005471463cf928700",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "gpuModelOmitted": true,
+  "nvidiaSmi": "NVIDIA GPU, 596.36, 6144 MiB",
+  "schemaVersion": 4,
+  "compareOverlap": false,
+  "compareBounds": true,
+  "note": "Synthetic data. coldGpu includes reference/device setup; warm trials reuse them. Exact f64 verification uses axis certificates plus sibling subtree boxes by default; planeGpu disables box verification. Next-batch GPU dispatch overlaps verification unless disabled by serial mode. gpuMillis intervals overlap verifyMillis and are not additive. All include summaries. No real-source throughput claim."
+}

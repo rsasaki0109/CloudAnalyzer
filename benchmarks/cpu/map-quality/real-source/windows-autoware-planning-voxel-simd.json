@@ -1,0 +1,904 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 878921,
+    "filePoints": 878921,
+    "keepEvery": 1,
+    "bounds": [
+      3567.701904296875,
+      73441.4140625,
+      -2.3429999351501465,
+      3959.455322265625,
+      73910.3828125,
+      37.89099884033203
+    ]
+  },
+  "compared": {
+    "points": 878920,
+    "filePoints": 878920,
+    "keepEvery": 1,
+    "bounds": [
+      3567.662353515625,
+      73441.3125,
+      3.188999891281128,
+      3956.874267578125,
+      73910.6796875,
+      37.35900115966797
+    ]
+  },
+  "cases": [
+    {
+      "method": "voxel-scores",
+      "warmups": [
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 476.5999999642372,
+          "simdMillis": 575.3999999761581,
+          "quality": {
+            "awd": 0.10367163756893147,
+            "scs": 0.0343155287676377,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 5.273559366969494e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 403.10000002384186,
+          "simdMillis": 296.39999997615814,
+          "quality": {
+            "awd": 0.10367163756893315,
+            "scs": 0.034315528767637736,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 5.134781488891349e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 330.80000001192093,
+          "simdMillis": 315.69999998807907,
+          "quality": {
+            "awd": 0.10367163756893201,
+            "scs": 0.0343155287676379,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 2.636779683484747e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 320.5,
+          "simdMillis": 310.80000001192093,
+          "quality": {
+            "awd": 0.10367163756893193,
+            "scs": 0.034315528767637916,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 6.522560269672795e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 348.9000000357628,
+          "simdMillis": 315.5999999642372,
+          "quality": {
+            "awd": 0.10367163756893248,
+            "scs": 0.03431552876763767,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.2327252813834093e-16
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 289.5,
+          "simdMillis": 309.9000000357628,
+          "quality": {
+            "awd": 0.10367163756893147,
+            "scs": 0.034315528767637736,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 5.273559366969494e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 340.10000002384186,
+          "simdMillis": 309.89999997615814,
+          "quality": {
+            "awd": 0.10367163756893127,
+            "scs": 0.034315528767637736,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 9.020562075079397e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 328.89999997615814,
+          "simdMillis": 273.5,
+          "quality": {
+            "awd": 0.10367163756893216,
+            "scs": 0.034315528767637694,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.579669976578771e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 337,
+          "simdMillis": 333.5,
+          "quality": {
+            "awd": 0.1036716375689315,
+            "scs": 0.03431552876763797,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.163336342344337e-17
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 307,
+          "simdMillis": 297.5,
+          "quality": {
+            "awd": 0.10367163756893258,
+            "scs": 0.034315528767637805,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.579669976578771e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 287.9000000357628,
+          "simdMillis": 302.0999999642372,
+          "quality": {
+            "awd": 0.10367163756893154,
+            "scs": 0.034315528767637965,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.0245584642661925e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 297.80000001192093,
+          "simdMillis": 276.4000000357628,
+          "quality": {
+            "awd": 0.1036716375689319,
+            "scs": 0.03431552876763748,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 5.689893001203927e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 355.60000002384186,
+          "simdMillis": 298.5,
+          "quality": {
+            "awd": 0.10367163756893218,
+            "scs": 0.03431552876763771,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 3.677613769070831e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 352.69999998807907,
+          "simdMillis": 347.80000001192093,
+          "quality": {
+            "awd": 0.10367163756893193,
+            "scs": 0.03431552876763765,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 3.7470027081099033e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 370.5,
+          "simdMillis": 322.4000000357628,
+          "quality": {
+            "awd": 0.1036716375689318,
+            "scs": 0.034315528767637785,
+            "voxels": 38656
+          },
+          "voxelCountExact": true,
+          "maxVoxelDifference": 3.3306690738754696e-16
+        }
+      ]
+    },
+    {
+      "method": "map-quality",
+      "warmups": [
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 520.3999999761581,
+          "simdMillis": 828.1000000238419,
+          "scalarWorkerMillis": 520,
+          "simdWorkerMillis": 826,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893147,
+            "scs": 0.034315528767637715,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 3.0531133177191805e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 515.1000000238419,
+          "simdMillis": 439.10000002384186,
+          "scalarWorkerMillis": 514.6999999880791,
+          "simdWorkerMillis": 436.7999999523163,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.1036716375689324,
+            "scs": 0.03431552876763801,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 2.220446049250313e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 440.30000001192093,
+          "simdMillis": 454.39999997615814,
+          "scalarWorkerMillis": 440.0999999642372,
+          "simdWorkerMillis": 454.10000002384186,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893194,
+            "scs": 0.03431552876763809,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 8.604228440844963e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 453.5,
+          "simdMillis": 443.89999997615814,
+          "scalarWorkerMillis": 453.10000002384186,
+          "simdWorkerMillis": 443.5999999642372,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893144,
+            "scs": 0.03431552876763747,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 9.992007221626409e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 475.5,
+          "simdMillis": 457.2000000476837,
+          "scalarWorkerMillis": 475.2999999523163,
+          "simdWorkerMillis": 456.80000001192093,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893223,
+            "scs": 0.03431552876763782,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 8.743006318923108e-16
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 435.69999998807907,
+          "simdMillis": 444.4000000357628,
+          "scalarWorkerMillis": 435.5,
+          "simdWorkerMillis": 442.5999999642372,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893188,
+            "scs": 0.034315528767638055,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 3.400058012914542e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 480.39999997615814,
+          "simdMillis": 455.10000002384186,
+          "scalarWorkerMillis": 480.19999998807907,
+          "simdWorkerMillis": 454.80000001192093,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893182,
+            "scs": 0.034315528767637694,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-17
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 521.1999999880791,
+          "simdMillis": 510.80000001192093,
+          "scalarWorkerMillis": 520.1999999880791,
+          "simdWorkerMillis": 508.19999998807907,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893197,
+            "scs": 0.034315528767637736,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 2.636779683484747e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 457.5999999642372,
+          "simdMillis": 439.19999998807907,
+          "scalarWorkerMillis": 457.30000001192093,
+          "simdWorkerMillis": 438.9000000357628,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.1036716375689318,
+            "scs": 0.034315528767637604,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.0245584642661925e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 457,
+          "simdMillis": 459.10000002384186,
+          "scalarWorkerMillis": 456.7999999523163,
+          "simdWorkerMillis": 458.89999997615814,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893231,
+            "scs": 0.034315528767637965,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 5.967448757360216e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 522.8000000119209,
+          "simdMillis": 443.19999998807907,
+          "scalarWorkerMillis": 522.5,
+          "simdWorkerMillis": 443,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893177,
+            "scs": 0.03431552876763773,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 2.220446049250313e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 548.1000000238419,
+          "simdMillis": 505.60000002384186,
+          "scalarWorkerMillis": 547.8000000119209,
+          "simdWorkerMillis": 504,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893198,
+            "scs": 0.0343155287676376,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 1.249000902703301e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 564.6000000238419,
+          "simdMillis": 576.1000000238419,
+          "scalarWorkerMillis": 564.1999999880791,
+          "simdWorkerMillis": 575.7999999523163,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893123,
+            "scs": 0.03431552876763797,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 5.967448757360216e-16
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 632.3000000119209,
+          "simdMillis": 492.5,
+          "scalarWorkerMillis": 631.8000000119209,
+          "simdWorkerMillis": 492.10000002384186,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893194,
+            "scs": 0.03431552876763778,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 4.0245584642661925e-16
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 492,
+          "simdMillis": 511.80000001192093,
+          "scalarWorkerMillis": 491.30000001192093,
+          "simdWorkerMillis": 511.4000000357628,
+          "workers": 8,
+          "cacheInputBytes": 103744548,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.115928126989885,
+            "precision": 0.45417899239976334,
+            "completeness": 0.4545334563629723,
+            "f1": 0.45435615524800155,
+            "chamfer": 0.112812361448018,
+            "awd": 0.10367163756893251,
+            "scs": 0.03431552876763762,
+            "voxels": 38656
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "voxelCountExact": true,
+          "maxVoxelDifference": 8.881784197001252e-16
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "map-quality-voxel-simd",
+  "createdAt": "2026-10-11T15:13:44.778Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "7790f70d6eeeee226017bed581fff8f89074ab20127a2f5cf0a067e04e5092be",
+  "poolWorkerSha256": "378132d06c6c15fd4268fc553ab68f833b6da0e02296742b3f7d40be46144096",
+  "wasmSha256": "09a2e4ed10370ed258876ee2347a65c009064e6deddf8275d214c3095b26ebcd",
+  "scriptSha256": "1116693402a3ea3a1a2f875ff4d05d03fd81d28d434a775daccbb3b69bce0a63",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-autoware/reference.ply",
+      "name": "reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-autoware/compared.ply",
+      "name": "compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "params": {
+    "threshold": 0.15,
+    "voxel": 1,
+    "minPoints": 10
+  },
+  "method": "both",
+  "warmupRounds": 5,
+  "repeats": 10,
+  "note": "Full supplied measured point clouds, no thinning, one production analysis worker and pool. Five warm-up pairs precede alternating sequential scalar/SIMD comparisons for each workflow. Standalone voxel scores rebuild both Gaussian maps and calculate fresh AWD/SCS. Combined Map quality uses warm retained nearest preparation, scalar exact f64 searches, queued dispatch, progressive joins, adaptive summaries and original f32 inlier arithmetic. No Gaussian maps, distance arrays or voxel scores are cached. Only independent voxel moment channels change: SIMD performs two f64 components per instruction, with the same per-channel point order and separate multiply/add operations; voxel keys, occupancy, covariance conversion, Wasserstein eigensolvers and SCS arithmetic stay the same. Wall times include fresh computation and RPCs, plus searches, joins, summaries and metrics for combined Map quality. Loading, pool startup/warming, validation and exports are excluded; combined worker millis are recorded separately. Every comparison preserves voxel counts and allows only existing 1e-12 relative/absolute HashMap reduction roundoff in AWD/SCS. Combined comparisons also require all displayed distance bits, f64 statistics and inlier metrics to match exactly, with identical lane counts and retained input bytes. Source/manifest and artifact hashes are recorded. Other applications, CPU clocks, power and GC are uncontrolled. Measured-source even/odd subsets are not independent surveys or accuracy ground truth."
+}

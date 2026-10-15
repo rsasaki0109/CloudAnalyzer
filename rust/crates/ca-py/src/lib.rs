@@ -122,6 +122,43 @@ fn nearest_distances<'py>(
     Ok(d.into_pyarray(py))
 }
 
+/// An owned reference k-d tree for repeated parallel nearest-distance queries.
+/// Construction copies reference arrays; queries keep independent scratch.
+#[pyclass(frozen, module = "cloudanalyzer_core._core")]
+struct PreparedReference {
+    inner: ca_core::distance::PreparedC2cReference,
+}
+
+#[pymethods]
+impl PreparedReference {
+    #[new]
+    fn new(py: Python<'_>, target: PyReadonlyArray2<f64>) -> PyResult<Self> {
+        let target = points(&target)?;
+        let inner = py
+            .detach(|| ca_core::distance::PreparedC2cReference::new(&target))
+            .ok_or_else(|| PyValueError::new_err("target is empty"))?;
+        Ok(Self { inner })
+    }
+
+    /// One float64 nearest distance per source point, in source order.
+    fn distances<'py>(
+        &self,
+        py: Python<'py>,
+        source: PyReadonlyArray2<f64>,
+    ) -> PyResult<Bound<'py, PyArray1<f64>>> {
+        let source = points(&source)?;
+        let values = py.detach(|| self.inner.distances_par(&source));
+        Ok(values.into_pyarray(py))
+    }
+
+    /// Retained tree payload capacity, excluding caller/query/result arrays,
+    /// allocator overhead and RSS.
+    #[getter]
+    fn retained_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
+}
+
 fn mesh_from(
     vertices: &PyReadonlyArray2<f64>,
     triangles: &PyReadonlyArray2<u32>,
@@ -155,6 +192,52 @@ fn cloud_to_mesh<'py>(
         .detach(|| ca_core::distance::cloud_to_mesh_par(&pts, &mesh, signed))
         .ok_or_else(|| PyValueError::new_err("mesh has no triangles"))?;
     Ok(d.into_pyarray(py))
+}
+
+/// An owned triangle mesh and BVH for repeated, multi-threaded distance queries.
+///
+/// Construction copies the input arrays. Later mutations of those arrays do
+/// not affect this immutable mesh. Construction and queries release the GIL.
+#[pyclass(frozen, module = "cloudanalyzer_core._core")]
+struct PreparedMesh {
+    inner: ca_core::mesh::PreparedMesh,
+}
+
+#[pymethods]
+impl PreparedMesh {
+    #[new]
+    fn new(
+        py: Python<'_>,
+        vertices: PyReadonlyArray2<f64>,
+        triangles: PyReadonlyArray2<u32>,
+    ) -> PyResult<Self> {
+        let mesh = mesh_from(&vertices, &triangles)?;
+        let inner = py
+            .detach(|| ca_core::mesh::PreparedMesh::new(mesh))
+            .ok_or_else(|| PyValueError::new_err("mesh has no triangles"))?;
+        Ok(Self { inner })
+    }
+
+    /// Distance per input point, preserving input order and float64 precision.
+    /// With ``signed``, points behind the closest triangle's normal are negative.
+    #[pyo3(signature = (points_, signed = true))]
+    fn distances<'py>(
+        &self,
+        py: Python<'py>,
+        points_: PyReadonlyArray2<f64>,
+        signed: bool,
+    ) -> PyResult<Bound<'py, PyArray1<f64>>> {
+        let pts = points(&points_)?;
+        let d = py.detach(|| self.inner.distances_par(&pts, signed));
+        Ok(d.into_pyarray(py))
+    }
+
+    /// Retained native geometry/BVH vector capacity in bytes, excluding allocator
+    /// overhead, caller arrays and per-query buffers. This is not process RSS.
+    #[getter]
+    fn retained_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
 }
 
 /// Rigid ICP registration of ``moving`` onto ``reference``.
@@ -652,7 +735,9 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read, m)?)?;
     m.add_function(wrap_pyfunction!(read_mesh, m)?)?;
     m.add_function(wrap_pyfunction!(nearest_distances, m)?)?;
+    m.add_class::<PreparedReference>()?;
     m.add_function(wrap_pyfunction!(cloud_to_mesh, m)?)?;
+    m.add_class::<PreparedMesh>()?;
     m.add_function(wrap_pyfunction!(icp, m)?)?;
     m.add_function(wrap_pyfunction!(voxel_subsample, m)?)?;
     m.add_function(wrap_pyfunction!(statistical_outliers, m)?)?;

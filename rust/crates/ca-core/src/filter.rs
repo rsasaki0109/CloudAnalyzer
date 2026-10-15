@@ -7,6 +7,26 @@ use std::collections::HashMap;
 
 use crate::{AttributeValues, OPACITY, PointCloud, SPLAT_SIZE};
 
+// Whole-RPC gains were inconsistent across measured sources; retain indexed queries.
+const USE_SOR_TREE_SLOTS: bool = false;
+
+/// SOR reads only distances; original-index gathering is unnecessary.
+#[inline]
+fn sor_nearest_k(
+    tree: &KdTree,
+    query: &[f64; 3],
+    k: usize,
+    hits: &mut Vec<(usize, f64)>,
+    simd: bool,
+    bounds: bool,
+) {
+    if USE_SOR_TREE_SLOTS {
+        tree.nearest_k_slots_into_with_options(query, k, hits, simd, bounds);
+    } else {
+        tree.nearest_k_into_with_options(query, k, hits, simd, bounds);
+    }
+}
+
 /// Keep one point per cubic voxel of edge `voxel` (the first point, in cloud
 /// order, that falls into each occupied voxel). Original points are kept, not
 /// averaged, so their coordinates, colors and attributes stay exact.
@@ -220,9 +240,13 @@ pub fn statistical_outliers_par(cloud: &PointCloud, k: usize, ratio: f64) -> Vec
     let parts: Vec<Vec<(usize, f64)>> = order
         .par_chunks(4096)
         .map(|chunk| {
+            let mut hits = Vec::new();
             chunk
                 .iter()
-                .map(|&i| (i, mean_of(&tree.nearest_k(&cloud.positions[i], k + 1))))
+                .map(|&i| {
+                    sor_nearest_k(&tree, &cloud.positions[i], k + 1, &mut hits, false, false);
+                    (i, mean_of(&hits))
+                })
                 .collect()
         })
         .collect();
@@ -253,14 +277,24 @@ pub fn splat_cleanup(cloud: &PointCloud, min_opacity: f64, max_size: f64) -> Opt
 /// Mean distance of every point to its `k` nearest other points (the SOR
 /// statistic). Needs more than `k` points.
 pub fn knn_mean_distances(points: &[[f64; 3]], k: usize) -> Vec<f64> {
+    knn_mean_distances_with_scratch(points, k, true)
+}
+
+pub fn knn_mean_distances_with_scratch(points: &[[f64; 3]], k: usize, reuse: bool) -> Vec<f64> {
     let Some(tree) = KdTree::new(points) else {
         return Vec::new();
     };
     // Query in Morton order so consecutive searches touch the same part of
     // the tree. k + 1 because the nearest neighbour of a point is itself.
     let mut means = vec![0.0; points.len()];
+    let mut hits = Vec::new();
     for i in crate::distance::morton_order(points) {
-        means[i] = mean_of(&tree.nearest_k(&points[i], k + 1));
+        if reuse {
+            sor_nearest_k(&tree, &points[i], k + 1, &mut hits, false, false);
+        } else {
+            hits = tree.nearest_k(&points[i], k + 1);
+        }
+        means[i] = mean_of(&hits);
     }
     means
 }
@@ -580,12 +614,186 @@ pub struct LocalKnn {
 pub struct KnnPart {
     points: Vec<[f64; 3]>,
     tree: Option<KdTree>,
+    order: Option<Vec<usize>>,
+    gpu_hints: Option<crate::kdtree::KnnRadiusHints>,
 }
 
 impl KnnPart {
     pub fn new(points: Vec<[f64; 3]>) -> Self {
         let tree = KdTree::new(&points);
-        Self { points, tree }
+        Self {
+            points,
+            tree,
+            order: None,
+            gpu_hints: None,
+        }
+    }
+
+    /// Immutable neighbourhood preparation shared by repeated SOR/normal fits.
+    pub fn prepared(points: Vec<[f64; 3]>) -> Self {
+        let order = Some(crate::distance::morton_order(&points));
+        let mut part = Self::new(points);
+        part.order = order;
+        part
+    }
+
+    /// Retained vector capacities, excluding allocator overhead and call scratch.
+    pub fn retained_bytes(&self) -> usize {
+        self.points.capacity() * std::mem::size_of::<[f64; 3]>()
+            + self.tree.as_ref().map_or(0, KdTree::storage_bytes)
+            + self
+                .order
+                .as_ref()
+                .map_or(0, |v| v.capacity() * std::mem::size_of::<usize>())
+            + self
+                .gpu_hints
+                .as_ref()
+                .map_or(0, crate::kdtree::KnnRadiusHints::storage_bytes)
+    }
+
+    /// Prepare exact optional boxes and rounded original-order GPU queries.
+    pub fn gpu_hint_buffers(&mut self) -> Option<(Vec<u32>, Vec<f32>)> {
+        self.prepare_hint_bounds()?;
+        let tree = self.tree.as_ref()?;
+        let origin = self.points[0];
+        let queries = self
+            .points
+            .iter()
+            .flat_map(|p| {
+                [
+                    (p[0] - origin[0]) as f32,
+                    (p[1] - origin[1]) as f32,
+                    (p[2] - origin[2]) as f32,
+                    0.0,
+                ]
+            })
+            .collect();
+        Some((tree.candidate_nodes(origin), queries))
+    }
+
+    pub fn prepare_hint_bounds(&mut self) -> Option<()> {
+        let tree = self.tree.as_ref()?;
+        self.gpu_hints
+            .get_or_insert_with(|| crate::kdtree::KnnRadiusHints::new(tree));
+        Some(())
+    }
+
+    /// Rounded tree-order points for the optional GPU nearest-k search.
+    pub fn gpu_candidate_points(&self) -> Option<Vec<f32>> {
+        Some(self.tree.as_ref()?.candidate_buffers(self.points[0]).0)
+    }
+
+    /// Native comparison: the same rounded block choices and exact verifier,
+    /// without GPU submission/readback or candidate messages.
+    pub fn cpu_hint_candidates(&mut self, k: usize) -> Option<Vec<u32>> {
+        let tree = self.tree.as_ref()?;
+        self.gpu_hints
+            .get_or_insert_with(|| crate::kdtree::KnnRadiusHints::new(tree));
+        let origin = self.points[0];
+        Some(
+            self.points
+                .iter()
+                .map(|p| tree.rounded_knn_block(p, origin, k))
+                .collect(),
+        )
+    }
+
+    pub fn normals_hinted(
+        &self,
+        k: usize,
+        orientation: crate::normals::Orientation,
+        candidates: &[u32],
+    ) -> Option<Vec<[f32; 3]>> {
+        self.normals_hint_impl(k, orientation, candidates, false)
+    }
+
+    pub fn normals_candidates(
+        &self,
+        k: usize,
+        orientation: crate::normals::Orientation,
+        candidates: &[u32],
+    ) -> Option<Vec<[f32; 3]>> {
+        self.normals_hint_impl(k, orientation, candidates, true)
+    }
+
+    fn normals_hint_impl(
+        &self,
+        k: usize,
+        orientation: crate::normals::Orientation,
+        candidates: &[u32],
+        slots: bool,
+    ) -> Option<Vec<[f32; 3]>> {
+        let width = if slots { k.max(3) } else { 1 };
+        if candidates.len() != self.points.len().checked_mul(width)? {
+            return None;
+        }
+        let tree = self.tree.as_ref()?;
+        let hints = self.gpu_hints.as_ref()?;
+        let temporary;
+        let order = if let Some(order) = &self.order {
+            order
+        } else {
+            temporary = crate::distance::morton_order(&self.points);
+            &temporary
+        };
+        let mut out = vec![[0.0; 3]; self.points.len()];
+        let mut hits = Vec::new();
+        for &i in order {
+            if slots {
+                tree.nearest_k_into_candidates(
+                    &self.points[i],
+                    width,
+                    &candidates[i * width..(i + 1) * width],
+                    hints,
+                    &mut hits,
+                );
+            } else {
+                tree.nearest_k_into_hinted(
+                    &self.points[i],
+                    k.max(3),
+                    candidates[i],
+                    hints,
+                    &mut hits,
+                );
+            }
+            out[i] = crate::normals::normal_from_hits(&self.points, i, orientation, &hits, false);
+        }
+        Some(out)
+    }
+
+    /// Use the same part-local neighbours as a fresh normal fit.
+    pub fn normals(&self, k: usize, orientation: crate::normals::Orientation) -> Vec<[f32; 3]> {
+        self.normals_with_bounds(k, orientation, false)
+    }
+
+    pub fn normals_with_bounds(
+        &self,
+        k: usize,
+        orientation: crate::normals::Orientation,
+        bounds: bool,
+    ) -> Vec<[f32; 3]> {
+        let Some(tree) = &self.tree else {
+            return Vec::new();
+        };
+        let temporary;
+        let order = if let Some(order) = &self.order {
+            order
+        } else {
+            temporary = crate::distance::morton_order(&self.points);
+            &temporary
+        };
+        crate::normals::estimate_normals_prepared(
+            &self.points,
+            tree,
+            order,
+            k,
+            orientation,
+            crate::normals::NormalSearch {
+                reuse: true,
+                simd: false,
+                bounds,
+            },
+        )
     }
 
     /// Point `i` of the part.
@@ -595,6 +803,67 @@ impl KnnPart {
 
     /// Step 1 on part `own`, given where every part lies.
     pub fn local(&self, k: usize, own: usize, regions: &Regions) -> LocalKnn {
+        self.local_with_scratch(k, own, regions, true)
+    }
+
+    pub fn local_with_scratch(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &Regions,
+        reuse: bool,
+    ) -> LocalKnn {
+        self.local_with_options(k, own, regions, reuse, false)
+    }
+
+    pub fn local_with_options(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &Regions,
+        reuse: bool,
+        bounds: bool,
+    ) -> LocalKnn {
+        self.local_impl(k, own, regions, reuse, bounds, None)
+    }
+
+    pub fn local_hinted(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &Regions,
+        candidates: &[u32],
+    ) -> Option<LocalKnn> {
+        if candidates.len() != self.points.len() || self.gpu_hints.is_none() {
+            return None;
+        }
+        Some(self.local_impl(k, own, regions, true, false, Some((candidates, false))))
+    }
+
+    pub fn local_candidates(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &Regions,
+        candidates: &[u32],
+    ) -> Option<LocalKnn> {
+        if candidates.len() != self.points.len().checked_mul(k.checked_add(1)?)?
+            || self.gpu_hints.is_none()
+        {
+            return None;
+        }
+        Some(self.local_impl(k, own, regions, true, false, Some((candidates, true))))
+    }
+
+    fn local_impl(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &Regions,
+        reuse: bool,
+        bounds: bool,
+        candidates: Option<(&[u32], bool)>,
+    ) -> LocalKnn {
         let points = &self.points;
         let mut out = LocalKnn {
             means: vec![f64::NAN; points.len()],
@@ -605,8 +874,39 @@ impl KnnPart {
         let Some(tree) = &self.tree else {
             return out;
         };
-        for i in crate::distance::morton_order(points) {
-            let hits = tree.nearest_k(&points[i], k + 1);
+        let mut hits = Vec::new();
+        let temporary;
+        let order = if let Some(order) = &self.order {
+            order
+        } else {
+            temporary = crate::distance::morton_order(points);
+            &temporary
+        };
+        for &i in order {
+            if let Some((candidates, slots)) = candidates {
+                if slots {
+                    let width = k + 1;
+                    tree.nearest_k_into_candidates(
+                        &points[i],
+                        width,
+                        &candidates[i * width..(i + 1) * width],
+                        self.gpu_hints.as_ref().unwrap(),
+                        &mut hits,
+                    );
+                } else {
+                    tree.nearest_k_into_hinted(
+                        &points[i],
+                        k + 1,
+                        candidates[i],
+                        self.gpu_hints.as_ref().unwrap(),
+                        &mut hits,
+                    );
+                }
+            } else if reuse {
+                sor_nearest_k(tree, &points[i], k + 1, &mut hits, false, bounds);
+            } else {
+                hits = tree.nearest_k(&points[i], k + 1);
+            }
             let radius = hits.get(k).map_or(f64::INFINITY, |h| h.1.sqrt());
             let reach = regions.reached(&points[i], radius, own);
             if reach == 0 {
@@ -626,13 +926,42 @@ impl KnnPart {
     /// nearest squared distances among this part's points, ascending,
     /// padded with infinity.
     pub fn within(&self, queries: &[[f64; 3]], k: usize) -> Vec<f64> {
+        self.within_with_scratch(queries, k, true)
+    }
+
+    pub fn within_with_scratch(&self, queries: &[[f64; 3]], k: usize, reuse: bool) -> Vec<f64> {
+        self.within_with_options(queries, k, reuse, false)
+    }
+
+    pub fn within_with_options(
+        &self,
+        queries: &[[f64; 3]],
+        k: usize,
+        reuse: bool,
+        simd: bool,
+    ) -> Vec<f64> {
+        self.within_with_bounds(queries, k, reuse, simd, false)
+    }
+
+    pub fn within_with_bounds(
+        &self,
+        queries: &[[f64; 3]],
+        k: usize,
+        reuse: bool,
+        simd: bool,
+        bounds: bool,
+    ) -> Vec<f64> {
         let mut out = Vec::with_capacity(queries.len() * (k + 1));
+        let mut hits = Vec::new();
         for q in queries {
-            let hits = self
-                .tree
-                .as_ref()
-                .map(|t| t.nearest_k(q, k + 1))
-                .unwrap_or_default();
+            hits.clear();
+            if let Some(tree) = &self.tree {
+                if reuse {
+                    sor_nearest_k(tree, q, k + 1, &mut hits, simd, bounds);
+                } else {
+                    hits = tree.nearest_k(q, k + 1);
+                }
+            }
             out.extend(hits.iter().map(|h| h.1));
             out.extend(std::iter::repeat_n(f64::INFINITY, k + 1 - hits.len()));
         }

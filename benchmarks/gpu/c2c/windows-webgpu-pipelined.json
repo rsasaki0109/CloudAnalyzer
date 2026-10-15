@@ -1,0 +1,234 @@
+{
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "fixture": "UTM wavy grid, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 176.9000000357628,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 4.300000011920929,
+          "gpuMillis": 167.19999998807907,
+          "verifyMillis": 3.899999976158142,
+          "batches": 1,
+          "referenceReused": false,
+          "certified": 5805
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 7.400000035762787,
+          "gpuMillis": 6.300000011920929,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.10000002384185791,
+            "gpuMillis": 3.199999988079071,
+            "verifyMillis": 2.5,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 5805
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "cpuMillis": 8,
+          "gpuMillis": 5.199999988079071,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0,
+            "gpuMillis": 2.100000023841858,
+            "verifyMillis": 2.699999988079071,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 5805
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "cpuMillis": 7.5,
+          "gpuMillis": 7.199999988079071,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0,
+            "gpuMillis": 4.5,
+            "verifyMillis": 2.399999976158142,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 5805
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "fixture": "UTM wavy grid, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 151.5,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 46.60000002384186,
+          "gpuMillis": 92.19999998807907,
+          "verifyMillis": 31.200000047683716,
+          "batches": 2,
+          "referenceReused": false,
+          "certified": 55068
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 86.39999997615814,
+          "gpuMillis": 42.80000001192093,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.3999999761581421,
+            "gpuMillis": 28.600000023841858,
+            "verifyMillis": 32.10000002384186,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 55068
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "cpuMillis": 81.90000003576279,
+          "gpuMillis": 46.69999998807907,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.40000003576278687,
+            "gpuMillis": 31.399999976158142,
+            "verifyMillis": 35.60000002384186,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 55068
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "cpuMillis": 102.59999996423721,
+          "gpuMillis": 53.5,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.3999999761581421,
+            "gpuMillis": 40.39999997615814,
+            "verifyMillis": 38.60000002384186,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 55068
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "fixture": "UTM wavy grid, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 1282,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 448,
+          "gpuMillis": 815.8999999761581,
+          "verifyMillis": 581.5000000596046,
+          "batches": 16,
+          "referenceReused": false,
+          "certified": 616268
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 640.9000000357628,
+          "gpuMillis": 622.4000000357628,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.700000047683716,
+            "gpuMillis": 596.3999999761581,
+            "verifyMillis": 508.9999998807907,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 616268
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "cpuMillis": 615.3999999761581,
+          "gpuMillis": 645.7000000476837,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.5,
+            "gpuMillis": 623.5,
+            "verifyMillis": 527.1999998688698,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 616268
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "cpuMillis": 724.1000000238419,
+          "gpuMillis": 708.5,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 3.199999988079071,
+            "gpuMillis": 682.9999999403954,
+            "verifyMillis": 572.0000001192093,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 616268
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-10-10T22:18:26.544Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "cc719a51d163879652c6c914fce53a9dd339224ba2cad097c7c8d2fa3d3ec23e",
+  "wasmSha256": "b1aafbff7c32ba76a084c0f67a310edcbdf6585ef11b2db1b123db85da5c772a",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "gpuModelOmitted": true,
+  "nvidiaSmi": "NVIDIA GPU, 596.36, 6144 MiB",
+  "schemaVersion": 3,
+  "note": "Synthetic data. coldGpu includes reference/device setup; warm trials reuse them. Next-batch GPU dispatch overlaps current-batch exact f64 verification (leaf certificate or full search). gpuMillis intervals overlap verifyMillis and are not additive. All include summaries. No real-source throughput claim."
+}

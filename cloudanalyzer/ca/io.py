@@ -1,6 +1,7 @@
 """Point cloud I/O module."""
 
 import csv
+import os
 from collections.abc import Generator, Iterator
 from dataclasses import dataclass, field
 from itertools import chain
@@ -14,6 +15,8 @@ from ca._rust import core
 
 
 SUPPORTED_EXTENSIONS = {".pcd", ".ply", ".las", ".laz", ".csv"}
+
+_BINARY_XYZ_PLY_MAX_BYTES = 64 * 1024 * 1024
 
 
 def _validate_chunk_size(chunk_size: int) -> int:
@@ -183,6 +186,10 @@ class PointAccumulator:
 
     def update(self, points: np.ndarray) -> "PointAccumulator":
         chunk = _filter_chunk(points, None)
+        return self._update_finite(chunk)
+
+    def _update_finite(self, chunk: np.ndarray) -> "PointAccumulator":
+        """Reduce verified finite, contiguous f64 XYZ without retaining it."""
         if chunk.size == 0:
             return self
 
@@ -190,6 +197,17 @@ class PointAccumulator:
         batch_mean = np.mean(chunk, axis=0)
         centered = chunk - batch_mean
         batch_m2 = centered.T @ centered
+        self._merge_moments(batch_count, batch_mean, batch_m2)
+
+        chunk_minimum = np.min(chunk, axis=0)
+        chunk_maximum = np.max(chunk, axis=0)
+        self._merge_bounds(chunk_minimum, chunk_maximum)
+        return self
+
+    def _merge_moments(
+        self, batch_count: int, batch_mean: np.ndarray, batch_m2: np.ndarray
+    ) -> None:
+        """Merge already reduced moments in the original streaming order."""
         if self.count == 0:
             self.count = batch_count
             self.mean = batch_mean
@@ -201,8 +219,7 @@ class PointAccumulator:
             self.mean += delta * (batch_count / total)
             self.count = total
 
-        chunk_minimum = np.min(chunk, axis=0)
-        chunk_maximum = np.max(chunk, axis=0)
+    def _merge_bounds(self, chunk_minimum: np.ndarray, chunk_maximum: np.ndarray) -> None:
         self.minimum = (
             chunk_minimum
             if self.minimum is None
@@ -213,7 +230,6 @@ class PointAccumulator:
             if self.maximum is None
             else np.maximum(self.maximum, chunk_maximum)
         )
-        return self
 
     def finalize(self) -> dict[str, object]:
         covariance = (
@@ -336,6 +352,55 @@ def _load_csv_point_cloud(path: Path) -> o3d.geometry.PointCloud:
     return pcd
 
 
+def _load_binary_xyz_ply(path: Path) -> o3d.geometry.PointCloud | None:
+    """Bulk-read a bounded, exact binary XYZ layout; defer all others to Open3D."""
+    try:
+        with path.open("rb") as stream:
+            if stream.readline(5) not in {b"ply\n", b"ply\r\n"}:
+                return None
+            header: list[list[bytes]] = []
+            header_bytes = 0
+            for _ in range(128):
+                line = stream.readline(4097)
+                header_bytes += len(line)
+                if len(line) > 4096 or header_bytes > 65536 or not line.endswith(b"\n"):
+                    return None
+                fields = line.split()
+                if fields[:1] == [b"comment"]:
+                    continue
+                header.append(fields)
+                if fields == [b"end_header"]:
+                    break
+            else:
+                return None
+            if (
+                len(header) != 6
+                or header[0] != [b"format", b"binary_little_endian", b"1.0"]
+                or len(header[1]) != 3
+                or header[1][:2] != [b"element", b"vertex"]
+                or not header[1][2].isdigit()
+                or header[2:5] != [[b"property", b"double", axis] for axis in [b"x", b"y", b"z"]]
+                or header[5] != [b"end_header"]
+            ):
+                return None
+            count = int(header[1][2])
+            payload_bytes = 24 * count
+            if (
+                count == 0
+                or payload_bytes > _BINARY_XYZ_PLY_MAX_BYTES
+                or os.fstat(stream.fileno()).st_size - stream.tell() != payload_bytes
+            ):
+                return None
+            values = np.fromfile(stream, dtype="<f8", count=3 * count)
+            if values.size != 3 * count:
+                return None
+    except OSError:
+        return None
+    cloud = o3d.geometry.PointCloud()
+    cloud.points = o3d.utility.Vector3dVector(values.reshape(count, 3))
+    return cloud
+
+
 def load_point_cloud(path: str) -> o3d.geometry.PointCloud:
     """Load point cloud from pcd / ply / las / laz / csv.
 
@@ -374,7 +439,9 @@ def load_point_cloud(path: str) -> o3d.geometry.PointCloud:
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(xyz)
     else:
-        pcd = o3d.io.read_point_cloud(str(p))
+        pcd = _load_binary_xyz_ply(p) if ext == ".ply" else None
+        if pcd is None:
+            pcd = o3d.io.read_point_cloud(str(p))
 
     if pcd.is_empty():
         raise ValueError(f"Point cloud is empty: {path}")

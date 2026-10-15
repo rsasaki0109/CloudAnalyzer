@@ -1,0 +1,2070 @@
+{
+  "params": {
+    "voxel": 1,
+    "minPoints": 5,
+    "threshold": 0.5
+  },
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "cases": [
+    {
+      "method": "map-quality",
+      "oracleScores": {
+        "awd": 0.06813965734202435,
+        "scs": 0.03337348372728628,
+        "voxels": 20122
+      },
+      "firstUse": {
+        "baseline": {
+          "elapsedMillis": 242.39999997615814,
+          "comparedId": 2,
+          "voxelReference": {
+            "cached": true,
+            "reused": false,
+            "bytes": 11472896,
+            "rootsReused": 0,
+            "rootsComputed": 20122
+          },
+          "voxelCacheHit": false,
+          "scores": {
+            "awd": 0.06813965734202444,
+            "scs": 0.033373483727286116,
+            "voxels": 20122
+          },
+          "resultParity": true
+        },
+        "indexed": {
+          "elapsedMillis": 188.60000002384186,
+          "comparedId": 2,
+          "voxelReference": {
+            "cached": true,
+            "reused": false,
+            "bytes": 16367856,
+            "neighborVoxels": 20538,
+            "neighborsUsed": 20122,
+            "rootsReused": 0,
+            "rootsComputed": 20122
+          },
+          "voxelCacheHit": false,
+          "scores": {
+            "awd": 0.06813965734202505,
+            "scs": 0.03337348372728608,
+            "voxels": 20122
+          },
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 104.60000002384186,
+            "comparedId": 3,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202458,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 85.5,
+            "comparedId": 3,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.0681396573420246,
+              "scs": 0.033373483727286074,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 71.89999997615814,
+            "comparedId": 4,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202455,
+              "scs": 0.03337348372728634,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 97.60000002384186,
+            "comparedId": 4,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202487,
+              "scs": 0.03337348372728613,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 120.70000004768372,
+            "comparedId": 5,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202454,
+              "scs": 0.03337348372728612,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 90.79999995231628,
+            "comparedId": 5,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202486,
+              "scs": 0.03337348372728616,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 70.19999992847443,
+            "comparedId": 6,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202444,
+              "scs": 0.033373483727285894,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 91.09999990463257,
+            "comparedId": 6,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202465,
+              "scs": 0.03337348372728631,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 100.80000007152557,
+            "comparedId": 7,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202432,
+              "scs": 0.033373483727286116,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 73.39999997615814,
+            "comparedId": 7,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202457,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 73,
+            "comparedId": 8,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202478,
+              "scs": 0.03337348372728616,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 110.10000002384186,
+            "comparedId": 8,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.0681396573420247,
+              "scs": 0.03337348372728615,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 96.5,
+            "comparedId": 9,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.0681396573420248,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 74.39999997615814,
+            "comparedId": 9,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202457,
+              "scs": 0.03337348372728643,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 89.10000002384186,
+            "comparedId": 10,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202515,
+              "scs": 0.033373483727286476,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 107.80000007152557,
+            "comparedId": 10,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202444,
+              "scs": 0.03337348372728595,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 108.79999995231628,
+            "comparedId": 11,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202465,
+              "scs": 0.0333734837272861,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 91.39999997615814,
+            "comparedId": 11,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202468,
+              "scs": 0.033373483727286254,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 91.39999997615814,
+            "comparedId": 12,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202489,
+              "scs": 0.033373483727286136,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 103.69999992847443,
+            "comparedId": 12,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202479,
+              "scs": 0.033373483727286185,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 110.89999997615814,
+            "comparedId": 13,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202529,
+              "scs": 0.0333734837272861,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 84.40000009536743,
+            "comparedId": 13,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.0681396573420242,
+              "scs": 0.033373483727286185,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 74.19999992847443,
+            "comparedId": 14,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.0681396573420249,
+              "scs": 0.03337348372728625,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 131.30000007152557,
+            "comparedId": 14,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202486,
+              "scs": 0.033373483727286136,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 125.20000004768372,
+            "comparedId": 15,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202475,
+              "scs": 0.03337348372728614,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 72.5,
+            "comparedId": 15,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202482,
+              "scs": 0.033373483727286185,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 77.19999992847443,
+            "comparedId": 16,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202472,
+              "scs": 0.03337348372728592,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 98,
+            "comparedId": 16,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202507,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 103.30000007152557,
+            "comparedId": 17,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202478,
+              "scs": 0.033373483727286005,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 67.39999997615814,
+            "comparedId": 17,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "scores": {
+              "awd": 0.06813965734202485,
+              "scs": 0.03337348372728579,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "hashedMedianMillis": 108.30000001192093,
+        "indexedMedianMillis": 75.79999995231628,
+        "medianIndexedReductionPercent": 23.398477794447395,
+        "fasterTrials": 10,
+        "trials": 10
+      }
+    },
+    {
+      "method": "map-evaluate",
+      "oracleScores": {
+        "threshold": 0.5,
+        "accuracy": 0.0768523359956527,
+        "precision": 0.9999246230889034,
+        "completeness": 0.9999055134494704,
+        "f1": 0.9999150681778847,
+        "chamfer": 0.07111813973519102,
+        "awd": 0.06813965734202435,
+        "scs": 0.03337348372728628,
+        "voxels": 20122
+      },
+      "oracleHashes": {
+        "distance": "20b0daeeefcb825cbc82c130766afe35c4ce2379310bd13eb34fd49b94d6c24c",
+        "ply": "99d92b50e4d693ba7fcf744ed776da3f59dda6db8e4904bcfdd712bfbd083746"
+      },
+      "oracleWorkers": 8,
+      "firstUse": {
+        "baseline": {
+          "elapsedMillis": 570.5,
+          "workerMillis": 567.7000000476837,
+          "workers": 8,
+          "comparedId": 2,
+          "voxelReference": {
+            "cached": true,
+            "reused": false,
+            "bytes": 11472896,
+            "rootsReused": 0,
+            "rootsComputed": 20122
+          },
+          "voxelCacheHit": false,
+          "cpuCacheReused": false,
+          "cpuCacheInputBytes": 110153944,
+          "scores": {
+            "awd": 0.06813965734202444,
+            "scs": 0.033373483727286116,
+            "voxels": 20122
+          },
+          "resultParity": true
+        },
+        "indexed": {
+          "elapsedMillis": 672.7000000476837,
+          "workerMillis": 667.8000000715256,
+          "workers": 8,
+          "comparedId": 2,
+          "voxelReference": {
+            "cached": true,
+            "reused": false,
+            "bytes": 16367856,
+            "neighborVoxels": 20538,
+            "neighborsUsed": 20122,
+            "rootsReused": 0,
+            "rootsComputed": 20122
+          },
+          "voxelCacheHit": false,
+          "cpuCacheReused": false,
+          "cpuCacheInputBytes": 110153944,
+          "scores": {
+            "awd": 0.06813965734202505,
+            "scs": 0.03337348372728608,
+            "voxels": 20122
+          },
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 619.3999999761581,
+            "workerMillis": 612.1000000238419,
+            "workers": 8,
+            "comparedId": 3,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202458,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 483.89999997615814,
+            "workerMillis": 482.10000002384186,
+            "workers": 8,
+            "comparedId": 3,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.0681396573420246,
+              "scs": 0.033373483727286074,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 444.5,
+            "workerMillis": 440.2999999523163,
+            "workers": 8,
+            "comparedId": 4,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202455,
+              "scs": 0.03337348372728634,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 453.5,
+            "workerMillis": 447.2999999523163,
+            "workers": 8,
+            "comparedId": 4,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202487,
+              "scs": 0.03337348372728613,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 434.2999999523163,
+            "workerMillis": 430,
+            "workers": 8,
+            "comparedId": 5,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202454,
+              "scs": 0.03337348372728612,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 498.8000000715256,
+            "workerMillis": 496,
+            "workers": 8,
+            "comparedId": 5,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202486,
+              "scs": 0.03337348372728616,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 450.1999999284744,
+            "workerMillis": 445.2999999523163,
+            "workers": 8,
+            "comparedId": 6,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202444,
+              "scs": 0.033373483727285894,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 422,
+            "workerMillis": 421.40000009536743,
+            "workers": 8,
+            "comparedId": 6,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202465,
+              "scs": 0.03337348372728631,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 445.89999997615814,
+            "workerMillis": 443.6999999284744,
+            "workers": 8,
+            "comparedId": 7,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202432,
+              "scs": 0.033373483727286116,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 428.3000000715256,
+            "workerMillis": 426.60000002384186,
+            "workers": 8,
+            "comparedId": 7,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202457,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 465.6999999284744,
+            "workerMillis": 463.7000000476837,
+            "workers": 8,
+            "comparedId": 8,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202478,
+              "scs": 0.03337348372728616,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 440.10000002384186,
+            "workerMillis": 434.10000002384186,
+            "workers": 8,
+            "comparedId": 8,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.0681396573420247,
+              "scs": 0.03337348372728615,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 430.09999990463257,
+            "workerMillis": 426.3000000715256,
+            "workers": 8,
+            "comparedId": 9,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.0681396573420248,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 457.8000000715256,
+            "workerMillis": 453.39999997615814,
+            "workers": 8,
+            "comparedId": 9,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202457,
+              "scs": 0.03337348372728643,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 443.6999999284744,
+            "workerMillis": 442.2999999523163,
+            "workers": 8,
+            "comparedId": 10,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202515,
+              "scs": 0.033373483727286476,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 428,
+            "workerMillis": 426.39999997615814,
+            "workers": 8,
+            "comparedId": 10,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202444,
+              "scs": 0.03337348372728595,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 432.10000002384186,
+            "workerMillis": 427.3000000715256,
+            "workers": 8,
+            "comparedId": 11,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202465,
+              "scs": 0.0333734837272861,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 438.60000002384186,
+            "workerMillis": 432.3000000715256,
+            "workers": 8,
+            "comparedId": 11,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202468,
+              "scs": 0.033373483727286254,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 454.89999997615814,
+            "workerMillis": 450.5,
+            "workers": 8,
+            "comparedId": 12,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202489,
+              "scs": 0.033373483727286136,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 534,
+            "workerMillis": 532,
+            "workers": 8,
+            "comparedId": 12,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202479,
+              "scs": 0.033373483727286185,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 439.09999990463257,
+            "workerMillis": 433.7000000476837,
+            "workers": 8,
+            "comparedId": 13,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202529,
+              "scs": 0.0333734837272861,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 429.2999999523163,
+            "workerMillis": 427.6999999284744,
+            "workers": 8,
+            "comparedId": 13,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.0681396573420242,
+              "scs": 0.033373483727286185,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 416.5,
+            "workerMillis": 412.10000002384186,
+            "workers": 8,
+            "comparedId": 14,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.0681396573420249,
+              "scs": 0.03337348372728625,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 429.60000002384186,
+            "workerMillis": 427.89999997615814,
+            "workers": 8,
+            "comparedId": 14,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202486,
+              "scs": 0.033373483727286136,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 436,
+            "workerMillis": 431.39999997615814,
+            "workers": 8,
+            "comparedId": 15,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202475,
+              "scs": 0.03337348372728614,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 424.40000009536743,
+            "workerMillis": 422.89999997615814,
+            "workers": 8,
+            "comparedId": 15,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202482,
+              "scs": 0.033373483727286185,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "indexed",
+            "baseline"
+          ],
+          "indexed": {
+            "elapsedMillis": 497.7000000476837,
+            "workerMillis": 496.5,
+            "workers": 8,
+            "comparedId": 16,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202472,
+              "scs": 0.03337348372728592,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 485.89999997615814,
+            "workerMillis": 484.8000000715256,
+            "workers": 8,
+            "comparedId": 16,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202507,
+              "scs": 0.03337348372728626,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "indexed"
+          ],
+          "baseline": {
+            "elapsedMillis": 445,
+            "workerMillis": 438.39999997615814,
+            "workers": 8,
+            "comparedId": 17,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 11472896,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202478,
+              "scs": 0.033373483727286005,
+              "voxels": 20122
+            },
+            "resultParity": true
+          },
+          "indexed": {
+            "elapsedMillis": 455.2999999523163,
+            "workerMillis": 449,
+            "workers": 8,
+            "comparedId": 17,
+            "voxelReference": {
+              "cached": true,
+              "reused": true,
+              "bytes": 16367856,
+              "neighborVoxels": 20538,
+              "neighborsUsed": 20122,
+              "rootsReused": 20122,
+              "rootsComputed": 0
+            },
+            "voxelCacheHit": false,
+            "cpuCacheReused": false,
+            "cpuCacheInputBytes": 110153944,
+            "scores": {
+              "awd": 0.06813965734202485,
+              "scs": 0.03337348372728579,
+              "voxels": 20122
+            },
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "hashedMedianMillis": 437.5499999523163,
+        "indexedMedianMillis": 449.2999999523163,
+        "medianIndexedReductionPercent": -1.9094440735566987,
+        "fasterTrials": 4,
+        "trials": 10
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "retained-voxel-neighbors-changing-compared-identity",
+  "createdAt": "2026-10-13T01:53:21.919Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\voxel-neighbors-baseline-20261013\\dist",
+      "worker": "worker-CV32XqwN.js",
+      "artifactHashes": {
+        "c2c-worker-BUCVLdrB.js": "4a4b1af20412ffd4c3842d283fcbc707131e0b02462dc032057ef86e97bcdea1",
+        "ca_wasm_bg-B7vFkqxC.wasm": "089d6a8af835ea9ec146939dc69448ce13ea7ffc35ff6425bacdc1722f16741a",
+        "worker-CV32XqwN.js": "d3fcfd7613c3093082e6bf60db0b6d0792591160932588556a36170f3193c9eb"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-B5uBBdCh.js",
+      "artifactHashes": {
+        "c2c-worker-U2-NSBqA.js": "54f283a7011203b08e2976a45891f39ce3463c0ed4217d4edca13d9398f297df",
+        "ca_wasm_bg-DLfX314K.wasm": "b04c113e3fe7537bdbeebbf38fa0bda09aa21158483384b9cc0a9057f73373a1",
+        "worker-B5uBBdCh.js": "867dffd97fdb759bab7cc5776482793fe5053259641aeecd8f0b5a352be52764"
+      }
+    }
+  },
+  "scriptSha256": "e6f48b3b14c53be3ea695ec103f3569b13c52a087a89172bc24720edd53380df",
+  "sourceHashes": {
+    "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "web/src/map-voxel-cache.ts": "677480fa658a18dcb600cf98083c315c3abcc747595a8ea963e519e994b6df16",
+    "web/src/map-quality-workers.ts": "d75aa51c0b9e9308f2b9257a2bb25f3b77d14195cad7d0a1fcad40905a511528",
+    "web/src/worker.ts": "d39805b393c83e80a87514f11b113acece881c17b5631a937dd36be77c41cec9",
+    "web/src/c2c-worker.ts": "fb90d8b07c6ed821b2295024624fd1ee5d11ff2df3822e97e49816c3e60db880",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "6eeb14fc67edaa6591dcbf3727495b4556dcdeb998b992a21d5a5205e0441a57",
+    "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+    "rust/crates/ca-core/src/icp.rs": "c8877991626c138d55b7619439e30ad96216f7be22a1392432b0f696755aec2e",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/src/distance.rs": "e405031ab7b409a103b88e847453835d5fd5da385a4952c0a16e6c286a62c842",
+    "rust/crates/ca-wasm/src/lib.rs": "2063a07d5badd8e95ad70c29423b63d346f0ebd29c647f5677132d5ea6b92153"
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured source-index splits, not independent surveys/accuracy ground truth. Archived hashed-SCS production and current retained-neighbor production use separate workers with the SAME reference Gaussian/root cache enabled. Reference retained payload differs: indexed reference adds a stable slot per Gaussian and 27 u32 neighbor slots per reference voxel, charged with two-capacity slack, both <=128 MiB. Current preflight allows 640 bytes per eligible voxel rather than 400; both measured inputs remain eligible. A new compared identity loaded from the original full file before EVERY call prevents final score and bidirectional nearest-pair reuse; final score cache disabled. One excluded first pair prepares both references/roots and the indexed reference connectivity, then five alternating warm-up pairs precede ten alternating timed pairs. Each warm/timed call requires zero new roots and one reused root per matched voxel. Indexed neighborsUsed equals matched voxels every call; graph capacity and retained allowance remain fixed. Root and individual Wasserstein f64 arithmetic unchanged; no paired eigen solver enabled. Indexed SCS scans the reference graph in original dx/dy/dz order and skips reference-only/unmatched compared voxels using a fresh Option<f64> array, without a per-call distance HashMap. AWD and global SCS reduction use compared traversal order, within the original 1e-12 randomized HashMap allowance. Both outputs checked against independent archived ordinary oracle; combined evaluation also requires fresh exact C2C preparation, same lanes/input allowance, identical full f32 distances/f64 statistics/non-voxel metrics/full scalar PLY. Whole RPC includes compared Gaussians, scalar cross roots, Wasserstein/SCS and optional nearest preparation/search/join. Reference connectivity construction is excluded first-use work, not a cold median; first observations retained. Startup/load/warmups/export/parity/removal excluded. Source/artifact/input/original source/manifest/script hashes checked before/after. No builds/tests/scans alongside timing. Clocks/power/other applications/scheduling/GC/HashMap seeds/WASM pages uncontrolled. Retained payload is not peak process memory. This is CPU/WASM lookup reuse, no GPU dispatch/model identifiers collected."
+}

@@ -41,6 +41,43 @@ the Open3D implementation.
 
 Build from source with [maturin](https://www.maturin.rs/): `maturin develop --release`.
 
+For repeated nearest-distance queries against the same reference cloud:
+
+```python
+reference = cc.PreparedReference(ref)  # owned float64 reference k-d tree
+distances = reference.distances(scan["positions"])
+next_distances = reference.distances(other_points)
+print(reference.retained_bytes)
+```
+
+The object copies reference coordinates and accepts changed query arrays. Native
+construction/search release the GIL; searches use the existing parallel kernel.
+Each call copies queries and starts with independent order/guesses/results.
+Caller array edits do not update the object: construct another one when the
+reference changes. Concurrent readers may share it. `retained_bytes` counts
+native tree vector payload capacity, excluding caller/query/result arrays and
+allocator overhead; it is not process RSS. [Whole Python call measurements](../../../docs/cpu-c2c-python-prepared-reference.md)
+include one-time setup, persistent storage and full preceding-wheel output checks.
+
+For repeated point-cloud queries against the same mesh, prepare its owned BVH once:
+
+```python
+mesh = cc.PreparedMesh(vertices, triangles)  # float64 vertices, uint32 faces
+signed = mesh.distances(scan["positions"])  # signed=True by default
+unsigned = mesh.distances(ref, signed=False)
+print(mesh.retained_bytes)
+```
+
+Construction copies the input geometry; later array mutations do not change this
+immutable mesh. Queries accept strided `(N, 3)` float64 arrays, return distances
+in input order, release the GIL during native work and use Rayon. Concurrent
+readers may share the object. Each call copies its query array and owns its result.
+Create a new object when the mesh changes; unreferenced objects release their
+native storage. `retained_bytes` reports native vector payload capacity, excluding
+caller arrays, query/result buffers and allocator overhead; it is not process RSS.
+[Whole Python API measurements](../../../docs/cpu-c2m-python-prepared-mesh.md)
+record initial setup, persistent storage and exact real-source output checks.
+
 For full-density spatial batches install `cloudanalyzer-core[copc]` (CloudAnalyzer
 already includes laspy). Use a context to close a local file on early exit:
 

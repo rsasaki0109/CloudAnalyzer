@@ -1,0 +1,861 @@
+{
+  "schemaVersion": 1,
+  "comparison": "map-scs-query-batch",
+  "createdAt": "2026-10-14T13:53:49.430936+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/core/map_evaluate.py": "6214aca846a19f905b7c6db9ac3fd0afc55750a05cc95a440d68869e82d46c00",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_map_nn_parallel.py": "b721c2fe415531c4afdf95d7580a4a107c0c302a6e6fcc1f2f502450a0fc840c",
+    "cloudanalyzer/tests/test_map_scs_index.py": "1eaddd4fbc23857b47f386ce18a41b0d683a80791bed427f6722c0360fde6d70",
+    "cloudanalyzer/tests/test_map_covariance.py": "92cdf3c06b1f391722ee27d8ec23878072183845f85a5318311f01d9a98e4f9b",
+    "cloudanalyzer/tests/test_map_grouping.py": "a48e29bffe47a7291226756e3911e95a8f7565ffd9d56d2686196c46f24a254c",
+    "cloudanalyzer/tests/test_map_stream_groups.py": "e6106010547efa80c6f8326e182d4efea722bba447e368f1cc22cfc285a5d847",
+    "cloudanalyzer/tests/test_map_downsample_centroids.py": "8e534616a8035055c71f70d23c200a58cd97327be7114ab06806d3f096751fc6",
+    "cloudanalyzer/tests/test_map_downsample_small_groups.py": "167c0357022856323fd4b74ce52f325c59ee7407ee429191a13a8904f8b1a5b5",
+    "cloudanalyzer/tests/test_map_mean_sums.py": "1cdb24008486a89b53755aa1ec25359166860de43c245c008bc198ab24e7854b",
+    "cloudanalyzer/tests/test_map_wasserstein_batch.py": "8261af3d1fe1cf261c50bc45005de64c922d07023f6b1add33eef9878150f1d3",
+    "cloudanalyzer/tests/test_map_scs_batch.py": "5b9aa5532ae13c898ff2699e694f658975b3f0d443c851c42ab3a61246774933",
+    "cloudanalyzer/tests/test_map_nn_midpoint.py": "4e99fb4a276192728b923395ec26e7c98f9b667e73229a4e53aa26dee1b2171e",
+    "cloudanalyzer/tests/test_map_scs_query_batch.py": "bffc672bca9188bc53b015983b46a62ce0ad53f418cbc4dc73abd52275b32bae",
+    "cloudanalyzer/scripts/benchmark_map_scs_query_batch.py": "c25597f416cfdd5845f05a3675a2355defe06ff20ae624125c2508b73c983405"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\inputs.json",
+      "bytes": 1578,
+      "sha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-baseline-20261014.py",
+      "bytes": 43137,
+      "sha256": "a91996ba8b8fc2b6ff24a505d2f1f72d42720713220d982b7d1371d676630b43"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\pandaset-vector-map\\map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "coordinateHashes": {
+    "compared": "a958ef839bea9c3d8bdde29e3b8439d1e0b3059943ef1acee617ca6c0e47de43",
+    "reference": "e54e6d06031028720505f1923f4740c017495fe7d23d847924ef5c90e5e1f908"
+  },
+  "compiledTree": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\scipy\\spatial\\_ckdtree.cp312-win_amd64.pyd",
+    "bytes": 1523200,
+    "sha256": "8894f6d534e6d514926a8272eb3a1088c02502a921e1cd890390865097ed4813"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "scipy": "1.17.1",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "ompNumThreads": "12",
+    "openblasNumThreads": "1"
+  },
+  "policy": {
+    "nnWorkers": -1,
+    "nnParallelMinPoints": 65536,
+    "scsIndexMinVoxels": 64,
+    "scsExactSpan": 4503599627370496,
+    "meanBincountMinPoints": 64,
+    "wassersteinBatchSize": 256,
+    "wassersteinBatchMinPairs": 128,
+    "wassersteinSafeMagnitude": 1e+100,
+    "numpyErrorState": {
+      "divide": "warn",
+      "over": "warn",
+      "under": "ignore",
+      "invalid": "warn"
+    },
+    "scsTermBatchMinVoxels": 64,
+    "scsTermBatchMinCenters": 16,
+    "scsTermBatchMinSameSize": 4,
+    "scsTermBatchMaxCenters": 1024,
+    "scsTermBatchMaxValues": 65536,
+    "nnMidpointMinPoints": 65536,
+    "nnLeafSize": 16,
+    "nnCompactNodes": true,
+    "scsQueryBatchMinVoxels": 1024,
+    "scsQueryBatchMaxCenters": 256,
+    "scsQueryBatchMaxHits": 65536,
+    "scsQueryWorkers": 1
+  },
+  "repeats": 5,
+  "warmupRounds": 2,
+  "structureVoxelSize": 3.0,
+  "structuralParity": {
+    "distances": {
+      "single": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single-voxel-distances.bin",
+        "bytes": 38464,
+        "sha256": "4e59d0c708eda68881193fe8dc8f1d01bb0f807066590b815ffa3c910f582698",
+        "voxels": 1202,
+        "recordBytes": 32
+      },
+      "batch": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch-voxel-distances.bin",
+        "bytes": 38464,
+        "sha256": "4e59d0c708eda68881193fe8dc8f1d01bb0f807066590b815ffa3c910f582698",
+        "voxels": 1202,
+        "recordBytes": 32
+      }
+    },
+    "parity": {
+      "single": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single-scs-terms.bin",
+        "bytes": 48000,
+        "sha256": "d5cdf46f6369b47cbc35b4158609bcbfafa8b34310dc95c2e2d156c2a4e27117",
+        "centers": 1200,
+        "recordBytes": 40
+      },
+      "batch": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch-scs-terms.bin",
+        "bytes": 48000,
+        "sha256": "d5cdf46f6369b47cbc35b4158609bcbfafa8b34310dc95c2e2d156c2a4e27117",
+        "centers": 1200,
+        "recordBytes": 40
+      }
+    }
+  },
+  "scsReducer": {
+    "firstUse": {
+      "order": [
+        "single",
+        "batch"
+      ],
+      "millis": {
+        "single": 150.7244,
+        "batch": 117.4594
+      }
+    },
+    "warmups": [
+      {
+        "order": [
+          "single",
+          "batch"
+        ],
+        "millis": {
+          "single": 323.0045,
+          "batch": 310.3468
+        }
+      },
+      {
+        "order": [
+          "batch",
+          "single"
+        ],
+        "millis": {
+          "batch": 246.3951,
+          "single": 299.0856
+        }
+      }
+    ],
+    "trials": [
+      {
+        "order": [
+          "single",
+          "batch"
+        ],
+        "millis": {
+          "single": 280.6473,
+          "batch": 237.4645
+        }
+      },
+      {
+        "order": [
+          "batch",
+          "single"
+        ],
+        "millis": {
+          "batch": 248.1156,
+          "single": 256.2255
+        }
+      },
+      {
+        "order": [
+          "single",
+          "batch"
+        ],
+        "millis": {
+          "single": 296.0129,
+          "batch": 259.4597
+        }
+      },
+      {
+        "order": [
+          "batch",
+          "single"
+        ],
+        "millis": {
+          "batch": 246.4393,
+          "single": 308.3876
+        }
+      },
+      {
+        "order": [
+          "single",
+          "batch"
+        ],
+        "millis": {
+          "single": 309.5585,
+          "batch": 228.5073
+        }
+      }
+    ],
+    "summary": {
+      "singleMedianMillis": 296.0129,
+      "batchMedianMillis": 246.4393,
+      "pairedShorteningPercent": 15.386857454178248,
+      "pairedSavedMedianMillis": 43.182799999999986,
+      "fasterTrials": 5
+    }
+  },
+  "parity": {
+    "single": {
+      "millis": 2519.6961,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 531908.0,
+          "n_ref": 531908.0,
+          "mean_est_to_ref_m": 0.1122068329956835,
+          "mean_ref_to_est_m": 0.11235659699126066,
+          "chamfer_m": 0.22456342998694417,
+          "accuracy@0.200m": 0.8875313024056791,
+          "completeness@0.200m": 0.8863393669581958,
+          "accuracy@0.100m": 0.6576438030636877,
+          "completeness@0.100m": 0.6573091587266972,
+          "accuracy@0.080m": 0.5387435421163058,
+          "completeness@0.080m": 0.5390311858441685,
+          "accuracy@0.050m": 0.2898734367597404,
+          "completeness@0.050m": 0.2895162321303684,
+          "accuracy@0.010m": 0.005173827052798605,
+          "completeness@0.010m": 0.00522458771065673,
+          "awd_m": 0.13077637580932694,
+          "scs": 0.5436378780521097,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0,
+          "fscore@0.200m": 0.8869349342271197
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "estimated_error_raw_ply": "estimated_error_raw.ply",
+          "estimated_error_inlier_0.200m_ply": "estimated_error_inlier_0.200m.ply"
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "a0e4135a5c75a648234ce1be13ffb1746713e23e4c22e261c7e98f8b022db0fb",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single-distance-0.bin",
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9",
+          "points": 531908
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single-distance-1.bin",
+          "bytes": 4255264,
+          "sha256": "1bedd8d9d70eb05ea86d4d2304ea8a41e9f90526a68be0577bf246ebb91cfd9c",
+          "points": 531908
+        }
+      ],
+      "artifacts": {
+        "estimated_error_raw_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single\\map_evaluate\\nn_thresholds\\estimated_error_raw.ply",
+          "bytes": 14361725,
+          "sha256": "d03a6fbcd1377e3f004c91a23f480a0756499946d238b6c4d1224023c094271a",
+          "file": "estimated_error_raw.ply"
+        },
+        "estimated_error_inlier_0.200m_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single\\map_evaluate\\nn_thresholds\\estimated_error_inlier_0.200m.ply",
+          "bytes": 12746504,
+          "sha256": "ed0edb2b2a33535be3f79fd01e501bdcdcbe457342208f235ec09c4db7fbf984",
+          "file": "estimated_error_inlier_0.200m.ply"
+        }
+      },
+      "scsIndexes": [
+        {
+          "cells": 1202,
+          "radius": 5,
+          "coordinateBytes": 28848,
+          "indexBytes": 9616,
+          "nativeNodes": 215
+        }
+      ],
+      "gaussians": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single-gaussians-0.bin",
+          "bytes": 1179264,
+          "sha256": "e66bf9cffe6f7c3c97781cf181613a18213258831a42dece4d39685268c7ea01",
+          "voxels": 9213,
+          "recordBytes": 128
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\single-gaussians-1.bin",
+          "bytes": 1175808,
+          "sha256": "15cd89f6b4d05fead2e6e8ca56b6ff33693360f108c1658f3ef893ce4d06142b",
+          "voxels": 9186,
+          "recordBytes": 128
+        }
+      ]
+    },
+    "batch": {
+      "millis": 2737.652,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 531908.0,
+          "n_ref": 531908.0,
+          "mean_est_to_ref_m": 0.1122068329956835,
+          "mean_ref_to_est_m": 0.11235659699126066,
+          "chamfer_m": 0.22456342998694417,
+          "accuracy@0.200m": 0.8875313024056791,
+          "completeness@0.200m": 0.8863393669581958,
+          "accuracy@0.100m": 0.6576438030636877,
+          "completeness@0.100m": 0.6573091587266972,
+          "accuracy@0.080m": 0.5387435421163058,
+          "completeness@0.080m": 0.5390311858441685,
+          "accuracy@0.050m": 0.2898734367597404,
+          "completeness@0.050m": 0.2895162321303684,
+          "accuracy@0.010m": 0.005173827052798605,
+          "completeness@0.010m": 0.00522458771065673,
+          "awd_m": 0.13077637580932694,
+          "scs": 0.5436378780521097,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0,
+          "fscore@0.200m": 0.8869349342271197
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "estimated_error_raw_ply": "estimated_error_raw.ply",
+          "estimated_error_inlier_0.200m_ply": "estimated_error_inlier_0.200m.ply"
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "a0e4135a5c75a648234ce1be13ffb1746713e23e4c22e261c7e98f8b022db0fb",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch-distance-0.bin",
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9",
+          "points": 531908
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch-distance-1.bin",
+          "bytes": 4255264,
+          "sha256": "1bedd8d9d70eb05ea86d4d2304ea8a41e9f90526a68be0577bf246ebb91cfd9c",
+          "points": 531908
+        }
+      ],
+      "artifacts": {
+        "estimated_error_raw_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch\\map_evaluate\\nn_thresholds\\estimated_error_raw.ply",
+          "bytes": 14361725,
+          "sha256": "d03a6fbcd1377e3f004c91a23f480a0756499946d238b6c4d1224023c094271a",
+          "file": "estimated_error_raw.ply"
+        },
+        "estimated_error_inlier_0.200m_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch\\map_evaluate\\nn_thresholds\\estimated_error_inlier_0.200m.ply",
+          "bytes": 12746504,
+          "sha256": "ed0edb2b2a33535be3f79fd01e501bdcdcbe457342208f235ec09c4db7fbf984",
+          "file": "estimated_error_inlier_0.200m.ply"
+        }
+      },
+      "scsIndexes": [
+        {
+          "cells": 1202,
+          "radius": 5,
+          "coordinateBytes": 28848,
+          "indexBytes": 9616,
+          "nativeNodes": 215
+        }
+      ],
+      "gaussians": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch-gaussians-0.bin",
+          "bytes": 1179264,
+          "sha256": "e66bf9cffe6f7c3c97781cf181613a18213258831a42dece4d39685268c7ea01",
+          "voxels": 9213,
+          "recordBytes": 128
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-scs-query-batch-pandaset-final-20261014\\batch-gaussians-1.bin",
+          "bytes": 1175808,
+          "sha256": "15cd89f6b4d05fead2e6e8ca56b6ff33693360f108c1658f3ef893ce4d06142b",
+          "voxels": 9186,
+          "recordBytes": 128
+        }
+      ]
+    }
+  },
+  "firstUse": {
+    "single": {
+      "millis": 2662.7276,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 531908.0,
+          "n_ref": 531908.0,
+          "mean_est_to_ref_m": 0.1122068329956835,
+          "mean_ref_to_est_m": 0.11235659699126066,
+          "chamfer_m": 0.22456342998694417,
+          "accuracy@0.200m": 0.8875313024056791,
+          "completeness@0.200m": 0.8863393669581958,
+          "accuracy@0.100m": 0.6576438030636877,
+          "completeness@0.100m": 0.6573091587266972,
+          "accuracy@0.080m": 0.5387435421163058,
+          "completeness@0.080m": 0.5390311858441685,
+          "accuracy@0.050m": 0.2898734367597404,
+          "completeness@0.050m": 0.2895162321303684,
+          "accuracy@0.010m": 0.005173827052798605,
+          "completeness@0.010m": 0.00522458771065673,
+          "awd_m": 0.13077637580932694,
+          "scs": 0.5436378780521097,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0,
+          "fscore@0.200m": 0.8869349342271197
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+      "distances": [],
+      "artifacts": {},
+      "scsIndexes": [],
+      "gaussians": []
+    },
+    "batch": {
+      "millis": 4269.7256,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 531908.0,
+          "n_ref": 531908.0,
+          "mean_est_to_ref_m": 0.1122068329956835,
+          "mean_ref_to_est_m": 0.11235659699126066,
+          "chamfer_m": 0.22456342998694417,
+          "accuracy@0.200m": 0.8875313024056791,
+          "completeness@0.200m": 0.8863393669581958,
+          "accuracy@0.100m": 0.6576438030636877,
+          "completeness@0.100m": 0.6573091587266972,
+          "accuracy@0.080m": 0.5387435421163058,
+          "completeness@0.080m": 0.5390311858441685,
+          "accuracy@0.050m": 0.2898734367597404,
+          "completeness@0.050m": 0.2895162321303684,
+          "accuracy@0.010m": 0.005173827052798605,
+          "completeness@0.010m": 0.00522458771065673,
+          "awd_m": 0.13077637580932694,
+          "scs": 0.5436378780521097,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0,
+          "fscore@0.200m": 0.8869349342271197
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+      "distances": [],
+      "artifacts": {},
+      "scsIndexes": [],
+      "gaussians": []
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "single",
+        "batch"
+      ],
+      "millis": {
+        "single": 2812.7082,
+        "batch": 3134.3196
+      },
+      "reportHashes": {
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    },
+    {
+      "order": [
+        "batch",
+        "single"
+      ],
+      "millis": {
+        "batch": 1878.3706,
+        "single": 1610.5517
+      },
+      "reportHashes": {
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "single",
+        "batch"
+      ],
+      "millis": {
+        "single": 2135.5217,
+        "batch": 2174.2927
+      },
+      "reportHashes": {
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    },
+    {
+      "order": [
+        "batch",
+        "single"
+      ],
+      "millis": {
+        "batch": 2880.6803,
+        "single": 1937.4675
+      },
+      "reportHashes": {
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    },
+    {
+      "order": [
+        "single",
+        "batch"
+      ],
+      "millis": {
+        "single": 3156.9987,
+        "batch": 2336.5587
+      },
+      "reportHashes": {
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    },
+    {
+      "order": [
+        "batch",
+        "single"
+      ],
+      "millis": {
+        "batch": 1900.6696,
+        "single": 2244.069
+      },
+      "reportHashes": {
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    },
+    {
+      "order": [
+        "single",
+        "batch"
+      ],
+      "millis": {
+        "single": 2255.3597,
+        "batch": 2611.9233
+      },
+      "reportHashes": {
+        "single": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24",
+        "batch": "d42104b9cd09731115c23a36874570884647a369a06418398be802f8089c2b24"
+      }
+    }
+  ],
+  "summary": {
+    "singleMedianMillis": 2244.069,
+    "batchMedianMillis": 2336.5587,
+    "pairedShorteningPercent": -1.8155282617825952,
+    "pairedSavedMedianMillis": -38.771000000000186,
+    "fasterTrials": 2
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 4,
+    "plyOutputsChecked": 4,
+    "gaussianMapsChecked": 4,
+    "reportsChecked": 18,
+    "fullGaussianDistanceArraysChecked": 2,
+    "fullScsTermArraysChecked": 2
+  },
+  "note": "Control already includes all preceding MapEval optimizations, including compact midpoint point trees. Current batches SCS ball queries only for eligible maps with at least 1024 error cells, at most 256 centers and a conservative 65536 returned-index budget. Batch size is at most floor(65536/cells); fewer than two queries keep preceding single-center calls. One worker avoids small-batch thread setup. Exact integer/local coordinates, sorted neighbor slots, center order and all statistical arithmetic remain. Complete resident clocks include fresh NN trees/queries, thresholds, grouping, means/covariances, Wasserstein and SCS/index setup/destruction. Alignment/ downsampling are disabled; original coordinates/sampling stay fixed. Loading/imports/hashing/ Gaussian/f64/PLY parity tracing and CLI writes are outside clocks. Two warm-ups and an excluded first pair precede five default alternating timed pairs. All observations remain. Separate scsReducer clocks include fresh SCS index/query work, statistics, ordered term array creation and nanmean; Gaussian/distance setup and checking/hashing are excluded. Other unsupported index cases keep preceding lookup. No persistent cache, streaming speed, GPU or peak-RSS claim."
+}

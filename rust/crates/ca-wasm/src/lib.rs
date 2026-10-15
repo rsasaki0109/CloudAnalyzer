@@ -5,15 +5,20 @@ use ca_core::octree::{BUCKETS, BucketLayout, NO_CHILD, Octree, OctreeNode, Octre
 use ca_core::{
     AttributeValues, CLASSIFICATION, DistanceStats, INTENSITY, PointCloud, TriangleMesh,
 };
+use std::borrow::Cow;
 use wasm_bindgen::prelude::*;
 
 mod bag;
 mod copc_box;
+mod gpu_c2c;
+mod m3c2;
 mod odometry;
 mod pose_graph;
 mod vector_map;
 pub use bag::{BagFile, BagMessage};
 pub use copc_box::CopcBoxReader;
+pub use gpu_c2c::{GpuC2cJob, GpuC2cReference, GpuC2cVerifier};
+pub use m3c2::{M3c2Plan, M3c2Prepared, compute_m3c2, m3c2_cloud_distances, m3c2_distances};
 pub use odometry::{LidarOdometry, OdometryMap, Registration};
 pub use pose_graph::{PoseGraphSession, register_scans};
 pub use vector_map::VectorMapSession;
@@ -1464,6 +1469,12 @@ fn build_lod(cloud: &mut PointCloud) -> Result<Octree, JsError> {
 /// Outcome of [`register_icp`].
 #[wasm_bindgen]
 pub struct IcpOutcome {
+    #[wasm_bindgen(readonly, js_name = correspondenceTemporal)]
+    pub correspondence_temporal: bool,
+    #[wasm_bindgen(readonly, js_name = temporalQueries)]
+    pub temporal_queries: usize,
+    #[wasm_bindgen(readonly, js_name = temporalScratchBytes)]
+    pub temporal_scratch_bytes: usize,
     matrix: [f64; 16],
     #[wasm_bindgen(readonly, js_name = rmsInitial)]
     pub rms_initial: f64,
@@ -1486,6 +1497,7 @@ impl IcpOutcome {
 /// Register `moving` onto `reference` with ICP. The clouds are not changed;
 /// apply the result with [`Cloud::transform`].
 #[wasm_bindgen(js_name = registerIcp)]
+#[allow(clippy::too_many_arguments)]
 pub fn register_icp(
     moving: &Cloud,
     reference: &Cloud,
@@ -1493,6 +1505,8 @@ pub fn register_icp(
     overlap: f64,
     match_centroids: bool,
     point_to_plane: bool,
+    simd: Option<bool>,
+    temporal: Option<bool>,
 ) -> Result<IcpOutcome, JsError> {
     let params = IcpParams {
         metric: if point_to_plane {
@@ -1505,9 +1519,21 @@ pub fn register_icp(
         match_centroids,
         ..IcpParams::default()
     };
-    let result = ca_core::icp::icp(&moving.inner, &reference.inner, params)
+    if moving.inner.is_empty() {
+        return Err(JsError::new(
+            "ICP needs non-empty clouds and at least 3 pairs",
+        ));
+    }
+    let mut prepared = ca_core::icp::IcpPrepared::new(&reference.inner)
+        .ok_or_else(|| JsError::new("ICP needs non-empty clouds and at least 3 pairs"))?;
+    let temporal = temporal.unwrap_or(false);
+    let result = prepared
+        .compute_with_correspondence(&moving.inner, params, simd.unwrap_or(false), temporal)
         .ok_or_else(|| JsError::new("ICP needs non-empty clouds and at least 3 pairs"))?;
     Ok(IcpOutcome {
+        correspondence_temporal: temporal,
+        temporal_queries: prepared.temporal_queries(),
+        temporal_scratch_bytes: prepared.temporal_scratch_bytes(),
         matrix: result.transform.to_matrix(),
         rms_initial: result.rms_initial,
         rms_final: result.rms_final,
@@ -1516,77 +1542,138 @@ pub fn register_icp(
     })
 }
 
-/// M3C2 change from `reference` (cloud 1) to `compared` (cloud 2) at core
-/// points taken from `compared` (all points, or one per `core_spacing`
-/// voxel). Returns the core points as a new indexed cloud carrying the
-/// `m3c2_distance` and `lod95` (NaN where undefined) and `significant`
-/// (1/0) attributes.
+/// Immutable owned ICP reference and reusable lazy normals.
+#[wasm_bindgen]
+pub struct IcpPrepared {
+    inner: ca_core::icp::IcpPrepared,
+}
+
+#[wasm_bindgen]
+impl IcpPrepared {
+    #[wasm_bindgen(constructor)]
+    pub fn new(reference: &Cloud) -> Result<Self, JsError> {
+        Ok(Self {
+            inner: ca_core::icp::IcpPrepared::new(&reference.inner)
+                .ok_or_else(|| JsError::new("ICP needs a non-empty reference"))?,
+        })
+    }
+
+    #[wasm_bindgen(getter, js_name = retainedBytes)]
+    pub fn retained_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn compute(
+        &mut self,
+        moving: &Cloud,
+        max_iterations: usize,
+        overlap: f64,
+        match_centroids: bool,
+        point_to_plane: bool,
+        simd: Option<bool>,
+        temporal: Option<bool>,
+    ) -> Result<IcpOutcome, JsError> {
+        let params = IcpParams {
+            metric: if point_to_plane {
+                IcpMetric::PointToPlane
+            } else {
+                IcpMetric::PointToPoint
+            },
+            max_iterations,
+            overlap,
+            match_centroids,
+            ..IcpParams::default()
+        };
+        let result = self
+            .inner
+            .compute_with_correspondence(
+                &moving.inner,
+                params,
+                simd.unwrap_or(false),
+                temporal.unwrap_or(false),
+            )
+            .ok_or_else(|| JsError::new("ICP needs non-empty clouds and at least 3 pairs"))?;
+        Ok(IcpOutcome {
+            correspondence_temporal: temporal.unwrap_or(false),
+            temporal_queries: self.inner.temporal_queries(),
+            temporal_scratch_bytes: self.inner.temporal_scratch_bytes(),
+            matrix: result.transform.to_matrix(),
+            rms_initial: result.rms_initial,
+            rms_final: result.rms_final,
+            iterations: result.iterations,
+            converged: result.converged,
+        })
+    }
+}
+
 /// Map quality of `estimate` against the ground-truth map `truth` by
 /// voxel Gaussians (see `ca_core::map_quality`): `[AWD, SCS, voxels]`.
 #[wasm_bindgen(js_name = mapQuality)]
-pub fn map_quality(estimate: &Cloud, truth: &Cloud, voxel: f64, min_points: usize) -> Vec<f64> {
-    let s = ca_core::map_quality::voxel_scores(
+pub fn map_quality(
+    estimate: &Cloud,
+    truth: &Cloud,
+    voxel: f64,
+    min_points: usize,
+    simd: Option<bool>,
+) -> Vec<f64> {
+    let s = ca_core::map_quality::voxel_scores_with_simd(
         &estimate.inner.positions,
         &truth.inner.positions,
         voxel,
         min_points,
+        simd.unwrap_or(false),
     );
     vec![s.awd, s.scs, s.voxels as f64]
 }
 
-#[wasm_bindgen(js_name = computeM3c2)]
-pub fn compute_m3c2(
-    compared: &Cloud,
-    reference: &Cloud,
-    normal_radius: f64,
-    projection_radius: f64,
-    max_depth: f64,
-    core_spacing: f64,
-) -> Result<Cloud, JsError> {
-    use ca_core::m3c2::{M3c2Params, m3c2};
-    let core = if core_spacing > 0.0 {
-        compared.inner.select(&ca_core::filter::voxel_subsample(
-            &compared.inner,
-            core_spacing,
-        ))
-    } else {
-        compared.inner.clone()
-    };
-    let params = M3c2Params {
-        normal_radius,
-        projection_radius,
-        max_depth,
-        ..M3c2Params::default()
-    };
-    let r = m3c2(
-        &core.positions,
-        &reference.inner.positions,
-        &compared.inner.positions,
-        params,
-    )
-    .ok_or_else(|| JsError::new("M3C2 needs non-empty clouds and positive radii"))?;
-    let mut inner = core;
-    inner
-        .attributes
-        .retain(|a| !matches!(a.name.as_str(), "m3c2_distance" | "lod95" | "significant"));
-    inner.attributes.push(ca_core::Attribute {
-        name: "m3c2_distance".into(),
-        values: AttributeValues::F32(r.distance.iter().map(|&d| d as f32).collect()),
-    });
-    inner.attributes.push(ca_core::Attribute {
-        name: "lod95".into(),
-        values: AttributeValues::F32(r.lod95.iter().map(|&d| d as f32).collect()),
-    });
-    inner.attributes.push(ca_core::Attribute {
-        name: "significant".into(),
-        values: AttributeValues::U8(r.significant.iter().map(|&s| u8::from(s)).collect()),
-    });
-    let lod = build_lod(&mut inner)?;
-    Ok(Cloud {
-        inner,
-        lod,
-        layout: None,
-    })
+/// Immutable voxel statistics for one reference and parameter set.
+#[wasm_bindgen]
+pub struct VoxelReference {
+    inner: ca_core::map_quality::VoxelReference,
+}
+
+#[wasm_bindgen]
+impl VoxelReference {
+    #[wasm_bindgen(constructor)]
+    pub fn new(truth: &Cloud, voxel: f64, min_points: usize, simd: Option<bool>) -> Self {
+        Self {
+            inner: ca_core::map_quality::VoxelReference::new(
+                &truth.inner.positions,
+                voxel,
+                min_points,
+                simd.unwrap_or(false),
+            ),
+        }
+    }
+
+    #[wasm_bindgen(getter, js_name = retainedBytes)]
+    pub fn retained_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
+    #[wasm_bindgen(getter, js_name = rootsReused)]
+    pub fn roots_reused(&self) -> usize {
+        self.inner.roots_reused()
+    }
+    #[wasm_bindgen(getter, js_name = rootsComputed)]
+    pub fn roots_computed(&self) -> usize {
+        self.inner.roots_computed()
+    }
+
+    #[wasm_bindgen(getter, js_name = neighborVoxels)]
+    pub fn neighbor_voxels(&self) -> usize {
+        self.inner.neighbor_voxels()
+    }
+
+    #[wasm_bindgen(getter, js_name = neighborsUsed)]
+    pub fn neighbors_used(&self) -> usize {
+        self.inner.neighbors_used()
+    }
+
+    pub fn compute(&mut self, estimate: &Cloud) -> Vec<f64> {
+        let s = self.inner.compute(&estimate.inner.positions);
+        vec![s.awd, s.scs, s.voxels as f64]
+    }
 }
 
 /// Result of a cloud-to-cloud distance computation.
@@ -1635,10 +1722,19 @@ impl C2cResult {
 
 /// Distance from every point of `compared` to its nearest neighbour in `reference`.
 #[wasm_bindgen(js_name = cloudToCloud)]
-pub fn cloud_to_cloud(compared: &Cloud, reference: &Cloud) -> Result<C2cResult, JsError> {
-    let distances = ca_core::cloud_to_cloud(&compared.inner, &reference.inner)
-        .ok_or_else(|| JsError::new("reference cloud is empty"))?;
-    summarize_distances(&distances)
+pub fn cloud_to_cloud(
+    compared: &Cloud,
+    reference: &Cloud,
+    simd: Option<bool>,
+    sort_median: Option<bool>,
+) -> Result<C2cResult, JsError> {
+    let distances = ca_core::distance::cloud_to_cloud_with_simd(
+        &compared.inner,
+        &reference.inner,
+        simd.unwrap_or(false),
+    )
+    .ok_or_else(|| JsError::new("reference cloud is empty"))?;
+    summarize_distances(&distances, sort_median)
 }
 
 fn from_flat(xyz: &[f64]) -> Result<PointCloud, JsError> {
@@ -1650,6 +1746,53 @@ fn from_flat(xyz: &[f64]) -> Result<PointCloud, JsError> {
         colors: None,
         attributes: Vec::new(),
     })
+}
+
+// The imported flat WASM slice already owns this call's query snapshot.
+// Borrow its triples until the synchronous search returns instead of copying
+// them into another allocation. Retained query-order entries still need ownership.
+// Default off: both real-source Autoware passes regress in whole C2M calls.
+const USE_MESH_BORROWED_QUERIES: bool = false;
+
+fn mesh_queries(xyz: &[f64]) -> Result<Cow<'_, [[f64; 3]]>, JsError> {
+    if !xyz.len().is_multiple_of(3) {
+        return Err(JsError::new("positions length must be a multiple of 3"));
+    }
+    let points = xyz.as_chunks::<3>().0;
+    Ok(if USE_MESH_BORROWED_QUERIES {
+        Cow::Borrowed(points)
+    } else {
+        Cow::Owned(points.to_vec())
+    })
+}
+
+#[cfg(test)]
+mod mesh_query_tests {
+    use super::*;
+
+    #[test]
+    fn mesh_query_storage_preserves_bits_and_selected_ownership() {
+        let xyz = [
+            -0.0,
+            f64::from_bits(0x7ff8_0000_0000_0023),
+            f64::INFINITY,
+            368_000.125,
+            3_955_000.75,
+            -1e-160,
+        ];
+        let points = mesh_queries(&xyz).unwrap();
+        assert_eq!(
+            matches!(points, Cow::Borrowed(_)),
+            USE_MESH_BORROWED_QUERIES
+        );
+        if USE_MESH_BORROWED_QUERIES {
+            assert_eq!(points.as_flattened().as_ptr(), xyz.as_ptr());
+        }
+        for (a, b) in points.as_flattened().iter().zip(xyz) {
+            assert_eq!(a.to_bits(), b.to_bits());
+        }
+        assert!(mesh_queries(&[]).unwrap().is_empty());
+    }
 }
 
 /// A triangle mesh (PLY with faces, OBJ, STL), used as a C2M reference.
@@ -1737,10 +1880,15 @@ impl Mesh {
 /// Distance from every point of `compared` to `mesh` (C2M); negative behind
 /// the closest triangle when `signed`.
 #[wasm_bindgen(js_name = cloudToMesh)]
-pub fn cloud_to_mesh(compared: &Cloud, mesh: &Mesh, signed: bool) -> Result<C2cResult, JsError> {
+pub fn cloud_to_mesh(
+    compared: &Cloud,
+    mesh: &Mesh,
+    signed: bool,
+    sort_median: Option<bool>,
+) -> Result<C2cResult, JsError> {
     let distances = ca_core::cloud_to_mesh(&compared.inner.positions, &mesh.inner, signed)
         .ok_or_else(|| JsError::new("mesh has no triangles"))?;
-    summarize_distances(&distances)
+    summarize_distances(&distances, sort_median)
 }
 
 /// C2M distances for a batch of interleaved `xyz` queries against a mesh
@@ -1760,9 +1908,133 @@ pub fn mesh_distances(
         triangles: indices.as_chunks::<3>().0.to_vec(),
     };
     mesh.validate();
-    let points = from_flat(queries)?.positions;
+    let points = mesh_queries(queries)?;
     ca_core::cloud_to_mesh(&points, &mesh, signed)
         .ok_or_else(|| JsError::new("mesh has no triangles"))
+}
+
+/// A worker-owned immutable mesh/BVH. Query ordering and guesses reset on
+/// every computation, preserving the fresh batch's exact signed/tie semantics.
+#[wasm_bindgen]
+pub struct MeshPrepared {
+    inner: ca_core::mesh::PreparedMesh,
+}
+
+#[wasm_bindgen]
+impl MeshPrepared {
+    #[wasm_bindgen(js_name = gpuBuffers)]
+    pub fn gpu_buffers(&mut self) -> MeshGpuBuffers {
+        let (origin, nodes, triangles) = self.inner.gpu_buffers();
+        MeshGpuBuffers {
+            origin: origin.to_vec(),
+            nodes,
+            triangles,
+        }
+    }
+
+    #[wasm_bindgen(js_name = distancesHinted)]
+    pub fn distances_hinted(
+        &self,
+        queries: &[f64],
+        signed: bool,
+        candidates: &[u32],
+    ) -> Result<Vec<f64>, JsError> {
+        let points = mesh_queries(queries)?;
+        self.inner
+            .distances_hinted(&points, signed, candidates)
+            .ok_or_else(|| JsError::new("invalid mesh candidate count"))
+    }
+    #[wasm_bindgen(constructor)]
+    pub fn new(vertices: &[f64], indices: &[u32]) -> Result<MeshPrepared, JsError> {
+        if !vertices.len().is_multiple_of(3) || !indices.len().is_multiple_of(3) {
+            return Err(JsError::new("vertices and indices must come in triples"));
+        }
+        let mesh = TriangleMesh {
+            vertices: vertices.as_chunks::<3>().0.to_vec(),
+            triangles: indices.as_chunks::<3>().0.to_vec(),
+        };
+        let inner = ca_core::mesh::PreparedMesh::new(mesh)
+            .ok_or_else(|| JsError::new("mesh has no triangles"))?;
+        Ok(Self { inner })
+    }
+
+    #[wasm_bindgen(getter, js_name = retainedBytes)]
+    pub fn retained_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
+
+    pub fn distances(&self, queries: &[f64], signed: bool) -> Result<Vec<f64>, JsError> {
+        let points = mesh_queries(queries)?;
+        Ok(self.inner.distances(&points, signed))
+    }
+}
+
+#[wasm_bindgen]
+pub struct MeshGpuBuffers {
+    origin: Vec<f64>,
+    nodes: Vec<u32>,
+    triangles: Vec<f32>,
+}
+
+#[wasm_bindgen]
+impl MeshGpuBuffers {
+    pub fn origin(&self) -> Vec<f64> {
+        self.origin.clone()
+    }
+    #[wasm_bindgen(js_name = takeNodes)]
+    pub fn take_nodes(&mut self) -> Vec<u32> {
+        std::mem::take(&mut self.nodes)
+    }
+    #[wasm_bindgen(js_name = takeTriangles)]
+    pub fn take_triangles(&mut self) -> Vec<f32> {
+        std::mem::take(&mut self.triangles)
+    }
+}
+
+/// Content-matched query ordering shared by this worker's retained meshes.
+#[wasm_bindgen]
+pub struct MeshQueryOrder {
+    inner: ca_core::mesh::MeshQueryOrder,
+}
+
+#[wasm_bindgen]
+impl MeshQueryOrder {
+    #[wasm_bindgen(constructor)]
+    pub fn new(max_bytes: usize) -> Self {
+        Self {
+            inner: ca_core::mesh::MeshQueryOrder::new(max_bytes),
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.inner.clear();
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn hit(&self) -> bool {
+        self.inner.hit()
+    }
+
+    #[wasm_bindgen(getter, js_name = retainedBytes)]
+    pub fn retained_bytes(&self) -> usize {
+        self.inner.retained_bytes()
+    }
+
+    #[wasm_bindgen(getter, js_name = entryCount)]
+    pub fn entry_count(&self) -> usize {
+        self.inner.entry_count()
+    }
+
+    pub fn distances(
+        &mut self,
+        mesh: &MeshPrepared,
+        queries: &[f64],
+        signed: bool,
+    ) -> Result<Vec<f64>, JsError> {
+        Ok(self
+            .inner
+            .distances(&mesh.inner, from_flat(queries)?.positions, signed))
+    }
 }
 
 /// Nearest-neighbour distances for a batch of interleaved `xyz` queries.
@@ -1857,6 +2129,151 @@ impl SorLocal {
 
 #[wasm_bindgen]
 impl SorPart {
+    #[wasm_bindgen(js_name = prepareHintBounds)]
+    pub fn prepare_hint_bounds(&mut self) -> Result<usize, JsError> {
+        self.part
+            .prepare_hint_bounds()
+            .ok_or_else(|| JsError::new("empty neighbourhood part"))?;
+        Ok(self.part.retained_bytes())
+    }
+    #[wasm_bindgen(js_name = gpuHintBuffers)]
+    pub fn gpu_hint_buffers(&mut self) -> Result<GpuKnnBuffers, JsError> {
+        let (nodes, queries) = self
+            .part
+            .gpu_hint_buffers()
+            .ok_or_else(|| JsError::new("empty GPU neighbourhood part"))?;
+        Ok(GpuKnnBuffers {
+            nodes,
+            queries,
+            points: Vec::new(),
+        })
+    }
+
+    #[wasm_bindgen(js_name = gpuCandidateBuffers)]
+    pub fn gpu_candidate_buffers(&mut self) -> Result<GpuKnnBuffers, JsError> {
+        let mut buffers = self.gpu_hint_buffers()?;
+        buffers.points = self
+            .part
+            .gpu_candidate_points()
+            .ok_or_else(|| JsError::new("empty GPU neighbourhood part"))?;
+        Ok(buffers)
+    }
+
+    #[wasm_bindgen(js_name = normalsCandidates)]
+    pub fn normals_candidates(
+        &self,
+        k: usize,
+        orientation: &[f64],
+        candidates: &[u32],
+    ) -> Result<Vec<f32>, JsError> {
+        self.part
+            .normals_candidates(k, normal_orientation(orientation)?, candidates)
+            .map(Vec::into_flattened)
+            .ok_or_else(|| JsError::new("invalid neighbourhood candidates"))
+    }
+
+    #[wasm_bindgen(js_name = localCandidates)]
+    pub fn local_candidates(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &[f64],
+        candidates: &[u32],
+    ) -> Result<SorLocal, JsError> {
+        let regions = ca_core::filter::Regions::from_flat(regions)
+            .ok_or_else(|| JsError::new("invalid SOR regions"))?;
+        let local = self
+            .part
+            .local_candidates(k, own, &regions, candidates)
+            .ok_or_else(|| JsError::new("invalid neighbourhood candidates"))?;
+        let open_points = local
+            .open
+            .iter()
+            .flat_map(|&i| self.part_point(i as usize))
+            .collect();
+        Ok(SorLocal { local, open_points })
+    }
+
+    #[wasm_bindgen(js_name = normalsHinted)]
+    pub fn normals_hinted(
+        &self,
+        k: usize,
+        orientation: &[f64],
+        candidates: &[u32],
+    ) -> Result<Vec<f32>, JsError> {
+        self.part
+            .normals_hinted(k, normal_orientation(orientation)?, candidates)
+            .map(Vec::into_flattened)
+            .ok_or_else(|| JsError::new("invalid neighbourhood hints"))
+    }
+
+    #[wasm_bindgen(js_name = normalsCpuHints)]
+    pub fn normals_cpu_hints(
+        &mut self,
+        k: usize,
+        orientation: &[f64],
+    ) -> Result<Vec<f32>, JsError> {
+        let candidates = self
+            .part
+            .cpu_hint_candidates(k.max(3))
+            .ok_or_else(|| JsError::new("empty neighbourhood part"))?;
+        self.normals_hinted(k, orientation, &candidates)
+    }
+
+    #[wasm_bindgen(js_name = localHinted)]
+    pub fn local_hinted(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &[f64],
+        candidates: &[u32],
+    ) -> Result<SorLocal, JsError> {
+        let regions = ca_core::filter::Regions::from_flat(regions)
+            .ok_or_else(|| JsError::new("invalid SOR regions"))?;
+        let local = self
+            .part
+            .local_hinted(k, own, &regions, candidates)
+            .ok_or_else(|| JsError::new("invalid neighbourhood hints"))?;
+        let open_points = local
+            .open
+            .iter()
+            .flat_map(|&i| self.part_point(i as usize))
+            .collect();
+        Ok(SorLocal { local, open_points })
+    }
+
+    #[wasm_bindgen(js_name = localCpuHints)]
+    pub fn local_cpu_hints(
+        &mut self,
+        k: usize,
+        own: usize,
+        regions: &[f64],
+    ) -> Result<SorLocal, JsError> {
+        let candidates = self
+            .part
+            .cpu_hint_candidates(k.saturating_add(1))
+            .ok_or_else(|| JsError::new("empty neighbourhood part"))?;
+        self.local_hinted(k, own, regions, &candidates)
+    }
+
+    /// Retain immutable coordinates, tree and query order for repeated fits.
+    pub fn prepared(points: &[f64]) -> SorPart {
+        SorPart {
+            part: ca_core::filter::KnnPart::prepared(points.as_chunks::<3>().0.to_vec()),
+        }
+    }
+
+    #[wasm_bindgen(getter, js_name = retainedBytes)]
+    pub fn retained_bytes(&self) -> usize {
+        self.part.retained_bytes()
+    }
+
+    /// Part-local normals using this preparation's exact tree and query order.
+    pub fn normals(&self, k: usize, orientation: &[f64]) -> Result<Vec<f32>, JsError> {
+        let orientation = normal_orientation(orientation)?;
+        Ok(self.part.normals(k, orientation).into_flattened())
+    }
+
     /// Index the points of one part (see [`plan_sor`]).
     #[wasm_bindgen(constructor)]
     pub fn new(points: &[f64]) -> SorPart {
@@ -1885,6 +2302,76 @@ impl SorPart {
     }
 }
 
+#[wasm_bindgen]
+pub struct GpuKnnBuffers {
+    nodes: Vec<u32>,
+    queries: Vec<f32>,
+    points: Vec<f32>,
+}
+
+#[wasm_bindgen]
+impl GpuKnnBuffers {
+    #[wasm_bindgen(js_name = takePoints)]
+    pub fn take_points(&mut self) -> Vec<f32> {
+        std::mem::take(&mut self.points)
+    }
+    #[wasm_bindgen(js_name = takeNodes)]
+    pub fn take_nodes(&mut self) -> Vec<u32> {
+        std::mem::take(&mut self.nodes)
+    }
+    #[wasm_bindgen(js_name = takeQueries)]
+    pub fn take_queries(&mut self) -> Vec<f32> {
+        std::mem::take(&mut self.queries)
+    }
+}
+
+#[wasm_bindgen]
+impl SorPart {
+    #[wasm_bindgen(js_name = withinWithScratch)]
+    pub fn within_with_scratch(&self, queries: &[f64], k: usize, reuse: bool) -> Vec<f64> {
+        self.part
+            .within_with_options(queries.as_chunks::<3>().0, k, reuse, reuse)
+    }
+
+    #[wasm_bindgen(js_name = withinWithBounds)]
+    pub fn within_with_bounds(&self, queries: &[f64], k: usize, bounds: bool) -> Vec<f64> {
+        self.part
+            .within_with_bounds(queries.as_chunks::<3>().0, k, true, false, bounds)
+    }
+
+    #[wasm_bindgen(js_name = normalsWithBounds)]
+    pub fn normals_with_bounds(
+        &self,
+        k: usize,
+        orientation: &[f64],
+        bounds: bool,
+    ) -> Result<Vec<f32>, JsError> {
+        Ok(self
+            .part
+            .normals_with_bounds(k, normal_orientation(orientation)?, bounds)
+            .into_flattened())
+    }
+
+    #[wasm_bindgen(js_name = localWithBounds)]
+    pub fn local_with_bounds(
+        &self,
+        k: usize,
+        own: usize,
+        regions: &[f64],
+        bounds: bool,
+    ) -> Result<SorLocal, JsError> {
+        let regions = ca_core::filter::Regions::from_flat(regions)
+            .ok_or_else(|| JsError::new("invalid SOR regions"))?;
+        let local = self.part.local_with_options(k, own, &regions, true, bounds);
+        let open_points = local
+            .open
+            .iter()
+            .flat_map(|&i| self.part_point(i as usize))
+            .collect();
+        Ok(SorLocal { local, open_points })
+    }
+}
+
 impl SorPart {
     fn part_point(&self, i: usize) -> [f64; 3] {
         self.part.point(i)
@@ -1895,16 +2382,39 @@ impl SorPart {
 /// points (see [`Cloud::normals_orientation`] for `orientation`).
 #[wasm_bindgen(js_name = normalsOf)]
 pub fn normals_of(points: &[f64], k: usize, orientation: &[f64]) -> Result<Vec<f32>, JsError> {
-    use ca_core::normals::Orientation;
-    let orientation = match orientation {
-        [0.0, ..] => Orientation::Up,
-        &[1.0, x, y, z] => Orientation::Away([x, y, z]),
-        _ => return Err(JsError::new("invalid orientation")),
-    };
+    let orientation = normal_orientation(orientation)?;
     Ok(
         ca_core::normals::estimate_normals(points.as_chunks::<3>().0, k, orientation)
             .into_flattened(),
     )
+}
+
+/// Explicit scalar/allocating comparison for neighbourhood/PCA verification.
+#[wasm_bindgen(js_name = normalsOfWithScratch)]
+pub fn normals_of_with_scratch(
+    points: &[f64],
+    k: usize,
+    orientation: &[f64],
+    reuse: bool,
+) -> Result<Vec<f32>, JsError> {
+    let orientation = normal_orientation(orientation)?;
+    Ok(ca_core::normals::estimate_normals_with_options(
+        points.as_chunks::<3>().0,
+        k,
+        orientation,
+        reuse,
+        reuse,
+    )
+    .into_flattened())
+}
+
+fn normal_orientation(orientation: &[f64]) -> Result<ca_core::normals::Orientation, JsError> {
+    use ca_core::normals::Orientation;
+    match orientation {
+        [0.0, ..] => Ok(Orientation::Up),
+        &[1.0, x, y, z] => Ok(Orientation::Away([x, y, z])),
+        _ => Err(JsError::new("invalid orientation")),
+    }
 }
 
 /// Builds one cloud from several (see [`ca_core::merge::Merger`]).
@@ -2540,9 +3050,45 @@ pub fn warm_up() {
 }
 
 #[wasm_bindgen(js_name = nearestDistances)]
-pub fn nearest_distances(reference: &[f64], queries: &[f64]) -> Result<Vec<f64>, JsError> {
-    ca_core::cloud_to_cloud(&from_flat(queries)?, &from_flat(reference)?)
-        .ok_or_else(|| JsError::new("reference cloud is empty"))
+pub fn nearest_distances(
+    reference: &[f64],
+    queries: &[f64],
+    simd: Option<bool>,
+) -> Result<Vec<f64>, JsError> {
+    ca_core::distance::cloud_to_cloud_with_simd(
+        &from_flat(queries)?,
+        &from_flat(reference)?,
+        simd.unwrap_or(false),
+    )
+    .ok_or_else(|| JsError::new("reference cloud is empty"))
+}
+
+/// A pool lane's exact immutable C2C inputs and prepared nearest-neighbour tree.
+#[wasm_bindgen]
+pub struct C2cPrepared {
+    inner: ca_core::distance::PreparedC2c,
+}
+
+#[wasm_bindgen]
+impl C2cPrepared {
+    #[wasm_bindgen(constructor)]
+    pub fn new(reference: &[f64], queries: &[f64]) -> Result<Self, JsError> {
+        let reference = from_flat(reference)?;
+        let queries = from_flat(queries)?;
+        let inner = ca_core::distance::PreparedC2c::new(queries.positions, &reference.positions)
+            .ok_or_else(|| JsError::new("reference cloud is empty"))?;
+        Ok(Self { inner })
+    }
+
+    pub fn distances(&self, simd: Option<bool>) -> Vec<f64> {
+        self.inner.distances(simd.unwrap_or(false))
+    }
+}
+
+/// Whether this build supports ordinary C2C's optional paired f64 leaves.
+#[wasm_bindgen(js_name = c2cSimdEnabled)]
+pub fn c2c_simd_enabled() -> bool {
+    cfg!(all(target_arch = "wasm32", target_feature = "simd128"))
 }
 
 /// A C2C job split into independent, spatially compact parts
@@ -2608,9 +3154,13 @@ pub fn plan_cloud_to_cloud(
 
 /// Summary statistics (and `f32` copies for coloring) of per-point distances.
 #[wasm_bindgen(js_name = summarizeDistances)]
-pub fn summarize_distances(distances: &[f64]) -> Result<C2cResult, JsError> {
-    let stats = DistanceStats::from_distances(distances)
-        .ok_or_else(|| JsError::new("compared cloud is empty"))?;
+pub fn summarize_distances(
+    distances: &[f64],
+    sort_median: Option<bool>,
+) -> Result<C2cResult, JsError> {
+    let stats =
+        DistanceStats::from_distances_with_median_sort(distances, sort_median.unwrap_or(false))
+            .ok_or_else(|| JsError::new("compared cloud is empty"))?;
     Ok(C2cResult {
         distances: distances.iter().map(|&d| d as f32).collect(),
         stats,

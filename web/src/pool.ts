@@ -6,7 +6,8 @@ import type { Slice, SliceRequest, SliceResponse, SliceResult } from "./c2c-work
 export const MIN_PARALLEL_QUERIES = 100_000;
 const MAX_WORKERS = 8;
 
-const workers: Worker[] = [];
+const workers: (Worker | undefined)[] = [];
+const generations: number[] = [];
 let seq = 0;
 const memory = new Map<Worker,number>();
 let pending = 0;
@@ -24,8 +25,25 @@ export function poolSize(): number {
 }
 
 function worker(i: number): Worker {
-  workers[i] ??= new Worker(new URL("./c2c-worker.ts", import.meta.url), { type: "module" });
+  if (!workers[i]) {
+    const created = new Worker(new URL("./c2c-worker.ts", import.meta.url), { type: "module" });
+    workers[i] = created;
+    generations[i] = (generations[i] ?? 0) + 1;
+    // Cached WASM state can disappear while no slice is awaiting a reply.
+    const lost = () => {
+      if (workers[i] === created) workers[i] = undefined;
+      memory.delete(created);
+      created.terminate();
+    };
+    created.addEventListener("error", lost);
+    created.addEventListener("messageerror", lost);
+  }
   return workers[i];
+}
+
+/** Identify a live WASM instance; cached preparations never survive replacement. */
+export function workerGeneration(lane: number): number | undefined {
+  return workers[lane] ? generations[lane] : undefined;
 }
 
 function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>> {
@@ -41,26 +59,48 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
       if (event.data.ok) resolve(event.data.value as SliceResult<S>);
       else reject(new Error(event.data.error));
     };
-    const onError = (event: ErrorEvent) => { if (cleanup()) reject(new Error(event.message || "Pool worker failed")); };
+    const onError = (event: Event) => {
+      if (!cleanup()) return;
+      const lane = workers.indexOf(w);
+      if (lane >= 0) workers[lane] = undefined;
+      memory.delete(w);
+      w.terminate();
+      const message = "message" in event && typeof event.message === "string" ? event.message : "Pool worker message failed";
+      reject(new Error(message || "Pool worker failed"));
+    };
     const cleanup = () => {
       if (finished) return false;
       finished = true;
       if (!background) pending--;
       warming.delete(cancelWarmup);
       w.removeEventListener("message", onMessage); w.removeEventListener("error", onError);
+      w.removeEventListener("messageerror", onError);
       return true;
     };
     const cancelWarmup = () => { if (cleanup()) resolve(new Float64Array(0) as SliceResult<S>); };
     if (background) warming.add(cancelWarmup);
     w.addEventListener("message", onMessage);
     w.addEventListener("error", onError);
+    w.addEventListener("messageerror", onError);
     const request: SliceRequest = { ...slice, seq: id };
     // Per-slice buffers are transferred; a mesh shared by all slices is copied.
     const transfer: Transferable[] = [];
-    if (slice.kind === "cloud") transfer.push(slice.queries.buffer, slice.reference.buffer);
-    if (slice.kind === "mesh") transfer.push(slice.queries.buffer);
-    if (slice.kind === "sor-local" || slice.kind === "normals") transfer.push(slice.points.buffer);
-    if (slice.kind === "sor-within") transfer.push(slice.queries.buffer);
+    if (slice.kind === "cloud" || slice.kind === "cloud-prepare") transfer.push(slice.queries.buffer, slice.reference.buffer);
+    if (slice.kind === "gpu-verify-prepare") transfer.push(slice.reference.buffer);
+    if (slice.kind === "gpu-query-prepare") transfer.push(slice.queries.buffer);
+    if (slice.kind === "gpu-verify") {
+      if ("queries" in slice) transfer.push(slice.queries.buffer);
+      transfer.push(slice.candidates.buffer);
+    }
+    if (slice.kind === "mesh" || slice.kind === "mesh-prepared") transfer.push(slice.queries.buffer);
+    if (slice.kind === "mesh-prepared" && slice.hints) transfer.push(slice.hints.buffer);
+    // Full M3C2 inputs are shared by slices and copied; only cores transfer.
+    if (slice.kind === "m3c2") transfer.push(slice.core.buffer);
+    if (slice.kind === "m3c2-prepare") transfer.push(slice.reference.buffer, slice.compared.buffer);
+    if (slice.kind === "m3c2-prepared") transfer.push(slice.core.buffer);
+    if (slice.kind === "sor-local" || slice.kind === "normals" || slice.kind === "knn-prepare") transfer.push(slice.points.buffer);
+    if ((slice.kind === "knn-local" || slice.kind === "knn-normals") && slice.gpuHints) transfer.push(slice.gpuHints.buffer);
+    if (slice.kind === "sor-within" || slice.kind === "knn-within") transfer.push(slice.queries.buffer);
     if (slice.kind === "dynamic") transfer.push(slice.context.buffer);
     if (slice.kind === "loop") transfer.push(slice.from.buffer, slice.to.buffer);
     if (slice.kind === "odom-map") transfer.push(slice.placed.buffer, slice.origin.buffer);
@@ -79,6 +119,24 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
 /** Run a slice on a given worker, e.g. one holding state from an earlier slice. */
 export function runOn<S extends Slice>(lane: number, slice: S): Promise<SliceResult<S>> {
   return runSlice(worker(lane), slice);
+}
+
+/** Follow prepared state on this exact live instance; never spawn a replacement. */
+export function runOnGeneration<S extends Slice>(lane: number, generation: number | undefined,
+  slice: S): Promise<SliceResult<S>> {
+  const existing = workers[lane];
+  if (!existing || generation === undefined || generations[lane] !== generation)
+    return Promise.reject(new Error("CPU C2C worker preparation was lost"));
+  return runSlice(existing, slice);
+}
+
+/** Destroy cached state only on a live lane; terminated WASM state is already gone. */
+export async function releaseOn(lane: number,
+  slice: Extract<Slice, { kind: "gpu-query-release" | "gpu-verify-release" | "cloud-release" | "m3c2-release" | "knn-release" | "mesh-release" | "mesh-order-release" }>): Promise<boolean> {
+  const existing = workers[lane];
+  if (!existing) return false;
+  await runSlice(existing, slice);
+  return true;
 }
 
 /** Start every pool worker and get its kernels optimized, while idle. */

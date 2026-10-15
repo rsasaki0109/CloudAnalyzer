@@ -1,0 +1,1930 @@
+{
+  "cases": [
+    {
+      "fixture": "constant",
+      "distances": 100000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 1.199999988079071,
+          "selectedMillis": 0.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 1.300000011920929,
+          "selectedMillis": 0.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 1,
+          "selectedMillis": 0.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.9000000357627869,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 1,
+          "selectedMillis": 0.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.800000011920929,
+          "selectedMillis": 0.8999999761581421,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.8999999761581421,
+          "selectedMillis": 0.40000003576278687,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.7000000476837158,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.800000011920929,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "constant",
+      "distances": 100001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.800000011920929,
+          "selectedMillis": 0.3999999761581421,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.40000003576278687,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.3999999761581421,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 1,
+          "selectedMillis": 0.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 1,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.800000011920929,
+          "selectedMillis": 0.6000000238418579,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 1.100000023841858,
+          "selectedMillis": 0.7000000476837158,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 1.0999999642372131,
+          "selectedMillis": 0.7000000476837158,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.6000000238418579,
+          "selectedMillis": 0.3999999761581421,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "constant",
+      "distances": 1000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.300000011920929,
+          "selectedMillis": 4.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.699999988079071,
+          "selectedMillis": 4.400000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 6.699999988079071,
+          "selectedMillis": 4.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 9.600000023841858,
+          "selectedMillis": 5.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.400000035762787,
+          "selectedMillis": 7.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8.699999988079071,
+          "selectedMillis": 5.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 11.5,
+          "selectedMillis": 6.099999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 9.800000011920929,
+          "selectedMillis": 5.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.699999988079071,
+          "selectedMillis": 5.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.099999964237213,
+          "selectedMillis": 5.400000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "constant",
+      "distances": 1000001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.100000023841858,
+          "selectedMillis": 5.299999952316284,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 10.100000023841858,
+          "selectedMillis": 7.300000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 11.100000023841858,
+          "selectedMillis": 5.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.899999976158142,
+          "selectedMillis": 5.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.400000035762787,
+          "selectedMillis": 5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8.599999964237213,
+          "selectedMillis": 5.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.199999988079071,
+          "selectedMillis": 5.099999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8,
+          "selectedMillis": 5.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.099999964237213,
+          "selectedMillis": 4.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.800000011920929,
+          "selectedMillis": 5.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "constant",
+      "distances": 2000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 16.69999998807907,
+          "selectedMillis": 12.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 22.700000047683716,
+          "selectedMillis": 14.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 15.899999976158142,
+          "selectedMillis": 11.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 17.30000001192093,
+          "selectedMillis": 15.600000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 19.399999976158142,
+          "selectedMillis": 15,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 21.400000035762787,
+          "selectedMillis": 14.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 21.100000023841858,
+          "selectedMillis": 14.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 19.19999998807907,
+          "selectedMillis": 13.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 25.200000047683716,
+          "selectedMillis": 15.299999952316284,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 23.600000023841858,
+          "selectedMillis": 12.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "constant",
+      "distances": 2000001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 22.600000023841858,
+          "selectedMillis": 16.69999998807907,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 23.400000035762787,
+          "selectedMillis": 16,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 22.5,
+          "selectedMillis": 15.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 22.80000001192093,
+          "selectedMillis": 15.600000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 21.099999964237213,
+          "selectedMillis": 15.300000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 22.099999964237213,
+          "selectedMillis": 16.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 21.899999976158142,
+          "selectedMillis": 14.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 20.400000035762787,
+          "selectedMillis": 15.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 21.5,
+          "selectedMillis": 11.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 21.399999976158142,
+          "selectedMillis": 15.399999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "random",
+      "distances": 100000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.899999976158142,
+          "selectedMillis": 1.300000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8.5,
+          "selectedMillis": 1.7000000476837158,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.699999988079071,
+          "selectedMillis": 2,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8.5,
+          "selectedMillis": 1.4000000357627869,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.699999988079071,
+          "selectedMillis": 1.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 10.899999976158142,
+          "selectedMillis": 1.9000000357627869,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.800000011920929,
+          "selectedMillis": 1.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8.800000011920929,
+          "selectedMillis": 1.199999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 10.299999952316284,
+          "selectedMillis": 1.9000000357627869,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 10.100000023841858,
+          "selectedMillis": 1.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "random",
+      "distances": 100001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.600000023841858,
+          "selectedMillis": 1.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 10.100000023841858,
+          "selectedMillis": 1.0999999642372131,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.300000011920929,
+          "selectedMillis": 1.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 8.200000047683716,
+          "selectedMillis": 1.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 8.300000011920929,
+          "selectedMillis": 1.600000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 9.100000023841858,
+          "selectedMillis": 1.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.300000011920929,
+          "selectedMillis": 1.0999999642372131,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 9.600000023841858,
+          "selectedMillis": 1.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.699999988079071,
+          "selectedMillis": 1.7000000476837158,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 9.199999988079071,
+          "selectedMillis": 1.300000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "random",
+      "distances": 1000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 68.39999997615814,
+          "selectedMillis": 16.80000001192093,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 76,
+          "selectedMillis": 14.199999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 70.40000003576279,
+          "selectedMillis": 11.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 74.19999998807907,
+          "selectedMillis": 11.399999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 62.39999997615814,
+          "selectedMillis": 10.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 63.39999997615814,
+          "selectedMillis": 16.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 64.90000003576279,
+          "selectedMillis": 11.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 64.90000003576279,
+          "selectedMillis": 11.099999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 61.59999996423721,
+          "selectedMillis": 10,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 63.30000001192093,
+          "selectedMillis": 9.199999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "random",
+      "distances": 1000001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 62.700000047683716,
+          "selectedMillis": 8,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 59.5,
+          "selectedMillis": 8.600000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 71.59999996423721,
+          "selectedMillis": 8.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 54.60000002384186,
+          "selectedMillis": 8.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 55.89999997615814,
+          "selectedMillis": 10,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 65.5,
+          "selectedMillis": 9.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 65.09999996423721,
+          "selectedMillis": 11.400000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 65.69999998807907,
+          "selectedMillis": 9.300000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 70.59999996423721,
+          "selectedMillis": 12.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 66.19999998807907,
+          "selectedMillis": 10.399999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "random",
+      "distances": 2000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 132.4000000357628,
+          "selectedMillis": 23.299999952316284,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 133.19999998807907,
+          "selectedMillis": 21.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 151.39999997615814,
+          "selectedMillis": 19.30000001192093,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 141.30000001192093,
+          "selectedMillis": 23.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 148.69999998807907,
+          "selectedMillis": 27.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 166,
+          "selectedMillis": 27.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 182.39999997615814,
+          "selectedMillis": 32.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 144.10000002384186,
+          "selectedMillis": 23.799999952316284,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 144.19999998807907,
+          "selectedMillis": 20.80000001192093,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 150.0999999642372,
+          "selectedMillis": 23.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "random",
+      "distances": 2000001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 128.10000002384186,
+          "selectedMillis": 18.30000001192093,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 149.0999999642372,
+          "selectedMillis": 23.600000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 135.89999997615814,
+          "selectedMillis": 16.700000047683716,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 130.69999998807907,
+          "selectedMillis": 18.200000047683716,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 132.30000001192093,
+          "selectedMillis": 18.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 124.09999996423721,
+          "selectedMillis": 18.69999998807907,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 130.30000001192093,
+          "selectedMillis": 20.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 119.29999995231628,
+          "selectedMillis": 16.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 128.29999995231628,
+          "selectedMillis": 20.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 125.30000001192093,
+          "selectedMillis": 23.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "ordered",
+      "distances": 100000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.5999999642372131,
+          "selectedMillis": 0.6000000238418579,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.5999999642372131,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.5999999642372131,
+          "selectedMillis": 0.6000000238418579,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.6000000238418579,
+          "selectedMillis": 0.5999999642372131,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.6000000238418579,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.6000000238418579,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.7000000476837158,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.6000000238418579,
+          "selectedMillis": 0.5999999642372131,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.5999999642372131,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.5,
+          "selectedMillis": 0.5999999642372131,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "ordered",
+      "distances": 100001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.3999999761581421,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.5,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.5,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.6000000238418579,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 1,
+          "selectedMillis": 0.7000000476837158,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.8999999761581421,
+          "selectedMillis": 0.9000000357627869,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.800000011920929,
+          "selectedMillis": 0.7999999523162842,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.5999999642372131,
+          "selectedMillis": 0.6000000238418579,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 0.699999988079071,
+          "selectedMillis": 0.5,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "ordered",
+      "distances": 1000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 6.400000035762787,
+          "selectedMillis": 5.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.200000047683716,
+          "selectedMillis": 6.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.800000011920929,
+          "selectedMillis": 6.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.100000023841858,
+          "selectedMillis": 5.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.100000023841858,
+          "selectedMillis": 5.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.600000023841858,
+          "selectedMillis": 6.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.099999964237213,
+          "selectedMillis": 6.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7,
+          "selectedMillis": 6.699999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 6.600000023841858,
+          "selectedMillis": 6.099999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 6.5,
+          "selectedMillis": 6,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "ordered",
+      "distances": 1000001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7,
+          "selectedMillis": 6.200000047683716,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 6.699999988079071,
+          "selectedMillis": 6,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 6.600000023841858,
+          "selectedMillis": 7.199999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 9.900000035762787,
+          "selectedMillis": 6.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.300000011920929,
+          "selectedMillis": 6.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.299999952316284,
+          "selectedMillis": 7.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 7.599999964237213,
+          "selectedMillis": 6.400000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.699999988079071,
+          "selectedMillis": 7.099999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 9.400000035762787,
+          "selectedMillis": 7.199999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 7.5,
+          "selectedMillis": 7,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "ordered",
+      "distances": 2000000,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 17,
+          "selectedMillis": 13.5,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 14.299999952316284,
+          "selectedMillis": 14.700000047683716,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 13.900000035762787,
+          "selectedMillis": 12.599999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 18.900000035762787,
+          "selectedMillis": 13.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 14.599999964237213,
+          "selectedMillis": 12.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 15.899999976158142,
+          "selectedMillis": 12.600000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 20.100000023841858,
+          "selectedMillis": 13.199999988079071,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 16.30000001192093,
+          "selectedMillis": 13.299999952316284,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 14.600000023841858,
+          "selectedMillis": 13.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 17.5,
+          "selectedMillis": 13.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "fixture": "ordered",
+      "distances": 2000001,
+      "trials": [
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 15.5,
+          "selectedMillis": 13.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 18.399999976158142,
+          "selectedMillis": 16,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 19.5,
+          "selectedMillis": 19.100000023841858,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 20.30000001192093,
+          "selectedMillis": 15.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 20.5,
+          "selectedMillis": 11.800000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 14,
+          "selectedMillis": 11.900000035762787,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 14.300000011920929,
+          "selectedMillis": 11.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 12.300000011920929,
+          "selectedMillis": 12.599999964237213,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "sorted",
+            "selected"
+          ],
+          "sortedMillis": 12.299999952316284,
+          "selectedMillis": 11.300000011920929,
+          "statsEqual": true,
+          "mismatches": 0
+        },
+        {
+          "order": [
+            "selected",
+            "sorted"
+          ],
+          "sortedMillis": 13.300000011920929,
+          "selectedMillis": 10.899999976158142,
+          "statsEqual": true,
+          "mismatches": 0
+        }
+      ]
+    }
+  ],
+  "warmupRounds": 5,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T04:28:41.724Z",
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "wasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+  "glueSha256": "7373949133dbfedb2377a6775936648ee4bac138ea9d15330f537490fa4b9d86",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Isolated summarizeDistances with the production SIMD WASM and generated glue, no worker pool, rendering or GPU. Constant nonzero, deterministic varied positive distances, or the same varied values in ascending order. Preparation/fixture sorting is excluded. Times include JS-to-WASM f64 input copy, original-order min/max/sum/squared-sum, median, Rust f32 coloring allocation and the WASM call return. Statistic getters, f32 cloning/readback, exact parity checks and frees run outside timing. Five full-sort/selection warm-up pairs precede ten (or requested) alternating timed pairs. Nonzero uniform input skips the optimized median scratch copy; confirmed ordered inputs read their original middle values after endpoint checks and a complete total-order scan; other inputs select by total order. All pairs must match f64 statistics and f32 coloring bits. CPU clocks, power and other applications are uncontrolled. These stage timings are not end-to-end C2C speedups."
+}

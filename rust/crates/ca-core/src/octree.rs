@@ -65,6 +65,9 @@ impl Default for OctreeParams {
 /// Quantisation bits per axis of the Morton codes used during the build.
 pub const MORTON_BITS: u32 = 21;
 
+// Compact occupancy reduces scratch, but whole-RPC gains were inconsistent.
+const COMPACT_CELL_MARKS: bool = false;
+
 impl Octree {
     /// Build an octree over `points`, reordering them in place into octree
     /// order (`order[i]` is the original index of the point now at `i`).
@@ -85,9 +88,19 @@ impl Octree {
     /// Like [`Octree::build_in_place`], reordering the cloud's colors along
     /// with its positions.
     pub fn build_for_cloud(cloud: &mut crate::PointCloud, params: OctreeParams) -> Option<Self> {
+        Self::build_for_cloud_with_occupancy(cloud, params, COMPACT_CELL_MARKS)
+    }
+
+    /// Compact per-node bit occupancy, or historical generation stamps as an
+    /// exact comparison. Both keep the first point of every occupied cell.
+    pub fn build_for_cloud_with_occupancy(
+        cloud: &mut crate::PointCloud,
+        params: OctreeParams,
+        compact: bool,
+    ) -> Option<Self> {
         let (lo, size) = cube(&cloud.positions);
         let attributes = cloud.attributes.iter_mut().map(|a| &mut a.values).collect();
-        Self::build_cube(
+        Self::build_cube_with_occupancy(
             &mut cloud.positions,
             cloud.colors.as_deref_mut(),
             attributes,
@@ -95,6 +108,7 @@ impl Octree {
             size,
             0,
             params,
+            compact,
         )
     }
 
@@ -111,6 +125,46 @@ impl Octree {
     /// reordered together with the points.
     #[allow(clippy::too_many_arguments)]
     fn build_cube(
+        points: &mut [[f64; 3]],
+        colors: Option<&mut [[u8; 3]]>,
+        attributes: Vec<&mut crate::AttributeValues>,
+        lo: [f64; 3],
+        size: f64,
+        level: u8,
+        params: OctreeParams,
+    ) -> Option<Self> {
+        Self::build_cube_with_occupancy(
+            points,
+            colors,
+            attributes,
+            lo,
+            size,
+            level,
+            params,
+            COMPACT_CELL_MARKS,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn build_cube_with_occupancy(
+        points: &mut [[f64; 3]],
+        colors: Option<&mut [[u8; 3]]>,
+        attributes: Vec<&mut crate::AttributeValues>,
+        lo: [f64; 3],
+        size: f64,
+        level: u8,
+        params: OctreeParams,
+        compact: bool,
+    ) -> Option<Self> {
+        if compact {
+            Self::build_cube_impl::<true>(points, colors, attributes, lo, size, level, params)
+        } else {
+            Self::build_cube_impl::<false>(points, colors, attributes, lo, size, level, params)
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn build_cube_impl<const COMPACT: bool>(
         points: &mut [[f64; 3]],
         colors: Option<&mut [[u8; 3]]>,
         attributes: Vec<&mut crate::AttributeValues>,
@@ -142,7 +196,7 @@ impl Octree {
             .collect();
         let grid_bits = params.grid.trailing_zeros();
         let order = (0..points.len() as u32).collect();
-        let mut builder = Builder {
+        let mut builder = Builder::<COMPACT> {
             points,
             colors,
             attributes,
@@ -157,7 +211,12 @@ impl Octree {
             },
             base_level: level,
             grid_bits,
-            stamps: vec![0; 1usize << (3 * grid_bits)],
+            stamps: if COMPACT {
+                Vec::new()
+            } else {
+                vec![0; 1usize << (3 * grid_bits)]
+            },
+            seen: Vec::new(),
             stamp: 0,
             nodes: Vec::new(),
         };
@@ -182,7 +241,7 @@ fn spread_bits(v: u64) -> u64 {
     x
 }
 
-struct Builder<'a> {
+struct Builder<'a, const COMPACT: bool> {
     points: &'a mut [[f64; 3]],
     colors: Option<&'a mut [[u8; 3]]>,
     attributes: Vec<&'a mut crate::AttributeValues>,
@@ -195,11 +254,13 @@ struct Builder<'a> {
     grid_bits: u32,
     /// Per-cell "last seen" marker, reused across nodes to avoid clearing.
     stamps: Vec<u32>,
+    /// One bit per cell in the current node; allocated only for non-leaves.
+    seen: Vec<u8>,
     stamp: u32,
     nodes: Vec<OctreeNode>,
 }
 
-impl Builder<'_> {
+impl<const COMPACT: bool> Builder<'_, COMPACT> {
     fn swap(&mut self, a: usize, b: usize) {
         self.points.swap(a, b);
         if let Some(colors) = self.colors.as_deref_mut() {
@@ -231,20 +292,43 @@ impl Builder<'_> {
         // those points to the front of the range. The cell is the next
         // `grid_bits` octree levels below this node, i.e. a bit field of the
         // code (coarser near the bottom where fewer bits remain).
-        self.stamp = self.stamp.wrapping_add(1);
-        if self.stamp == 0 {
-            self.stamps.fill(0);
-            self.stamp = 1;
-        }
         let below = MORTON_BITS - u32::from(level - self.base_level);
         let cell_levels = self.grid_bits.min(below);
         let shift = 3 * (below - cell_levels);
         let mask = (1u64 << (3 * cell_levels)) - 1;
+        if COMPACT {
+            let bytes = (1usize << (3 * cell_levels)).div_ceil(8);
+            // Clearing is cheap for the packed table. Shrink the live length
+            // at deep nodes, while retaining capacity for subsequent siblings.
+            self.seen.truncate(bytes);
+            self.seen.fill(0);
+            self.seen.resize(bytes, 0);
+        } else {
+            self.stamp = self.stamp.wrapping_add(1);
+            if self.stamp == 0 {
+                self.stamps.fill(0);
+                self.stamp = 1;
+            }
+        }
         let mut kept = lo;
         for i in lo..hi {
             let key = ((self.codes[i] >> shift) & mask) as usize;
-            if self.stamps[key] != self.stamp {
-                self.stamps[key] = self.stamp;
+            let first = if COMPACT {
+                let byte = &mut self.seen[key / 8];
+                let bit = 1u8 << (key % 8);
+                let first = *byte & bit == 0;
+                if first {
+                    *byte |= bit;
+                }
+                first
+            } else {
+                let first = self.stamps[key] != self.stamp;
+                if first {
+                    self.stamps[key] = self.stamp;
+                }
+                first
+            };
+            if first {
                 self.swap(kept, i);
                 kept += 1;
             }
@@ -770,6 +854,141 @@ impl Octree {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn compact_cell_marks_preserve_tree_order_coordinates_colors_and_attribute_bits() {
+        let mut sources = vec![
+            Vec::new(),
+            scattered(1, 7),
+            scattered(17, 11),
+            scattered(20_001, 13),
+            scattered(64_000, 17),
+            vec![[1.0, -0.0, 0.0]; 1_025],
+            grid_points(48)
+                .iter()
+                .map(|p| [p[0] + 368_000.0, p[1] + 3_955_000.0, p[2] + 40.0])
+                .collect(),
+        ];
+        sources.push(
+            (0..65)
+                .map(|i| {
+                    if i % 7 == 0 {
+                        [
+                            f64::from_bits(0x7ff8_0000_0000_1234),
+                            f64::INFINITY,
+                            f64::NEG_INFINITY,
+                        ]
+                    } else {
+                        [i as f64, (i % 3) as f64, -0.0]
+                    }
+                })
+                .collect(),
+        );
+        for positions in sources {
+            let n = positions.len();
+            let original = crate::PointCloud {
+                positions,
+                colors: Some(
+                    (0..n)
+                        .map(|i| [i as u8, (i >> 8) as u8, (i >> 16) as u8])
+                        .collect(),
+                ),
+                attributes: vec![
+                    crate::Attribute {
+                        name: "raw-float".into(),
+                        values: crate::AttributeValues::F32(
+                            (0..n)
+                                .map(|i| {
+                                    f32::from_bits(if i % 17 == 0 {
+                                        0x7fc0_0000 | (i as u32 & 0xffff)
+                                    } else {
+                                        0x8000_0000 | i as u32
+                                    })
+                                })
+                                .collect(),
+                        ),
+                    },
+                    crate::Attribute {
+                        name: "tag".into(),
+                        values: crate::AttributeValues::U8(
+                            (0..n).map(|i| (i % 251) as u8).collect(),
+                        ),
+                    },
+                ],
+            };
+            for (leaf, grid, depth) in [
+                (20_000, 128, 20),
+                (17, 8, 20),
+                (3, 128, 20),
+                (300, 32, 2),
+                (3, 1, 1),
+                (3, 4, 0),
+            ] {
+                let p = OctreeParams {
+                    max_leaf: leaf,
+                    grid,
+                    max_depth: depth,
+                };
+                let (mut a, mut b) = (original.clone(), original.clone());
+                let old = Octree::build_for_cloud_with_occupancy(&mut a, p, false);
+                let compact = Octree::build_for_cloud_with_occupancy(&mut b, p, true);
+                if n == 0 {
+                    assert!(old.is_none() && compact.is_none());
+                    continue;
+                }
+                let (old, compact) = (old.unwrap(), compact.unwrap());
+                assert_eq!(old.order, compact.order, "n={n}, params={p:?}");
+                assert_eq!(old.grid, compact.grid);
+                assert_eq!(old.nodes.len(), compact.nodes.len());
+                for (a, b) in old.nodes.iter().zip(&compact.nodes) {
+                    assert_eq!(
+                        (
+                            a.start,
+                            a.count,
+                            a.min.map(f64::to_bits),
+                            a.size.to_bits(),
+                            a.level,
+                            a.children
+                        ),
+                        (
+                            b.start,
+                            b.count,
+                            b.min.map(f64::to_bits),
+                            b.size.to_bits(),
+                            b.level,
+                            b.children
+                        )
+                    );
+                }
+                assert_eq!(
+                    a.positions
+                        .iter()
+                        .map(|p| p.map(f64::to_bits))
+                        .collect::<Vec<_>>(),
+                    b.positions
+                        .iter()
+                        .map(|p| p.map(f64::to_bits))
+                        .collect::<Vec<_>>()
+                );
+                assert_eq!(a.colors, b.colors);
+                for (a, b) in a.attributes.iter().zip(&b.attributes) {
+                    assert_eq!(a.name, b.name);
+                    match (&a.values, &b.values) {
+                        (crate::AttributeValues::F32(a), crate::AttributeValues::F32(b)) => {
+                            assert_eq!(
+                                a.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                                b.iter().map(|v| v.to_bits()).collect::<Vec<_>>()
+                            )
+                        }
+                        (crate::AttributeValues::U8(a), crate::AttributeValues::U8(b)) => {
+                            assert_eq!(a, b)
+                        }
+                        _ => panic!("attribute type changed"),
+                    }
+                }
+            }
+        }
+    }
 
     fn grid_points(n: usize) -> Vec<[f64; 3]> {
         (0..n * n)

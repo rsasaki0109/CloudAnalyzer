@@ -1,0 +1,1329 @@
+{
+  "schemaVersion": 1,
+  "comparison": "batch-reference-reuse",
+  "createdAt": "2026-10-14T02:45:46.363900+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/batch.py": "fbd10495fc5e02f931a391bee96386d9767632362f2c70f318e02385c5216046",
+    "cloudanalyzer/ca/evaluate.py": "9c44f154e5f0acb8b84c78de650eb6cb12ea67c1324e9bfe44b07b8ea0766bb2",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/ca/pareto.py": "5f0ae3d4362dcdc224217abf35b5ad641a6aed30737158d07893880edbc1b2c2",
+    "cloudanalyzer/ca/log.py": "e3f8546f64fe2a417f97f7502e1a758f83559f2f75eada6764472500b428f929",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_batch_reference.py": "fe1c0c1365eb63b01a28ede6206387da31b70bd431877b5b398160b7c2b9617a",
+    "cloudanalyzer/scripts/benchmark_batch_reference.py": "2e717bba032ed8b0a26fac1b0c28b35239442fc3cc27f2961ed7eecce94ff460"
+  },
+  "nativeSourceHashes": {
+    "rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+    "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+    "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+    "rust/crates/ca-py/src/lib.rs": "1dbc9733aa85bfcf441732897e4ceeb575201672ddddddc0285d67a97cba1b1b",
+    "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+    "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+    "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85",
+    "rust/crates/ca-py/Cargo.toml": "6909895540f76e07bd63dfdcb199ee119bfd06416cfc117feb05dcfdf4018328",
+    "rust/crates/ca-py/Cargo.lock": "e1a914c99b0e3ffcf62e85125c077047b093e4abefe57e7423a9e8812765d344",
+    "rust/crates/ca-py/pyproject.toml": "50987fd7a703bfab649bc9490f2036cb3781a2acc2c206b76ad604e0486bf41b",
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "4f4c1313deac36d10c509697e54c5483e40a3378f80ed45e4e588b9ab370b3ec",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "ffbac8b261941251c9c0fb2b5b439c71c401aeeb33e48ee8de1393c4c0413446",
+    "rust/crates/ca-py/tests/test_prepared_mesh.py": "f89bb5323b5ded0b674eecbd1bf3615511cda24c9445979f84d105ddae83e387",
+    "rust/crates/ca-py/scripts/benchmark_prepared_mesh.py": "aaef94ed02f5a42555ce12b8ce21e9695b0811a84623f4d45d4cad1097ce7f5a",
+    "rust/crates/ca-py/src/bag.rs": "9103ede327fc7dd080ff394e81023576a4a456511bb587258959fb5fde482aa2",
+    "rust/crates/ca-py/src/copc_spatial.rs": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+    "rust/crates/ca-py/src/odometry.rs": "bf580c742d70c1b41b16dc1a86b93b1a2ea859d4cf3604e02483ee332c22d1cf",
+    "rust/crates/ca-py/src/pose_graph.rs": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+    "rust/crates/ca-py/src/vector_map.rs": "2f94baa82b4380a62d5014698d3e2bc80a5cd8899d8799a5f67eae4d7cec6aea",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/tests/c2c_reference.rs": "6708a0b69d138753cf8ce6bfd38b41eb1729204c246ae05cc028f5c94a359b52",
+    "rust/crates/ca-py/tests/test_prepared_reference.py": "9bad65bd47db72a79f21438f961753397b43c23bae38eb8ba915d5878dad8bf2",
+    "rust/crates/ca-py/scripts/benchmark_prepared_reference.py": "73befa31442b8ff3c07651a43bf1103fcada3ddf25558a4f21269badf1df62a3"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+      "bytes": 1583,
+      "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-baseline-20261014.py",
+      "bytes": 14713,
+      "sha256": "6c042de85677edc1b320d441bbb5681fffd82af3c5cd9c64616af7070fe9ae01"
+    },
+    "baseline_evaluate": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-evaluate-baseline-20261014.py",
+      "bytes": 4518,
+      "sha256": "f2d9160ff87b00e6c378958139cc56e3384cb1a6a060fb0fe0dd36bb1ac51ee0"
+    },
+    "build_index": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-20261014\\build.json",
+      "bytes": 4291,
+      "sha256": "77bd0f2574646721a7c27c47a5f0f9acef320340e4cb5ee2a7eb5bad6aca89cc"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "candidates": [
+    {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+      "bytes": 21094229,
+      "sha256": "e9a82bcc921e51f79a28d7ec79e95be4dff8507c3d1cf813f4dc0425e381043e",
+      "stride": 1,
+      "points": 878920,
+      "xyzF64Sha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700"
+    },
+    {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+      "bytes": 10547189,
+      "sha256": "a619a7f94f6b0a3bda7600310d311d51948c9f09f525b32433b0b9ecba94e831",
+      "stride": 2,
+      "points": 439460,
+      "xyzF64Sha256": "d8b75495b225d1699b956a82608c60e57e0041ea0f7cb725bbabeec2969fcf7d"
+    },
+    {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply",
+      "bytes": 5273669,
+      "sha256": "f9c4f38a5097981e2456bed8c6ad3a01418c9d0e99542cb616b87c48ae756313",
+      "stride": 4,
+      "points": 219730,
+      "xyzF64Sha256": "163fd7b206e6e527fd004fcb83caf9dea5605cf1b5ca907aef1a53739931d675"
+    }
+  ],
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6823424,
+    "sha256": "8a63601c290af5403f08a3c040c9e5d99e816b687bd0a0dfeea13015fb9a9a49"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12
+  },
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "parity": {
+    "fresh": {
+      "millis": 2444.1596,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 878920,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.16055787448673198,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8849205803922732,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999272971373959,
+            "recall": 0.9992854875466624,
+            "f1": 0.9992792294211188
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011568743457880126,
+              "recall": 0.011615378401471805,
+              "f1": 0.0115920140264985
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.1277055932280526,
+              "recall": 0.12769975913648668,
+              "f1": 0.12770267611563707
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8623128384835935,
+              "recall": 0.8625462356685072,
+              "f1": 0.8624295212851237
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9763516588540482,
+              "recall": 0.9764643238698358,
+              "f1": 0.9764079881119159
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9950769125745232,
+              "recall": 0.9951121886950022,
+              "f1": 0.9950945503221279
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999272971373959,
+              "recall": 0.9992854875466624,
+              "f1": 0.9992792294211188
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8849 < min_auc 0.9500",
+              "Chamfer 0.1606 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 439460,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.18098676857268706,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8586370315758691,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992559049742866,
+            "recall": 0.9978735290202418,
+            "f1": 0.9985642385697658
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011532335138579165,
+              "recall": 0.005793467217190169,
+              "f1": 0.007712451543782131
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12770445546807446,
+              "recall": 0.06588419209462511,
+              "f1": 0.08692353587183445
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.862881718472671,
+              "recall": 0.6193230108280494,
+              "f1": 0.7210913490002129
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9760524279797934,
+              "recall": 0.9089269684078546,
+              "f1": 0.9412945054688057
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9949733764165112,
+              "recall": 0.9825263021363695,
+              "f1": 0.9887106661580284
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992559049742866,
+              "recall": 0.9978735290202418,
+              "f1": 0.9985642385697658
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8586 < min_auc 0.9500",
+              "Chamfer 0.1810 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 219730,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.21868142378153632,
+          "hausdorff_distance": 33.844549453984904,
+          "auc": 0.8036419873056336,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992263232148546,
+            "recall": 0.9933748311850553,
+            "f1": 0.9962919854256054
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011773540253948027,
+              "recall": 0.0029593103361963136,
+              "f1": 0.004729778416464673
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12725162699676876,
+              "recall": 0.03336591115697543,
+              "f1": 0.05286927604245298
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8624175124015837,
+              "recall": 0.36536389504858796,
+              "f1": 0.5132773954339986
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9758385291039002,
+              "recall": 0.7010686967315606,
+              "f1": 0.8159423911820409
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9948527738588268,
+              "recall": 0.930628577539961,
+              "f1": 0.9616695805704257
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992263232148546,
+              "recall": 0.9933748311850553,
+              "f1": 0.9962919854256054
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8036 < min_auc 0.9500",
+              "Chamfer 0.2187 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\fresh-distance-0.bin",
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e",
+          "points": 878920
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\fresh-distance-1.bin",
+          "bytes": 7031368,
+          "sha256": "2ce58898fe10500af568848b06e0e03deac5e37ed4f4efde08226182db920c2c",
+          "points": 878921
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\fresh-distance-2.bin",
+          "bytes": 3515680,
+          "sha256": "4b23ee0188cace54b6806a2f080196e454c35e04826a7f223185dd192b653a46",
+          "points": 439460
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\fresh-distance-3.bin",
+          "bytes": 7031368,
+          "sha256": "8ac6cfa66b44082c50c3950931b529258da1493ee8a4af7d970bb1129b1cef78",
+          "points": 878921
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\fresh-distance-4.bin",
+          "bytes": 1757840,
+          "sha256": "2507b9bf779f46420d8890e0faabc18ec3befae3fc887e3802227d3a0ed05467",
+          "points": 219730
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\fresh-distance-5.bin",
+          "bytes": 7031368,
+          "sha256": "ec4ae8810bca3bceec149c74dd7e44ba6b7b217f3d4cd29a15bdfdb5a94292c1",
+          "points": 878921
+        }
+      ],
+      "loads": [
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply"
+      ],
+      "referenceCapacities": []
+    },
+    "reuse": {
+      "millis": 1728.3236,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 878920,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.16055787448673198,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8849205803922732,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999272971373959,
+            "recall": 0.9992854875466624,
+            "f1": 0.9992792294211188
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011568743457880126,
+              "recall": 0.011615378401471805,
+              "f1": 0.0115920140264985
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.1277055932280526,
+              "recall": 0.12769975913648668,
+              "f1": 0.12770267611563707
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8623128384835935,
+              "recall": 0.8625462356685072,
+              "f1": 0.8624295212851237
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9763516588540482,
+              "recall": 0.9764643238698358,
+              "f1": 0.9764079881119159
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9950769125745232,
+              "recall": 0.9951121886950022,
+              "f1": 0.9950945503221279
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999272971373959,
+              "recall": 0.9992854875466624,
+              "f1": 0.9992792294211188
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8849 < min_auc 0.9500",
+              "Chamfer 0.1606 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 439460,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.18098676857268706,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8586370315758691,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992559049742866,
+            "recall": 0.9978735290202418,
+            "f1": 0.9985642385697658
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011532335138579165,
+              "recall": 0.005793467217190169,
+              "f1": 0.007712451543782131
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12770445546807446,
+              "recall": 0.06588419209462511,
+              "f1": 0.08692353587183445
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.862881718472671,
+              "recall": 0.6193230108280494,
+              "f1": 0.7210913490002129
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9760524279797934,
+              "recall": 0.9089269684078546,
+              "f1": 0.9412945054688057
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9949733764165112,
+              "recall": 0.9825263021363695,
+              "f1": 0.9887106661580284
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992559049742866,
+              "recall": 0.9978735290202418,
+              "f1": 0.9985642385697658
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8586 < min_auc 0.9500",
+              "Chamfer 0.1810 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 219730,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.21868142378153632,
+          "hausdorff_distance": 33.844549453984904,
+          "auc": 0.8036419873056336,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992263232148546,
+            "recall": 0.9933748311850553,
+            "f1": 0.9962919854256054
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011773540253948027,
+              "recall": 0.0029593103361963136,
+              "f1": 0.004729778416464673
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12725162699676876,
+              "recall": 0.03336591115697543,
+              "f1": 0.05286927604245298
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8624175124015837,
+              "recall": 0.36536389504858796,
+              "f1": 0.5132773954339986
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9758385291039002,
+              "recall": 0.7010686967315606,
+              "f1": 0.8159423911820409
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9948527738588268,
+              "recall": 0.930628577539961,
+              "f1": 0.9616695805704257
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992263232148546,
+              "recall": 0.9933748311850553,
+              "f1": 0.9962919854256054
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8036 < min_auc 0.9500",
+              "Chamfer 0.2187 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\reuse-distance-0.bin",
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e",
+          "points": 878920
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\reuse-distance-1.bin",
+          "bytes": 7031368,
+          "sha256": "2ce58898fe10500af568848b06e0e03deac5e37ed4f4efde08226182db920c2c",
+          "points": 878921
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\reuse-distance-2.bin",
+          "bytes": 3515680,
+          "sha256": "4b23ee0188cace54b6806a2f080196e454c35e04826a7f223185dd192b653a46",
+          "points": 439460
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\reuse-distance-3.bin",
+          "bytes": 7031368,
+          "sha256": "8ac6cfa66b44082c50c3950931b529258da1493ee8a4af7d970bb1129b1cef78",
+          "points": 878921
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\reuse-distance-4.bin",
+          "bytes": 1757840,
+          "sha256": "2507b9bf779f46420d8890e0faabc18ec3befae3fc887e3802227d3a0ed05467",
+          "points": 219730
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\reuse-distance-5.bin",
+          "bytes": 7031368,
+          "sha256": "ec4ae8810bca3bceec149c74dd7e44ba6b7b217f3d4cd29a15bdfdb5a94292c1",
+          "points": 878921
+        }
+      ],
+      "loads": [
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply"
+      ],
+      "referenceCapacities": [
+        29883356
+      ]
+    }
+  },
+  "firstUse": {
+    "fresh": {
+      "millis": 2333.0576,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 878920,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.16055787448673198,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8849205803922732,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999272971373959,
+            "recall": 0.9992854875466624,
+            "f1": 0.9992792294211188
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011568743457880126,
+              "recall": 0.011615378401471805,
+              "f1": 0.0115920140264985
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.1277055932280526,
+              "recall": 0.12769975913648668,
+              "f1": 0.12770267611563707
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8623128384835935,
+              "recall": 0.8625462356685072,
+              "f1": 0.8624295212851237
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9763516588540482,
+              "recall": 0.9764643238698358,
+              "f1": 0.9764079881119159
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9950769125745232,
+              "recall": 0.9951121886950022,
+              "f1": 0.9950945503221279
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999272971373959,
+              "recall": 0.9992854875466624,
+              "f1": 0.9992792294211188
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8849 < min_auc 0.9500",
+              "Chamfer 0.1606 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 439460,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.18098676857268706,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8586370315758691,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992559049742866,
+            "recall": 0.9978735290202418,
+            "f1": 0.9985642385697658
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011532335138579165,
+              "recall": 0.005793467217190169,
+              "f1": 0.007712451543782131
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12770445546807446,
+              "recall": 0.06588419209462511,
+              "f1": 0.08692353587183445
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.862881718472671,
+              "recall": 0.6193230108280494,
+              "f1": 0.7210913490002129
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9760524279797934,
+              "recall": 0.9089269684078546,
+              "f1": 0.9412945054688057
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9949733764165112,
+              "recall": 0.9825263021363695,
+              "f1": 0.9887106661580284
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992559049742866,
+              "recall": 0.9978735290202418,
+              "f1": 0.9985642385697658
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8586 < min_auc 0.9500",
+              "Chamfer 0.1810 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 219730,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.21868142378153632,
+          "hausdorff_distance": 33.844549453984904,
+          "auc": 0.8036419873056336,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992263232148546,
+            "recall": 0.9933748311850553,
+            "f1": 0.9962919854256054
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011773540253948027,
+              "recall": 0.0029593103361963136,
+              "f1": 0.004729778416464673
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12725162699676876,
+              "recall": 0.03336591115697543,
+              "f1": 0.05286927604245298
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8624175124015837,
+              "recall": 0.36536389504858796,
+              "f1": 0.5132773954339986
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9758385291039002,
+              "recall": 0.7010686967315606,
+              "f1": 0.8159423911820409
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9948527738588268,
+              "recall": 0.930628577539961,
+              "f1": 0.9616695805704257
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992263232148546,
+              "recall": 0.9933748311850553,
+              "f1": 0.9962919854256054
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8036 < min_auc 0.9500",
+              "Chamfer 0.2187 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+      "distances": [],
+      "loads": [],
+      "referenceCapacities": []
+    },
+    "reuse": {
+      "millis": 1570.3723,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 878920,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.16055787448673198,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8849205803922732,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999272971373959,
+            "recall": 0.9992854875466624,
+            "f1": 0.9992792294211188
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011568743457880126,
+              "recall": 0.011615378401471805,
+              "f1": 0.0115920140264985
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.1277055932280526,
+              "recall": 0.12769975913648668,
+              "f1": 0.12770267611563707
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8623128384835935,
+              "recall": 0.8625462356685072,
+              "f1": 0.8624295212851237
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9763516588540482,
+              "recall": 0.9764643238698358,
+              "f1": 0.9764079881119159
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9950769125745232,
+              "recall": 0.9951121886950022,
+              "f1": 0.9950945503221279
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999272971373959,
+              "recall": 0.9992854875466624,
+              "f1": 0.9992792294211188
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8849 < min_auc 0.9500",
+              "Chamfer 0.1606 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 439460,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.18098676857268706,
+          "hausdorff_distance": 19.126063715709652,
+          "auc": 0.8586370315758691,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992559049742866,
+            "recall": 0.9978735290202418,
+            "f1": 0.9985642385697658
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011532335138579165,
+              "recall": 0.005793467217190169,
+              "f1": 0.007712451543782131
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12770445546807446,
+              "recall": 0.06588419209462511,
+              "f1": 0.08692353587183445
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.862881718472671,
+              "recall": 0.6193230108280494,
+              "f1": 0.7210913490002129
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9760524279797934,
+              "recall": 0.9089269684078546,
+              "f1": 0.9412945054688057
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9949733764165112,
+              "recall": 0.9825263021363695,
+              "f1": 0.9887106661580284
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992559049742866,
+              "recall": 0.9978735290202418,
+              "f1": 0.9985642385697658
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8586 < min_auc 0.9500",
+              "Chamfer 0.1810 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 219730,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+          "reference_points": 878921,
+          "chamfer_distance": 0.21868142378153632,
+          "hausdorff_distance": 33.844549453984904,
+          "auc": 0.8036419873056336,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9992263232148546,
+            "recall": 0.9933748311850553,
+            "f1": 0.9962919854256054
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.011773540253948027,
+              "recall": 0.0029593103361963136,
+              "f1": 0.004729778416464673
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.12725162699676876,
+              "recall": 0.03336591115697543,
+              "f1": 0.05286927604245298
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.8624175124015837,
+              "recall": 0.36536389504858796,
+              "f1": 0.5132773954339986
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9758385291039002,
+              "recall": 0.7010686967315606,
+              "f1": 0.8159423911820409
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9948527738588268,
+              "recall": 0.930628577539961,
+              "f1": 0.9616695805704257
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9992263232148546,
+              "recall": 0.9933748311850553,
+              "f1": 0.9962919854256054
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.8036 < min_auc 0.9500",
+              "Chamfer 0.2187 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-autoware-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+      "distances": [],
+      "loads": [],
+      "referenceCapacities": []
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2638.9234,
+        "reuse": 2799.7981
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1929.1783,
+        "fresh": 2273.4803
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2301.5324,
+        "reuse": 1548.2879
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1562.3914,
+        "fresh": 2365.3351
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2281.4599,
+        "reuse": 1532.6097
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1509.5067,
+        "fresh": 2430.6915
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2380.6393,
+        "reuse": 1534.2925
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1544.7873,
+        "fresh": 2339.6102
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2212.658,
+        "reuse": 1521.6455
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1501.0679,
+        "fresh": 2249.1176
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2235.0786,
+        "reuse": 1548.8364
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1546.0335,
+        "fresh": 2218.5136
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2257.8024,
+        "reuse": 1525.1442
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1657.3037,
+        "fresh": 2297.8384
+      },
+      "reportHashes": {
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2221.8466,
+        "reuse": 1527.7553
+      },
+      "reportHashes": {
+        "fresh": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46",
+        "reuse": "a21ef92db49452b914d9674e7dc5e533709631990e6477cdd18a64f14c14ce46"
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 2253.46,
+    "reuseMedianMillis": 1531.0239000000001,
+    "pairedShorteningPercent": 31.844723705491553,
+    "pairedSavedMedianMillis": 713.37475,
+    "fasterTrials": 10
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 12,
+    "batchReportsChecked": 34
+  },
+  "memory": {
+    "referenceNativePayloadBytes": 29883356
+  },
+  "note": "Whole batch function includes file discovery and loading, per-invocation reference preparation/destruction, six bidirectional queries, all evaluation summaries and quality gates. Three candidates select unchanged real compared coordinates at strides 1/2/4; they are subsets of one source, not independent surveys. Full-f64 parity and excluded first pairs precede five warm-up and alternating timed pairs. Candidate writes, imports, hashing, correctness checks and CLI report serialization are outside clocks. No outliers removed; warmed OS file cache, clocks and scheduling remain uncontrolled. Native capacity is payload, not RSS. No browser/GPU speed claim."
+}

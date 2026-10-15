@@ -1,0 +1,960 @@
+{
+  "schemaVersion": 1,
+  "comparison": "scan-match-reference-reuse",
+  "createdAt": "2026-10-14T02:16:05.824434+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/scan_match_debug.py": "ce974cb9c728415818fb0c3f8611c7f183b411b84c9b2aa5ec30fc5a53eeabdb",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/registration.py": "b14e9a6a2afa4c9924ace43b2576f8b18aa4537795e4678e100a2f07927584b7",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/visualization.py": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_scan_match_debug.py": "d469b75feb27c0fe4a653e2322b57e2505bf20f8f6793aab2763e456a4718a89",
+    "cloudanalyzer/tests/test_metrics.py": "c39328335ea83c01217a234b1119e509a225378e8de15e9dded981a88d25765e",
+    "cloudanalyzer/scripts/benchmark_scan_match_reference.py": "b80c0b1550fa5bfe60bdf9148a0e8749c72af90f2a37477f455ed3c769fa0f09"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    },
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\inputs.json",
+      "bytes": 1578,
+      "sha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\pandaset-vector-map\\map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-reference-20261014\\baseline.py",
+      "bytes": 6264,
+      "sha256": "8b16e278af480bb6ad1e83d68573d59311b86838872585d192571563014b15a2"
+    },
+    "registrationRecord": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\scan-match\\real-source\\windows-pandaset019-distance-reuse-initial.json",
+      "bytes": 44527,
+      "sha256": "df9c7a272d8add89936112d21c8378afb900d2dc81194441b2b60691b4617630"
+    },
+    "registrationSnapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-pandaset019-initial-20261014\\registration.npz",
+      "bytes": 76596694,
+      "sha256": "fe2f097108547344fe9bc07a418792f295d2b5190e2c5e7c148e1ff57ab798ed"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6823424,
+    "sha256": "8a63601c290af5403f08a3c040c9e5d99e816b687bd0a0dfeea13015fb9a9a49"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "matplotlib": "3.10.8",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12
+  },
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "artifactsTimed": false,
+  "artifactParity": {
+    "fresh": {
+      "millis": 1898.9477,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 531908,
+          "scan_points_used": 531908,
+          "map_points_raw": 531908,
+          "map_points_used": 531908,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9961121096129406,
+          "inlier_rmse": 0.14799940703220513,
+          "delta_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.11182418095759394,
+            "median": 0.07441380916613188,
+            "max": 22.144665686339565,
+            "min": 0.001001342601566441,
+            "std": 0.17662909457415962
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9444,
+            "exceed_ratio": 0.01775495010415335
+          }
+        },
+        "improvement": {
+          "mean": 0.0003826520380895565,
+          "median": 0.000314340487227574,
+          "max": -0.011211126474947264
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 27127574,
+          "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 27127574,
+          "sha256": "2a5271a4a24e3fc7d21b27d97040e097f5512961eb958946bcc36e79a062b81f"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 25531790,
+          "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        {
+          "bytes": 4255264,
+          "sha256": "bcd63e9c896c8cf309a6834f9aba530b965f4a86c7c6a4fa773928784e843d00"
+        }
+      ],
+      "referenceCapacities": []
+    },
+    "reuse": {
+      "millis": 1884.9879,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 531908,
+          "scan_points_used": 531908,
+          "map_points_raw": 531908,
+          "map_points_used": 531908,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9961121096129406,
+          "inlier_rmse": 0.14799940703220513,
+          "delta_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.11182418095759394,
+            "median": 0.07441380916613188,
+            "max": 22.144665686339565,
+            "min": 0.001001342601566441,
+            "std": 0.17662909457415962
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9444,
+            "exceed_ratio": 0.01775495010415335
+          }
+        },
+        "improvement": {
+          "mean": 0.0003826520380895565,
+          "median": 0.000314340487227574,
+          "max": -0.011211126474947264
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 27127574,
+          "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 27127574,
+          "sha256": "2a5271a4a24e3fc7d21b27d97040e097f5512961eb958946bcc36e79a062b81f"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 25531790,
+          "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        {
+          "bytes": 4255264,
+          "sha256": "bcd63e9c896c8cf309a6834f9aba530b965f4a86c7c6a4fa773928784e843d00"
+        }
+      ],
+      "referenceCapacities": [
+        18084896
+      ]
+    }
+  },
+  "firstUse": {
+    "fresh": {
+      "millis": 352.6861,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 531908,
+          "scan_points_used": 531908,
+          "map_points_raw": 531908,
+          "map_points_used": 531908,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9961121096129406,
+          "inlier_rmse": 0.14799940703220513,
+          "delta_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.11182418095759394,
+            "median": 0.07441380916613188,
+            "max": 22.144665686339565,
+            "min": 0.001001342601566441,
+            "std": 0.17662909457415962
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9444,
+            "exceed_ratio": 0.01775495010415335
+          }
+        },
+        "improvement": {
+          "mean": 0.0003826520380895565,
+          "median": 0.000314340487227574,
+          "max": -0.011211126474947264
+        },
+        "artifacts": {}
+      },
+      "artifacts": {},
+      "capturedDistances": [],
+      "referenceCapacities": []
+    },
+    "reuse": {
+      "millis": 272.2941,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 531908,
+          "scan_points_used": 531908,
+          "map_points_raw": 531908,
+          "map_points_used": 531908,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9961121096129406,
+          "inlier_rmse": 0.14799940703220513,
+          "delta_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999971825351,
+              -1.8872863086772717e-05,
+              -7.265500474443308e-05,
+              -0.0012836825141456533
+            ],
+            [
+              1.8864798280195884e-05,
+              0.9999999936615089,
+              -0.00011100048306188227,
+              0.013554289417900508
+            ],
+            [
+              7.265709918076887e-05,
+              0.00011099911212705036,
+              0.9999999912000734,
+              -0.0029097890430896515
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.11182418095759394,
+            "median": 0.07441380916613188,
+            "max": 22.144665686339565,
+            "min": 0.001001342601566441,
+            "std": 0.17662909457415962
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9444,
+            "exceed_ratio": 0.01775495010415335
+          }
+        },
+        "improvement": {
+          "mean": 0.0003826520380895565,
+          "median": 0.000314340487227574,
+          "max": -0.011211126474947264
+        },
+        "artifacts": {}
+      },
+      "artifacts": {},
+      "capturedDistances": [],
+      "referenceCapacities": []
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 340.3889,
+        "reuse": 273.1267
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 267.838,
+        "fresh": 337.5216
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 362.7196,
+        "reuse": 303.0085
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 269.4847,
+        "fresh": 402.1318
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 364.9604,
+        "reuse": 267.8631
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 286.0678,
+        "fresh": 355.7995
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 341.4295,
+        "reuse": 267.2245
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 286.5673,
+        "fresh": 349.8744
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 340.849,
+        "reuse": 280.1155
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 375.9319,
+        "fresh": 546.2052
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 456.1537,
+        "reuse": 294.7746
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 286.457,
+        "fresh": 342.8147
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 379.2488,
+        "reuse": 268.884
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 288.8615,
+        "fresh": 364.0558
+      },
+      "artifactHashes": {
+        "reuse": {},
+        "fresh": {}
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 366.8693,
+        "reuse": 291.8795
+      },
+      "artifactHashes": {
+        "fresh": {},
+        "reuse": {}
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 359.92764999999997,
+    "reuseMedianMillis": 286.51215,
+    "pairedShorteningPercent": 20.54753796631561,
+    "pairedSavedMedianMillis": 74.59740000000002,
+    "fasterTrials": 10
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 4,
+    "reportsChecked": 32,
+    "plyOutputsChecked": 6
+  },
+  "memory": {
+    "referenceNativePayloadBytes": 18084896
+  },
+  "note": "Complete diagnostic workflow interval includes per-invocation reference preparation and destruction, both NN searches, cloud/normal/result copies, summaries and thresholds. Input loading and the saved actual ICP solve are excluded. Coloring/PLY writes are timed only when artifactsTimed is true; a full artifact/f64 parity pair always runs outside summaries. Five alternating warm-up pairs and excluded first observations precede timed pairs. No outliers removed. Hashing/checks are outside clocks. No full CLI/registration or browser/GPU speed claim. Native payload bytes exclude RSS and scratch."
+}

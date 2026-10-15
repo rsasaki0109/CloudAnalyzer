@@ -1,0 +1,998 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "gpu": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "isFallbackAdapter": false
+  },
+  "mesh": {
+    "vertices": 501097,
+    "triangles": 844324,
+    "points": 531908,
+    "voxel": 0,
+    "maxEdge": 0.28163367334270417,
+    "removed": 219473,
+    "positionsSha256": "85066058e4c356a6fa5398f7212e76a71210115d1f5143ee61cb9b1aaf132623",
+    "indicesSha256": "f081f8854df532167f9315da75877528194f5b1d0981ed5238b17ac259db8093"
+  },
+  "points": 531908,
+  "oracleWorkers": 5,
+  "oracleSlices": 5,
+  "distanceSha256": "e7553e4591e1b8ef417808ab4bac1f1a2986e2e014010b225993070182df736d",
+  "plySha256": "0d724b269327d89c0a0f2a67c4f5c05f5389e254a1e558e61a2a4a342327d732",
+  "firstUse": {
+    "cpu": {
+      "elapsedMillis": 5497.799999952316,
+      "workerMillis": 5497.099999964237,
+      "workers": 5,
+      "slices": 5,
+      "reused": false,
+      "retainedBytes": 668045480,
+      "cache": {
+        "job": 1,
+        "workers": 5,
+        "bytes": 668045480,
+        "pending": false,
+        "reuses": 0,
+        "reservation": 668065400,
+        "reservedTotal": 668065400,
+        "budget": 1073741824
+      },
+      "resultParity": true
+    },
+    "gpu": {
+      "elapsedMillis": 3816.5,
+      "workerMillis": 3815.800000011921,
+      "workers": 5,
+      "slices": 5,
+      "reused": true,
+      "retainedBytes": 668045480,
+      "cache": {
+        "job": 1,
+        "workers": 5,
+        "bytes": 668045480,
+        "pending": false,
+        "reuses": 1,
+        "reservation": 668065400,
+        "reservedTotal": 668065400,
+        "budget": 1073741824
+      },
+      "compute": {
+        "backend": "webgpu",
+        "prepareMillis": 839.6999999880791,
+        "gpuMillis": 193.30000001192093,
+        "verifyMillis": 2765.199999988079,
+        "batches": 9,
+        "completeRows": 531908,
+        "referenceReused": false,
+        "gpuBytes": 58877616
+      },
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 1661.199999988079,
+        "workerMillis": 1658.300000011921,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 2,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 1462.1000000238419,
+        "workerMillis": 1458.8999999761581,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 3,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 134.30000001192093,
+          "verifyMillis": 1307.5999999642372,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 1566.5,
+        "workerMillis": 1565.9000000357628,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 4,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 150.69999998807907,
+          "verifyMillis": 1398.6000000238419,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 1536.1000000238419,
+        "workerMillis": 1533.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 5,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 1541.300000011921,
+        "workerMillis": 1540.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 6,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 1536.3999999761581,
+        "workerMillis": 1536.0999999642372,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 7,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 110,
+          "verifyMillis": 1410.5,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 1402.4000000357628,
+        "workerMillis": 1401.800000011921,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 8,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 116.10000002384186,
+          "verifyMillis": 1268.4000000357628,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 1321.0999999642372,
+        "workerMillis": 1320.5999999642372,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 9,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 1271.800000011921,
+        "workerMillis": 1271.4000000357628,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 10,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 1025.5,
+        "workerMillis": 1025,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 11,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 110.69999998807907,
+          "verifyMillis": 898.3999999761581,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 1051,
+        "workerMillis": 1050.5,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 12,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 102.5,
+          "verifyMillis": 935.6000000238419,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 1089.8999999761581,
+        "workerMillis": 1089.6000000238419,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 13,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 1048.2000000476837,
+        "workerMillis": 1047.8999999761581,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 14,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 1018.2999999523163,
+        "workerMillis": 1017.8999999761581,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 15,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 108.90000003576279,
+          "verifyMillis": 895.3000000119209,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 977.5,
+        "workerMillis": 977.2000000476837,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 16,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 104.89999997615814,
+          "verifyMillis": 859.6999999880791,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 898.8000000119209,
+        "workerMillis": 897.2000000476837,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 17,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 916.5,
+        "workerMillis": 916.4000000357628,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 18,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 922,
+        "workerMillis": 921.5,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 19,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 92.5,
+          "verifyMillis": 811.8999999761581,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 1011.1000000238419,
+        "workerMillis": 1010.9000000357628,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 20,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 101.69999998807907,
+          "verifyMillis": 898.5,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 909.3000000119209,
+        "workerMillis": 909,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 21,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 872.8000000119209,
+        "workerMillis": 872.5,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 22,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 933.4000000357628,
+        "workerMillis": 931.8000000119209,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 23,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 96.30000001192093,
+          "verifyMillis": 823,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 1135.9000000357628,
+        "workerMillis": 1135.6000000238419,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 24,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 104.60000002384186,
+          "verifyMillis": 1014.5,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 1020.3999999761581,
+        "workerMillis": 1020.1000000238419,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 25,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 1006.9000000357628,
+        "workerMillis": 1006.5,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 26,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 861,
+        "workerMillis": 860.8000000119209,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 27,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 95.60000002384186,
+          "verifyMillis": 752.5999999642372,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 940.4000000357628,
+        "workerMillis": 940.1000000238419,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 28,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 102.09999996423721,
+          "verifyMillis": 827.3000000119209,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 867.3999999761581,
+        "workerMillis": 867,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 29,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 903.0999999642372,
+        "workerMillis": 902.9000000357628,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 30,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 968.6000000238419,
+        "workerMillis": 966.8999999761581,
+        "workers": 5,
+        "slices": 5,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 31,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 92.80000001192093,
+          "verifyMillis": 859.0999999642372,
+          "batches": 9,
+          "completeRows": 531908,
+          "referenceReused": true,
+          "gpuBytes": 58877616
+        },
+        "resultParity": true
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "retained-c2m-gpu-triangle-candidates",
+  "createdAt": "2026-10-12T15:06:47.489Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\gpu-c2m-baseline-20261012\\dist",
+      "worker": "worker-BRuuDBro.js",
+      "artifactHashes": {
+        "c2c-worker-coylg5Ux.js": "4c53e0cc678abdd05800af3ceb2939c0836e64c7878096aff7249bb116b6d26e",
+        "ca_wasm_bg-CUXSl0_6.wasm": "2a7faa863f5b99c2851336f2a26202341d7390338bfddf30fcff9f3f7d34a6c2",
+        "worker-BRuuDBro.js": "9a062352213463c31ac1d726e640392d2e592a2d53e252cc5e1bd579f7e810bc"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-DFb4F76u.js",
+      "artifactHashes": {
+        "c2c-worker-C8QpwX63.js": "9cbadb19648acba7fd57e8df0b7d2b719637fb0b1592254407c08ce3b2450728",
+        "ca_wasm_bg-l_BIO-ou.wasm": "ea11a775067326419101c05351a132df02225f65afde67af2254cb7809ae9bce",
+        "worker-DFb4F76u.js": "4ffdbaa10892f38781098bb1f1f5f75e1a43f7816778af1e19bfea02ddbed082"
+      }
+    }
+  },
+  "scriptSha256": "fcd3846574847d7e52c0321580b66efe0ccf70c838dbcfb747f35ec9f4e7d272",
+  "sourceHashes": {
+    "web/src/gpu-mesh-candidates.ts": "82fbd4e024e2b3ee9af194a8dc3006566e6619f9241078ddef3f81b69247d86c",
+    "web/src/gpu-candidates.ts": "64581efaf65094054b086caa0abe2c2e70256475eab9010405249ff2ee06b586",
+    "web/src/mesh-preparation.ts": "24a1de2d255c602a44c8749315545b279f95e89871e7d44144a684a6bedd8631",
+    "web/src/worker.ts": "f89d579034d1f5f830eb6eff3eaffd2abe25b9b3c7ea16ddf0d9f8a4b9f6cfc8",
+    "web/src/c2c-worker.ts": "9d48fac996c0d76b368699d3b790f4a4e1e8bbd5f82f314950c8d5ccebe2f524",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "f5a2b44d58a95f3240f4f458333a0a3c90cc16edb0020226ab6c09ba9c078f11",
+    "rust/crates/ca-core/src/mesh.rs": "d888d27fecd2bf99c7075dd826d5ab1833d819f3c76739203b2f17a57d3d9d38",
+    "rust/crates/ca-core/src/distance.rs": "e405031ab7b409a103b88e847453835d5fd5da385a4952c0a16e6c286a62c842",
+    "rust/crates/ca-wasm/src/lib.rs": "1ff9715ad7ce5e94cf6bda9827cd6cda8ddff1332605f325965083a368982dfe"
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "summary": {
+    "cpuMedianMillis": 912.9000000059605,
+    "gpuMedianMillis": 973.0500000119209,
+    "medianPairedReductionPercent": -7.097983668526952,
+    "fasterTrials": 3,
+    "trials": 10,
+    "gpuPhaseMedianMillis": 101.89999997615814,
+    "verifyPhaseMedianMillis": 859.3999999761581
+  },
+  "note": "Unchanged measured source-index geometry splits, not independent accuracy ground truth. Full-input production 2.5D TIN, recorded XY duplicates/edge rejection; no voxel thinning, new coordinates or input resampling. Archived retained-CPU production worker supplies exact f32 distance, f64 summary and scalar PLY oracles; its first output is excluded. Current CPU/GPU controls share one prewarmed context and the same 1 GiB bounded immutable CPU mesh/BVH cache, resident workers and unchanged logical slices. GPU geometry remains resident during the CPU control. GPU candidate search uses shifted f32 triangles/BVH, returns one untrusted triangle slot per point in batches of at most 65536, with a 256 MiB aggregate GPU-buffer budget. Every candidate's upper radius is recomputed on original f64 geometry; CPU root traversal retains old warm guesses, child order and strict insertion, with fallback for invalid hints/incomplete bounded search. Timed fallback, missing candidate, changed layout or lack of CPU/GPU reuse fails. Whole RPC includes query copies, packing/transfers, GPU search/readback, exact CPU verification, ordering, joining, summaries and returned arrays. GPU phase includes host packing, serialized device scopes, dispatch and readback; verification phase includes worker transfers/query traversal/join. Loading/meshing, pool startup, first observations, five warm-up rounds, parity/export checks and cleanup excluded. All relevant source/artifact/input/manifest/script hashes verified before/after. No builds/tests/scans alongside timing; clocks, power, other applications, scheduling and GC uncontrolled. Retained sizes cover owned vectors/allocated GPU buffers, not temporary copies, allocator/driver overhead or peak process memory. Only GPU vendor/architecture/fallback recorded; no model identifiers."
+}

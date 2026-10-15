@@ -1,0 +1,1227 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "mesh": {
+    "vertices": 873771,
+    "triangles": 1688821,
+    "points": 878921,
+    "voxel": 0,
+    "maxEdge": 0.763709338115621,
+    "removed": 67261,
+    "positionsSha256": "ea33a267caea1ca495cdd6872ff08b7cd4f1270f623ffcaf8b2b5b56cae3196d",
+    "indicesSha256": "40aab9a8d3c6afd494c4a4a2596bb6895b20542f46219142c63e28f42225c2da",
+    "geometryPlyBytes": 42925386,
+    "geometryPlySha256": "89de83a783c16f04873705de1238d260424ec0cfc24cff19d0eeb0acb1b11e00"
+  },
+  "points": 878920,
+  "oracleWorkers": 4,
+  "oracleSlices": 8,
+  "oracleStats": {
+    "count": 878920,
+    "min": 0,
+    "max": 26.51285128111183,
+    "mean": 0.05774312767869224,
+    "rms": 0.16206351858353354,
+    "stdDev": 0.15142759082002716,
+    "median": 0.02595506740485405
+  },
+  "distanceSha256": "4d7894666a38d094d30140dac3fc155a75516ff5be734e7afd81c43bb85a6081",
+  "plySha256": "0dd83638b583d7ad21930a2929e9e96a56a3b76a500fb1e0dd019e1a6b902e2c",
+  "firstUse": {
+    "baseline": {
+      "elapsedMillis": 5165,
+      "workerMillis": 5163.199999928474,
+      "workers": 4,
+      "slices": 8,
+      "reused": false,
+      "retainedBytes": 1056643136,
+      "cache": {
+        "job": 1,
+        "workers": 4,
+        "bytes": 1056643136,
+        "pending": false,
+        "reuses": 0,
+        "reservation": 1056659296,
+        "reservedTotal": 1056659296,
+        "budget": 1073741824
+      },
+      "stats": {
+        "count": 878920,
+        "min": 0,
+        "max": 26.51285128111183,
+        "mean": 0.05774312767869224,
+        "rms": 0.16206351858353354,
+        "stdDev": 0.15142759082002716,
+        "median": 0.02595506740485405
+      },
+      "queryOrderHit": false,
+      "queryOrderBytes": 0,
+      "queryOrderEntries": 0,
+      "resultParity": true
+    },
+    "borrowed": {
+      "elapsedMillis": 5258.299999952316,
+      "workerMillis": 5255.899999976158,
+      "workers": 4,
+      "slices": 8,
+      "reused": false,
+      "retainedBytes": 1056643136,
+      "cache": {
+        "job": 1,
+        "workers": 4,
+        "bytes": 1056643136,
+        "pending": false,
+        "reuses": 0,
+        "reservation": 1056659296,
+        "reservedTotal": 1056659296,
+        "budget": 1073741824
+      },
+      "stats": {
+        "count": 878920,
+        "min": 0,
+        "max": 26.51285128111183,
+        "mean": 0.05774312767869224,
+        "rms": 0.16206351858353354,
+        "stdDev": 0.15142759082002716,
+        "median": 0.02595506740485405
+      },
+      "queryOrderHit": false,
+      "queryOrderBytes": 0,
+      "queryOrderEntries": 0,
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1235.3999999761581,
+        "workerMillis": 1235,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 1,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1364.5,
+        "workerMillis": 1364.1000000238419,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 1,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 1400.2999999523163,
+        "workerMillis": 1399.7000000476837,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 2,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1236.1000000238419,
+        "workerMillis": 1234,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 2,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1130.2999999523163,
+        "workerMillis": 1130.0999999046326,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 3,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1299.5,
+        "workerMillis": 1297.3999999761581,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 3,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 1465.1999999284744,
+        "workerMillis": 1464.8000000715256,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 4,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1313.3999999761581,
+        "workerMillis": 1312.8999999761581,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 4,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1303.7000000476837,
+        "workerMillis": 1303.3000000715256,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 5,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1275.5,
+        "workerMillis": 1275,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 5,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 1473.1000000238419,
+        "workerMillis": 1472.7999999523163,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 6,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1282.2000000476837,
+        "workerMillis": 1281.7999999523163,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 6,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1211.7000000476837,
+        "workerMillis": 1211.3999999761581,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 7,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1439.5,
+        "workerMillis": 1439,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 7,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 1317.2999999523163,
+        "workerMillis": 1317,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 8,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1120.3000000715256,
+        "workerMillis": 1120,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 8,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1081.1999999284744,
+        "workerMillis": 1080.9000000953674,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 9,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1377.2000000476837,
+        "workerMillis": 1375.3000000715256,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 9,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 1419.5,
+        "workerMillis": 1419.3000000715256,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 10,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1107.2999999523163,
+        "workerMillis": 1107,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 10,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1098.8000000715256,
+        "workerMillis": 1098.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 11,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1240.6999999284744,
+        "workerMillis": 1240.2000000476837,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 11,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 993.8000000715256,
+        "workerMillis": 993.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 12,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1056.3000000715256,
+        "workerMillis": 1055.7000000476837,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 12,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1035.7000000476837,
+        "workerMillis": 1035.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 13,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 964.2000000476837,
+        "workerMillis": 963.6000000238419,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 13,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "borrowed",
+        "baseline"
+      ],
+      "borrowed": {
+        "elapsedMillis": 995.8999999761581,
+        "workerMillis": 995.7000000476837,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 14,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 1037.5999999046326,
+        "workerMillis": 1037.2000000476837,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 14,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "borrowed"
+      ],
+      "baseline": {
+        "elapsedMillis": 1031.8999999761581,
+        "workerMillis": 1031.6000000238419,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 15,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      },
+      "borrowed": {
+        "elapsedMillis": 1050.3000000715256,
+        "workerMillis": 1049.7999999523163,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 1056643136,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 1056643136,
+          "pending": false,
+          "reuses": 15,
+          "reservation": 1056659296,
+          "reservedTotal": 1056659296,
+          "budget": 1073741824
+        },
+        "stats": {
+          "count": 878920,
+          "min": 0,
+          "max": 26.51285128111183,
+          "mean": 0.05774312767869224,
+          "rms": 0.16206351858353354,
+          "stdDev": 0.15142759082002716,
+          "median": 0.02595506740485405
+        },
+        "queryOrderHit": false,
+        "queryOrderBytes": 0,
+        "queryOrderEntries": 0,
+        "resultParity": true
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "c2m-borrowed-queries",
+  "createdAt": "2026-10-13T06:30:20.484Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\mesh-query-borrow-baseline-20261013\\dist",
+      "worker": "worker-CoxSBupU.js",
+      "artifactHashes": {
+        "c2c-worker-BEc2po9F.js": "81b7320a2792f9706de5f767b20308f9a141343858c607df0ef572d4490f1ee1",
+        "ca_wasm_bg-B_lFAgRh.wasm": "a0cf1efea89eeef3a6b836fb72fb3b5d2771365d670b2653b4da493e59a01234",
+        "worker-CoxSBupU.js": "1c3fe139da23b4a9763313b40bb9161af0ac3530841f0ab20ff8a079fd55e86c"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-Dvn603km.js",
+      "artifactHashes": {
+        "c2c-worker-CO_MNOnI.js": "40059b8aab28654985d979dbe4e82e1809d0e879c287956eb0df10e2993a3988",
+        "ca_wasm_bg-oqA35OKA.wasm": "64807af6140dd0e75bcb3ffa741aa73ddc9668e2d592fbcfdfbee39f29bc5a2a",
+        "worker-Dvn603km.js": "9eae269b5d69663fb22e3227041c9f3046ca7a4b80738d1d6182ed1e54be0681"
+      }
+    }
+  },
+  "scriptSha256": "ad342c707736b1828c734a66ed002aeb6eb90c9c9dafe5f76ed080eafccfc8fd",
+  "sourceHashes": {
+    "web/src/mesh-preparation.ts": "3ea0163acd08fecb4350365afcc1b1a437ca34e9ebcef584baf6a3376f4950d6",
+    "web/src/worker.ts": "d2f10ab2085fbda14b723aa68818fee905d2a5724ce4472478fabd99f1201b8b",
+    "web/src/c2c-worker.ts": "493519feccc3edd7675303d3454e79394925cbbdfc7a5c080ffdfcf9481407e9",
+    "web/src/pool.ts": "818d3813e56fee0b3ea99c377753df694865c93d2ce8b6c6b8602dc7df390776",
+    "web/src/protocol.ts": "a10190854032c7975361e95cd22ce37c8cc4813ce78e39901e54f575d86a6bee",
+    "rust/crates/ca-core/src/mesh.rs": "0822e5a3c6f0a92ae4f79efbfa93b20258a3a9b0844e939e83a7daa78bae83e2",
+    "rust/crates/ca-core/src/distance.rs": "6ee92aef367f74c82acccbf3e574e73d07f0c41c64c112327da621be7ea67aa2",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-wasm/src/lib.rs": "fb50ee2b005f77c3d4c9a5305c5deb0d62382cecbef8670e9f94807ddc077f87"
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-autoware/reference.ply",
+      "name": "reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "notes/c2c-real-autoware/compared.ply",
+      "name": "compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "summary": {
+    "baselineMedianMillis": 1090,
+    "borrowedMedianMillis": 1278.9999999403954,
+    "medianPairedReductionPercent": -13.901280508485758,
+    "fasterTrials": 3,
+    "trials": 10
+  },
+  "note": "Full unchanged measured source-index geometry, not independent surveys/accuracy ground truth. Full-input production TIN records XY duplicates and automatic edge rejection; no generated/transformed/thinned performance coordinates. Independent archived retained-CPU worker supplies full f32 distance, exact f64 summary and scalar PLY oracles, then terminates before timing. Both builds adopt cached traversal bounds and the same 1 GiB mesh/BVH policy, resident workers, original logical slices, geometry capacities and reservations; experimental query-order cache is disabled. Candidate synchronously borrows imported WASM f64 slice as triples, avoiding another owned XYZ Vec per query batch in fresh/prepared/hinted C2M bindings. The JS-to-WASM input copy and output copying remain; no borrowed input escapes the call, persistent queries or results are retained. Ordinary unsigned prepared CPU calls are measured; hints, fresh BVH and signed calls receive parity checks but no performance claim. All searches, Morton ordering, guessed triangles, stack reset, exact geometry/distance arithmetic, join/summaries and request policy are unchanged. Avoided payload allocation/copy is 24 bytes per point per batch; this is not measured peak process memory. One excluded first pair, five alternating warm-up pairs and ten alternating timed pairs compare separate archived/current production contexts. Timed geometry misses, query-order hits, fallback, layout/budget mismatch or output differences fail. Whole unsigned RPC includes copies/transfers, ordering/search, join/summaries/arrays. Loading/meshing/startup/first observations/warmups/export/parity/cleanup excluded. Eleven source files, script/artifacts/inputs/manifest/original PCD checked before/after. No builds/tests/scans/edits alongside timing. All losses/spikes retained; clocks/power/scheduling/GC/other apps/code layout/pages uncontrolled. No isolated search/native/signed/GPU speedup claim. No GPU dispatch/model identifiers collected."
+}

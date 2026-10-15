@@ -1,6 +1,6 @@
 /** Distance panel (C2C, C2M, M3C2) and the colorbar of the shown distances. */
 
-import { cloudToCloud, computeM3c2, mapVoxelScores } from "../api";
+import { cloudToCloud, computeM3c2, evaluateMapQuality, prepareGpuC2c } from "../api";
 import { RAMPS, gradientCss, lut, quantile, type RampName } from "../colormap";
 import type { C2cOutput, MapQuality } from "../protocol";
 import { refreshColors } from "./colors";
@@ -14,6 +14,11 @@ const comparedSelect = $<HTMLSelectElement>("c2c-compared");
 const referenceSelect = $<HTMLSelectElement>("c2c-reference");
 export const runButton = $<HTMLButtonElement>("c2c-run");
 const methodSelect = $<HTMLSelectElement>("distance-method");
+const backendSelect = $<HTMLSelectElement>("c2c-backend");
+backendSelect.onchange = () => {
+  // Preparation failure is reported by the computation's existing CPU fallback.
+  if (backendSelect.value.startsWith("webgpu")) void prepareGpuC2c().catch(() => {});
+};
 
 function renderSelects(): void {
   // Only point clouds can be compared; the reference may also be a mesh.
@@ -51,6 +56,7 @@ function updateRunButton(): void {
   $("c2m-signed-row").hidden = m3c2 || quality || !reference || !isMesh(reference);
   $("m3c2-options").hidden = !m3c2;
   $("quality-options").hidden = !quality;
+  $("c2c-backend-row").hidden = m3c2 || quality || !!reference && isMesh(reference);
 }
 methodSelect.onchange = updateRunButton;
 comparedSelect.onchange = referenceSelect.onchange = updateRunButton;
@@ -114,12 +120,13 @@ export async function runM3c2(compared: Entry, reference: Entry): Promise<Entry>
     distances: out.distance,
     stats,
     millis: out.millis,
-    workers: 1,
+    workers: out.workers,
     referenceName: reference.cloud.name,
   });
   const n = out.distance.length;
   setStatus(
-    `M3C2 at ${n.toLocaleString()} core points in ${Math.round(out.millis)} ms: ` +
+    `M3C2 at ${n.toLocaleString()} core points in ${Math.round(out.millis)} ms` +
+      `${out.workers > 1 ? ` (${out.workers} workers)` : ""}: ` +
       `${stats.count.toLocaleString()} measured, ${significant.toLocaleString()} significant ` +
       `(${n ? ((100 * significant) / n).toFixed(1) : 0} %), mean ${fmt(stats.mean)}`,
   );
@@ -142,22 +149,6 @@ runButton.onclick = async () => {
   }
 };
 
-/** Mean and RMS of the distances up to `threshold`, and their share. */
-function inliers(distances: Float32Array, threshold: number): { share: number; mean: number; rms: number } {
-  let [n, sum, sum2] = [0, 0, 0];
-  for (const d of distances) {
-    if (!(d <= threshold)) continue;
-    n++;
-    sum += d;
-    sum2 += d * d;
-  }
-  return {
-    share: distances.length ? n / distances.length : 0,
-    mean: n ? sum / n : Number.NaN,
-    rms: n ? Math.sqrt(sum2 / n) : Number.NaN,
-  };
-}
-
 /**
  * A map (`compared`) against its ground truth (`reference`), after MapEval:
  * accuracy, completeness and Chamfer from nearest distances both ways, and
@@ -170,30 +161,20 @@ export async function runMapQuality(compared: Entry, reference: Entry): Promise<
   const minPoints = Math.max(3, Math.round(num("quality-min") || 10));
   setStatus(`Map quality: ${compared.cloud.name} against ${reference.cloud.name}…`);
   const start = performance.now();
-  const ours = await cloudToCloud(compared.cloud.id, reference.cloud.id, false);
-  const theirs = await cloudToCloud(reference.cloud.id, compared.cloud.id, false);
-  const voxels = await mapVoxelScores({
+  const referenceName = reference.cloud.name;
+  const ours = await evaluateMapQuality({
     compared: compared.cloud.id,
     reference: reference.cloud.id,
+    threshold,
     voxel,
     minPoints,
   });
-  const [a, b] = [inliers(ours.distances, threshold), inliers(theirs.distances, threshold)];
-  const f1 = a.share + b.share > 0 ? (2 * a.share * b.share) / (a.share + b.share) : 0;
-  const quality: MapQuality = {
-    threshold,
-    accuracy: a.rms,
-    precision: a.share,
-    completeness: b.share,
-    f1,
-    chamfer: (a.mean + b.mean) / 2,
-    ...voxels,
-  };
+  const quality = ours.quality;
   compared.c2c = {
     ...ours,
     quality,
     millis: performance.now() - start,
-    referenceName: reference.cloud.name,
+    referenceName,
   };
   compared.mode = "c2c";
   display.activeC2c = compared.cloud.id;
@@ -205,7 +186,7 @@ export async function runMapQuality(compared: Entry, reference: Entry): Promise<
   setStatus(
     `Map quality within ${fmt(threshold)} m: accuracy ${fmt(quality.accuracy)} m, completeness ${pct(quality.completeness)}, ` +
       `F1 ${quality.f1.toFixed(3)}, Chamfer ${fmt(quality.chamfer)} m, AWD ${fmt(quality.awd)} m, SCS ${fmt(quality.scs)} m ` +
-      `(${voxels.voxels.toLocaleString()} voxels)`,
+      `(${quality.voxels.toLocaleString()} voxels)`,
   );
   return quality;
 }
@@ -215,7 +196,9 @@ export async function runNearest(compared: Entry, reference: Entry, signed: bool
   const kind = isMesh(reference) ? "C2M" : "C2C";
   setStatus(`Computing ${kind} distance: ${compared.cloud.name} → ${reference.cloud.name}…`);
   try {
-    const result = await cloudToCloud(compared.cloud.id, reference.cloud.id, signed);
+    const backend = backendSelect.value.startsWith("webgpu") ? "webgpu" : "cpu";
+    const verifyWorkers = backendSelect.value === "webgpu-parallel" ? 4 : 1;
+    const result = await cloudToCloud(compared.cloud.id, reference.cloud.id, signed, backend, verifyWorkers);
     compared.c2c = { ...result, referenceName: reference.cloud.name };
     compared.mode = "c2c";
     display.activeC2c = compared.cloud.id;
@@ -225,7 +208,10 @@ export async function runNearest(compared: Entry, reference: Entry, signed: bool
     distanceChanged.emit();
     setStatus(
       `${kind} distance computed for ${result.stats.count.toLocaleString()} points in ${Math.round(result.millis)} ms` +
-        (result.workers > 1 ? ` on ${result.workers} workers` : ""),
+        (result.compute?.backend === "webgpu" ? " with WebGPU" +
+          (result.workers > 1 ? ` + ${result.workers} CPU workers` : "") :
+          result.workers > 1 ? ` on ${result.workers} workers` : "") +
+        (result.compute?.fallback ? ` (CPU fallback: ${result.compute.fallback})` : ""),
     );
   } catch (err) {
     setStatus(`${kind} failed: ${errorText(err)}`, true);

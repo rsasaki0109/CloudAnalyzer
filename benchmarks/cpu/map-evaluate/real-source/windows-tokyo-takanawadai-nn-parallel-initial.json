@@ -1,0 +1,1021 @@
+{
+  "schemaVersion": 1,
+  "comparison": "map-nn-parallel",
+  "createdAt": "2026-10-14T03:50:46.744456+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/core/map_evaluate.py": "7dc8bf80c90076f83a05cf4862eff866f8113e1f9b49093de27c979423b276e5",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_map_nn_parallel.py": "b721c2fe415531c4afdf95d7580a4a107c0c302a6e6fcc1f2f502450a0fc840c",
+    "cloudanalyzer/scripts/benchmark_map_nn_parallel.py": "8dcdb4599f1bad0c946353f838c0549176dd15417245a6ef35d15036e443e057"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\inputs.json",
+      "bytes": 10395,
+      "sha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-baseline-20261014.py",
+      "bytes": 28001,
+      "sha256": "956f6f37b7d21b5bb18ae3462cba98f9a7003f65ed4062a00e764ed19da1d821"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\hard-intersection-prepared-v2\\geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "coordinateHashes": {
+    "compared": "96298b0393066d2f4d4d9389fde881aa9cfc39ac84a959d8e09e820de57dbb37",
+    "reference": "974efc5b8c5cce8b6a2522feb00d8ed7c9c95d3ff5441a580045643ecdaf0155"
+  },
+  "compiledTree": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\scipy\\spatial\\_ckdtree.cp312-win_amd64.pyd",
+    "bytes": 1523200,
+    "sha256": "8894f6d534e6d514926a8272eb3a1088c02502a921e1cd890390865097ed4813"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "scipy": "1.17.1",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "ompNumThreads": "12",
+    "openblasNumThreads": "1"
+  },
+  "policy": {
+    "serialWorkers": 1,
+    "parallelWorkers": -1,
+    "parallelMinPoints": 65536
+  },
+  "repeats": 5,
+  "warmupRounds": 2,
+  "structureVoxelSize": 3.0,
+  "parity": {
+    "serial": {
+      "millis": 10050.6087,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 941933.0,
+          "n_ref": 941933.0,
+          "mean_est_to_ref_m": 0.07118245769663767,
+          "mean_ref_to_est_m": 0.07117819530335998,
+          "chamfer_m": 0.14236065299999764,
+          "accuracy@0.200m": 0.9974573563087821,
+          "completeness@0.200m": 0.997430815142903,
+          "accuracy@0.100m": 0.8580758928713613,
+          "completeness@0.100m": 0.8581916123545942,
+          "accuracy@0.080m": 0.6324685513725499,
+          "completeness@0.080m": 0.6329983130434967,
+          "accuracy@0.050m": 0.24070289500420944,
+          "completeness@0.050m": 0.2407039566508446,
+          "accuracy@0.010m": 0.0043867238964979465,
+          "completeness@0.010m": 0.004388847189768274,
+          "awd_m": 0.03934705527245602,
+          "scs": 0.56235594678104,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0,
+          "fscore@0.200m": 0.9974440855492829
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "estimated_error_raw_ply": "estimated_error_raw.ply",
+          "estimated_error_inlier_0.200m_ply": "estimated_error_inlier_0.200m.ply"
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "17ad5d4cff0ce5b1ae1d82e24b2499513e8a14a54ff776fb017e0b6c0b36c4f1",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\serial-distance-0.bin",
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\serial-distance-1.bin",
+          "bytes": 7535464,
+          "sha256": "dac0f0b69efd5b929c9b9da4c44cfbb9e06ff91b07b1a21269cb282b91fb6604",
+          "points": 941933
+        }
+      ],
+      "artifacts": {
+        "estimated_error_raw_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\serial\\map_evaluate\\nn_thresholds\\estimated_error_raw.ply",
+          "bytes": 25432400,
+          "sha256": "497ec49d575818173d15b1ee38bed8609afead8e4a8ff19a43f231fc7bbc0481",
+          "file": "estimated_error_raw.ply"
+        },
+        "estimated_error_inlier_0.200m_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\serial\\map_evaluate\\nn_thresholds\\estimated_error_inlier_0.200m.ply",
+          "bytes": 25367735,
+          "sha256": "9ed0b4e0b099618b69d841495f6b32934c2a09768480e5ef50ab87a765c74207",
+          "file": "estimated_error_inlier_0.200m.ply"
+        }
+      }
+    },
+    "parallel": {
+      "millis": 8807.3289,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 941933.0,
+          "n_ref": 941933.0,
+          "mean_est_to_ref_m": 0.07118245769663767,
+          "mean_ref_to_est_m": 0.07117819530335998,
+          "chamfer_m": 0.14236065299999764,
+          "accuracy@0.200m": 0.9974573563087821,
+          "completeness@0.200m": 0.997430815142903,
+          "accuracy@0.100m": 0.8580758928713613,
+          "completeness@0.100m": 0.8581916123545942,
+          "accuracy@0.080m": 0.6324685513725499,
+          "completeness@0.080m": 0.6329983130434967,
+          "accuracy@0.050m": 0.24070289500420944,
+          "completeness@0.050m": 0.2407039566508446,
+          "accuracy@0.010m": 0.0043867238964979465,
+          "completeness@0.010m": 0.004388847189768274,
+          "awd_m": 0.03934705527245602,
+          "scs": 0.56235594678104,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0,
+          "fscore@0.200m": 0.9974440855492829
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "estimated_error_raw_ply": "estimated_error_raw.ply",
+          "estimated_error_inlier_0.200m_ply": "estimated_error_inlier_0.200m.ply"
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "17ad5d4cff0ce5b1ae1d82e24b2499513e8a14a54ff776fb017e0b6c0b36c4f1",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\parallel-distance-0.bin",
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\parallel-distance-1.bin",
+          "bytes": 7535464,
+          "sha256": "dac0f0b69efd5b929c9b9da4c44cfbb9e06ff91b07b1a21269cb282b91fb6604",
+          "points": 941933
+        }
+      ],
+      "artifacts": {
+        "estimated_error_raw_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\parallel\\map_evaluate\\nn_thresholds\\estimated_error_raw.ply",
+          "bytes": 25432400,
+          "sha256": "497ec49d575818173d15b1ee38bed8609afead8e4a8ff19a43f231fc7bbc0481",
+          "file": "estimated_error_raw.ply"
+        },
+        "estimated_error_inlier_0.200m_ply": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-nn-parallel-tokyo-initial-20261014\\parallel\\map_evaluate\\nn_thresholds\\estimated_error_inlier_0.200m.ply",
+          "bytes": 25367735,
+          "sha256": "9ed0b4e0b099618b69d841495f6b32934c2a09768480e5ef50ab87a765c74207",
+          "file": "estimated_error_inlier_0.200m.ply"
+        }
+      }
+    }
+  },
+  "firstUse": {
+    "serial": {
+      "millis": 9559.0685,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 941933.0,
+          "n_ref": 941933.0,
+          "mean_est_to_ref_m": 0.07118245769663767,
+          "mean_ref_to_est_m": 0.07117819530335998,
+          "chamfer_m": 0.14236065299999764,
+          "accuracy@0.200m": 0.9974573563087821,
+          "completeness@0.200m": 0.997430815142903,
+          "accuracy@0.100m": 0.8580758928713613,
+          "completeness@0.100m": 0.8581916123545942,
+          "accuracy@0.080m": 0.6324685513725499,
+          "completeness@0.080m": 0.6329983130434967,
+          "accuracy@0.050m": 0.24070289500420944,
+          "completeness@0.050m": 0.2407039566508446,
+          "accuracy@0.010m": 0.0043867238964979465,
+          "completeness@0.010m": 0.004388847189768274,
+          "awd_m": 0.03934705527245602,
+          "scs": 0.56235594678104,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0,
+          "fscore@0.200m": 0.9974440855492829
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+      "distances": [],
+      "artifacts": {}
+    },
+    "parallel": {
+      "millis": 7236.6554,
+      "report": {
+        "strategy": "nn_thresholds",
+        "design": "functional",
+        "metrics": {
+          "n_est": 941933.0,
+          "n_ref": 941933.0,
+          "mean_est_to_ref_m": 0.07118245769663767,
+          "mean_ref_to_est_m": 0.07117819530335998,
+          "chamfer_m": 0.14236065299999764,
+          "accuracy@0.200m": 0.9974573563087821,
+          "completeness@0.200m": 0.997430815142903,
+          "accuracy@0.100m": 0.8580758928713613,
+          "completeness@0.100m": 0.8581916123545942,
+          "accuracy@0.080m": 0.6324685513725499,
+          "completeness@0.080m": 0.6329983130434967,
+          "accuracy@0.050m": 0.24070289500420944,
+          "completeness@0.050m": 0.2407039566508446,
+          "accuracy@0.010m": 0.0043867238964979465,
+          "completeness@0.010m": 0.004388847189768274,
+          "awd_m": 0.03934705527245602,
+          "scs": 0.56235594678104,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0,
+          "fscore@0.200m": 0.9974440855492829
+        },
+        "artifacts": {
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "downsample_voxel_size": 0.0,
+          "align_mode": "none",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_nn_thresholds",
+        "reference_required": true,
+        "mode": "exact",
+        "sampling_policy": {
+          "downsample_voxel_size_m": 0.0,
+          "structure_voxel_size_m": 3.0,
+          "thresholds_m": [
+            0.2,
+            0.1,
+            0.08,
+            0.05,
+            0.01
+          ],
+          "align_mode": "none",
+          "nn_backend": "scipy_ckdtree",
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        }
+      },
+      "reportSha256": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+      "distances": [],
+      "artifacts": {}
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "millis": {
+        "serial": 8048.8332,
+        "parallel": 6381.5328
+      },
+      "reportHashes": {
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    },
+    {
+      "order": [
+        "parallel",
+        "serial"
+      ],
+      "millis": {
+        "parallel": 6215.3929,
+        "serial": 7811.1962
+      },
+      "reportHashes": {
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "millis": {
+        "serial": 7698.6679,
+        "parallel": 6543.398
+      },
+      "reportHashes": {
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    },
+    {
+      "order": [
+        "parallel",
+        "serial"
+      ],
+      "millis": {
+        "parallel": 6546.5887,
+        "serial": 7823.7613
+      },
+      "reportHashes": {
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    },
+    {
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "millis": {
+        "serial": 9047.9959,
+        "parallel": 7497.6863
+      },
+      "reportHashes": {
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    },
+    {
+      "order": [
+        "parallel",
+        "serial"
+      ],
+      "millis": {
+        "parallel": 8617.4716,
+        "serial": 11262.1472
+      },
+      "reportHashes": {
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    },
+    {
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "millis": {
+        "serial": 11656.1405,
+        "parallel": 9389.4151
+      },
+      "reportHashes": {
+        "serial": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb",
+        "parallel": "47dc83822e9ac1069733fa6337dbb6a639845aed45997a0a4a01990852b6eabb"
+      }
+    }
+  ],
+  "summary": {
+    "serialMedianMillis": 9047.9959,
+    "parallelMedianMillis": 7497.6863,
+    "pairedShorteningPercent": 17.13428716297274,
+    "pairedSavedMedianMillis": 1550.3095999999996,
+    "fasterTrials": 5
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 4,
+    "plyOutputsChecked": 4,
+    "reportsChecked": 18
+  },
+  "note": "Complete resident MapEval includes both fresh SciPy tree builds, both exact queries, threshold/statistic reductions and AWD/SCS at the recorded structure voxel size. No artificial coordinates or thinning are added. File loading/imports, hashing, traced full-f64/PLY parity and CLI serialization are outside clocks. Default protocol is 3 m / minimum 100 points / neighbor radius 5; size 0 explicitly omits AWD/SCS. Excluded first pair and two warm-up pairs precede alternating timed pairs. No outliers removed. No persistent tree cache is introduced. Thread scheduling/scratch and clocks are uncontrolled. No GPU claim."
+}

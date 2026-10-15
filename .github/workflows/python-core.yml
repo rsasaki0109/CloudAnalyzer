@@ -127,7 +127,19 @@ jobs:
           pip install dist/*.whl
       - name: Rust core agrees with Open3D and laspy
         working-directory: cloudanalyzer
-        run: python -m pytest -q tests/test_rust_core.py tests/test_metrics.py tests/test_io.py tests/test_vector_map.py tests/test_mapping_job.py tests/test_mapping_motion_run.py tests/test_mapping_motion_trial.py tests/test_mapping_trajectory.py tests/test_mapping_hd_repair.py tests/test_mapping_hd_plan.py tests/test_mapping_plan_apply.py tests/test_mapping_bundle.py tests/test_mapping_preview.py tests/test_http_ranges.py tests/test_copc_stream.py tests/test_copc_tiles.py tests/test_copc_scale_benchmark.py
+        run: >-
+          python -m pytest -q
+          tests/test_rust_core.py tests/test_metrics.py tests/test_io.py
+          tests/test_vector_map.py tests/test_mapping_job.py tests/test_mapping_motion_run.py
+          tests/test_mapping_motion_trial.py tests/test_mapping_trajectory.py
+          tests/test_mapping_hd_repair.py tests/test_mapping_hd_plan.py tests/test_mapping_plan_apply.py
+          tests/test_mapping_bundle.py tests/test_mapping_preview.py tests/test_http_ranges.py
+          tests/test_copc_stream.py tests/test_copc_tiles.py tests/test_copc_scale_benchmark.py
+          tests/test_batch_reference.py tests/test_loop_reference.py tests/test_scan_match_debug.py
+          tests/test_slam_map_reuse.py tests/test_registration_target_normals.py
+          tests/test_scan_icp_normals.py tests/test_scan_preprocess_borrow.py
+          tests/test_compare_color_consumers.py tests/test_io_binary_xyz_ply.py
+          ../rust/crates/ca-py/tests
 
   publish:
     # Push a tag such as `core-v0.1.0` to publish to PyPI (trusted publishing).

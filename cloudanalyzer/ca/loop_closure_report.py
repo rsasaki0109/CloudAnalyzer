@@ -10,7 +10,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ca.evaluate import evaluate as evaluate_map
+from ca.evaluate import _evaluate_clouds
+from ca.io import load_point_cloud
+from ca.metrics import prepare_nn_reference
 from ca.posegraph import validate_posegraph_session
 from ca.trajectory import evaluate_trajectory
 
@@ -115,6 +117,29 @@ def _apply_gate(report: dict, gate: LoopClosureGate) -> dict | None:
     }
 
 
+def _evaluate_map_pair(
+    before_map: str,
+    after_map: str,
+    reference_map: str,
+    thresholds: list[float] | None,
+) -> tuple[dict, dict]:
+    """Own one reference snapshot/tree only for the two map evaluations."""
+    before = load_point_cloud(before_map)
+    reference = load_point_cloud(reference_map)
+    prepared_reference = prepare_nn_reference(reference)
+    before_eval = _evaluate_clouds(
+        before_map, reference_map, before, reference, thresholds,
+        prepared_reference=prepared_reference,
+    )
+    del before
+    after = load_point_cloud(after_map)
+    after_eval = _evaluate_clouds(
+        after_map, reference_map, after, reference, thresholds,
+        prepared_reference=prepared_reference,
+    )
+    return before_eval, after_eval
+
+
 def build_loop_closure_report(
     *,
     before_map: str,
@@ -136,8 +161,9 @@ def build_loop_closure_report(
     gate: LoopClosureGate | None = None,
 ) -> dict[str, Any]:
     """Build a before/after report for manual loop-closure outcomes."""
-    before_eval = evaluate_map(before_map, reference_map, thresholds=thresholds)
-    after_eval = evaluate_map(after_map, reference_map, thresholds=thresholds)
+    before_eval, after_eval = _evaluate_map_pair(
+        before_map, after_map, reference_map, thresholds,
+    )
 
     before_best = _best_f1(before_eval)
     after_best = _best_f1(after_eval)

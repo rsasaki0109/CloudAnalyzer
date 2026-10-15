@@ -1124,6 +1124,13 @@
         </label>
         <label>Compared <select id="c2c-compared"></select></label>
         <label>Reference <select id="c2c-reference"></select></label>
+        <label id="c2c-backend-row">Compute with
+          <select id="c2c-backend">
+            <option value="cpu" selected>CPU workers</option>
+            <option value="webgpu">WebGPU (experimental)</option>
+            <option value="webgpu-parallel">WebGPU + CPU workers (experimental)</option>
+          </select>
+        </label>
         <details id="m3c2-options" class="options" hidden open>
           <summary>M3C2 options</summary>
           <div class="range">

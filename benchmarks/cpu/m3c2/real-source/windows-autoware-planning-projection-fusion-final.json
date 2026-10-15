@@ -1,0 +1,976 @@
+{
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "workers": 2,
+  "cores": 696739,
+  "finiteDistances": 160487,
+  "oracleHashes": {
+    "distance": "cc0f5a715a8e66ebcd139961fe9c1a84dfef6062ae7ccdbbc69bf0c71d8ad490",
+    "lod95": "8a3586b9eddfb7c556adbe861e1b8c5dc07436c1a6dea0c491a0bef4b931208e",
+    "significant": "438dc0c5c2e37d29daca336d0d291a4e6b5ff898b70ede9a9bb4900103a9d06d",
+    "ply": "8e55acf9e8fee58886722f152bf55cdcb27d0ecb63bb40c35549b4a59458dce0"
+  },
+  "cases": [
+    {
+      "name": "fresh-normals",
+      "cacheNormals": false,
+      "firstUse": {
+        "lists": {
+          "elapsedMillis": 1561,
+          "workerMillis": 1556.7000000476837,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "resultParity": true
+        },
+        "fused": {
+          "elapsedMillis": 1325.3000000715256,
+          "workerMillis": 1324.7999999523163,
+          "workers": 2,
+          "treeCacheHit": true,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": true,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1203.8999999761581,
+            "workerMillis": 1202.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 1037.7999999523163,
+            "workerMillis": 1037.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 1166.5,
+            "workerMillis": 1165.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 1115.3999999761581,
+            "workerMillis": 1114.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1112.1999999284744,
+            "workerMillis": 1111.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 1067.9000000953674,
+            "workerMillis": 1067.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 1111.3000000715256,
+            "workerMillis": 1110.6999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 1028.7000000476837,
+            "workerMillis": 1027.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 956,
+            "workerMillis": 955.4000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 985.5,
+            "workerMillis": 984.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 963,
+            "workerMillis": 962.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 963.2999999523163,
+            "workerMillis": 962.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1054.7000000476837,
+            "workerMillis": 1053.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 991.3999999761581,
+            "workerMillis": 990.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 1118.7999999523163,
+            "workerMillis": 1118.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 1017.6999999284744,
+            "workerMillis": 1017.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1005.2999999523163,
+            "workerMillis": 1004.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 1060.8000000715256,
+            "workerMillis": 1060.4000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 1123.8000000715256,
+            "workerMillis": 1122.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 1109.3000000715256,
+            "workerMillis": 1108.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1008,
+            "workerMillis": 1007.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 986.3999999761581,
+            "workerMillis": 985.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 938.8000000715256,
+            "workerMillis": 938.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 993.3000000715256,
+            "workerMillis": 992.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1001.7999999523163,
+            "workerMillis": 1001.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 923,
+            "workerMillis": 922.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 937.2000000476837,
+            "workerMillis": 936.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 1039.8999999761581,
+            "workerMillis": 1039.4000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 960.3999999761581,
+            "workerMillis": 959.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 1034.3999999761581,
+            "workerMillis": 1034,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "listsMedianMillis": 1006.6499999761581,
+        "fusedMedianMillis": 988.8999999761581,
+        "medianPairedReductionPercent": 1.0870000431983107,
+        "fasterTrials": 6,
+        "trials": 10
+      }
+    },
+    {
+      "name": "reused-normals",
+      "cacheNormals": true,
+      "firstUse": {
+        "lists": {
+          "elapsedMillis": 1341.6000000238419,
+          "workerMillis": 1337.3999999761581,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 39017384,
+          "fusedProjection": false,
+          "resultParity": true
+        },
+        "fused": {
+          "elapsedMillis": 722,
+          "workerMillis": 721.6000000238419,
+          "workers": 2,
+          "treeCacheHit": true,
+          "normalCacheHit": true,
+          "normalCacheBytes": 39017384,
+          "fusedProjection": true,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 789.3999999761581,
+            "workerMillis": 788.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 767.3999999761581,
+            "workerMillis": 767.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 775.8999999761581,
+            "workerMillis": 775.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 788.1000000238419,
+            "workerMillis": 787.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 822,
+            "workerMillis": 821.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 729.3999999761581,
+            "workerMillis": 728.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 779.6000000238419,
+            "workerMillis": 779.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 816.6000000238419,
+            "workerMillis": 815.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 783.3999999761581,
+            "workerMillis": 782.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 729.5999999046326,
+            "workerMillis": 728.9000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 674.9000000953674,
+            "workerMillis": 674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 755.6000000238419,
+            "workerMillis": 755,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 854.7000000476837,
+            "workerMillis": 853.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 1201.7000000476837,
+            "workerMillis": 1200,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 923.5999999046326,
+            "workerMillis": 922.9000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 991.2000000476837,
+            "workerMillis": 990.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 1036,
+            "workerMillis": 1035.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 881.0999999046326,
+            "workerMillis": 880.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 1069,
+            "workerMillis": 1068,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 1070.1999999284744,
+            "workerMillis": 1069.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 969.3000000715256,
+            "workerMillis": 968.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 942,
+            "workerMillis": 940.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 924,
+            "workerMillis": 923.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 814.7999999523163,
+            "workerMillis": 814,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 914.7999999523163,
+            "workerMillis": 914.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 921.6000000238419,
+            "workerMillis": 920.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "fused",
+            "lists"
+          ],
+          "fused": {
+            "elapsedMillis": 819.8999999761581,
+            "workerMillis": 819.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "lists": {
+            "elapsedMillis": 868.7000000476837,
+            "workerMillis": 867.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "lists",
+            "fused"
+          ],
+          "lists": {
+            "elapsedMillis": 841.6000000238419,
+            "workerMillis": 841,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "fused": {
+            "elapsedMillis": 829.5,
+            "workerMillis": 828.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "listsMedianMillis": 891.75,
+        "fusedMedianMillis": 922.5999999642372,
+        "medianPairedReductionPercent": 2.127101571554607,
+        "fasterTrials": 7,
+        "trials": 10
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "ordered-m3c2-projection-fusion",
+  "createdAt": "2026-10-12T20:42:59.831Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\m3c2-projection-baseline-20261013\\dist",
+      "worker": "worker-DFb4F76u.js",
+      "artifactHashes": {
+        "c2c-worker-C8QpwX63.js": "9cbadb19648acba7fd57e8df0b7d2b719637fb0b1592254407c08ce3b2450728",
+        "ca_wasm_bg-l_BIO-ou.wasm": "ea11a775067326419101c05351a132df02225f65afde67af2254cb7809ae9bce",
+        "worker-DFb4F76u.js": "4ffdbaa10892f38781098bb1f1f5f75e1a43f7816778af1e19bfea02ddbed082"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-Btg7Eov5.js",
+      "artifactHashes": {
+        "c2c-worker-BeOwJ5Yb.js": "d2d593ca81a2299698c27902ccc9f1ca68cf7f9966f14fd897d20068750473e3",
+        "ca_wasm_bg-BlOFkeOu.wasm": "0cd1cf34593c84477387c653cf3ce8d0d5415e0308e782ab598203c66e77cdcd",
+        "worker-Btg7Eov5.js": "f7b5fca0d42c1ae11817c3f453d078bcbc4f5db98de2f2cbdfe50b088c72264e"
+      }
+    }
+  },
+  "scriptSha256": "5674c6dc0f4b6856f0c3bf778eb2c6b5c5386acbdba5ee9bc2d607e0a15c90b1",
+  "sourceHashes": {
+    "web/src/m3c2-workers.ts": "26be13b10662ba462361649699e17548ef1fdfa32bfb9cc2cc2a608908325cdd",
+    "web/src/m3c2-preparation.ts": "345d4908fd32ee7a3f9c537df15d79429ed4266d5a2c4fd1148c4076e95b2f14",
+    "web/src/worker.ts": "c2892099fce6e8e1feda8eaf50ba6a0b1050a3f9a4fe8733fbdb11ce858200fb",
+    "web/src/c2c-worker.ts": "fb90d8b07c6ed821b2295024624fd1ee5d11ff2df3822e97e49816c3e60db880",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "a222cb4411f2e5007d6be7f24ca8c389075581fa166ab2d2a743662d2b854639",
+    "rust/crates/ca-core/src/m3c2.rs": "7ff159b969ca1cb304ebcb14a7fd28852d624aef77973158903f832d8866c2ce",
+    "rust/crates/ca-core/src/kdtree.rs": "b97afb189a7cb9f507ef43033fa89e165a28639ad9becb1e9f0975c87a799a65",
+    "rust/crates/ca-wasm/src/m3c2.rs": "4edb1d21a4b0ab1b740053d8defe3fc540103a165f08b143db5c4c9d618546ee",
+    "rust/crates/ca-wasm/src/lib.rs": "1ff9715ad7ce5e94cf6bda9827cd6cda8ddff1332605f325965083a368982dfe"
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-autoware/reference.ply",
+      "name": "reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-autoware/compared.ply",
+      "name": "compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured reference/compared inputs; no added/thinned coordinates. Production original-point representatives at core spacing 0.25 m, not independent survey/accuracy ground truth. Normal radius 0.4, projection radius 0.25, half-depth 0.5; radius bounds disabled and shared fresh reference search enabled. Archived prepared CPU production output supplies f32 distance, LoD95, significance and complete PLY oracles. Current hit-list and fused controls share one prewarmed prepared-tree context per fitting case; the two cases use separate sequential contexts. Fresh fitting disables normal reuse and explicitly opts into fusion for its experimental control; it remains unfused by default. The cached fused control omits the projection flag, exercising the production automatic policy: every lane must reuse the same exact cores/normals, automatically fuse projection, and stay within 64 MiB. Fused traversal computes the same spherical membership, near/far hit order, f64 deltas and squared distance, then immediately performs the unchanged cylindrical filter and sequential sums. Warm normals fuse both projections; fresh shared search keeps reference normal/projection slot lists, fusing only compared projection. Existing worker/core scheduling, normal fitting, sample variance, LoD95, joining and output indexing remain unchanged. Whole RPC includes plan/core selection, bindings/transfers, search/projection/fitting, joining, attributes/LOD indexing and returned arrays. Loading, pool startup, first observations, five warm-up rounds, parity/export/removal excluded. First lists observation constructs trees and possibly captures normals; subsequent fused observation already reuses them, so first observations are not comparable cold backend timings. Timed cache/layout mismatch fails. Source/artifact/input/source/manifest/script hashes checked before/after. No builds/tests/scans alongside timing; clocks, power, other applications, scheduling, GC and retained WASM pages uncontrolled. No GPU model identifiers recorded."
+}

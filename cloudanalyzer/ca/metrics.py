@@ -1,9 +1,29 @@
 """Distance metrics module."""
 
+from typing import Protocol, cast
+
 import numpy as np
 import open3d as o3d
 
 from ca._rust import core
+
+
+class _PreparedReference(Protocol):
+    def distances(self, source: np.ndarray) -> np.ndarray: ...
+
+
+def prepare_nn_reference(target: o3d.geometry.PointCloud) -> _PreparedReference | None:
+    """Own a frozen reference tree when the optional core supports it.
+
+    Callers must keep the reference coordinates fixed for the object's lifetime.
+    Older extensions, disabled/missing cores and empty targets retain stateless
+    dispatch. Real construction failures propagate to the caller.
+    """
+    rust = core()
+    constructor = getattr(rust, "PreparedReference", None)
+    if constructor is None or target.is_empty():
+        return None
+    return cast(_PreparedReference, constructor(np.asarray(target.points)))
 
 
 def compute_nn_distance(

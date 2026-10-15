@@ -3,9 +3,10 @@
 import shlex
 from pathlib import Path
 
-from ca.evaluate import evaluate
+from ca.evaluate import _evaluate_clouds
 from ca.io import SUPPORTED_EXTENSIONS, load_point_cloud
 from ca.log import logger
+from ca.metrics import prepare_nn_reference
 from ca.pareto import mark_quality_size_recommended
 from ca.trajectory import SUPPORTED_TRAJECTORY_EXTENSIONS, evaluate_trajectory
 
@@ -263,8 +264,9 @@ def batch_evaluate(
         return []
     source_root = Path(directory)
 
-    # Validate the reference once so we fail fast on bad input.
-    load_point_cloud(reference_path)
+    # Each batch uses one reference snapshot. Single-file batches need no tree cache.
+    reference = load_point_cloud(reference_path)
+    prepared_reference = prepare_nn_reference(reference) if len(files) > 1 else None
     compressed_root = Path(compressed_dir) if compressed_dir is not None else None
     compressed_files = (
         _find_files(compressed_dir, recursive=recursive)
@@ -280,7 +282,14 @@ def batch_evaluate(
     for f in files:
         logger.debug("Evaluating: %s", f)
         try:
-            eval_result = evaluate(str(f), reference_path, thresholds=thresholds)
+            source = load_point_cloud(str(f))
+            try:
+                eval_result = _evaluate_clouds(
+                    str(f), reference_path, source, reference, thresholds,
+                    prepared_reference=prepared_reference,
+                )
+            finally:
+                del source
             best_f1 = max(eval_result["f1_scores"], key=lambda score: score["f1"])
             quality_gate = _quality_gate_result(
                 eval_result["auc"],
@@ -313,8 +322,10 @@ def batch_evaluate(
                 }
             )
         except (FileNotFoundError, ValueError) as e:
-            logger.warning("Skipped %s: %s", f, e)
+            # Retained log records must not keep a failed cloud's traceback alive.
+            logger.warning("Skipped %s: %s", f, str(e))
 
+    del prepared_reference, reference
     mark_quality_size_recommended(
         results,
         min_auc=min_auc,

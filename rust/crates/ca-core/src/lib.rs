@@ -20,6 +20,7 @@ pub mod m3c2;
 pub mod map_quality;
 pub mod merge;
 pub mod mesh;
+mod normal_pair;
 pub mod normals;
 pub mod octree;
 pub mod odometry;

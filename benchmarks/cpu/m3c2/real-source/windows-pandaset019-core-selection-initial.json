@@ -1,0 +1,1111 @@
+{
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "workers": 3,
+  "cores": 212541,
+  "finiteDistances": 96853,
+  "oracleHashes": {
+    "distance": "01bd0cd674de555690748b8ec8def1ea9b899b57fded1ce6e4c1f2d656016c2c",
+    "lod95": "f3514ae54ed46d6ed971a86084720759d5865ff141c0c93d5414bf30a787156d",
+    "significant": "63092e66bede91e81288e11b2e2c9f70292255e082a672fa6182bd01cef78fce",
+    "ply": "64c634cef58deca42d29557a80a891ebbb750ae9624c54ec47ee9005c6294c5d"
+  },
+  "cases": [
+    {
+      "name": "fresh-normals",
+      "cacheNormals": false,
+      "firstUse": {
+        "baseline": {
+          "elapsedMillis": 606,
+          "workerMillis": 605.6000000238419,
+          "workers": 3,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "coreSelectionCacheHit": false,
+          "coreSelectionCacheBytes": 0,
+          "resultParity": true
+        },
+        "retained": {
+          "elapsedMillis": 560.5,
+          "workerMillis": 560.2000000476837,
+          "workers": 3,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "coreSelectionCacheHit": false,
+          "coreSelectionCacheBytes": 850164,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 347,
+            "workerMillis": 346.60000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 305.10000002384186,
+            "workerMillis": 304.6999999284744,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 311.2000000476837,
+            "workerMillis": 311,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 365.2999999523163,
+            "workerMillis": 364.7999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 397,
+            "workerMillis": 396.89999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 343.8000000715256,
+            "workerMillis": 343.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 315.7000000476837,
+            "workerMillis": 315.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 347.1999999284744,
+            "workerMillis": 346.7999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 336.40000009536743,
+            "workerMillis": 336.2000000476837,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 305.2999999523163,
+            "workerMillis": 304.90000009536743,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 340.39999997615814,
+            "workerMillis": 340,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 338.5,
+            "workerMillis": 338.2999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 319.10000002384186,
+            "workerMillis": 318.89999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 336.6999999284744,
+            "workerMillis": 336.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 299.09999990463257,
+            "workerMillis": 298.90000009536743,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 366.6999999284744,
+            "workerMillis": 366.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 317.59999990463257,
+            "workerMillis": 317.3000000715256,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 305.2000000476837,
+            "workerMillis": 305,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 329.5,
+            "workerMillis": 329,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 341.10000002384186,
+            "workerMillis": 340.7999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 358.2999999523163,
+            "workerMillis": 358.1999999284744,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 299.5,
+            "workerMillis": 299.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 315.2000000476837,
+            "workerMillis": 314.89999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 348.7000000476837,
+            "workerMillis": 348.2999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 332.2999999523163,
+            "workerMillis": 332.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 329.8000000715256,
+            "workerMillis": 329.5,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 369.6999999284744,
+            "workerMillis": 369.40000009536743,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 375.2999999523163,
+            "workerMillis": 375.09999990463257,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 353.6999999284744,
+            "workerMillis": 353.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 342.5,
+            "workerMillis": 342.2999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "baselineMedianMillis": 344.9000000357628,
+        "retainedMedianMillis": 329.6500000357628,
+        "medianPairedReductionPercent": 3.2836437654562456,
+        "fasterTrials": 8,
+        "trials": 10
+      }
+    },
+    {
+      "name": "reused-normals",
+      "cacheNormals": true,
+      "firstUse": {
+        "baseline": {
+          "elapsedMillis": 619.5,
+          "workerMillis": 619.1999999284744,
+          "workers": 3,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 11902296,
+          "fusedProjection": false,
+          "coreSelectionCacheHit": false,
+          "coreSelectionCacheBytes": 0,
+          "resultParity": true
+        },
+        "retained": {
+          "elapsedMillis": 582.5,
+          "workerMillis": 582,
+          "workers": 3,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 11902296,
+          "fusedProjection": false,
+          "coreSelectionCacheHit": false,
+          "coreSelectionCacheBytes": 850164,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 271,
+            "workerMillis": 270.6999999284744,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 255.29999995231628,
+            "workerMillis": 255.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 232.89999997615814,
+            "workerMillis": 232.60000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 278,
+            "workerMillis": 277.59999990463257,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 275.39999997615814,
+            "workerMillis": 275.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 235,
+            "workerMillis": 234.80000007152557,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 244.5,
+            "workerMillis": 244.29999995231628,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 271.2000000476837,
+            "workerMillis": 271,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 265.7000000476837,
+            "workerMillis": 265.2999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 235.70000004768372,
+            "workerMillis": 235.5,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 251.60000002384186,
+            "workerMillis": 251.30000007152557,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 271.2000000476837,
+            "workerMillis": 270.89999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 282.2999999523163,
+            "workerMillis": 281.90000009536743,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 254.79999995231628,
+            "workerMillis": 254.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 252.20000004768372,
+            "workerMillis": 251.79999995231628,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 300.39999997615814,
+            "workerMillis": 300.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 302.10000002384186,
+            "workerMillis": 301.7999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 270.8000000715256,
+            "workerMillis": 270.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 248.29999995231628,
+            "workerMillis": 248.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 294.1999999284744,
+            "workerMillis": 293.90000009536743,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 283.89999997615814,
+            "workerMillis": 283.59999990463257,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 259.3000000715256,
+            "workerMillis": 259.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 257.10000002384186,
+            "workerMillis": 256.7999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 301.7000000476837,
+            "workerMillis": 301.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 290.6999999284744,
+            "workerMillis": 290.2000000476837,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 287.7000000476837,
+            "workerMillis": 287.5,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "retained",
+            "baseline"
+          ],
+          "retained": {
+            "elapsedMillis": 300.10000002384186,
+            "workerMillis": 299.7999999523163,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          },
+          "baseline": {
+            "elapsedMillis": 283.40000009536743,
+            "workerMillis": 283.10000002384186,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "retained"
+          ],
+          "baseline": {
+            "elapsedMillis": 302.2000000476837,
+            "workerMillis": 301.89999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": false,
+            "coreSelectionCacheBytes": 0,
+            "resultParity": true
+          },
+          "retained": {
+            "elapsedMillis": 273.5,
+            "workerMillis": 273.39999997615814,
+            "workers": 3,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 11902296,
+            "fusedProjection": true,
+            "coreSelectionCacheHit": true,
+            "coreSelectionCacheBytes": 850164,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "baselineMedianMillis": 292.4499999284744,
+        "retainedMedianMillis": 258.2000000476837,
+        "medianPairedReductionPercent": 9.619215851723357,
+        "fasterTrials": 9,
+        "trials": 10
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "m3c2-core-selection-reuse",
+  "createdAt": "2026-10-13T04:51:22.474Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\m3c2-core-selection-baseline-20261013\\dist",
+      "worker": "worker-B2YUTfU9.js",
+      "artifactHashes": {
+        "c2c-worker-DPx72pBi.js": "4480757d16ffdde143c7c6337f060677f54b1e92f6429c4258f0b4146193e358",
+        "ca_wasm_bg-DhMpDqOs.wasm": "f22520a8e40c168cb1d0fe346e8841d0791793246f1497d3b0d225928ef48a36",
+        "worker-B2YUTfU9.js": "6e23a3b98c6741e87270696e73e90e1aa60028e9bd0df1d177dccc49ed85db51"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-C1DrQQMC.js",
+      "artifactHashes": {
+        "c2c-worker-DP0s_3CH.js": "352843528935d712d1647db0ad652128857536245823e40808cc4a09a89aa045",
+        "ca_wasm_bg-CGnQw16E.wasm": "b0c00379ea75ee32da94c4cdb8a1e60f2405cfb348a4ed9db68b8d09b361a0bc",
+        "worker-C1DrQQMC.js": "984cde8243aa3c84730963af2f6827f55e8bce714ade1af5e38a4de047f87104"
+      }
+    }
+  },
+  "scriptSha256": "02c077a0e3832ec454ba2e219724819a3ec53a456de426bdebbea5bf156097b3",
+  "sourceHashes": {
+    "web/src/m3c2-core-selection.ts": "bcd34467ce5910d7bcce74ad98a0c0f67cae48c9c41d75f31c41763e0df4c31b",
+    "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+    "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+    "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+    "rust/crates/ca-core/src/icp.rs": "c8877991626c138d55b7619439e30ad96216f7be22a1392432b0f696755aec2e",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+    "web/src/m3c2-workers.ts": "4386999ec2da102f72b1ba21efd542b0c40e84e120dd5ed6ba1f69e6c02238eb",
+    "web/src/m3c2-preparation.ts": "345d4908fd32ee7a3f9c537df15d79429ed4266d5a2c4fd1148c4076e95b2f14",
+    "web/src/worker.ts": "c490f69d618a1bbb8c01b6a4af0564646e5117c375716929c093cf8ef66c1cd8",
+    "web/src/c2c-worker.ts": "fb90d8b07c6ed821b2295024624fd1ee5d11ff2df3822e97e49816c3e60db880",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "3a98fc8eb9d381d6a703b2de0bdfefbc277725f210a35def2dc5bc08fb8d7e0e",
+    "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-wasm/src/m3c2.rs": "9825189b37efb4e6255f9b676ef0e1719b2a9afafb2c55b7b8576b4c72849bf9",
+    "rust/crates/ca-wasm/src/lib.rs": "2063a07d5badd8e95ad70c29423b63d346f0ebd29c647f5677132d5ea6b92153"
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured source-index splits, not independent surveys/change ground truth. No generated/transformed/thinned performance coordinates. Original measured cores at spacing 0.25 m; normal radius 0.4, projection radius 0.25, half-depth 0.5. Both builds retain adopted paired fresh WASM eigen fits and disable the rejected short-pair guard. The candidate retains one original compared-source Uint32 index list under 8 MiB; repeated Cloud identity and spacing reuse it. Each call still takes fresh coordinate/color/attribute snapshots before yielding. Compared edits/removal invalidate the list. Zero/nonfinite spacing, explicit disabled reuse and input sizes above the conservative 2,097,152-point admission cap keep original selection. No source-point normal/distance/cache arithmetic changes. Separate fresh and reused-normal cases both exercise core selection reuse; fresh disables normal caching/fusion, reused automatically fuses warm normal hits. Independent archived worker provides full f32 distance/LoD/significance/PLY oracle and terminates before timing. Separate timed contexts preserve prepared trees, lanes/interleaving/shared search/bounds off, and identical 64 MiB normal payload. Candidate first-use core hit is false, warm hit true, retained bytes exactly four per selected core; baseline core reuse is absent. Two excluded first observations and five alternating warm-up pairs precede ten alternating timed pairs. Whole RPC includes selection/snapshot, transfer/search/fitting/projection/join/attributes/LOD/arrays. Loading/startup/first-use/warmups/export/parity/removal excluded. Source/artifacts/inputs/manifest/original PCD/script checked before/after. No builds/tests/scans alongside timing. Clocks/power/scheduling/GC/other applications/WASM pages uncontrolled. No isolated selection/native timing or GPU dispatch/model identifiers collected."
+}

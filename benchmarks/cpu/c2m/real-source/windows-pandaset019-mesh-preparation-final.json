@@ -1,0 +1,700 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "mesh": {
+    "vertices": 501097,
+    "triangles": 844324,
+    "points": 531908,
+    "voxel": 0,
+    "maxEdge": 0.28163367334270417,
+    "removed": 219473,
+    "positionsSha256": "85066058e4c356a6fa5398f7212e76a71210115d1f5143ee61cb9b1aaf132623",
+    "indicesSha256": "f081f8854df532167f9315da75877528194f5b1d0981ed5238b17ac259db8093"
+  },
+  "points": 531908,
+  "oracleWorkers": 5,
+  "distanceSha256": "e7553e4591e1b8ef417808ab4bac1f1a2986e2e014010b225993070182df736d",
+  "plySha256": "0d724b269327d89c0a0f2a67c4f5c05f5389e254a1e558e61a2a4a342327d732",
+  "firstUse": {
+    "fresh": {
+      "elapsedMillis": 2202,
+      "workerMillis": 2201.300000011921,
+      "workers": 5,
+      "slices": 5,
+      "cached": false,
+      "reused": false,
+      "cache": null,
+      "resultParity": true
+    },
+    "cached": {
+      "elapsedMillis": 2295.2000000476837,
+      "workerMillis": 2294.899999976158,
+      "workers": 5,
+      "slices": 5,
+      "cached": true,
+      "reused": false,
+      "retainedBytes": 668045480,
+      "cache": {
+        "job": 1,
+        "workers": 5,
+        "bytes": 668045480,
+        "pending": false,
+        "reuses": 0,
+        "reservation": 668065400,
+        "reservedTotal": 668065400,
+        "budget": 1073741824
+      },
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 2508.099999964237,
+        "workerMillis": 2507.5,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 944.8999999761581,
+        "workerMillis": 944.7000000476837,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 1,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 2122.7000000476837,
+        "workerMillis": 2122.2999999523163,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 2,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 2419.399999976158,
+        "workerMillis": 2417.300000011921,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 2865.199999988079,
+        "workerMillis": 2864.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 940.0999999642372,
+        "workerMillis": 939.8000000119209,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 3,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 976.5,
+        "workerMillis": 976.1000000238419,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 4,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 2993.100000023842,
+        "workerMillis": 2991.300000011921,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 2662.599999964237,
+        "workerMillis": 2662.199999988079,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 1022.8000000119209,
+        "workerMillis": 1022.3000000119209,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 5,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 1804.5,
+        "workerMillis": 1803.8999999761581,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 6,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 4670.299999952316,
+        "workerMillis": 4669.600000023842,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 4911.900000035763,
+        "workerMillis": 4911.300000011921,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 1759.800000011921,
+        "workerMillis": 1757.300000011921,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 7,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 1381.800000011921,
+        "workerMillis": 1381.2000000476837,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 8,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 3053.199999988079,
+        "workerMillis": 3052.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 2741.5,
+        "workerMillis": 2741,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 928.8999999761581,
+        "workerMillis": 928.5,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 9,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 965.1000000238419,
+        "workerMillis": 964.5,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 10,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 2367.100000023842,
+        "workerMillis": 2366.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 2587.2999999523163,
+        "workerMillis": 2587.100000023842,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 1060.199999988079,
+        "workerMillis": 1058.2000000476837,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 11,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 1291.800000011921,
+        "workerMillis": 1291.300000011921,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 12,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 4181.800000011921,
+        "workerMillis": 4179.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 3829.099999964237,
+        "workerMillis": 3828.2000000476837,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 1298.300000011921,
+        "workerMillis": 1297.7000000476837,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 13,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cached",
+        "fresh"
+      ],
+      "cached": {
+        "elapsedMillis": 1713.5999999642372,
+        "workerMillis": 1712.699999988079,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 14,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "fresh": {
+        "elapsedMillis": 3830.100000023842,
+        "workerMillis": 3829.5,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "cached"
+      ],
+      "fresh": {
+        "elapsedMillis": 3804,
+        "workerMillis": 3803.5,
+        "workers": 5,
+        "slices": 5,
+        "cached": false,
+        "reused": false,
+        "cache": null,
+        "resultParity": true
+      },
+      "cached": {
+        "elapsedMillis": 1517.6000000238419,
+        "workerMillis": 1515.7000000476837,
+        "workers": 5,
+        "slices": 5,
+        "cached": true,
+        "reused": true,
+        "retainedBytes": 668045480,
+        "cache": {
+          "job": 1,
+          "workers": 5,
+          "bytes": 668045480,
+          "pending": false,
+          "reuses": 15,
+          "reservation": 668065400,
+          "reservedTotal": 668065400,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "bounded-c2m-mesh-preparation",
+  "createdAt": "2026-10-12T14:20:02.919Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2m-preparation-baseline-20261012\\dist",
+      "worker": "worker-DQXC1tP3.js",
+      "artifactHashes": {
+        "c2c-worker-B9v0ROzS.js": "18365411c4889ee06cce6ef877009aa5ce71a448c8892715e6b996b6bb0fc426",
+        "ca_wasm_bg-BBodVR7o.wasm": "8c27953bbfb52e5973a0fdd285bbe870736cde34fa5600a89cb7efb4c3450df9",
+        "worker-DQXC1tP3.js": "19fe61c8171e10105338771814df9b7b728bc0cf94142fd10b6180524fd781ce"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-BRuuDBro.js",
+      "artifactHashes": {
+        "c2c-worker-coylg5Ux.js": "4c53e0cc678abdd05800af3ceb2939c0836e64c7878096aff7249bb116b6d26e",
+        "ca_wasm_bg-CUXSl0_6.wasm": "2a7faa863f5b99c2851336f2a26202341d7390338bfddf30fcff9f3f7d34a6c2",
+        "worker-BRuuDBro.js": "9a062352213463c31ac1d726e640392d2e592a2d53e252cc5e1bd579f7e810bc"
+      }
+    }
+  },
+  "scriptSha256": "e72307eb63e4ded9d3574e9877e0b075e4f95f28ae105a26527b2a88c03832a2",
+  "sourceHashes": {
+    "web/src/mesh-preparation.ts": "5460dd1bcc9835643803f81bcc974210a4a3816b40e07439c3680490d87f65e2",
+    "web/src/worker.ts": "9b380de0f5e483c0beeb9e4bd7e7906ccb0e9fc92f5a7fc708d40135f3d4ddad",
+    "web/src/c2c-worker.ts": "7f08791acfe83cb13c4d61c16b830a1eb6ee7cc2d8dc3a4d9247b896b5c9d76d",
+    "web/src/pool.ts": "fdc86bde44cd279efd87bbc0480c88ade78a8fe83dbea33c099d028f136d6325",
+    "web/src/protocol.ts": "0e4897dcd20f8ab0121dd2d2fc5d5b39da14d318adc36493d1fe87b55da14cbd",
+    "rust/crates/ca-core/src/mesh.rs": "7e89032cbbaa6133a4bdf1db499024fc5c96f9695ab1cd18a015eb50aa753ff6",
+    "rust/crates/ca-core/src/distance.rs": "e405031ab7b409a103b88e847453835d5fd5da385a4952c0a16e6c286a62c842",
+    "rust/crates/ca-wasm/src/lib.rs": "c1e6e71784c0c8fa746717e52b5567dacaa61fddeabd24e2397556c6ead592cd"
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "summary": {
+    "freshMedianMillis": 3816.5499999821186,
+    "cachedMedianMillis": 1340.050000011921,
+    "medianPairedReductionPercent": 60.73368879739307,
+    "fasterTrials": 10,
+    "trials": 10
+  },
+  "note": "Unchanged full measured source-index geometry splits, not independent accuracy ground truth. Full-input production 2.5D TIN with recorded XY duplicates/edge rejection; no voxel thinning, new coordinates or input resampling. Archived pre-change production worker supplies exact f32 distance, f64 summary and scalar PLY oracles; its first C2M output is excluded. Current fresh and cached controls use separate prewarmed contexts, identical TIN/input geometry and alternating execution order. Fresh rebuilds/copies the complete mesh for each original query slice. Cached owns immutable mesh/BVH on fewer resident workers under a 1 GiB aggregate reservation budget, and sends only queries on repeated calls. Both keep the original logical query slices and reset Morton order/warm guesses per slice, preserving signed/tie semantics; timings here are unsigned. Worker count reduction is part of the bounded cache policy, not an isolated same-concurrency cache effect. The current fresh constructor also uses exact-capacity triangle order storage instead of retaining centroid-vector capacity. Both contexts coexist during timing; idle cached BVHs remain resident during the fresh control. Whole RPC includes copies/transfers, query ordering/search, joining, summaries and returned arrays. Meshing/loading, pool startup, first observations, five warm-up rounds, bit/summary/export parity and cleanup excluded. Timed cached fallback/non-reuse or layout/budget mismatch fails. Retained bytes include source mesh and BVH vector capacities, not temporary query arrays, allocator/driver overhead or process/peak memory. Actual capacities checked against reservations; overlap reservations share the budget. Artifacts, relevant source, input/source/manifest and script hashes checked before/after. No builds/tests/scans alongside timing; clocks, power, other applications, scheduling and GC uncontrolled. No GPU model identifiers recorded."
+}

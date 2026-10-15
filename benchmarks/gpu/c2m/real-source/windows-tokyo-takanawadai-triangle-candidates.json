@@ -1,0 +1,1376 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "gpu": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "isFallbackAdapter": false
+  },
+  "mesh": {
+    "vertices": 893804,
+    "triangles": 1466179,
+    "points": 941933,
+    "voxel": 0,
+    "maxEdge": 0.16940188902285394,
+    "removed": 416118,
+    "positionsSha256": "f1712e05ea62cb6247333634bc63f0996b6346ededd2d7b3c82ed4bdaf96cc43",
+    "indicesSha256": "9a238a489db7d894ce1b9dcd118ce12a3ee121cedb828b385e0ce05db1b2002c"
+  },
+  "points": 941933,
+  "oracleWorkers": 4,
+  "oracleSlices": 8,
+  "distanceSha256": "dc48c051e781271e094c7a299d4624f8ba4fb35d97ddbd69ffe8c938a6abfe32",
+  "plySha256": "77cebf181a78a3011ca990267f75da00b9e94111edc387a6a3fdcbb02c557318",
+  "firstUse": {
+    "cpu": {
+      "elapsedMillis": 8263.200000047684,
+      "workerMillis": 8262.399999976158,
+      "workers": 4,
+      "slices": 8,
+      "reused": false,
+      "retainedBytes": 930324512,
+      "cache": {
+        "job": 1,
+        "workers": 4,
+        "bytes": 930324512,
+        "pending": false,
+        "reuses": 0,
+        "reservation": 930340672,
+        "reservedTotal": 930340672,
+        "budget": 1073741824
+      },
+      "resultParity": true
+    },
+    "gpu": {
+      "elapsedMillis": 9902.699999988079,
+      "workerMillis": 9900.800000011921,
+      "workers": 4,
+      "slices": 8,
+      "reused": true,
+      "retainedBytes": 930324512,
+      "cache": {
+        "job": 1,
+        "workers": 4,
+        "bytes": 930324512,
+        "pending": false,
+        "reuses": 1,
+        "reservation": 930340672,
+        "reservedTotal": 930340672,
+        "budget": 1073741824
+      },
+      "compute": {
+        "backend": "webgpu",
+        "prepareMillis": 1676.300000011921,
+        "gpuMillis": 457.2999999523163,
+        "verifyMillis": 7745.899999976158,
+        "batches": 15,
+        "completeRows": 941933,
+        "referenceReused": false,
+        "gpuBytes": 105503872
+      },
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 6380.699999988079,
+        "workerMillis": 6379.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 2,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 6959.600000023842,
+        "workerMillis": 6957.899999976158,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 3,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 1170.199999988079,
+          "verifyMillis": 5754,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 8114.5,
+        "workerMillis": 8113.900000035763,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 4,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0.09999996423721313,
+          "gpuMillis": 466.4000000357628,
+          "verifyMillis": 7621.300000011921,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 6332,
+        "workerMillis": 6330.199999988079,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 5,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 6326.100000023842,
+        "workerMillis": 6325.899999976158,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 6,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 6858.700000047684,
+        "workerMillis": 6858.300000011921,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 7,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 1561.199999988079,
+          "verifyMillis": 5281.199999988079,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 5529,
+        "workerMillis": 5528.600000023842,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 8,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 419.39999997615814,
+          "verifyMillis": 5093.800000011921,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 5296.099999964237,
+        "workerMillis": 5295.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 9,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 5667.599999964237,
+        "workerMillis": 5667.199999988079,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 10,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 5661.399999976158,
+        "workerMillis": 5659.899999976158,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 11,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 317.19999998807907,
+          "verifyMillis": 5327.699999988079,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 5025.699999988079,
+        "workerMillis": 5025.400000035763,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 12,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 271.7999999523163,
+          "verifyMillis": 4739.100000023842,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 5596.300000011921,
+        "workerMillis": 5595.899999976158,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 13,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 5937,
+        "workerMillis": 5936.699999988079,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 14,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 4955,
+        "workerMillis": 4954.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 15,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 451.2999999523163,
+          "verifyMillis": 4487.699999988079,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 5377.100000023842,
+        "workerMillis": 5376.699999988079,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 16,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 436.4000000357628,
+          "verifyMillis": 4926.099999964237,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 5673.699999988079,
+        "workerMillis": 5671.700000047684,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 17,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 4917.300000011921,
+        "workerMillis": 4917.099999964237,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 18,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 6010.899999976158,
+        "workerMillis": 6010.600000023842,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 19,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 1648.5,
+          "verifyMillis": 4348.099999964237,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 5031.5,
+        "workerMillis": 5031,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 20,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 476,
+          "verifyMillis": 4541.899999976158,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 4822.800000011921,
+        "workerMillis": 4822.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 21,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 4786.799999952316,
+        "workerMillis": 4786.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 22,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 5628,
+        "workerMillis": 5627.600000023842,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 23,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 1169.5,
+          "verifyMillis": 4444.199999988079,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 4939,
+        "workerMillis": 4938.600000023842,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 24,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 420.80000001192093,
+          "verifyMillis": 4504.399999976158,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 4732.800000011921,
+        "workerMillis": 4732.400000035763,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 25,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 4693.399999976158,
+        "workerMillis": 4693.099999964237,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 26,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 5532.200000047684,
+        "workerMillis": 5531.600000023842,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 27,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 1186.5,
+          "verifyMillis": 4328.099999964237,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "gpu",
+        "cpu"
+      ],
+      "gpu": {
+        "elapsedMillis": 4965.5,
+        "workerMillis": 4965.099999964237,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 28,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 474.80000001192093,
+          "verifyMillis": 4477,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      },
+      "cpu": {
+        "elapsedMillis": 4763.199999988079,
+        "workerMillis": 4762.899999976158,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 29,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "cpu",
+        "gpu"
+      ],
+      "cpu": {
+        "elapsedMillis": 4830.600000023842,
+        "workerMillis": 4830.5,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 30,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "resultParity": true
+      },
+      "gpu": {
+        "elapsedMillis": 5703.400000035763,
+        "workerMillis": 5703,
+        "workers": 4,
+        "slices": 8,
+        "reused": true,
+        "retainedBytes": 930324512,
+        "cache": {
+          "job": 1,
+          "workers": 4,
+          "bytes": 930324512,
+          "pending": false,
+          "reuses": 31,
+          "reservation": 930340672,
+          "reservedTotal": 930340672,
+          "budget": 1073741824
+        },
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 0,
+          "gpuMillis": 1164.5999999642372,
+          "verifyMillis": 4522.5,
+          "batches": 15,
+          "completeRows": 941933,
+          "referenceReused": true,
+          "gpuBytes": 105503872
+        },
+        "resultParity": true
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "retained-c2m-gpu-triangle-candidates",
+  "createdAt": "2026-10-12T15:12:19.186Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\gpu-c2m-baseline-20261012\\dist",
+      "worker": "worker-BRuuDBro.js",
+      "artifactHashes": {
+        "c2c-worker-coylg5Ux.js": "4c53e0cc678abdd05800af3ceb2939c0836e64c7878096aff7249bb116b6d26e",
+        "ca_wasm_bg-CUXSl0_6.wasm": "2a7faa863f5b99c2851336f2a26202341d7390338bfddf30fcff9f3f7d34a6c2",
+        "worker-BRuuDBro.js": "9a062352213463c31ac1d726e640392d2e592a2d53e252cc5e1bd579f7e810bc"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-DFb4F76u.js",
+      "artifactHashes": {
+        "c2c-worker-C8QpwX63.js": "9cbadb19648acba7fd57e8df0b7d2b719637fb0b1592254407c08ce3b2450728",
+        "ca_wasm_bg-l_BIO-ou.wasm": "ea11a775067326419101c05351a132df02225f65afde67af2254cb7809ae9bce",
+        "worker-DFb4F76u.js": "4ffdbaa10892f38781098bb1f1f5f75e1a43f7816778af1e19bfea02ddbed082"
+      }
+    }
+  },
+  "scriptSha256": "fcd3846574847d7e52c0321580b66efe0ccf70c838dbcfb747f35ec9f4e7d272",
+  "sourceHashes": {
+    "web/src/gpu-mesh-candidates.ts": "82fbd4e024e2b3ee9af194a8dc3006566e6619f9241078ddef3f81b69247d86c",
+    "web/src/gpu-candidates.ts": "64581efaf65094054b086caa0abe2c2e70256475eab9010405249ff2ee06b586",
+    "web/src/mesh-preparation.ts": "24a1de2d255c602a44c8749315545b279f95e89871e7d44144a684a6bedd8631",
+    "web/src/worker.ts": "f89d579034d1f5f830eb6eff3eaffd2abe25b9b3c7ea16ddf0d9f8a4b9f6cfc8",
+    "web/src/c2c-worker.ts": "9d48fac996c0d76b368699d3b790f4a4e1e8bbd5f82f314950c8d5ccebe2f524",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "f5a2b44d58a95f3240f4f458333a0a3c90cc16edb0020226ab6c09ba9c078f11",
+    "rust/crates/ca-core/src/mesh.rs": "d888d27fecd2bf99c7075dd826d5ab1833d819f3c76739203b2f17a57d3d9d38",
+    "rust/crates/ca-core/src/distance.rs": "e405031ab7b409a103b88e847453835d5fd5da385a4952c0a16e6c286a62c842",
+    "rust/crates/ca-wasm/src/lib.rs": "1ff9715ad7ce5e94cf6bda9827cd6cda8ddff1332605f325965083a368982dfe"
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "summary": {
+    "cpuMedianMillis": 4826.700000017881,
+    "gpuMedianMillis": 5204.300000011921,
+    "medianPairedReductionPercent": -4.3420953182747635,
+    "fasterTrials": 3,
+    "trials": 10,
+    "gpuPhaseMedianMillis": 475.40000000596046,
+    "verifyPhaseMedianMillis": 4496.049999982119
+  },
+  "note": "Unchanged measured source-index geometry splits, not independent accuracy ground truth. Full-input production 2.5D TIN, recorded XY duplicates/edge rejection; no voxel thinning, new coordinates or input resampling. Archived retained-CPU production worker supplies exact f32 distance, f64 summary and scalar PLY oracles; its first output is excluded. Current CPU/GPU controls share one prewarmed context and the same 1 GiB bounded immutable CPU mesh/BVH cache, resident workers and unchanged logical slices. GPU geometry remains resident during the CPU control. GPU candidate search uses shifted f32 triangles/BVH, returns one untrusted triangle slot per point in batches of at most 65536, with a 256 MiB aggregate GPU-buffer budget. Every candidate's upper radius is recomputed on original f64 geometry; CPU root traversal retains old warm guesses, child order and strict insertion, with fallback for invalid hints/incomplete bounded search. Timed fallback, missing candidate, changed layout or lack of CPU/GPU reuse fails. Whole RPC includes query copies, packing/transfers, GPU search/readback, exact CPU verification, ordering, joining, summaries and returned arrays. GPU phase includes host packing, serialized device scopes, dispatch and readback; verification phase includes worker transfers/query traversal/join. Loading/meshing, pool startup, first observations, five warm-up rounds, parity/export checks and cleanup excluded. All relevant source/artifact/input/manifest/script hashes verified before/after. No builds/tests/scans alongside timing; clocks, power, other applications, scheduling and GC uncontrolled. Retained sizes cover owned vectors/allocated GPU buffers, not temporary copies, allocator/driver overhead or peak process memory. Only GPU vendor/architecture/fallback recorded; no model identifiers."
+}

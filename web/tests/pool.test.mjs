@@ -19,7 +19,7 @@ class PoolWorker {
 }
 Object.defineProperty(globalThis,'Worker',{value:PoolWorker,configurable:true});
 Object.defineProperty(globalThis,'navigator',{value:{hardwareConcurrency:4},configurable:true});
-const {warmUpPool,releasePool,runOn,poolMemory}=await import('../src/pool.ts');
+const {warmUpPool,releasePool,runOn,runOnGeneration,workerGeneration,poolMemory}=await import('../src/pool.ts');
 after(() => {
   if (workerDescriptor) Object.defineProperty(globalThis,'Worker',workerDescriptor); else delete globalThis.Worker;
   if (navigatorDescriptor) Object.defineProperty(globalThis,'navigator',navigatorDescriptor); else delete globalThis.navigator;
@@ -53,4 +53,37 @@ test('release protects real computations even while background warmup is pending
   workers[0].respond(workers[0].requests.find(request=>request.kind==='cloud'));
   await job; releasePool();
   assert.ok(workers.every(worker=>worker.terminated));
+});
+
+test('released workers invalidate cached generations before and after lazy replacement', async () => {
+  const job=runOn(0,cloud()), old=created.at(-1), generation=workerGeneration(0);
+  old.respond(old.requests.at(-1)); await job;
+  releasePool();
+  const count=created.length;
+  await assert.rejects(runOnGeneration(0,generation,cloud()),/preparation was lost/);
+  assert.equal(created.length,count);
+  const replacement=runOn(0,cloud()), next=created.at(-1);
+  assert.notEqual(workerGeneration(0),generation);
+  await assert.rejects(runOnGeneration(0,generation,cloud()),/preparation was lost/);
+  next.respond(next.requests.at(-1)); await replacement;
+  releasePool();
+});
+
+test('a lost worker drains concurrent requests and drops its recorded memory', async () => {
+  const job=runOn(0,cloud()), worker=created.at(-1);
+  worker.respond(worker.requests.at(-1)); await job;
+  assert.equal(poolMemory(),65536);
+  const first=runOn(0,cloud()), second=runOn(0,cloud());
+  const rejected=Promise.all([
+    assert.rejects(first,/Pool worker message failed/),
+    assert.rejects(second,/Pool worker message failed/),
+  ]);
+  for (const handler of [...worker.listeners.get('messageerror')]) handler({});
+  await rejected;
+  assert.equal(worker.terminated,true);
+  assert.equal(workerGeneration(0),undefined);
+  assert.equal(poolMemory(),0);
+  for (const request of worker.requests) worker.respond(request);
+  assert.equal(poolMemory(),0);
+  releasePool();
 });

@@ -46,9 +46,14 @@ async function runAndExport(page: Page, backend: string, expectedStatus?: string
 async function alterWorker(page: Page, prelude: string): Promise<void> {
   await page.route(/\/assets\/worker-[^/]+\.js$/, async route => {
     const response = await route.fetch();
-    await route.fulfill({ response, body: prelude + "\n" + await response.text() });
+    // Exercise lane growth through eight slots independently of the host's
+    // reported CPU count. Actual low-capacity scheduling is checked below.
+    const capacity = 'Object.defineProperty(navigator, "hardwareConcurrency", { value: 9, configurable: true });\n';
+    await route.fulfill({ response, body: capacity + prelude + "\n" + await response.text() });
   });
 }
+
+test.beforeEach(async ({ page }) => { await alterWorker(page, ""); });
 
 const gpuMetrics = `
   const metrics = { devices: 0, pipelines: 0, buffers: 0, maxScopes: 0 };
@@ -1062,6 +1067,16 @@ test("WebGPU plus CPU workers can be selected and exports identical distances", 
   test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
   const cpu = await runAndExport(page, "cpu");
   expect(await runAndExport(page, "webgpu-parallel", "with WebGPU + 4 CPU workers")).toEqual(cpu);
+});
+
+for (const concurrency of [1, 4]) test(`GPU verification respects reported CPU capacity (${concurrency})`, async ({ page }) => {
+  await alterWorker(page, `Object.defineProperty(navigator, "hardwareConcurrency", { value: ${concurrency} });` + gpuMetrics);
+  await page.goto("/");
+  test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
+  const { computed } = await workerScenario(page, false, 8);
+  const workers = Math.max(1, concurrency - 1);
+  expect(computed.every(c => c.verifyWorkers === workers && !c.verifyFallback)).toBe(true);
+  expect(computed.every(c => !c.verifyMainWorker && c.verifyPoolWorkers === (workers > 1 ? workers : 0))).toBe(true);
 });
 
 test("batch caps preserve exact results through growth, partial batches and invalid controls", async ({ page }) => {

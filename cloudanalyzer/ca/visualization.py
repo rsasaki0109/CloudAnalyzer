@@ -34,7 +34,9 @@ def colorize(
         normalized = (distances - d_min) / (d_max - d_min)
 
     cmap = matplotlib.colormaps[cmap_name]
-    colors = cmap(normalized)[:, :3]  # RGB only, drop alpha
+    # Pack RGB rows: the RGBA slice otherwise retains a fourth-column stride,
+    # making Open3D convert each row through its slower strided-array path.
+    colors = np.ascontiguousarray(cmap(normalized)[:, :3])
     pcd.colors = o3d.utility.Vector3dVector(colors)
 
     return pcd

@@ -248,6 +248,14 @@ Prepared native inputs match in actual ICP/GICP checks, while parallel solver
 rerun differences remain recorded. Future GPU comparisons should include this
 CPU reuse and account for its extra owned normal buffer and temporary copies.
 
+The later [contiguous RGB conversion](cpu-colorize-packed-rgb.md) improves the
+image-producing path. Six complete unregistered real-source comparisons,
+including actual loading/native NN and Matplotlib PNG output, are
+20.16–35.84% shorter by median paired duration, with 29/30 faster pairs.
+Full colors, reports and PNG bytes match. Future GPU coloring comparisons
+should include this CPU conversion baseline; default registered and interactive
+Open3D renderer performance remain unmeasured by this study.
+
 The subsequent [scoped batch reference reuse](cpu-batch-reference.md) loads one
 reference snapshot per batch and shares its native tree across candidates.
 Complete three-candidate batch functions improve by 23.83–33.78% across six

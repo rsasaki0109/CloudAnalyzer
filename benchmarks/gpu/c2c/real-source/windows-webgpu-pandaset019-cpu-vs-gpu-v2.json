@@ -1,0 +1,501 @@
+{
+  "fixture": "files",
+  "backend": "cpu-vs-webgpu",
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+  },
+  "poolPrepareMillis": 3646,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 531908,
+      "reference": {
+        "points": 531908,
+        "filePoints": 531908,
+        "keepEvery": 1,
+        "bounds": [
+          -249.30506896972656,
+          -165.7618865966797,
+          -5.276854515075684,
+          141.1042938232422,
+          222.24327087402344,
+          38.41987991333008
+        ],
+        "timings": {
+          "parse": 45.30000001192093,
+          "index": 55.5,
+          "workers": 1,
+          "prepare": 37.59999996423721
+        }
+      },
+      "compared": {
+        "points": 531908,
+        "filePoints": 531908,
+        "keepEvery": 1,
+        "bounds": [
+          -248.849609375,
+          -167.49281311035156,
+          -5.325576305389404,
+          135.99053955078125,
+          225.13357543945312,
+          38.40226364135742
+        ],
+        "timings": {
+          "parse": 35.59999996423721,
+          "index": 56.30000001192093,
+          "workers": 1,
+          "prepare": 21.599999964237213
+        }
+      },
+      "trials": [
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 251.5,
+          "webgpuMillis": 275.5,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.300000011920929,
+            "gpuMillis": 258.9000000357628,
+            "verifyMillis": 234.00000005960464,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 248.39999997615814,
+          "webgpuMillis": 284.10000002384186,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.600000023841858,
+            "gpuMillis": 268.39999997615814,
+            "verifyMillis": 240.89999985694885,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 264.80000001192093,
+          "webgpuMillis": 228.5,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.5999999642372131,
+            "gpuMillis": 215.4000000357628,
+            "verifyMillis": 194.4000000357628,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 254.70000004768372,
+          "webgpuMillis": 247.89999997615814,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.5,
+            "gpuMillis": 238,
+            "verifyMillis": 215,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 263.39999997615814,
+          "webgpuMillis": 286.69999998807907,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.800000011920929,
+            "gpuMillis": 273.10000002384186,
+            "verifyMillis": 245.9000000357628,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 256.89999997615814,
+          "webgpuMillis": 309.5,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 3.199999988079071,
+            "gpuMillis": 294.10000002384186,
+            "verifyMillis": 263.19999998807907,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 254.30000001192093,
+          "webgpuMillis": 263,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.099999964237213,
+            "gpuMillis": 249.60000002384186,
+            "verifyMillis": 222.50000017881393,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 235.29999995231628,
+          "webgpuMillis": 293.19999998807907,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.600000023841858,
+            "gpuMillis": 280.80000001192093,
+            "verifyMillis": 249.10000002384186,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 220.69999998807907,
+          "webgpuMillis": 219.19999998807907,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.399999976158142,
+            "gpuMillis": 207.80000001192093,
+            "verifyMillis": 186.49999994039536,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 206.4000000357628,
+          "webgpuMillis": 285.5999999642372,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.300000011920929,
+            "gpuMillis": 275.2999999523163,
+            "verifyMillis": 244.5999999642372,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T04:51:02.538Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "backend",
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "benchmarkScriptSha256": "721635cabeea25ff76f3d4315c5097ccd7832a00d4e9f82922e39bda6480c139",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "5335c026be9130c380b8d06b8c41b2e2f21b80722b336a863b93b902deacc420",
+  "poolWorkerSha256": "7e6aa4f8ae5152c28392804ce66a717cbb5bae7fab0b981d1f7ecea25a381abc",
+  "wasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Supplied input files, unchanged by the benchmark. Source-file hashes, optional provenance, decoded/file point counts, thinning factors and loaded bounds are recorded. Production parallel CPU and hybrid WebGPU C2C, same input clouds and snapshots, with backend-specific query planning, trees and worker counts. Await the already-started automatic CPU pool warm-up before any fixture/trial; its time is recorded separately and excluded. Five unmeasured CPU/WebGPU warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no cross-machine speed guarantee. Both backends use adaptive exact summaries. CPU uses scalar leaves and progressive joining; GPU uses default prefetch, bounds, SIMD verification, batch caps and 64-invocation workgroups, with warmed reference/device reuse. Timed GPU fallback is rejected. Backend timing includes CPU parallel workers versus one hybrid main worker; worker counts need not match. GPU phase intervals exclude final summaries and can overlap."
+}

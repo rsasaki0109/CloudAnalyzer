@@ -1,0 +1,1344 @@
+{
+  "schemaVersion": 1,
+  "comparison": "native-c2m-stage-profile",
+  "createdAt": "2026-10-13T15:03:52.902Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-indexed-corners-baseline-20261013",
+      "exe": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-indexed-corners-baseline-20261013\\bench_c2m_source.exe",
+      "exeSha256": "0564cedbdc0737f6bac26b79442b2a7db026492360396ba08835e69d55785439",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sourceHashes": {
+        "rust/crates/ca-core/src/distance.rs": "a707126ae36060ced0f213cff1d3d07db5b3fcc0dc03f4d8dca9f83a3ae974d8",
+        "rust/crates/ca-core/src/mesh.rs": "6d6ad3e6fe8c65e764cfb5226b45362fa210d737359d7299707777d478a5b8f1",
+        "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+        "rust/crates/ca-py/src/lib.rs": "8b31ac4e3f5b5e90d23c1afe924c2c356339321bc7eb07306f0ee3b6bafc2113",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85"
+      }
+    },
+    "profile": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-stages-profile-20261013",
+      "exe": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-stages-profile-20261013\\profile_c2m_stages.exe",
+      "exeSha256": "08234f41965a1fde7a7666b95c70986d2c1805f7e2a7a44e7d0c8841cc9fec70",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sourceHashes": {
+        "rust/crates/ca-core/src/distance.rs": "a707126ae36060ced0f213cff1d3d07db5b3fcc0dc03f4d8dca9f83a3ae974d8",
+        "rust/crates/ca-core/src/mesh.rs": "6d6ad3e6fe8c65e764cfb5226b45362fa210d737359d7299707777d478a5b8f1",
+        "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+        "rust/crates/ca-py/src/lib.rs": "8b31ac4e3f5b5e90d23c1afe924c2c356339321bc7eb07306f0ee3b6bafc2113",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85"
+      }
+    }
+  },
+  "examplePath": "rust/crates/ca-core/examples/profile_c2m_stages.rs",
+  "exampleSha256": "f2468e5b2ff497582680af0a00aaab34d017de703f2acb28ae098c3981729f45",
+  "scriptSha256": "09b61e7624930e30c309a093c9ce68c3d058374cde17ac82b7e973590d58e1e1",
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c",
+      "points": 941933
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd",
+      "points": 941933
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "mesh": {
+    "chunkSize": 4096,
+    "kind": "ready",
+    "maxEdge": 0.16940188902285397,
+    "queryOrder": "original decoded PLY order; unchanged XYZ",
+    "queryPoints": 941933,
+    "referencePoints": 941933,
+    "removed": 416118,
+    "threads": 12,
+    "triangles": 1466179,
+    "vertices": 893804
+  },
+  "geometry": {
+    "bytes": 40511832,
+    "sha256": "8f77f83bd72eda863e62578d757561ec61de8a8a43d7ca7f1f904f73709e72c1"
+  },
+  "oracle": {
+    "distanceBytes": 7535464,
+    "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+    "scalarPlyBytes": 26374299,
+    "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+    "count": 941933,
+    "statisticsBits": [
+      "3e3676b53888a8e1",
+      "4021d2bc062bad79",
+      "3fa319bbb131a627",
+      "3fb3810e922becce",
+      "3fb101884e663b34",
+      "3f8cce9ef1860265"
+    ]
+  },
+  "firstUse": {
+    "whole": {
+      "elapsedMillis": 1946.5172,
+      "stageMillis": null,
+      "unattributedMillis": null,
+      "distanceBytes": 7535464,
+      "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+      "scalarPlyBytes": 26374299,
+      "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+      "count": 941933,
+      "statisticsBits": [
+        "3e3676b53888a8e1",
+        "4021d2bc062bad79",
+        "3fa319bbb131a627",
+        "3fb3810e922becce",
+        "3fb101884e663b34",
+        "3f8cce9ef1860265"
+      ],
+      "resultParity": true
+    },
+    "stages": {
+      "elapsedMillis": 1763.3763,
+      "stageMillis": {
+        "bvhBuild": 191.92219999999998,
+        "mortonPreparation": 57.7717,
+        "parallelQueries": 1497.293,
+        "allocationScatter": 6.0945,
+        "orderBvhDestruction": 10.2424
+      },
+      "unattributedMillis": 0.052500000000009095,
+      "distanceBytes": 7535464,
+      "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+      "scalarPlyBytes": 26374299,
+      "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+      "count": 941933,
+      "statisticsBits": [
+        "3e3676b53888a8e1",
+        "4021d2bc062bad79",
+        "3fa319bbb131a627",
+        "3fb3810e922becce",
+        "3fb101884e663b34",
+        "3f8cce9ef1860265"
+      ],
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1596.4007,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1616.0692999999999,
+        "stageMillis": {
+          "bvhBuild": 184.38840000000002,
+          "mortonPreparation": 52.596900000000005,
+          "parallelQueries": 1361.7333999999998,
+          "allocationScatter": 6.5474,
+          "orderBvhDestruction": 10.716800000000001
+        },
+        "unattributedMillis": 0.0864000000001397,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1573.4558000000002,
+        "stageMillis": {
+          "bvhBuild": 172.2139,
+          "mortonPreparation": 47.502900000000004,
+          "parallelQueries": 1337.7063,
+          "allocationScatter": 5.918200000000001,
+          "orderBvhDestruction": 10.0505
+        },
+        "unattributedMillis": 0.06400000000007822,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1629.5225,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1701.0453,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1697.4879999999998,
+        "stageMillis": {
+          "bvhBuild": 202.7232,
+          "mortonPreparation": 56.975699999999996,
+          "parallelQueries": 1419.3883,
+          "allocationScatter": 6.576099999999999,
+          "orderBvhDestruction": 11.767
+        },
+        "unattributedMillis": 0.057699999999840657,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1705.0803999999998,
+        "stageMillis": {
+          "bvhBuild": 190.11,
+          "mortonPreparation": 54.4912,
+          "parallelQueries": 1438.9247,
+          "allocationScatter": 8.7569,
+          "orderBvhDestruction": 12.7335
+        },
+        "unattributedMillis": 0.06409999999959837,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1729.9337,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1672.4014,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1670.5346,
+        "stageMillis": {
+          "bvhBuild": 194.77849999999998,
+          "mortonPreparation": 60.127,
+          "parallelQueries": 1395.7186,
+          "allocationScatter": 7.0538,
+          "orderBvhDestruction": 12.775599999999999
+        },
+        "unattributedMillis": 0.08110000000010587,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1669.4138999999998,
+        "stageMillis": {
+          "bvhBuild": 185.7259,
+          "mortonPreparation": 45.7519,
+          "parallelQueries": 1418.1172,
+          "allocationScatter": 7.607,
+          "orderBvhDestruction": 12.1599
+        },
+        "unattributedMillis": 0.05199999999990723,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1668.9294000000002,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1755.2457000000002,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1649.2033999999999,
+        "stageMillis": {
+          "bvhBuild": 191.134,
+          "mortonPreparation": 51.4045,
+          "parallelQueries": 1389.5969,
+          "allocationScatter": 6.053,
+          "orderBvhDestruction": 10.9686
+        },
+        "unattributedMillis": 0.04639999999972133,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1714.3343,
+        "stageMillis": {
+          "bvhBuild": 190.6008,
+          "mortonPreparation": 63.1307,
+          "parallelQueries": 1441.7749,
+          "allocationScatter": 6.9417,
+          "orderBvhDestruction": 11.8145
+        },
+        "unattributedMillis": 0.07170000000019172,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1702.3361000000002,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1787.3855999999998,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1732.2683,
+        "stageMillis": {
+          "bvhBuild": 202.813,
+          "mortonPreparation": 46.9624,
+          "parallelQueries": 1464.0547,
+          "allocationScatter": 7.0806000000000004,
+          "orderBvhDestruction": 11.298
+        },
+        "unattributedMillis": 0.05960000000004584,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1750.3491,
+        "stageMillis": {
+          "bvhBuild": 188.22910000000002,
+          "mortonPreparation": 53.036899999999996,
+          "parallelQueries": 1486.6089,
+          "allocationScatter": 9.8007,
+          "orderBvhDestruction": 12.597199999999999
+        },
+        "unattributedMillis": 0.07629999999994652,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1754.4105000000002,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1634.5720999999999,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1626.9911000000002,
+        "stageMillis": {
+          "bvhBuild": 165.67950000000002,
+          "mortonPreparation": 49.6767,
+          "parallelQueries": 1388.2195,
+          "allocationScatter": 7.837000000000001,
+          "orderBvhDestruction": 15.4927
+        },
+        "unattributedMillis": 0.08570000000031541,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1572.6006,
+        "stageMillis": {
+          "bvhBuild": 173.6152,
+          "mortonPreparation": 51.046,
+          "parallelQueries": 1331.4888,
+          "allocationScatter": 5.3526,
+          "orderBvhDestruction": 11.0167
+        },
+        "unattributedMillis": 0.08130000000005566,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1588.8203,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1716.9335999999998,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1506.8168,
+        "stageMillis": {
+          "bvhBuild": 158.5774,
+          "mortonPreparation": 54.1879,
+          "parallelQueries": 1277.0518,
+          "allocationScatter": 6.0409,
+          "orderBvhDestruction": 10.869
+        },
+        "unattributedMillis": 0.08980000000019572,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "stages",
+        "whole"
+      ],
+      "stages": {
+        "elapsedMillis": 1485.3347,
+        "stageMillis": {
+          "bvhBuild": 172.4813,
+          "mortonPreparation": 48.3466,
+          "parallelQueries": 1248.7729000000002,
+          "allocationScatter": 5.5619,
+          "orderBvhDestruction": 10.0982
+        },
+        "unattributedMillis": 0.07380000000011933,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "whole": {
+        "elapsedMillis": 1536.2263999999998,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "whole",
+        "stages"
+      ],
+      "whole": {
+        "elapsedMillis": 1477.8891,
+        "stageMillis": null,
+        "unattributedMillis": null,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      },
+      "stages": {
+        "elapsedMillis": 1552.4639,
+        "stageMillis": {
+          "bvhBuild": 168.5684,
+          "mortonPreparation": 44.466899999999995,
+          "parallelQueries": 1323.1043,
+          "allocationScatter": 5.7088,
+          "orderBvhDestruction": 10.4964
+        },
+        "unattributedMillis": 0.1190999999998894,
+        "distanceBytes": 7535464,
+        "distanceSha256": "6dbdaaf2ba436decd0b1b77cce37bc2fd64c37deb58ac5f7e6d0512dc1fbe7b0",
+        "scalarPlyBytes": 26374299,
+        "scalarPlySha256": "b319281dbd3f94b65be4fb856d35c82d1a5a2754efb4826163305ff4065dd00e",
+        "count": 941933,
+        "statisticsBits": [
+          "3e3676b53888a8e1",
+          "4021d2bc062bad79",
+          "3fa319bbb131a627",
+          "3fb3810e922becce",
+          "3fb101884e663b34",
+          "3f8cce9ef1860265"
+        ],
+        "resultParity": true
+      }
+    }
+  ],
+  "summary": {
+    "wholeMedianMillis": 1685.6327500000002,
+    "stagedMedianMillis": 1638.09725,
+    "medianPairedStagedOverheadPercent": -0.7423277264694939,
+    "stageMedianMillis": {
+      "bvhBuild": 179.67055,
+      "mortonPreparation": 50.36135,
+      "parallelQueries": 1388.9081999999999,
+      "allocationScatter": 6.49735,
+      "orderBvhDestruction": 11.157350000000001
+    },
+    "stageMedianSharePercent": {
+      "bvhBuild": 11.07903542880473,
+      "mortonPreparation": 3.085107790904681,
+      "parallelQueries": 84.70979353609007,
+      "allocationScatter": 0.40291288278390724,
+      "orderBvhDestruction": 0.6948499368111964
+    },
+    "unattributedMedianMillis": 0.07505000000003292
+  },
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Diagnostic source-inclusion harness recompiles unchanged production distance/mesh modules under example-local symbols. Whole and staged modes alternate in one process/pool on the same unchanged measured-source TIN. Staged mode retains original serial Morton preparation, 4096-point indexed query chunks, chunk-local previous-hit/cached stack, exact unsigned f64 arithmetic and compact serial scatter. Full distances, six statistics and scalar PLY match an independent archived production oracle on every call. Original mesh vectors move without coordinate copies/transforms/reordering. BVH construction, Morton bounds/keys/sort/index extraction, parallel query/collection including chunk scratch destruction, final allocation/serial scatter including result-chunk destruction, and explicit order/BVH destruction are measured separately. Remaining pool-installation/timer/dispatch costs are unattributed. Loading, TIN/pool construction, first use, five warmups, serialization/statistics/parity and cleanup are excluded. Ten alternating pairs and all outliers are retained. Stage timers, source-included symbol/code layout, closure state and compilation can change timing; output parity establishes correctness, not timing equivalence to the archived binary. Diagnostic percentages are not an optimization or a production speedup claim. Shares are medians of per-trial fractions and need not sum to 100%. Production source/configuration fingerprints remain unchanged. Native-only profiling; no browser/WASM/GPU/Python conversion speedup claim. No GPU model identifiers collected. Clocks/power/scheduling/other applications/allocator/retained pages are uncontrolled. No builds/tests/scans/edits run alongside timing."
+}

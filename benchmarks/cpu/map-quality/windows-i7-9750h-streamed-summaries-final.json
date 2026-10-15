@@ -1,0 +1,905 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "coldPreviousMillis": 47.30000001192093,
+      "coldCombinedMillis": 29.899999976158142,
+      "coldCollectedMillis": 44.90000003576279,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 2.7755575615628914e-17
+      },
+      "trials": [
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 55.89999997615814,
+          "combinedMillis": 57,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 1,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-17,
+          "collectedMillis": 57.40000003576279,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 5.551115123125783e-17
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 54.80000001192093,
+          "combinedMillis": 57.700000047683716,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 1,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.7755575615628914e-17,
+          "collectedMillis": 56.69999998807907,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.7755575615628914e-17
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 52.799999952316284,
+          "combinedMillis": 72.90000003576279,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 1,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-17,
+          "collectedMillis": 63.5,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.6469779601696886e-23
+          }
+        },
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 60.80000001192093,
+          "combinedMillis": 58.60000002384186,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 1,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.163336342344337e-17,
+          "collectedMillis": 67.09999996423721,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.7755575615628914e-17
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 56.39999997615814,
+          "combinedMillis": 55.5,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 1,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.6469779601696886e-23,
+          "collectedMillis": 57.60000002384186,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.7755575615628914e-17
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 58.39999997615814,
+          "combinedMillis": 58.69999998807907,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 1,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 5.293955920339377e-23,
+          "collectedMillis": 77.10000002384186,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.3877787807814457e-17
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "coldPreviousMillis": 603.6999999880791,
+      "coldCombinedMillis": 178.89999997615814,
+      "coldCollectedMillis": 182.9000000357628,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 1.249000902703301e-16
+      },
+      "trials": [
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 286.5,
+          "combinedMillis": 159.80000001192093,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 2,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.6653345369377348e-16,
+          "collectedMillis": 169.9000000357628,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.220446049250313e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 298.19999998807907,
+          "combinedMillis": 173,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 2,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.163336342344337e-17,
+          "collectedMillis": 171.39999997615814,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.249000902703301e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 295.5,
+          "combinedMillis": 173.5999999642372,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 2,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 8.326672684688674e-17,
+          "collectedMillis": 176.30000001192093,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.220446049250313e-16
+          }
+        },
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 336.19999998807907,
+          "combinedMillis": 181.0999999642372,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 2,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-16,
+          "collectedMillis": 190.10000002384186,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 6.938893903907228e-17
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 327.5,
+          "combinedMillis": 171.89999997615814,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 2,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 3.0531133177191805e-16,
+          "collectedMillis": 171.9000000357628,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.3877787807814457e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 326.9000000357628,
+          "combinedMillis": 182.29999995231628,
+          "previousWorkersPerDirection": 1,
+          "combinedPoolWorkers": 2,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.1102230246251565e-16,
+          "collectedMillis": 190.80000001192093,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 4.163336342344337e-17
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 200000,
+      "coldPreviousMillis": 636.5,
+      "coldCombinedMillis": 375.10000002384186,
+      "coldCollectedMillis": 384.69999998807907,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 1.1102230246251565e-16
+      },
+      "trials": [
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 650.3999999761581,
+          "combinedMillis": 341.19999998807907,
+          "previousWorkersPerDirection": 2,
+          "combinedPoolWorkers": 4,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.1102230246251565e-16,
+          "collectedMillis": 350.80000001192093,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.498001805406602e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 581.3999999761581,
+          "combinedMillis": 356,
+          "previousWorkersPerDirection": 2,
+          "combinedPoolWorkers": 4,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.942890293094024e-16,
+          "collectedMillis": 353.89999997615814,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.608224830031759e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 572.3000000119209,
+          "combinedMillis": 339.80000001192093,
+          "previousWorkersPerDirection": 2,
+          "combinedPoolWorkers": 4,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 5.551115123125783e-17,
+          "collectedMillis": 363.5,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 5.551115123125783e-17
+          }
+        },
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 633.4000000357628,
+          "combinedMillis": 365.10000002384186,
+          "previousWorkersPerDirection": 2,
+          "combinedPoolWorkers": 4,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.220446049250313e-16,
+          "collectedMillis": 372.0999999642372,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.0531133177191805e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 627.3000000119209,
+          "combinedMillis": 388.5,
+          "previousWorkersPerDirection": 2,
+          "combinedPoolWorkers": 4,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.6653345369377348e-16,
+          "collectedMillis": 380.60000002384186,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.498001805406602e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 709,
+          "combinedMillis": 397.60000002384186,
+          "previousWorkersPerDirection": 2,
+          "combinedPoolWorkers": 4,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 8.326672684688674e-17,
+          "collectedMillis": 406.5,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 5.551115123125783e-17
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 500000,
+      "coldPreviousMillis": 924.9000000357628,
+      "coldCombinedMillis": 695.0999999642372,
+      "coldCollectedMillis": 659,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 8.326672684688674e-17
+      },
+      "trials": [
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 766.9000000357628,
+          "combinedMillis": 668.2000000476837,
+          "previousWorkersPerDirection": 5,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.6653345369377348e-16,
+          "collectedMillis": 692.2999999523163,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.498001805406602e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 857.8000000119209,
+          "combinedMillis": 735,
+          "previousWorkersPerDirection": 5,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 9.71445146547012e-17,
+          "collectedMillis": 720.6999999880791,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.942890293094024e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 839.6000000238419,
+          "combinedMillis": 707.5,
+          "previousWorkersPerDirection": 5,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.8041124150158794e-16,
+          "collectedMillis": 711.1999999880791,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.3306690738754696e-16
+          }
+        },
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 806.6999999880791,
+          "combinedMillis": 589.8999999761581,
+          "previousWorkersPerDirection": 5,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.5265566588595902e-16,
+          "collectedMillis": 622.2000000476837,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.7755575615628914e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 709.7000000476837,
+          "combinedMillis": 627.0999999642372,
+          "previousWorkersPerDirection": 5,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 3.0531133177191805e-16,
+          "collectedMillis": 603.9000000357628,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 9.71445146547012e-17
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 697.5,
+          "combinedMillis": 600.1999999880791,
+          "previousWorkersPerDirection": 5,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.7755575615628914e-16,
+          "collectedMillis": 600.3000000119209,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.0531133177191805e-16
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "coldPreviousMillis": 1373.5,
+      "coldCombinedMillis": 1203.1000000238419,
+      "coldCollectedMillis": 1220.1000000238419,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 1.3877787807814457e-16
+      },
+      "trials": [
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 1346.199999988079,
+          "combinedMillis": 1132.7999999523163,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 5.551115123125783e-17,
+          "collectedMillis": 1100.4000000357628,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.608224830031759e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 1339.6000000238419,
+          "combinedMillis": 1100.699999988079,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.996003610813204e-16,
+          "collectedMillis": 1131.1000000238419,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 4.163336342344337e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 1330.0999999642372,
+          "combinedMillis": 1085.2000000476837,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.249000902703301e-16,
+          "collectedMillis": 1101.199999988079,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.5265566588595902e-16
+          }
+        },
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 1327.699999988079,
+          "combinedMillis": 1075.5999999642372,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.996003610813204e-16,
+          "collectedMillis": 1105.9000000357628,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.608224830031759e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 1333.199999988079,
+          "combinedMillis": 1155.9000000357628,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.0816681711721685e-16,
+          "collectedMillis": 1289.8999999761581,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.0531133177191805e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 1294.2999999523163,
+          "combinedMillis": 1074.5,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-16,
+          "collectedMillis": 1106.9000000357628,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.249000902703301e-16
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 2000000,
+      "coldPreviousMillis": 2727.199999988079,
+      "coldCombinedMillis": 2291.900000035763,
+      "coldCollectedMillis": 2542.100000023842,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 3.608224830031759e-16
+      },
+      "trials": [
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 2678.199999988079,
+          "combinedMillis": 2393.100000023842,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 3.885780586188048e-16,
+          "collectedMillis": 2445,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.191891195797325e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 3254.300000011921,
+          "combinedMillis": 2101.699999988079,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.163336342344337e-16,
+          "collectedMillis": 2172.100000023842,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.498001805406602e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 2813.399999976158,
+          "combinedMillis": 2187.600000023842,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 3.0531133177191805e-16,
+          "collectedMillis": 2138.300000011921,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.7755575615628914e-16
+          }
+        },
+        {
+          "order": [
+            "previous",
+            "collected",
+            "streamed"
+          ],
+          "previousMillis": 3163.5,
+          "combinedMillis": 2120.400000035763,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 8.881784197001252e-16,
+          "collectedMillis": 2361,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.220446049250313e-16
+          }
+        },
+        {
+          "order": [
+            "collected",
+            "streamed",
+            "previous"
+          ],
+          "previousMillis": 2866.199999988079,
+          "combinedMillis": 2233.800000011921,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.914335439641036e-16,
+          "collectedMillis": 2322.699999988079,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 4.163336342344337e-16
+          }
+        },
+        {
+          "order": [
+            "streamed",
+            "previous",
+            "collected"
+          ],
+          "previousMillis": 2634,
+          "combinedMillis": 2118.7999999523163,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 7.494005416219807e-16,
+          "collectedMillis": 2390.800000011921,
+          "collectedParity": {
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.5265566588595902e-16
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 2,
+  "compareSummaries": true,
+  "createdAt": "2026-10-11T01:46:48.283Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "d1e551e7f72182acb2e985c79beae54c499d411e8f095226dcd114be5cf77ae2",
+  "poolWorkerSha256": "3f8e9bc7ef82f568e0357ddf4592775bece3a4367e5aadb9b9c8c1f8225174f8",
+  "wasmSha256": "ded1a69cee0f4106bcb614b711bedfe0868f3226f105213b8c8a56d63a1b468d",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "params": {
+    "threshold": 0.15,
+    "voxel": 1,
+    "minPoints": 10
+  },
+  "fixture": "UTM wavy grid, 0.1m spacing; half shifted 0.07m, half shifted 1.1m",
+  "note": "Synthetic data. Requested CPU workflows run sequentially; three modes rotate when comparing summaries, otherwise two modes alternate. Each mode is warmed once before trials. Previous workflow retains its existing per-direction worker splitting. Wall timings include all worker RPCs, snapshots/copies, tree builds, both exact C2C searches, voxel scores, summaries and inlier metrics. File load and viewer rendering are excluded. Distances are bit-exact and statistics/inlier metrics exact every trial; existing voxel HashMap reductions allow 1e-12 relative/absolute roundoff. Combined workers count pool lanes (1 means native serial); the main WASM worker computes voxel scores concurrently. Other applications and CPU power/clocks are uncontrolled. --compare-summaries rotates all three modes; collectedMillis retains the collect-all assembly, both distance summaries and an extra forward coloring copy, while combinedMillis streams slice assembly and forward summaries, omits unused reverse statistics and reuses the forward coloring array. Both combined modes use identical input snapshots, pool scheduling and voxel kernels. Every control result also passes parity."
+}

@@ -1,0 +1,904 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 941933,
+    "filePoints": 941933,
+    "keepEvery": 1,
+    "bounds": [
+      -9341,
+      -40867,
+      26.044749999999997,
+      -9261,
+      -40746,
+      93.7765
+    ]
+  },
+  "compared": {
+    "points": 941933,
+    "filePoints": 941933,
+    "keepEvery": 1,
+    "bounds": [
+      -9341,
+      -40867,
+      26.039749999999998,
+      -9261,
+      -40746,
+      93.8015
+    ]
+  },
+  "serialMillis": 2200.399999976158,
+  "cases": [
+    {
+      "scheduling": "auto",
+      "warmups": [
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 2574.899999976158,
+          "coldMillis": 1354.699999988079,
+          "warmMillis": 1065.9000000357628,
+          "controlWorkerMillis": 2574.600000023842,
+          "coldWorkerMillis": 1354.5,
+          "warmWorkerMillis": 1065.699999988079,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 2287,
+          "coldMillis": 1467.300000011921,
+          "warmMillis": 1079,
+          "controlWorkerMillis": 2285.5,
+          "coldWorkerMillis": 1467,
+          "warmWorkerMillis": 1078.7999999523163,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 2516.600000023842,
+          "coldMillis": 1482.6000000238419,
+          "warmMillis": 1049.3999999761581,
+          "controlWorkerMillis": 2516.300000011921,
+          "coldWorkerMillis": 1481.699999988079,
+          "warmWorkerMillis": 1049.2000000476837,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 2708.800000011921,
+          "coldMillis": 1437.5,
+          "warmMillis": 1046.6000000238419,
+          "controlWorkerMillis": 2708,
+          "coldWorkerMillis": 1437.199999988079,
+          "warmWorkerMillis": 1046.3999999761581,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 2271.899999976158,
+          "coldMillis": 1529.300000011921,
+          "warmMillis": 1060.4000000357628,
+          "controlWorkerMillis": 2271.699999988079,
+          "coldWorkerMillis": 1528.800000011921,
+          "warmWorkerMillis": 1060,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 2375.2000000476837,
+          "coldMillis": 1503.800000011921,
+          "warmMillis": 1073.699999988079,
+          "controlWorkerMillis": 2374.599999964237,
+          "coldWorkerMillis": 1503.4000000357628,
+          "warmWorkerMillis": 1073.3999999761581,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 2367.5,
+          "coldMillis": 1487,
+          "warmMillis": 1111.1000000238419,
+          "controlWorkerMillis": 2367,
+          "coldWorkerMillis": 1486.5,
+          "warmWorkerMillis": 1110.9000000357628,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 2308.100000023842,
+          "coldMillis": 1519.3999999761581,
+          "warmMillis": 950.1999999880791,
+          "controlWorkerMillis": 2307.399999976158,
+          "coldWorkerMillis": 1519.300000011921,
+          "warmWorkerMillis": 950,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 1826.0999999642372,
+          "coldMillis": 1415.800000011921,
+          "warmMillis": 990.5,
+          "controlWorkerMillis": 1825.800000011921,
+          "coldWorkerMillis": 1415.1000000238419,
+          "warmWorkerMillis": 990.3000000119209,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 1886.199999988079,
+          "coldMillis": 1278.0999999642372,
+          "warmMillis": 999.4000000357628,
+          "controlWorkerMillis": 1886.0999999642372,
+          "coldWorkerMillis": 1277.800000011921,
+          "warmWorkerMillis": 999,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 2435.5,
+          "coldMillis": 1355.6000000238419,
+          "warmMillis": 1079.5,
+          "controlWorkerMillis": 2435.199999988079,
+          "coldWorkerMillis": 1355,
+          "warmWorkerMillis": 1079.199999988079,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 2143.7000000476837,
+          "coldMillis": 1271.8999999761581,
+          "warmMillis": 979.8000000119209,
+          "controlWorkerMillis": 2143.399999976158,
+          "coldWorkerMillis": 1271.5999999642372,
+          "warmWorkerMillis": 979.5999999642372,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 1898,
+          "coldMillis": 1264.800000011921,
+          "warmMillis": 864.5,
+          "controlWorkerMillis": 1897.800000011921,
+          "coldWorkerMillis": 1264.5,
+          "warmWorkerMillis": 864.1000000238419,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "control",
+            "prepared"
+          ],
+          "controlMillis": 1807,
+          "coldMillis": 1303.6000000238419,
+          "warmMillis": 918.6999999880791,
+          "controlWorkerMillis": 1806.699999988079,
+          "coldWorkerMillis": 1303.199999988079,
+          "warmWorkerMillis": 918.6000000238419,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        },
+        {
+          "order": [
+            "prepared",
+            "control"
+          ],
+          "controlMillis": 1813.199999988079,
+          "coldMillis": 1391.1000000238419,
+          "warmMillis": 1003.5999999642372,
+          "controlWorkerMillis": 1813.1000000238419,
+          "coldWorkerMillis": 1390.699999988079,
+          "warmWorkerMillis": 1003.4000000357628,
+          "controlWorkers": 1,
+          "workers": 2,
+          "controlMainWorker": false,
+          "mainWorker": true,
+          "coldCacheHit": false,
+          "warmCacheHit": true,
+          "inputBudgetBytes": 263741240,
+          "cores": 299755,
+          "finiteDistances": 281763,
+          "undefinedDistances": 17992,
+          "distanceBitMismatches": 0,
+          "lod95BitMismatches": 0,
+          "significantBitMismatches": 0,
+          "exportedBytesEqual": true,
+          "exportedBytes": 9892141
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "m3c2-exact-tree-preparation",
+  "createdAt": "2026-10-11T20:45:36.357Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "artifactHashes": {
+    "c2c-worker-BvC061ie.js": "052265de3175a9b664b909a5c5660e504464756abd2fbebb9bfc904c75d4ed60",
+    "ca_wasm_bg-DOqQY9PE.wasm": "ccf52ac2d75b4d42963701c19686bdd378da36c6dba3034ddc289e3194e9e9e3",
+    "worker-FWw16PsD.js": "21669a13a7f3bedcfd354f56da16d91f8678bd4127fd56eb65e42594cac21190"
+  },
+  "scriptSha256": "5eff79eb674f43405de5687e021481118fc7e48b7cd6516e99011c14cd2fa787",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "maxPoints": 2000000,
+  "warmupRounds": 5,
+  "repeats": 10,
+  "note": "Supplied measured point clouds with original file order and coordinates; core selection retains original measured positions. The default 2000000-point budget loads these inputs completely. One production analysis worker and pool, capped at min(4, hardwareConcurrency-1), with five excluded warm-up trials and alternating control/prepared order. Control uses the existing resident-lane scheduling policy and rebuilds trees each call. A fresh reference identity before every trial forces cold exact-tree preparation; loading and removal are outside timers. Prepared cold builds two original-f64 trees once, exports topology/coordinates/indices and transfers one snapshot pair per pool lane, validates each import, then computes fresh normals/results. Warm immediately reuses those immutable trees and recomputes cores/normals/results. Complete RPC timing includes plan/core attributes, tree preparation when cold, binding copies, queries, joining, result attributes and LOD indexing. Serial, control, cold and warm must match result f32 bits and complete PLY bytes; validation and exports are excluded from timing. Radius pruning stays false. The existing 256 MiB input-storage estimate allows 80 bytes/point for main construction, 36 for retained main trees, 104 per importing pool lane and 108 for main snapshot export while previous lanes import; the maximum of construction/export/import phases chooses lane count. It excludes source/core/result storage, retained WASM heap pages, allocator/GC overhead, other cached workflows and concurrent jobs; it is not a total memory cap. No normals or results are cached. Source/manifest/script/artifact hashes are checked before and after timing. CPU clocks, power, GC and other applications are uncontrolled. Measured-source subsets are not independent surveys or change-detection ground truth."
+}

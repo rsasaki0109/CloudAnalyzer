@@ -11,9 +11,9 @@ import init, {
   CopcReader,
   CopcBoxReader,
   cloudToCloud,
+  c2cSimdEnabled,
   cloudToMesh,
   computeM3c2,
-  mapQuality,
   computeVolume,
   e57ScanNames,
   evaluateTrajectory,
@@ -25,7 +25,6 @@ import init, {
   planSor,
   PoseGraphSession,
   rasterGeotiff,
-  registerIcp,
   registerScans,
   summarizeDistances,
   TrajectoryData,
@@ -35,6 +34,17 @@ import init, {
   warmUp,
 } from "./wasm/ca_wasm.js";
 import { type ByteSource, readRange } from "./bytes";
+import { gpuCloudToCloud, invalidateGpuReference, prepareGpuC2c } from "./gpu-c2c";
+import { cachedCloudToCloud, invalidateCpuC2c } from "./cpu-c2c";
+import { parallelM3c2 } from "./m3c2-workers";
+import { invalidateM3c2Preparation } from "./m3c2-preparation";
+import { invalidateM3c2CoreSelection } from "./m3c2-core-selection";
+import { evaluateMapQuality } from "./map-quality-workers";
+import { cachedRegisterIcp, invalidateIcpReference } from "./icp-preparation";
+import { snapshotVoxelScores, invalidateVoxelScores } from "./map-voxel-cache";
+import { acquireMesh, invalidateMeshSources, meshCacheState, trackMeshSources } from "./mesh-preparation";
+import { finishSorMeans, makeSorQueries, scatterNormalParts } from "./knn-join";
+import { acquireKnn, invalidateKnnPreparation, knnCacheState, type KnnLease } from "./knn-preparation";
 import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED, isBag } from "./protocol";
 import { eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
@@ -101,11 +111,13 @@ interface Detail {
 
 interface CopcSource { source: ByteSource; size: number; head: Uint8Array }
 
+let poolPreparation: Promise<unknown> = Promise.resolve();
 const ready = init().then((wasm) => {
   // Optimize the heavy kernels here and on the pool before the first file
   // arrives (see `warmUp`); requests wait for this one.
   warmUp();
-  void warmUpPool();
+  poolPreparation = warmUpPool();
+  void poolPreparation.catch(() => {});
   return wasm;
 });
 /** Larger clouds are voxel-thinned before meshing, to bound time and memory. */
@@ -120,24 +132,36 @@ let nextId = 1;
 async function parallelCloudToCloud(
   compared: Cloud,
   reference: Cloud,
+  simd?: boolean,
+  stream = true,
 ): Promise<{ distances: Float64Array; workers: number } | null> {
-  const parts = Math.min(poolSize(), Math.floor(compared.length / MIN_PARALLEL_QUERIES));
+  const count = compared.length;
+  const parts = Math.min(poolSize(), Math.floor(count / MIN_PARALLEL_QUERIES));
   if (parts < 2) return null;
   const plan = planCloudToCloud(compared, reference, parts);
   const slices: Extract<Slice, { kind: "cloud" }>[] = Array.from({ length: plan.length }, (_, k) => ({
     kind: "cloud",
     reference: plan.takeReference(k),
     queries: plan.takeQueries(k),
+    simd,
   }));
-  const indices = Array.from({ length: plan.length }, (_, k) => plan.takeQueryIndices(k));
+  const indices: (Uint32Array | undefined)[] = Array.from({ length: plan.length }, (_, k) => plan.takeQueryIndices(k));
   plan.free();
-  const results = await runSlices(slices.length, (k) => slices[k]);
-  const distances = new Float64Array(compared.length);
-  results.forEach((part, k) => {
-    const idx = indices[k];
+  let distances: Float64Array | undefined;
+  let closed = false;
+  const consume = (k: number, part: Float64Array) => {
+    if (closed) return;
+    const idx = indices[k]!;
+    if (part.length !== idx.length) throw new Error("Incomplete C2C worker result");
+    distances ??= new Float64Array(count);
     for (let i = 0; i < idx.length; i++) distances[idx[i]] = part[i];
-  });
-  return { distances, workers: results.length };
+    indices[k] = undefined;
+  };
+  try {
+    if (stream) await eachSlice<Extract<Slice, { kind: "cloud" }>>(slices.length, k => slices[k], consume);
+    else (await runSlices(slices.length, k => slices[k])).forEach((part, k) => consume(k, part));
+    return { distances: distances ?? new Float64Array(count), workers: slices.length };
+  } finally { closed = true; }
 }
 
 /**
@@ -148,26 +172,100 @@ async function parallelCloudToMesh(
   compared: Cloud,
   mesh: Mesh,
   signed: boolean,
-): Promise<{ distances: Float64Array; workers: number } | null> {
+  cache = true,
+  gpu = false,
+  orderCache = true,
+): Promise<{ distances: Float64Array; workers: number; cached: boolean; reused: boolean; slices: number; retainedBytes?: number; queryOrder?: { hit: boolean; bytes: number; entries: number }; fallback?: string; compute?: C2cOutput["meshCompute"] } | null> {
   const parts = Math.min(poolSize(), Math.floor(compared.length / MIN_PARALLEL_QUERIES));
   if (parts < 2) return null;
-  const positions = compared.rawPositions();
-  const vertices = mesh.rawVertices();
-  const indices = mesh.indices();
-  const per = Math.ceil(compared.length / parts);
-  const results = await runSlices(parts, (k) => ({
-    kind: "mesh" as const,
-    vertices,
-    indices,
-    queries: positions.slice(k * per * 3, Math.min(compared.length, (k + 1) * per) * 3),
-    signed,
-  }));
-  const distances = new Float64Array(compared.length);
-  results.forEach((part, k) => distances.set(part, k * per));
-  return { distances, workers: parts };
+  const guard = trackMeshSources(mesh, compared);
+  try {
+    const count = compared.length, positions = compared.rawPositions(), per = Math.ceil(count / parts);
+    const queries = (k: number) => positions.slice(k * per * 3, Math.min(count, (k + 1) * per) * 3);
+    const join = (results: Float64Array[]) => {
+      guard.assertSource();
+      const distances = new Float64Array(count);
+      results.forEach((part, k) => {
+        if (part.length !== Math.min(per, count - k * per)) throw new Error("Incomplete C2M worker result");
+        distances.set(part, k * per);
+      });
+      return distances;
+    };
+    let fallback: string | undefined;
+    const compute: C2cOutput["meshCompute"] = gpu ? {backend:"cpu",prepareMillis:0,gpuMillis:0,verifyMillis:0,batches:0,completeRows:0,referenceReused:false,gpuBytes:0} : undefined;
+    let lease;
+    try {
+      lease = acquireMesh(mesh, parts, cache);
+      if (lease) {
+        let hints: Uint32Array | undefined;
+        if (compute) {
+          try {
+            const result = await lease.gpuHints(positions); guard.assertSource();
+            hints=result.hints;
+            compute.backend="webgpu";compute.prepareMillis=result.prepareMillis;compute.gpuMillis=result.gpuMillis;
+            compute.batches=result.batches;compute.completeRows=result.completeRows;compute.referenceReused=result.referenceReused;compute.gpuBytes=result.gpuBytes;
+          } catch (error) {guard.assertSource();compute.fallback=error instanceof Error?error.message:String(error);}
+        }
+        const verifyStart=performance.now();
+        const distances = join(await lease.run(parts, queries, signed, hints ? k=>hints!.slice(k*per,Math.min(count,(k+1)*per)) : undefined, orderCache));
+        if(compute)compute.verifyMillis=performance.now()-verifyStart;
+        return { distances, workers: lease.workers, cached: true, reused: lease.reused, slices: parts, retainedBytes: lease.bytes(), queryOrder: lease.queryOrderState(), compute };
+      }
+    } catch (error) {
+      guard.assertSource();
+      lease?.retire();
+      fallback = error instanceof Error ? error.message : String(error);
+      if(compute){compute.backend="cpu";compute.fallback=fallback;}
+    } finally { lease?.release(); }
+    guard.assertSource();
+    const vertices = mesh.rawVertices(), indices = mesh.indices();
+    if(compute){compute.backend="cpu";compute.fallback??="Retained mesh preparation is unavailable";}
+    // Drain all fresh slices too, so a failed lane cannot publish late data.
+    const pending = Array.from({ length: parts }, (_, k) => runOn(k, { kind: "mesh" as const, vertices, indices, queries: queries(k), signed }));
+    const results = await Promise.allSettled(pending);
+    guard.assertSource();
+    const failed = results.find(r => r.status === "rejected");
+    if (failed?.status === "rejected") throw failed.reason;
+    return { distances: join(results.map(r => (r as PromiseFulfilledResult<Float64Array>).value)),
+      workers: parts, cached: false, reused: false, slices: parts, fallback, compute };
+  } finally { guard.release(); }
 }
 
 let sorJobs = 0;
+type KnnHintMode = "cpu" | "webgpu" | "webgpu-knn";
+interface KnnHintState {
+  requested: KnnHintMode; backend: "cpu" | "cpu-hints" | "webgpu" | "webgpu-knn"; points: number; k: number; workers: number;
+  prepareMillis: number; gpuMillis: number; verifyMillis: number; batches: number; referenceReused: boolean; gpuBytes: number; fallback?: string;
+  completeRows?: number;
+}
+let lastKnnHintState: KnnHintState | null = null;
+function beginKnnHints(mode: KnnHintMode | undefined, points: number, k: number): KnnHintState | undefined {
+  lastKnnHintState = null;
+  if (mode === undefined) return;
+  if (mode !== "cpu" && mode !== "webgpu" && mode !== "webgpu-knn") throw new Error("Invalid neighbourhood hint mode");
+  const state: KnnHintState = { requested: mode, backend: "cpu", points, k, workers: 1,
+    prepareMillis: 0, gpuMillis: 0, verifyMillis: 0, batches: 0, referenceReused: false, gpuBytes: 0 };
+  lastKnnHintState = state; return state;
+}
+async function prepareKnnHints(lease: KnnLease, state: KnnHintState | undefined): Promise<Uint32Array[] | undefined> {
+  if (!state) return;
+  if (state.k > 32) throw new Error("Neighbourhood hint prototype supports k up to 32");
+  state.workers = lease.indices.length;
+  if (state.requested === "cpu") {
+    const start = performance.now(); await lease.prepareHints();
+    state.prepareMillis = performance.now() - start; state.backend = "cpu-hints"; return;
+  }
+  const gpu = await lease.gpuHints(state.k, state.requested === "webgpu-knn");
+  state.prepareMillis = gpu.prepareMillis; state.gpuMillis = gpu.gpuMillis;
+  state.batches = gpu.batches; state.referenceReused = gpu.referenceReused; state.gpuBytes = gpu.gpuBytes; state.backend = state.requested;
+  state.completeRows = gpu.completeRows;
+  return gpu.hints;
+}
+function failedKnnHints(state: KnnHintState | undefined, error: unknown): void {
+  if (state) { state.backend = "cpu"; state.fallback ??= error instanceof Error ? error.message : String(error); }
+}
+// Combined ancestral bounds remain opt-in: measured whole-RPC gains were unstable.
+const DEFAULT_KNN_BOUNDS = false;
 
 /**
  * SOR on the worker pool (see `planSor`): each part settles most of its
@@ -176,11 +274,32 @@ let sorJobs = 0;
  * statistic per point, identical to the single-threaded one, or null when
  * the job is too small to split.
  */
-async function parallelSorMeans(cloud: Cloud, k: number): Promise<Float64Array | null> {
+async function parallelSorMeans(cloud: Cloud, k: number, cache = true, bounds = DEFAULT_KNN_BOUNDS, hintMode?: KnnHintMode): Promise<Float64Array | null> {
   const n = cloud.length;
+  const hintState = beginKnnHints(hintMode, n, k + 1);
   // One part per worker: each keeps its part indexed for step 2.
   const parts = Math.min(poolSize(), Math.floor(n / MIN_PARALLEL_QUERIES));
-  if (parts < 2 || n <= k) return null;
+  if (parts < 2 || n <= k) { failedKnnHints(hintState, "Neighbourhood job uses the serial CPU path"); return null; }
+  const lease = acquireKnn(cloud, parts, cache);
+  if (lease) {
+    try {
+      const hints = await prepareKnnHints(lease, hintState), verifyStart = performance.now();
+      const local = await lease.run((job, own) => ({ kind: "knn-local" as const, job, own, k, bounds, regions: lease.regions.slice(),
+        gpuHints: hints?.[own], cpuHints: hintState?.backend === "cpu-hints", hintSlots: hintState?.backend === "webgpu-knn" }));
+      const packed = makeSorQueries(local, lease.indices, n);
+      const answers = await lease.run((job, lane) => ({ kind: "knn-within" as const, job, k, bounds, queries: packed.queries[lane] }));
+      lease.assertSource();
+      const means = finishSorMeans(local, answers, packed, k);
+      if (hintState) hintState.verifyMillis = performance.now() - verifyStart;
+      return means;
+    } catch (error) {
+      failedKnnHints(hintState, error);
+      lease.retire();
+      if (!lease.sourceValid()) throw error;
+      // A lost preparation recovers through the existing fresh partition path.
+    } finally { lease.release(); }
+  }
+  failedKnnHints(hintState, "Neighbourhood preparation is unavailable or over budget");
   const job = ++sorJobs;
   const plan = planSor(cloud, parts);
   const m = plan.length;
@@ -193,51 +312,20 @@ async function parallelSorMeans(cloud: Cloud, k: number): Promise<Float64Array |
       (j) => ({ kind: "sor-local" as const, job, points: plan.points(cloud, j), k, own: j, regions: regions.slice() }),
       lanes,
     );
-    const means = new Float64Array(n);
-    // Candidate lists per open point, and the queries each part must answer.
-    const lists: Float64Array[][] = [];
-    const openIndex: number[] = [];
-    const asked: { query: number; at: [number, number, number] }[][] = Array.from({ length: m }, () => []);
-    local.forEach((part, i) => {
-      const idx = indices[i];
-      for (let j = 0; j < part.means.length; j++) if (!Number.isNaN(part.means[j])) means[idx[j]] = part.means[j];
-      for (let o = 0; o < part.open.length; o++) {
-        const q = lists.length;
-        lists.push([part.candidates.subarray(o * (k + 1), (o + 1) * (k + 1))]);
-        openIndex.push(idx[part.open[o]]);
-        const [x, y, z] = part.openPoints.subarray(o * 3, o * 3 + 3);
-        for (let j = 0; j < m; j++) if ((part.reach[o] >>> j) & 1) asked[j].push({ query: q, at: [x, y, z] });
-      }
-    });
+    const packed = makeSorQueries(local, indices, n);
     const answers = await Promise.all(
-      asked.map((a, j) =>
-        a.length === 0
+      packed.queries.map((queries, j) =>
+        queries.length === 0
           ? null
           : runOn(lanes[j], {
               kind: "sor-within" as const,
               job,
-              queries: Float64Array.from(a.flatMap((x) => x.at)),
+              queries,
               k,
             }),
       ),
     );
-    answers.forEach((d, j) => {
-      if (d) asked[j].forEach((a, row) => lists[a.query].push(d.subarray(row * (k + 1), (row + 1) * (k + 1))));
-    });
-    // Same arithmetic as the core: the k + 1 smallest, skip the point itself.
-    lists.forEach((candidates, q) => {
-      const all = new Float64Array(candidates.reduce((s, c) => s + c.length, 0));
-      let at = 0;
-      for (const c of candidates) {
-        all.set(c, at);
-        at += c.length;
-      }
-      all.sort();
-      let sum = 0;
-      for (let j = 1; j <= k; j++) sum += Math.sqrt(all[j]);
-      means[openIndex[q]] = sum / k;
-    });
-    return means;
+    return finishSorMeans(local, answers, packed, k);
   } finally {
     plan.free();
     await Promise.all([...new Set(lanes)].map((lane) => runOn(lane, { kind: "sor-release" as const, job })));
@@ -249,10 +337,29 @@ async function parallelSorMeans(cloud: Cloud, k: number): Promise<Float64Array |
  * part is done from its own points (near a part's border, neighbours from
  * across it are not used). Returns false when the cloud is too small to split.
  */
-async function parallelNormals(cloud: Cloud, k: number, orientation: "up" | "outward"): Promise<boolean> {
+async function parallelNormals(cloud: Cloud, k: number, orientation: "up" | "outward", cache = true, bounds = DEFAULT_KNN_BOUNDS, hintMode?: KnnHintMode): Promise<boolean> {
   const n = cloud.length;
+  const hintState = beginKnnHints(hintMode, n, k);
   const parts = Math.min(poolSize(), Math.floor(n / MIN_PARALLEL_QUERIES));
-  if (parts < 2) return false;
+  if (parts < 2) { failedKnnHints(hintState, "Neighbourhood job uses the serial CPU path"); return false; }
+  const how = new Float64Array(cloud.normalsOrientation(orientation));
+  const lease = acquireKnn(cloud, parts, cache);
+  if (lease) {
+    try {
+      const hints = await prepareKnnHints(lease, hintState), verifyStart = performance.now();
+      const results = await lease.run((job, lane) => ({ kind: "knn-normals" as const, job, k, bounds, orientation: how.slice(),
+        gpuHints: hints?.[lane], cpuHints: hintState?.backend === "cpu-hints", hintSlots: hintState?.backend === "webgpu-knn" }));
+      lease.assertSource();
+      cloud.setNormals(scatterNormalParts(results, lease.indices, n));
+      if (hintState) hintState.verifyMillis = performance.now() - verifyStart;
+      return true;
+    } catch (error) {
+      failedKnnHints(hintState, error);
+      lease.retire();
+      if (!lease.sourceValid()) throw error;
+    } finally { lease.release(); }
+  }
+  failedKnnHints(hintState, "Neighbourhood preparation is unavailable or over budget");
   const plan = planSor(cloud, parts);
   try {
     const how = new Float64Array(cloud.normalsOrientation(orientation));
@@ -263,12 +370,7 @@ async function parallelNormals(cloud: Cloud, k: number, orientation: "up" | "out
       k,
       orientation: how.slice(),
     }));
-    const normals = new Float32Array(n * 3);
-    results.forEach((part, j) => {
-      const idx = indices[j];
-      for (let i = 0; i < idx.length; i++) normals.set(part.subarray(i * 3, i * 3 + 3), idx[i] * 3);
-    });
-    cloud.setNormals(normals);
+    cloud.setNormals(scatterNormalParts(results, indices, n));
     return true;
   } finally {
     plan.free();
@@ -758,8 +860,9 @@ function output(
   workers: number,
   kind: C2cOutput["kind"],
   signed: boolean,
+  ownedDistances?: Float32Array,
 ): { value: C2cOutput; transfer: Transferable[] } {
-  const distances = result.distances();
+  const distances = ownedDistances ?? result.distances();
   const value: C2cOutput = {
     kind,
     signed,
@@ -931,7 +1034,18 @@ function evaluate(req: Extract<Request, { kind: "trajectory-eval" }>): Trajector
 /** The file no longer matches a cloud whose points moved. */
 function dropDetail(id: number): void {
   const item = items.get(id);
-  if (item?.kind === "cloud") { item.detail = undefined; item.copcSource = undefined; }
+  if (item?.kind === "cloud") {
+    invalidateCpuC2c(item.cloud);
+    invalidateM3c2Preparation(item.cloud);
+    invalidateM3c2CoreSelection(item.cloud);
+    invalidateGpuReference(item.cloud);
+    invalidateIcpReference(item.cloud);
+    invalidateVoxelScores(item.cloud);
+    invalidateKnnPreparation(item.cloud);
+    invalidateMeshSources(item.cloud);
+    item.detail = undefined;
+    item.copcSource = undefined;
+  }
 }
 
 /** Decode one chunk of a thinned cloud's file at full density, on the pool. */
@@ -1825,23 +1939,74 @@ async function handle(
       progress("preparing for display");
       return describe(id, { parse, index, workers });
     }
+    case "gpu-prepare":
+      await prepareGpuC2c();
+      return { value: undefined, transfer: [] };
+    case "cpu-prepare":
+      await poolPreparation;
+      return { value: undefined, transfer: [] };
+    case "knn-cache-state":
+      return { value: knnCacheState(), transfer: [] };
+    case "knn-hint-state":
+      return { value: lastKnnHintState, transfer: [] };
+    case "mesh-cache-state":
+      return { value: meshCacheState(), transfer: [] };
     case "c2c": {
       const compared = getCloud(req.compared);
       const reference = items.get(req.reference);
       if (!reference) throw new Error("reference not found");
       const start = performance.now();
       if (reference.kind === "mesh") {
-        const parallel = await parallelCloudToMesh(compared, reference.mesh, req.signed);
+        const parallel = await parallelCloudToMesh(compared, reference.mesh, req.signed, req.meshCache, req.meshGpu, req.meshOrderCache);
         const result = parallel
-          ? summarizeDistances(parallel.distances)
-          : cloudToMesh(compared, reference.mesh, req.signed);
-        return output(result, start, parallel?.workers ?? 1, "c2m", req.signed);
+          ? summarizeDistances(parallel.distances, req.summarySort)
+          : cloudToMesh(compared, reference.mesh, req.signed, req.summarySort);
+        const out = output(result, start, parallel?.workers ?? 1, "c2m", req.signed);
+        out.value.summarySort = req.summarySort === true;
+        out.value.meshCached = parallel?.cached ?? false;
+        out.value.meshCacheReused = parallel?.reused ?? false;
+        out.value.meshCacheBytes = parallel?.retainedBytes;
+        out.value.meshQueryOrderHit = parallel?.queryOrder?.hit ?? false;
+        out.value.meshQueryOrderBytes = parallel?.queryOrder?.bytes ?? 0;
+        out.value.meshQueryOrderEntries = parallel?.queryOrder?.entries ?? 0;
+        out.value.meshSlices = parallel?.slices ?? 1;
+        out.value.meshCacheFallback = parallel?.fallback;
+        out.value.meshCompute = parallel?.compute;
+        return out;
       }
-      const parallel = await parallelCloudToCloud(compared, reference.cloud);
+      let fallback: string | undefined;
+      if (req.backend === "webgpu") {
+        try {
+          const gpu = await gpuCloudToCloud(compared, reference.cloud, req.gpuPrefetch,
+            req.gpuVerifyBounds, req.gpuReuseDevice, req.gpuVerifySimd, req.gpuBatchSize, req.gpuLeafOnly,
+            req.gpuWorkgroupSize, req.gpuVerifyWorkers, req.gpuVerifySnapshot, req.gpuStageQueries, req.gpuMainWorker, req.gpuReuseImportBounds, req.gpuBufferedReadback);
+          const out = output(summarizeDistances(gpu.distances, req.summarySort), start, gpu.compute.verifyWorkers ?? 1, "c2c", false);
+          out.value.compute = gpu.compute;
+          out.value.summarySort = req.summarySort === true;
+          return out;
+        } catch (error) {
+          fallback = error instanceof Error ? error.message : String(error);
+        }
+      }
+      const parallel = req.cpuCache !== false
+        ? await cachedCloudToCloud(compared, reference.cloud, req.cpuNearestSimd, req.cpuStream, req.cpuPipeline)
+        : await parallelCloudToCloud(compared, reference.cloud, req.cpuNearestSimd, req.cpuStream);
       const result = parallel
-        ? summarizeDistances(parallel.distances)
-        : cloudToCloud(compared, reference.cloud);
-      return output(result, start, parallel?.workers ?? 1, "c2c", false);
+        ? summarizeDistances(parallel.distances, req.summarySort)
+        : cloudToCloud(compared, reference.cloud, req.cpuNearestSimd, req.summarySort);
+      const out = output(result, start, parallel?.workers ?? 1, "c2c", false);
+      out.value.summarySort = req.summarySort === true;
+      out.value.cpuSimd = req.cpuNearestSimd === true && c2cSimdEnabled();
+      out.value.cpuStreaming = !!parallel && req.cpuStream !== false;
+      out.value.cpuCached = !!parallel && req.cpuCache !== false;
+      out.value.cpuCacheReused = !!parallel && "reused" in parallel && parallel.reused === true;
+      out.value.cpuPipelined = out.value.cpuCached && req.cpuPipeline === true;
+      if (parallel && "inputBytes" in parallel && typeof parallel.inputBytes === "number")
+        out.value.cpuCacheInputBytes = parallel.inputBytes;
+      if (fallback) out.value.compute = { backend: "cpu", fallback, prepareMillis: 0,
+        gpuMillis: 0, verifyMillis: 0, batches: 0, batchSize: 0, referenceReused: false, certified: 0,
+        deviceReused: false, prefetch: false, verifyBounds: false, verifySimd: false, leafOnly: false, workgroupSize: 0 };
+      return out;
     }
     case "detail":
       return readDetail(req);
@@ -1854,19 +2019,25 @@ async function handle(
     case "icp": {
       const moving = getCloud(req.moving);
       const start = performance.now();
-      const outcome = registerIcp(
+      const { outcome, referenceReused, referenceCached, referenceBytes, correspondenceSimd,
+        correspondenceTemporal, temporalQueries, temporalScratchBytes } = cachedRegisterIcp(
         moving,
         getCloud(req.reference),
         req.maxIterations,
         req.overlap,
         req.matchCentroids,
         req.pointToPlane,
+        req.icpCache,
+        req.icpSimd,
+        req.icpTemporal,
       );
       const matrix = Array.from(outcome.matrix());
       moving.transform(new Float64Array(matrix));
       dropDetail(req.moving);
       const described = describe(req.moving);
       const value: IcpOutput = {
+        referenceReused, referenceCached, referenceBytes, correspondenceSimd,
+        correspondenceTemporal, temporalQueries, temporalScratchBytes,
         cloud: described.value,
         matrix,
         rmsInitial: outcome.rmsInitial,
@@ -1967,7 +2138,7 @@ async function handle(
       const t = performance.now();
       const cloud = getCloud(req.id);
       const k = Math.max(1, Math.floor(req.a));
-      const means = req.op === "sor" ? await parallelSorMeans(cloud, k) : null;
+      const means = req.op === "sor" ? await parallelSorMeans(cloud, k, req.knnCache, req.knnBounds, req.knnHint) : null;
       const filtered = means ? cloud.filterSor(means, req.b) : cloud.filter(req.op, req.a, req.b);
       await buildIndex(filtered);
       const id = nextId++;
@@ -1986,7 +2157,7 @@ async function handle(
     case "normals": {
       const cloud = getCloud(req.id);
       const k = Math.max(3, Math.floor(req.k));
-      if (!(await parallelNormals(cloud, k, req.orientation))) cloud.estimateNormals(k, req.orientation);
+      if (!(await parallelNormals(cloud, k, req.orientation, req.knnCache, req.knnBounds, req.knnHint))) cloud.estimateNormals(k, req.orientation);
       const normals = cloud.normals()!;
       return { value: normals, transfer: [normals.buffer] };
     }
@@ -2011,22 +2182,37 @@ async function handle(
     }
     case "shapes":
       return shapes(req);
+    case "map-evaluate": {
+      const start = performance.now();
+      const { result, distances, quality, workers, cached, reused, inputBytes, voxelCacheHit, voxelReference } = await evaluateMapQuality(getCloud(req.compared),
+        getCloud(req.reference), req.threshold, req.voxel, req.minPoints, req.streamSummaries, req.cpuCache, req.cpuPipeline, req.voxelSimd, req.voxelCache, req.voxelReferenceCache);
+      const out = output(result, start, workers, "c2c", false,
+        req.streamSummaries === false ? undefined : distances);
+      out.value.quality = quality;
+      out.value.voxelCacheHit = voxelCacheHit;
+      out.value.voxelReference = voxelReference;
+      out.value.cpuCached = cached;
+      out.value.cpuCacheReused = reused;
+      out.value.cpuPipelined = cached && req.cpuPipeline !== false;
+      if (inputBytes !== undefined) out.value.cpuCacheInputBytes = inputBytes;
+      return out;
+    }
     case "map-quality": {
-      const [awd, scs, voxels] = mapQuality(getCloud(req.compared), getCloud(req.reference), req.voxel, req.minPoints);
-      return { value: { awd, scs, voxels }, transfer: [] };
+      const { scores, reused, reference } = snapshotVoxelScores(getCloud(req.compared), getCloud(req.reference), req.voxel, req.minPoints, req.voxelSimd, req.voxelCache, req.voxelReferenceCache);
+      return { value: { ...scores, voxelCacheHit: reused, voxelReference: reference }, transfer: [] };
     }
     case "m3c2": {
       const start = performance.now();
-      const cloud = computeM3c2(
-        getCloud(req.compared),
-        getCloud(req.reference),
-        req.normalRadius,
-        req.projectionRadius,
-        req.maxDepth,
-        req.coreSpacing,
-      );
-      const id = nextId++;
+      const compared = getCloud(req.compared), reference = getCloud(req.reference);
       const base = items.get(req.compared)!.name.replace(/\.[^.]+$/, "");
+      const pending = req.parallel === false ? null : parallelM3c2(compared, reference,
+        req.normalRadius, req.projectionRadius, req.maxDepth, req.coreSpacing, req.interleaved, req.radiusBounds, req.mainWorker, req.preparedTrees, req.cacheNormals, req.sharedSearch, req.fusedProjection, req.cacheCoreSelection);
+      const result = pending ? await pending : { cloud: computeM3c2(compared, reference,
+        req.normalRadius, req.projectionRadius, req.maxDepth, req.coreSpacing, req.radiusBounds, req.sharedSearch, req.fusedProjection), workers: 1, mainWorker: false,
+        preparedTrees: false, treeCacheHit: false, normalCacheHit: false, normalCacheBytes: 0, fusedProjection: req.fusedProjection ?? false,
+        coreSelectionCacheHit: false, coreSelectionCacheBytes: 0 };
+      const { cloud, workers } = result;
+      const id = nextId++;
       items.set(id, { kind: "cloud", cloud, name: `${base}_m3c2` });
       const described = describe(id);
       const distance = cloud.attribute("m3c2_distance")!;
@@ -2038,6 +2224,17 @@ async function handle(
         lod95,
         significant,
         millis: performance.now() - start,
+        workers,
+        radiusBounds: req.radiusBounds ?? false,
+        sharedSearch: req.sharedSearch ?? true,
+        fusedProjection: result.fusedProjection,
+        mainWorker: result.mainWorker,
+        preparedTrees: result.preparedTrees,
+        treeCacheHit: result.treeCacheHit,
+        normalCacheHit: result.normalCacheHit,
+        normalCacheBytes: result.normalCacheBytes,
+        coreSelectionCacheHit: result.coreSelectionCacheHit,
+        coreSelectionCacheBytes: result.coreSelectionCacheBytes,
       };
       return {
         value,
@@ -2154,8 +2351,18 @@ async function handle(
     }
     case "remove": {
       const item = items.get(req.id);
-      if (item?.kind === "cloud") item.cloud.free();
-      if (item?.kind === "mesh") item.mesh.free();
+      if (item?.kind === "cloud") {
+        invalidateCpuC2c(item.cloud);
+        invalidateM3c2Preparation(item.cloud);
+        invalidateM3c2CoreSelection(item.cloud);
+        invalidateGpuReference(item.cloud);
+        invalidateIcpReference(item.cloud);
+        invalidateVoxelScores(item.cloud);
+        invalidateKnnPreparation(item.cloud);
+        invalidateMeshSources(item.cloud);
+        item.cloud.free();
+      }
+      if (item?.kind === "mesh") { invalidateMeshSources(item.mesh); item.mesh.free(); }
       items.delete(req.id);
       return { value: null, transfer: [] };
     }

@@ -1,0 +1,1838 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 941933,
+    "filePoints": 941933,
+    "keepEvery": 1,
+    "bounds": [
+      -9341,
+      -40867,
+      26.044749999999997,
+      -9261,
+      -40746,
+      93.7765
+    ]
+  },
+  "compared": {
+    "points": 941933,
+    "filePoints": 941933,
+    "keepEvery": 1,
+    "bounds": [
+      -9341,
+      -40867,
+      26.039749999999998,
+      -9261,
+      -40746,
+      93.8015
+    ]
+  },
+  "cases": [
+    {
+      "method": "m3c2",
+      "excludedSetup": {
+        "baseline": {
+          "elapsedMillis": 1557.699999988079
+        },
+        "optimized": {
+          "elapsedMillis": 1598.5
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1083.5,
+          "optimizedMillis": 1085.800000011921,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1083.1000000238419,
+          "optimizedWorkerMillis": 1085.7000000476837
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1115.1000000238419,
+          "optimizedMillis": 1062.7000000476837,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1114.7000000476837,
+          "optimizedWorkerMillis": 1062.2000000476837
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1270,
+          "optimizedMillis": 1076,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1269.699999988079,
+          "optimizedWorkerMillis": 1075.699999988079
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1184,
+          "optimizedMillis": 1080.5,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1183.5,
+          "optimizedWorkerMillis": 1080.2000000476837
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1078,
+          "optimizedMillis": 942,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1077.7000000476837,
+          "optimizedWorkerMillis": 941.9000000357628
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1051,
+          "optimizedMillis": 915.6000000238419,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1050.5999999642372,
+          "optimizedWorkerMillis": 915.2999999523163
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 965.5,
+          "optimizedMillis": 1009.1000000238419,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 965.3000000119209,
+          "optimizedWorkerMillis": 1008.7999999523163
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1019.3999999761581,
+          "optimizedMillis": 938.5,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1019.2000000476837,
+          "optimizedWorkerMillis": 938.3000000119209
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1034.1000000238419,
+          "optimizedMillis": 1063.6000000238419,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1033.699999988079,
+          "optimizedWorkerMillis": 1063.300000011921
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1034.4000000357628,
+          "optimizedMillis": 1097.5999999642372,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1034.1000000238419,
+          "optimizedWorkerMillis": 1097.4000000357628
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1040.800000011921,
+          "optimizedMillis": 1028.5999999642372,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1040.6000000238419,
+          "optimizedWorkerMillis": 1028.4000000357628
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 991.6999999880791,
+          "optimizedMillis": 1053.3999999761581,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 991.5,
+          "optimizedWorkerMillis": 1053.0999999642372
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 1015.8999999761581,
+          "optimizedMillis": 1020.6999999880791,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 1015.6000000238419,
+          "optimizedWorkerMillis": 1020.5
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 970.4000000357628,
+          "optimizedMillis": 1138.3999999761581,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 969.9000000357628,
+          "optimizedWorkerMillis": 1138
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 972.8999999761581,
+          "optimizedMillis": 978.6999999880791,
+          "resultParity": true,
+          "exportedBytes": 9892141,
+          "maxVoxelDifference": 0,
+          "points": 299755,
+          "workers": 2,
+          "baselineWorkerMillis": 972.6000000238419,
+          "optimizedWorkerMillis": 978.5
+        }
+      ]
+    },
+    {
+      "method": "normals",
+      "excludedSetup": {
+        "baseline": {
+          "elapsedMillis": 668.9000000357628
+        },
+        "optimized": {
+          "elapsedMillis": 681.5999999642372
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 737.2000000476837,
+          "optimizedMillis": 667.5999999642372,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 779.3000000119209,
+          "optimizedMillis": 758.8000000119209,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 794.6999999880791,
+          "optimizedMillis": 803.1999999880791,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 844.5,
+          "optimizedMillis": 781.2000000476837,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 754.1999999880791,
+          "optimizedMillis": 791.3999999761581,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 786,
+          "optimizedMillis": 769.6999999880791,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 829.3000000119209,
+          "optimizedMillis": 856.3000000119209,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 1284.8999999761581,
+          "optimizedMillis": 833.9000000357628,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 826.8000000119209,
+          "optimizedMillis": 811,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 874.2000000476837,
+          "optimizedMillis": 739.6999999880791,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 974.6999999880791,
+          "optimizedMillis": 1887.6000000238419,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 958.7999999523163,
+          "optimizedMillis": 801.1000000238419,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 674,
+          "optimizedMillis": 699,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 775.1000000238419,
+          "optimizedMillis": 846,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 711.6000000238419,
+          "optimizedMillis": 760.0999999642372,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 0,
+          "points": 941933
+        }
+      ]
+    },
+    {
+      "method": "sor",
+      "excludedSetup": {
+        "baseline": {
+          "elapsedMillis": 903.3000000119209
+        },
+        "optimized": {
+          "elapsedMillis": 901
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 927.4000000357628,
+          "optimizedMillis": 973.6999999880791,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 806.9000000357628,
+          "optimizedMillis": 821,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 797,
+          "optimizedMillis": 780.1000000238419,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 828,
+          "optimizedMillis": 827.3999999761581,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 786.4000000357628,
+          "optimizedMillis": 776.3999999761581,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 792.1999999880791,
+          "optimizedMillis": 741.5,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 852.8999999761581,
+          "optimizedMillis": 845,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 815.7000000476837,
+          "optimizedMillis": 802.7999999523163,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 798.7999999523163,
+          "optimizedMillis": 827.7000000476837,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 918.7999999523163,
+          "optimizedMillis": 853.3000000119209,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 830.2999999523163,
+          "optimizedMillis": 813.2000000476837,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 827.3000000119209,
+          "optimizedMillis": 1083.5,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 793.5999999642372,
+          "optimizedMillis": 807.3000000119209,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 821,
+          "optimizedMillis": 788.9000000357628,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 817.8999999761581,
+          "optimizedMillis": 789.3000000119209,
+          "resultParity": true,
+          "exportedBytes": 20989709,
+          "maxVoxelDifference": 0,
+          "points": 874565
+        }
+      ]
+    },
+    {
+      "method": "icp",
+      "excludedSetup": {
+        "baseline": {
+          "elapsedMillis": 468.9000000357628
+        },
+        "optimized": {
+          "elapsedMillis": 472.60000002384186,
+          "referenceCached": true,
+          "referenceReused": false,
+          "referenceBytes": 84773988
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 430.19999998807907,
+          "optimizedMillis": 165.30000001192093,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 426.30000001192093,
+          "optimizedWorkerMillis": 165,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 403.89999997615814,
+          "optimizedMillis": 144.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 403.5999999642372,
+          "optimizedWorkerMillis": 144.19999998807907,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 407.7000000476837,
+          "optimizedMillis": 140.89999997615814,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 407.10000002384186,
+          "optimizedWorkerMillis": 135,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 505.19999998807907,
+          "optimizedMillis": 156.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 497.7000000476837,
+          "optimizedWorkerMillis": 155.69999998807907,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 354.60000002384186,
+          "optimizedMillis": 124.5,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 354.30000001192093,
+          "optimizedWorkerMillis": 124.30000001192093,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 341.89999997615814,
+          "optimizedMillis": 136.29999995231628,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 341.69999998807907,
+          "optimizedWorkerMillis": 127.5,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 384.4000000357628,
+          "optimizedMillis": 137.39999997615814,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 374.5999999642372,
+          "optimizedWorkerMillis": 137,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 341.10000002384186,
+          "optimizedMillis": 151.70000004768372,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 340.80000001192093,
+          "optimizedWorkerMillis": 151.19999998807907,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 338.80000001192093,
+          "optimizedMillis": 143.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 338.30000001192093,
+          "optimizedWorkerMillis": 135,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 363,
+          "optimizedMillis": 126.90000003576279,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 355.5,
+          "optimizedWorkerMillis": 126.60000002384186,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 347.80000001192093,
+          "optimizedMillis": 126.60000002384186,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 347.19999998807907,
+          "optimizedWorkerMillis": 126.39999997615814,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 335.89999997615814,
+          "optimizedMillis": 158.89999997615814,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 335.69999998807907,
+          "optimizedWorkerMillis": 150,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 382.9000000357628,
+          "optimizedMillis": 138.30000001192093,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 373.69999998807907,
+          "optimizedWorkerMillis": 138.0999999642372,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 357.2999999523163,
+          "optimizedMillis": 132.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 356.89999997615814,
+          "optimizedWorkerMillis": 132.19999998807907,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 380,
+          "optimizedMillis": 150.79999995231628,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "maxVoxelDifference": 0,
+          "points": 941933,
+          "baselineWorkerMillis": 379.5,
+          "optimizedWorkerMillis": 142.60000002384186,
+          "optimizedReferenceReused": true,
+          "optimizedReferenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225
+        }
+      ]
+    },
+    {
+      "method": "map-evaluate",
+      "excludedSetup": {
+        "baseline": {
+          "elapsedMillis": 627.8000000119209
+        },
+        "optimized": {
+          "elapsedMillis": 519.8999999761581,
+          "voxelCacheHit": false
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 256,
+          "optimizedMillis": 168.9000000357628,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 5.273559366969494e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 254.19999998807907,
+          "optimizedWorkerMillis": 168.5999999642372,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202511,
+            "scs": 0.03337348372728633,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 255.70000004768372,
+          "optimizedMillis": 133.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 3.608224830031759e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 255.60000002384186,
+          "optimizedWorkerMillis": 133.20000004768372,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202494,
+            "scs": 0.03337348372728613,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 264.0999999642372,
+          "optimizedMillis": 126.80000001192093,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.0816681711721685e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 263.80000001192093,
+          "optimizedWorkerMillis": 126.60000002384186,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.0681396573420245,
+            "scs": 0.033373483727286074,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 261.30000001192093,
+          "optimizedMillis": 125.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 1.8041124150158794e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 261,
+          "optimizedWorkerMillis": 124.89999997615814,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202476,
+            "scs": 0.03337348372728615,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 237.89999997615814,
+          "optimizedMillis": 143.39999997615814,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 3.469446951953614e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 236.19999998807907,
+          "optimizedWorkerMillis": 143,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202493,
+            "scs": 0.033373483727286185,
+            "voxels": 20122
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 239.5,
+          "optimizedMillis": 129,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 5.689893001203927e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 239.0999999642372,
+          "optimizedWorkerMillis": 128.69999998807907,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202401,
+            "scs": 0.03337348372728602,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 244.10000002384186,
+          "optimizedMillis": 142,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.7755575615628914e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 242.69999998807907,
+          "optimizedWorkerMillis": 141.69999998807907,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202443,
+            "scs": 0.033373483727286005,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 235.5,
+          "optimizedMillis": 124.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.914335439641036e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 233.10000002384186,
+          "optimizedWorkerMillis": 124,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202487,
+            "scs": 0.03337348372728625,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 241.5,
+          "optimizedMillis": 132,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.220446049250313e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 239.69999998807907,
+          "optimizedWorkerMillis": 131.69999998807907,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.0681396573420248,
+            "scs": 0.03337348372728644,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 235.80000001192093,
+          "optimizedMillis": 128.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.2898349882893854e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 233.89999997615814,
+          "optimizedWorkerMillis": 128.39999997615814,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202444,
+            "scs": 0.03337348372728605,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 238.79999995231628,
+          "optimizedMillis": 121.40000003576279,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.914335439641036e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 236.5999999642372,
+          "optimizedWorkerMillis": 121,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202487,
+            "scs": 0.03337348372728627,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 234.10000002384186,
+          "optimizedMillis": 122.09999996423721,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 4.163336342344337e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 231.80000001192093,
+          "optimizedWorkerMillis": 121.89999997615814,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.068139657342025,
+            "scs": 0.03337348372728595,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 222.10000002384186,
+          "optimizedMillis": 129.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 4.0245584642661925e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 220.39999997615814,
+          "optimizedWorkerMillis": 128.9000000357628,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202498,
+            "scs": 0.03337348372728617,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 244.10000002384186,
+          "optimizedMillis": 126.30000001192093,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.2898349882893854e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 242.4000000357628,
+          "optimizedWorkerMillis": 126,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202479,
+            "scs": 0.03337348372728605,
+            "voxels": 20122
+          }
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 239,
+          "optimizedMillis": 137.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 0,
+          "maxVoxelDifference": 2.636779683484747e-16,
+          "workers": 8,
+          "baselineWorkerMillis": 237,
+          "optimizedWorkerMillis": 136.80000001192093,
+          "optimizedVoxelCacheHit": true,
+          "quality": {
+            "threshold": 0.5,
+            "accuracy": 0.0768523359956527,
+            "precision": 0.9999246230889034,
+            "completeness": 0.9999055134494704,
+            "f1": 0.9999150681778847,
+            "chamfer": 0.07111813973519102,
+            "awd": 0.06813965734202432,
+            "scs": 0.0333734837272864,
+            "voxels": 20122
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 2,
+  "comparison": "compute-scratch-simd-and-immutable-reuse",
+  "createdAt": "2026-10-12T03:55:48.160Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\performance-four-baseline-20261012\\dist",
+      "worker": "worker-Cu9todqF.js",
+      "artifactHashes": {
+        "c2c-worker-Cax6DhSg.js": "933d3a329bd754f713e323071351a303eec955b8483c0159204f9921fd3a575c",
+        "ca_wasm_bg-B1Ifysx5.wasm": "691397806eba68e134e2edb0a0881a8697d175e19afd9ef5025ab62bcdec0d66",
+        "worker-Cu9todqF.js": "aeeffda5952db5f7e642a6b70b58ebc61700876ce462ef274731c8e8670cf664"
+      }
+    },
+    "optimized": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-B165W5Ci.js",
+      "artifactHashes": {
+        "c2c-worker-Cax1TM1i.js": "fcd439df0c975b43c69f19e66ddb6ee4996b1d693014d292c94a8ff3c0ebb5ce",
+        "ca_wasm_bg-CBAyLAnH.wasm": "0ed9cdf66dac44c8c896e554fe9d306b6417b1d85a02dcc816b56e7f9d41ebd8",
+        "worker-B165W5Ci.js": "8f43dd9a2ac19206f9b866069a25df556d2b335893801bec3ade7039dc9f6d48"
+      }
+    }
+  },
+  "scriptSha256": "0b50a0315406d7fadee9c7d018e9866d915f00ac9de66a1276749613f3289b70",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "note": "Full unchanged measured-source files, two isolated production analysis workers with the same pool policy and calculation parameters. Baseline is an immutable archived production build from immediately before these core changes; optimized is the current production build. The candidate adds retained nearest-k/coordinate scratch, paired f64 SIMD leaf distances, per-channel f64 SIMD covariance, invariant M3C2 cylinder geometry and SCS neighbourhood scratch. Its worker also retains one immutable ICP reference/tree/lazy-normal cache under a 128 MiB capacity budget, and three voxel scores for one immutable pair/settings. Every coordinate edit/removal invalidates the relevant entry. Timed ICP uses the warmed reference and lazy normals; timed Map quality recomputes nearest distances/statistics/inliers and reuses matching AWD/SCS/voxel scores. First-use observations are recorded as excluded setup, not cold-start medians. Earlier prototype reports retain their original schema/fingerprints. Both reuse exact M3C2 trees and Map quality nearest preparation after excluded setup. Each method gets fresh worker contexts and full inputs; five excluded alternating warm-up pairs precede ten timed pairs unless repeats overridden. Wall times include complete computation and RPC; SOR includes output indexing and ICP includes source transformation. ICP reloads an unchanged measured moving cloud before each call, with loading excluded, then fits point-to-plane for at most ten iterations at 0.8 overlap. Normal/SOR k=24, M3C2 normal/projection/depth/core spacing=0.4/0.25/0.5/0.25 m; map voxel/minimum occupancy/inlier threshold=1 m/5/0.5 m, scalar moments. Every pair checks all normal/M3C2/display distance bits, ICP transform/RMS/iterations/convergence, exact inlier metrics/statistics and byte-identical PLY for M3C2/SOR/ICP. Map AWD/SCS retain the existing 1e-12 relative/absolute HashMap reduction tolerance. Validation/exports/cleanup and loading/pool startup/setup are outside timing; no other builds/tests/scans run concurrently. Source/manifest/both-build/script hashes are checked before/after. Two contexts retain independent trees/heaps; each existing copy budget applies separately and is not a total process-memory cap. CPU clocks, power, GC and other applications are uncontrolled. Even/odd measured-source splits are not independent surveys or accuracy/registration ground truth. No GPU adapter or model information is collected."
+}

@@ -1,0 +1,404 @@
+{
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "fixture": "Seed 0x5eed, UTM 50x50x10m uniform 3D scatter, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 179.29999995231628,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 3.699999988079071,
+          "gpuMillis": 170.10000002384186,
+          "verifyMillis": 4,
+          "batches": 1,
+          "referenceReused": false,
+          "certified": 9710,
+          "prefetch": true,
+          "verifyBounds": true
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 7,
+          "gpuMillis": 7.300000011920929,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0,
+            "gpuMillis": 4.5,
+            "verifyMillis": 2.399999976158142,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 9710,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 4.699999988079071,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0,
+              "gpuMillis": 2.300000011920929,
+              "verifyMillis": 1.899999976158142,
+              "batches": 1,
+              "referenceReused": true,
+              "certified": 9192,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 7.100000023841858,
+          "gpuMillis": 4.5,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.10000002384185791,
+            "gpuMillis": 2.199999988079071,
+            "verifyMillis": 1.899999976158142,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 9710,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 6.599999964237213,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 3.300000011920929,
+              "verifyMillis": 2.5,
+              "batches": 1,
+              "referenceReused": true,
+              "certified": 9192,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 6.200000047683716,
+          "gpuMillis": 7,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.10000002384185791,
+            "gpuMillis": 4.699999988079071,
+            "verifyMillis": 1.899999976158142,
+            "batches": 1,
+            "referenceReused": true,
+            "certified": 9710,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 7.600000023841858,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0,
+              "gpuMillis": 5.399999976158142,
+              "verifyMillis": 1.800000011920929,
+              "batches": 1,
+              "referenceReused": true,
+              "certified": 9192,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "fixture": "Seed 0x5eed, UTM 50x50x10m uniform 3D scatter, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 189.60000002384186,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 48.30000001192093,
+          "gpuMillis": 121.80000001192093,
+          "verifyMillis": 74.79999995231628,
+          "batches": 2,
+          "referenceReused": false,
+          "certified": 91807,
+          "prefetch": true,
+          "verifyBounds": true
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 108.69999998807907,
+          "gpuMillis": 109.80000001192093,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.5,
+            "gpuMillis": 79.5,
+            "verifyMillis": 99.60000002384186,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 91807,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 62.80000001192093,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 1.0999999642372131,
+              "gpuMillis": 34.40000003576279,
+              "verifyMillis": 51.19999998807907,
+              "batches": 2,
+              "referenceReused": true,
+              "certified": 81674,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 90.40000003576279,
+          "gpuMillis": 88.5,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.3999999761581421,
+            "gpuMillis": 69,
+            "verifyMillis": 77.80000001192093,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 91807,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 56,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.5,
+              "gpuMillis": 38.39999997615814,
+              "verifyMillis": 46.30000001192093,
+              "batches": 2,
+              "referenceReused": true,
+              "certified": 81674,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 124.5,
+          "gpuMillis": 70.09999996423721,
+          "workers": 1,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 0.30000001192092896,
+            "gpuMillis": 45.5,
+            "verifyMillis": 60,
+            "batches": 2,
+            "referenceReused": true,
+            "certified": 91807,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 110.19999998807907,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 0.3999999761581421,
+              "gpuMillis": 93.60000002384186,
+              "verifyMillis": 41.499999940395355,
+              "batches": 2,
+              "referenceReused": true,
+              "certified": 81674,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "fixture": "Seed 0x5eed, UTM 50x50x10m uniform 3D scatter, 0.05m vertical offset",
+      "coldGpu": {
+        "millis": 755,
+        "compute": {
+          "backend": "webgpu",
+          "prepareMillis": 235,
+          "gpuMillis": 496.99999994039536,
+          "verifyMillis": 372.5999998450279,
+          "batches": 16,
+          "referenceReused": false,
+          "certified": 777472,
+          "prefetch": true,
+          "verifyBounds": true
+        },
+        "mismatches": 0,
+        "statsEqual": true
+      },
+      "trials": [
+        {
+          "cpuMillis": 353.10000002384186,
+          "gpuMillis": 387.9000000357628,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.800000011920929,
+            "gpuMillis": 364.80000001192093,
+            "verifyMillis": 327.1000002026558,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 777472,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 390.4000000357628,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 4.300000011920929,
+              "gpuMillis": 364,
+              "verifyMillis": 322.20000010728836,
+              "batches": 16,
+              "referenceReused": true,
+              "certified": 650887,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 325.19999998807907,
+          "gpuMillis": 389.5,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.5,
+            "gpuMillis": 369.5,
+            "verifyMillis": 333.1999999284744,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 777472,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 336.5,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 2.300000011920929,
+              "gpuMillis": 318.2999999523163,
+              "verifyMillis": 271.90000009536743,
+              "batches": 16,
+              "referenceReused": true,
+              "certified": 650887,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        },
+        {
+          "cpuMillis": 357.30000001192093,
+          "gpuMillis": 464.5,
+          "workers": 8,
+          "compute": {
+            "backend": "webgpu",
+            "prepareMillis": 3,
+            "gpuMillis": 436.10000002384186,
+            "verifyMillis": 391.19999998807907,
+            "batches": 16,
+            "referenceReused": true,
+            "certified": 777472,
+            "prefetch": true,
+            "verifyBounds": true
+          },
+          "mismatches": 0,
+          "statsEqual": true,
+          "planeGpu": {
+            "millis": 381.89999997615814,
+            "compute": {
+              "backend": "webgpu",
+              "prepareMillis": 2.5,
+              "gpuMillis": 360.0999999642372,
+              "verifyMillis": 322,
+              "batches": 16,
+              "referenceReused": true,
+              "certified": 650887,
+              "prefetch": true,
+              "verifyBounds": false
+            },
+            "mismatches": 0,
+            "statsEqual": true
+          }
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-10-10T22:37:32.701Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "0081783f83fc18754b76555d23a8e74030758ba77de9da07584b344c7451199a",
+  "wasmSha256": "a2c36e1acf68abdf60863e2c7c5e58e232bcc9e6c8356f0e0cbc252f0844dba5",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "gpuModelOmitted": true,
+  "nvidiaSmi": "NVIDIA GPU, 596.36, 6144 MiB",
+  "schemaVersion": 4,
+  "compareOverlap": false,
+  "compareBounds": true,
+  "note": "Synthetic data. coldGpu includes reference/device setup; warm trials reuse them. Exact f64 verification uses axis certificates plus sibling subtree boxes by default; planeGpu disables box verification. Next-batch GPU dispatch overlaps verification unless disabled by serial mode. gpuMillis intervals overlap verifyMillis and are not additive. All include summaries. No real-source throughput claim."
+}

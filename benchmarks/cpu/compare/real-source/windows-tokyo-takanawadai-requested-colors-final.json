@@ -1,0 +1,868 @@
+{
+  "schemaVersion": 1,
+  "comparison": "compare-requested-colors",
+  "createdAt": "2026-10-15T02:05:29.811013+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/compare.py": "1a154fe91ab00664d77ab9aebf2859b779b3754c84b1de52ac9b2199913e786a",
+    "cloudanalyzer/ca/io.py": "81466b64f9af7f784f7799c94870e755c256552e2f7c13f90add2a74c062601e",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/registration.py": "7eb22bbab5ce993962478e59f2746225d506c9239b36aba118f4aaf8c715be5b",
+    "cloudanalyzer/ca/visualization.py": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030",
+    "cloudanalyzer/ca/report.py": "b8a1da6485fa1974e7db8d1f0e01ee57a1f057d8a7d03e6920925386b4579683",
+    "cloudanalyzer/ca/log.py": "e3f8546f64fe2a417f97f7502e1a758f83559f2f75eada6764472500b428f929",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_compare_color_consumers.py": "dbb60f2002de75e0057136fea67c9fb2eca088c774f0e5167b51c9f752a039f0",
+    "cloudanalyzer/tests/test_compare.py": "df40df5afdf91027401ae5e3de630872bc103b34c3dfcb17b6e330f856489ceb",
+    "cloudanalyzer/tests/test_diff.py": "f4a0ea2048137236c289cd79110c2a93dbed71632f3caf6aafa247918f5ea368",
+    "cloudanalyzer/tests/test_metrics.py": "c39328335ea83c01217a234b1119e509a225378e8de15e9dded981a88d25765e",
+    "cloudanalyzer/tests/test_visualization.py": "b28b1124b90fd79210a415f596bbdeb2ba6886d27ef8700aa5ccea568aa64b99",
+    "cloudanalyzer/tests/test_cli.py": "31dcb5a5902c74ab76940974247f5d22eeccc1412027cc2a657783f512d82461",
+    "cloudanalyzer/scripts/benchmark_compare_color.py": "cf84ed7a7c44d54c1a6943d6328d3fe4e6d5b7bf90088e01854e6af591cfc6e2"
+  },
+  "nativeSourceHashes": {
+    "rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+    "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+    "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+    "rust/crates/ca-py/src/lib.rs": "1dbc9733aa85bfcf441732897e4ceeb575201672ddddddc0285d67a97cba1b1b",
+    "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+    "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+    "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85",
+    "rust/crates/ca-py/Cargo.toml": "6909895540f76e07bd63dfdcb199ee119bfd06416cfc117feb05dcfdf4018328",
+    "rust/crates/ca-py/Cargo.lock": "e1a914c99b0e3ffcf62e85125c077047b093e4abefe57e7423a9e8812765d344",
+    "rust/crates/ca-py/pyproject.toml": "50987fd7a703bfab649bc9490f2036cb3781a2acc2c206b76ad604e0486bf41b",
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "4f4c1313deac36d10c509697e54c5483e40a3378f80ed45e4e588b9ab370b3ec",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "ffbac8b261941251c9c0fb2b5b439c71c401aeeb33e48ee8de1393c4c0413446",
+    "rust/crates/ca-py/tests/test_prepared_mesh.py": "f89bb5323b5ded0b674eecbd1bf3615511cda24c9445979f84d105ddae83e387",
+    "rust/crates/ca-py/scripts/benchmark_prepared_mesh.py": "aaef94ed02f5a42555ce12b8ce21e9695b0811a84623f4d45d4cad1097ce7f5a",
+    "rust/crates/ca-py/src/bag.rs": "9103ede327fc7dd080ff394e81023576a4a456511bb587258959fb5fde482aa2",
+    "rust/crates/ca-py/src/copc_spatial.rs": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+    "rust/crates/ca-py/src/odometry.rs": "bf580c742d70c1b41b16dc1a86b93b1a2ea859d4cf3604e02483ee332c22d1cf",
+    "rust/crates/ca-py/src/pose_graph.rs": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+    "rust/crates/ca-py/src/vector_map.rs": "2f94baa82b4380a62d5014698d3e2bc80a5cd8899d8799a5f67eae4d7cec6aea",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/tests/c2c_reference.rs": "6708a0b69d138753cf8ce6bfd38b41eb1729204c246ae05cc028f5c94a359b52",
+    "rust/crates/ca-py/tests/test_prepared_reference.py": "9bad65bd47db72a79f21438f961753397b43c23bae38eb8ba915d5878dad8bf2",
+    "rust/crates/ca-py/scripts/benchmark_prepared_reference.py": "73befa31442b8ff3c07651a43bf1103fcada3ddf25558a4f21269badf1df62a3"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\inputs.json",
+      "bytes": 10395,
+      "sha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-requested-colors-20261015\\compare-baseline.py",
+      "bytes": 3063,
+      "sha256": "5ef7386760683df39f7e7c468b23b82897d794e4cfbe35b5272f979801bbd3c4"
+    },
+    "build_index": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-20261014\\build.json",
+      "bytes": 4291,
+      "sha256": "77bd0f2574646721a7c27c47a5f0f9acef320340e4cb5ee2a7eb5bad6aca89cc"
+    },
+    "distance_record": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\scan-match\\real-source\\windows-tokyo-takanawadai-distance-reuse-final.json",
+      "bytes": 54382,
+      "sha256": "f7a8855b30c8c95fe39e8abdacf528beb8e959ad20a8079b18b98b8eff3091c2"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\hard-intersection-prepared-v2\\geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+    },
+    "coordinateSnapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-tokyo-takanawadai-final-20261014\\registration.npz",
+      "bytes": 135640294,
+      "sha256": "d08788efcd95f6cfd55d7abba3d775174dd6ae3cf7b2e7d6274dd7218d8580f8"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6823424,
+    "sha256": "8a63601c290af5403f08a3c040c9e5d99e816b687bd0a0dfeea13015fb9a9a49"
+  },
+  "normalLibrary": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+    "bytes": 151434752,
+    "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1
+  },
+  "repeats": 10,
+  "warmupRounds": 2,
+  "parity": {
+    "always": {
+      "millis": 2576.3508,
+      "report": {
+        "source_points": 941933,
+        "target_points": 941933,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "queryCalls": 1,
+      "colorCalls": 1,
+      "captured": {
+        "distance": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\always-distance-0.bin",
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41"
+        },
+        "colors": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\always-colors-0.bin",
+          "bytes": 22606392,
+          "sha256": "60f5fb15bac469f60c9e469d47db3b89aaa399d0fb811dff8a202fb23b15123e"
+        }
+      },
+      "outputFiles": {}
+    },
+    "requested": {
+      "millis": 557.6502,
+      "report": {
+        "source_points": 941933,
+        "target_points": 941933,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "queryCalls": 1,
+      "colorCalls": 0,
+      "captured": {
+        "distance": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\requested-distance-0.bin",
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41"
+        }
+      },
+      "outputFiles": {}
+    }
+  },
+  "outputParity": {
+    "always": {
+      "millis": 2334.1068,
+      "report": {
+        "source_points": 941933,
+        "target_points": 941933,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {
+        "json": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\files-always\\report.json",
+          "bytes": 430,
+          "sha256": "e7faff350659e08fbf283ee474beef62311b825e87f01cc09f8b34ebd93456d3"
+        },
+        "md": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\files-always\\report.md",
+          "bytes": 179,
+          "sha256": "59bd257e1c7754ed54c766405ef0d2c5fd6de09c92669fb8a196bf74e41b77f2"
+        }
+      }
+    },
+    "requested": {
+      "millis": 506.8912,
+      "report": {
+        "source_points": 941933,
+        "target_points": 941933,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {
+        "json": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\files-requested\\report.json",
+          "bytes": 430,
+          "sha256": "e7faff350659e08fbf283ee474beef62311b825e87f01cc09f8b34ebd93456d3"
+        },
+        "md": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-colors-tokyo-final-20261015\\files-requested\\report.md",
+          "bytes": 179,
+          "sha256": "59bd257e1c7754ed54c766405ef0d2c5fd6de09c92669fb8a196bf74e41b77f2"
+        }
+      }
+    }
+  },
+  "firstUse": {
+    "always": {
+      "millis": 2498.7928,
+      "report": {
+        "source_points": 941933,
+        "target_points": 941933,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {}
+    },
+    "requested": {
+      "millis": 478.1081,
+      "report": {
+        "source_points": 941933,
+        "target_points": 941933,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "queryCalls": 0,
+      "colorCalls": 0,
+      "captured": {},
+      "outputFiles": {}
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2488.1153,
+        "requested": 444.8605
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 513.7973,
+        "always": 2524.0775
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2461.0701,
+        "requested": 485.4872
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 515.5697,
+        "always": 2552.8843
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2538.0982,
+        "requested": 462.4785
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 453.1453,
+        "always": 2590.2038
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 2635.3463,
+        "requested": 530.6452
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 522.1242,
+        "always": 2325.1639
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 1999.6965,
+        "requested": 386.6629
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 463.3444,
+        "always": 2750.5879
+      }
+    },
+    {
+      "order": [
+        "always",
+        "requested"
+      ],
+      "millis": {
+        "always": 3509.4366,
+        "requested": 896.3746
+      }
+    },
+    {
+      "order": [
+        "requested",
+        "always"
+      ],
+      "millis": {
+        "requested": 1183.6305,
+        "always": 4960.1558
+      }
+    }
+  ],
+  "summary": {
+    "alwaysMedianMillis": 2571.54405,
+    "requestedMedianMillis": 500.52845,
+    "pairedShorteningPercent": 80.06881880221076,
+    "pairedSavedMedianMillis": 2090.1603999999998,
+    "fasterTrials": 10
+  },
+  "note": "Complete run_compare function with method=None, threshold=.5, no snapshot or report-file output during timing. Actual full unchanged-coordinate real-source inputs are loaded through the existing bulk-capable I/O path; native NN construction/search, statistics, report creation and cleanup execute normally. No registration, solver replay, replaced NN arrays, generated points, perturbations or further thinning. The old path also constructs unused colors; the candidate skips them. Separate parity calls verify complete JSON/Markdown file bytes. Tracing/capture writes, file-output parity, imports/hashes and CLI serialization are excluded from summaries. A traced parity pair and excluded first-use pair precede two warm-up pairs and ten default alternating timed pairs. Logging disabled for both; all observations retained. Warmed pages; no cold-ingestion, peak RSS, registered/snapshot-producing comparison, whole CLI or GPU performance claim."
+}

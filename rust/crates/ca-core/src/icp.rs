@@ -9,7 +9,8 @@
 //! georeferenced coordinates keep full precision.
 
 use crate::PointCloud;
-use crate::kdtree::KdTree;
+use crate::kdtree::{KdTree, Nearest, NearestRadiusHints};
+use std::sync::OnceLock;
 
 /// A rigid transform `x' = R x + t`.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -129,71 +130,217 @@ pub struct IcpResult {
 /// Register `moving` onto `reference`. Returns `None` if either cloud is
 /// empty or `overlap` leaves fewer than three pairs.
 pub fn icp(moving: &PointCloud, reference: &PointCloud, params: IcpParams) -> Option<IcpResult> {
-    if moving.is_empty() || reference.is_empty() {
+    icp_with_scratch(moving, reference, params, true)
+}
+
+/// Optional paired f64 correspondence arithmetic; normals and tie order are unchanged.
+pub fn icp_with_simd(
+    moving: &PointCloud,
+    reference: &PointCloud,
+    params: IcpParams,
+    simd: bool,
+) -> Option<IcpResult> {
+    if moving.is_empty() {
         return None;
     }
-    let origin = centroid(&reference.positions);
-    let local = |p: &[f64; 3]| -> [f64; 3] { std::array::from_fn(|i| p[i] - origin[i]) };
-    let reference_local: Vec<[f64; 3]> = reference.positions.iter().map(local).collect();
-    let tree = KdTree::new(&reference_local)?;
-    let stride = moving.len().div_ceil(params.sample.max(3));
-    let samples: Vec<[f64; 3]> = moving.positions.iter().step_by(stride).map(local).collect();
-    let keep = ((samples.len() as f64 * params.overlap.clamp(0.0, 1.0)).round() as usize)
-        .min(samples.len());
-    if keep < 3 {
+    IcpPrepared::new(reference)?.compute_with_simd(moving, params, simd)
+}
+
+/// Reuse normal-estimation query/coordinate scratch; matching arithmetic is unchanged.
+pub fn icp_with_scratch(
+    moving: &PointCloud,
+    reference: &PointCloud,
+    params: IcpParams,
+    reuse: bool,
+) -> Option<IcpResult> {
+    if moving.is_empty() {
         return None;
     }
+    IcpPrepared::new(reference)?.compute_with_scratch(moving, params, reuse)
+}
 
-    let mut current = Rigid::IDENTITY;
-    if params.match_centroids {
-        let (mc, rc) = (centroid(&samples), centroid(&reference_local));
-        current.translation = std::array::from_fn(|i| rc[i] - mc[i]);
+/// Owned immutable reference tree and reusable lazy reference normals for ICP.
+pub struct IcpPrepared {
+    origin: [f64; 3],
+    reference: Vec<[f64; 3]>,
+    tree: KdTree,
+    normals: Vec<Option<Option<[f64; 3]>>>,
+    radius_hints: OnceLock<NearestRadiusHints>,
+    temporal_queries: usize,
+    temporal_scratch_bytes: usize,
+}
+
+impl IcpPrepared {
+    pub fn new(reference: &PointCloud) -> Option<Self> {
+        if reference.is_empty() {
+            return None;
+        }
+        let origin = centroid(&reference.positions);
+        let local: Vec<_> = reference
+            .positions
+            .iter()
+            .map(|p| std::array::from_fn(|i| p[i] - origin[i]))
+            .collect();
+        let tree = KdTree::new(&local)?;
+        let normals = vec![None; local.len()];
+        Some(Self {
+            origin,
+            reference: local,
+            tree,
+            normals,
+            radius_hints: OnceLock::new(),
+            temporal_queries: 0,
+            temporal_scratch_bytes: 0,
+        })
     }
 
-    let mut normals = Normals::new(&reference_local, &tree);
-    let mut pairs = Vec::with_capacity(samples.len());
-    let mut rms_initial = f64::NAN;
-    let mut rms_previous = f64::INFINITY;
-    let mut iterations = 0;
-    let mut converged = false;
-    let rms = loop {
-        let rms = match_pairs(
-            &samples,
-            &current,
-            &tree,
-            &reference_local,
-            keep,
-            &mut pairs,
-        );
-        if iterations == 0 {
-            rms_initial = rms;
+    pub fn retained_bytes(&self) -> usize {
+        self.reference.capacity() * std::mem::size_of::<[f64; 3]>()
+            + self.tree.storage_bytes()
+            + self.normals.capacity() * std::mem::size_of::<Option<Option<[f64; 3]>>>()
+    }
+
+    /// Queries whose prior-iteration hit tightened the original seed's radius.
+    pub fn temporal_queries(&self) -> usize {
+        self.temporal_queries
+    }
+
+    /// Last call's temporary slot-vector capacity, released before returning.
+    pub fn temporal_scratch_bytes(&self) -> usize {
+        self.temporal_scratch_bytes
+    }
+
+    pub fn compute(&mut self, moving: &PointCloud, params: IcpParams) -> Option<IcpResult> {
+        self.compute_with_scratch(moving, params, true)
+    }
+
+    pub fn compute_with_scratch(
+        &mut self,
+        moving: &PointCloud,
+        params: IcpParams,
+        reuse: bool,
+    ) -> Option<IcpResult> {
+        self.compute_with_options(moving, params, reuse, false, false)
+    }
+
+    /// SIMD only changes leaf distance arithmetic, retaining the preceding
+    /// sample's guess, strict tie comparisons and overlap-selection order.
+    /// Native and non-SIMD WASM targets retain scalar arithmetic.
+    pub fn compute_with_simd(
+        &mut self,
+        moving: &PointCloud,
+        params: IcpParams,
+        simd: bool,
+    ) -> Option<IcpResult> {
+        self.compute_with_correspondence(moving, params, simd, false)
+    }
+
+    /// Recompute a safe upper radius from each sample's previous correspondence;
+    /// candidates never replace the original query seed or choose tied hits.
+    pub fn compute_with_correspondence(
+        &mut self,
+        moving: &PointCloud,
+        params: IcpParams,
+        simd: bool,
+        temporal: bool,
+    ) -> Option<IcpResult> {
+        self.compute_with_options(moving, params, true, simd, temporal)
+    }
+
+    fn compute_with_options(
+        &mut self,
+        moving: &PointCloud,
+        params: IcpParams,
+        reuse: bool,
+        simd: bool,
+        temporal: bool,
+    ) -> Option<IcpResult> {
+        self.temporal_queries = 0;
+        self.temporal_scratch_bytes = 0;
+        if moving.is_empty() {
+            return None;
         }
-        let stalled =
-            rms_previous.is_finite() && rms_previous - rms <= params.tolerance * rms_previous;
-        if rms == 0.0 || stalled {
-            converged = true;
-            break rms;
+        let origin = self.origin;
+        let local = |p: &[f64; 3]| std::array::from_fn(|i| p[i] - origin[i]);
+        let reference_local = &self.reference;
+        let tree = &self.tree;
+        let stride = moving.len().div_ceil(params.sample.max(3));
+        let samples: Vec<[f64; 3]> = moving.positions.iter().step_by(stride).map(local).collect();
+        let keep = ((samples.len() as f64 * params.overlap.clamp(0.0, 1.0)).round() as usize)
+            .min(samples.len());
+        if keep < 3 {
+            return None;
         }
-        if iterations == params.max_iterations {
-            break rms;
+
+        let mut current = Rigid::IDENTITY;
+        if params.match_centroids {
+            let (mc, rc) = (centroid(&samples), centroid(reference_local));
+            current.translation = std::array::from_fn(|i| rc[i] - mc[i]);
         }
-        rms_previous = rms;
-        let step = match params.metric {
-            IcpMetric::PointToPoint => horn(&pairs),
-            IcpMetric::PointToPlane => {
-                point_to_plane(&pairs, &mut normals).unwrap_or_else(|| horn(&pairs))
-            }
+
+        let mut normals = Normals::new(reference_local, tree, std::mem::take(&mut self.normals));
+        normals.reuse = reuse;
+        let mut pairs = Vec::with_capacity(samples.len());
+        let mut search = CorrespondenceSearch {
+            simd,
+            hints: temporal.then(|| {
+                self.radius_hints
+                    .get_or_init(|| NearestRadiusHints::new(tree))
+            }),
+            slots: if temporal {
+                vec![u32::MAX; samples.len()]
+            } else {
+                Vec::new()
+            },
+            bounded: 0,
         };
-        current = step.compose(&current);
-        iterations += 1;
-    };
-    Some(IcpResult {
-        transform: current.around(&origin),
-        rms_initial,
-        rms_final: rms,
-        iterations,
-        converged,
-    })
+        let mut rms_initial = f64::NAN;
+        let mut rms_previous = f64::INFINITY;
+        let mut iterations = 0;
+        let mut converged = false;
+        let rms = loop {
+            let rms = match_pairs(
+                &samples,
+                &current,
+                tree,
+                reference_local,
+                keep,
+                &mut pairs,
+                &mut search,
+            );
+            if iterations == 0 {
+                rms_initial = rms;
+            }
+            let stalled =
+                rms_previous.is_finite() && rms_previous - rms <= params.tolerance * rms_previous;
+            if rms == 0.0 || stalled {
+                converged = true;
+                break rms;
+            }
+            if iterations == params.max_iterations {
+                break rms;
+            }
+            rms_previous = rms;
+            let step = match params.metric {
+                IcpMetric::PointToPoint => horn(&pairs),
+                IcpMetric::PointToPlane => {
+                    point_to_plane(&pairs, &mut normals).unwrap_or_else(|| horn(&pairs))
+                }
+            };
+            current = step.compose(&current);
+            iterations += 1;
+        };
+        self.normals = normals.cache;
+        self.temporal_queries = search.bounded;
+        self.temporal_scratch_bytes = search.slots.capacity() * std::mem::size_of::<u32>();
+        Some(IcpResult {
+            transform: current.around(&origin),
+            rms_initial,
+            rms_final: rms,
+            iterations,
+            converged,
+        })
+    }
 }
 
 /// Picked point pairs aligned by [`align_pairs`].
@@ -273,6 +420,35 @@ struct Pair {
     reference_index: usize,
 }
 
+/// Query state belongs to one fit and retains original sample indices.
+struct CorrespondenceSearch<'a> {
+    simd: bool,
+    hints: Option<&'a NearestRadiusHints>,
+    // Indexed by original sample order, independent of overlap partitioning.
+    slots: Vec<u32>,
+    bounded: usize,
+}
+
+impl CorrespondenceSearch<'_> {
+    fn nearest(
+        &mut self,
+        tree: &KdTree,
+        query: &[f64; 3],
+        guess: Option<Nearest>,
+        sample: usize,
+    ) -> Nearest {
+        if let Some(hints) = self.hints {
+            let (hit, tighter) =
+                tree.nearest_with_radius_hint(query, guess, self.slots[sample], hints, self.simd);
+            self.slots[sample] = hit.tree_slot();
+            self.bounded += usize::from(tighter);
+            hit
+        } else {
+            tree.nearest_with_simd(query, guess, self.simd)
+        }
+    }
+}
+
 /// Pair every transformed sample with its nearest reference point, keep the
 /// `keep` closest pairs, and return their RMS distance.
 fn match_pairs(
@@ -282,19 +458,37 @@ fn match_pairs(
     reference: &[[f64; 3]],
     keep: usize,
     pairs: &mut Vec<Pair>,
+    search: &mut CorrespondenceSearch,
 ) -> f64 {
     pairs.clear();
     let mut guess = None;
-    for s in samples {
-        let p = transform.apply(s);
-        let hit = tree.nearest(&p, guess);
-        guess = Some(hit);
-        pairs.push(Pair {
-            distance_sq: hit.distance_sq,
-            moving: p,
-            reference: reference[hit.index],
-            reference_index: hit.index,
-        });
+    if search.hints.is_none() {
+        // Keep the historical hot loop when the experiment is disabled;
+        // there is no per-query temporal-state dispatch or slot bookkeeping.
+        let simd = search.simd;
+        for s in samples {
+            let p = transform.apply(s);
+            let hit = tree.nearest_with_simd(&p, guess, simd);
+            guess = Some(hit);
+            pairs.push(Pair {
+                distance_sq: hit.distance_sq,
+                moving: p,
+                reference: reference[hit.index],
+                reference_index: hit.index,
+            });
+        }
+    } else {
+        for (i, s) in samples.iter().enumerate() {
+            let p = transform.apply(s);
+            let hit = search.nearest(tree, &p, guess, i);
+            guess = Some(hit);
+            pairs.push(Pair {
+                distance_sq: hit.distance_sq,
+                moving: p,
+                reference: reference[hit.index],
+                reference_index: hit.index,
+            });
+        }
     }
     if keep < pairs.len() {
         pairs.select_nth_unstable_by(keep - 1, |a, b| a.distance_sq.total_cmp(&b.distance_sq));
@@ -309,16 +503,22 @@ struct Normals<'a> {
     tree: &'a KdTree,
     /// `None` = not computed yet; `Some(None)` = degenerate neighbourhood.
     cache: Vec<Option<Option<[f64; 3]>>>,
+    hits: Vec<(usize, f64)>,
+    neighbours: Vec<[f64; 3]>,
+    reuse: bool,
 }
 
 impl<'a> Normals<'a> {
     const NEIGHBOURS: usize = 12;
 
-    fn new(points: &'a [[f64; 3]], tree: &'a KdTree) -> Self {
+    fn new(points: &'a [[f64; 3]], tree: &'a KdTree, cache: Vec<Option<Option<[f64; 3]>>>) -> Self {
         Self {
             points,
             tree,
-            cache: vec![None; points.len()],
+            cache,
+            hits: Vec::new(),
+            neighbours: Vec::new(),
+            reuse: true,
         }
     }
 
@@ -326,19 +526,25 @@ impl<'a> Normals<'a> {
         if let Some(normal) = self.cache[index] {
             return normal;
         }
-        let neighbours = self.tree.nearest_k(&self.points[index], Self::NEIGHBOURS);
-        let normal = if neighbours.len() < 3 {
+        if self.reuse {
+            self.tree
+                .nearest_k_into(&self.points[index], Self::NEIGHBOURS, &mut self.hits);
+            self.neighbours.clear();
+            self.neighbours
+                .extend(self.hits.iter().map(|&(i, _)| self.points[i]));
+        } else {
+            self.hits = self.tree.nearest_k(&self.points[index], Self::NEIGHBOURS);
+            self.neighbours = self.hits.iter().map(|&(i, _)| self.points[i]).collect();
+        }
+        let normal = if self.hits.len() < 3 {
             None
         } else {
-            let pts: Vec<[f64; 3]> = neighbours.iter().map(|&(i, _)| self.points[i]).collect();
-            let c = centroid(&pts);
+            let pts = &self.neighbours;
+            let c = centroid(pts);
             let mut cov = [[0.0; 3]; 3];
-            for p in &pts {
-                for i in 0..3 {
-                    for j in 0..3 {
-                        cov[i][j] += (p[i] - c[i]) * (p[j] - c[j]);
-                    }
-                }
+            for p in pts {
+                let d = std::array::from_fn(|i| p[i] - c[i]);
+                crate::normals::accumulate_covariance(&mut cov, &d, false);
             }
             let (values, vectors) = jacobi(cov);
             let order = sorted_indices(&values);
@@ -361,11 +567,30 @@ fn sorted_indices(values: &[f64; 3]) -> [usize; 3] {
     order
 }
 
+// The triangular prototype is retained for comparison, but whole-RPC measured
+// gains were inconsistent. Keep the original full matrix as the standard path.
+const USE_TRIANGULAR_PLANE_SYSTEM: bool = false;
+
+// Independent f64 columns retain the original accumulation order per cell.
+// Whole-RPC measured gains vary by source, so keep pairing experimental.
+const USE_SIMD_PLANE_SYSTEM: bool = false;
+
+/// Finite products cannot create NaNs from a zero-initialized matrix. After
+/// any unsafe scalar row, stay scalar for the rest of this system so existing
+/// NaN/Inf entries retain historical propagation and operand order.
+fn paired_plane_row_safe(row: &[f64; 6]) -> bool {
+    row.iter().all(|v| v.is_finite() && v.abs() <= 1e150)
+}
+
 /// Linearised point-to-plane step: minimise `sum(((R p + t - q) . n)^2)`
 /// for small rotations. `None` when too few pairs have normals.
 fn point_to_plane(pairs: &[Pair], normals: &mut Normals) -> Option<Rigid> {
     let mut ata = [[0.0; 6]; 6];
     let mut atb = [0.0; 6];
+    let mut symmetric = USE_TRIANGULAR_PLANE_SYSTEM;
+    let mut paired = USE_SIMD_PLANE_SYSTEM
+        && cfg!(all(target_arch = "wasm32", target_feature = "simd128"))
+        && !symmetric;
     let mut used = 0;
     for pair in pairs {
         let Some(n) = normals.get(pair.reference_index) else {
@@ -379,16 +604,19 @@ fn point_to_plane(pairs: &[Pair], normals: &mut Normals) -> Option<Rigid> {
         ];
         let row = [c[0], c[1], c[2], n[0], n[1], n[2]];
         let residual: f64 = (0..3).map(|i| (pair.reference[i] - p[i]) * n[i]).sum();
-        for i in 0..6 {
-            atb[i] += row[i] * residual;
-            for j in 0..6 {
-                ata[i][j] += row[i] * row[j];
-            }
+        if paired && paired_plane_row_safe(&row) {
+            accumulate_plane_row_paired(&mut ata, &mut atb, &row, residual);
+        } else {
+            paired = false;
+            accumulate_plane_row(&mut ata, &mut atb, &row, residual, &mut symmetric);
         }
         used += 1;
     }
     if used < 6 {
         return None;
+    }
+    if symmetric {
+        mirror_plane_system(&mut ata);
     }
     // A touch of damping keeps directions the scene cannot constrain (e.g.
     // sliding along a flat floor) near zero instead of blowing up.
@@ -410,6 +638,98 @@ fn point_to_plane(pairs: &[Pair], normals: &mut Normals) -> Option<Rigid> {
         rotation,
         translation: [x[3], x[4], x[5]],
     })
+}
+
+/// Finite multiplication is commutative bit-for-bit, so the two halves of
+/// each outer product have identical accumulation histories. Keep only the
+/// upper half until the solve. Nonfinite rows retain the original operand
+/// order in both halves, including NaN propagation.
+fn accumulate_plane_row(
+    ata: &mut [[f64; 6]; 6],
+    atb: &mut [f64; 6],
+    row: &[f64; 6],
+    residual: f64,
+    symmetric: &mut bool,
+) {
+    if *symmetric && row.iter().any(|v| !v.is_finite()) {
+        mirror_plane_system(ata);
+        *symmetric = false;
+    }
+    if *symmetric {
+        // Fixed row indices let the compiler simplify the short triangular
+        // loops instead of selecting their first column on every row.
+        accumulate_plane_upper::<0>(ata, atb, row, residual);
+        accumulate_plane_upper::<1>(ata, atb, row, residual);
+        accumulate_plane_upper::<2>(ata, atb, row, residual);
+        accumulate_plane_upper::<3>(ata, atb, row, residual);
+        accumulate_plane_upper::<4>(ata, atb, row, residual);
+        accumulate_plane_upper::<5>(ata, atb, row, residual);
+        return;
+    }
+    for i in 0..6 {
+        atb[i] += row[i] * residual;
+        for j in 0..6 {
+            ata[i][j] += row[i] * row[j];
+        }
+    }
+}
+
+/// Caller keeps every row bounded and never enters here after a scalar row.
+/// Products are finite; even accumulated overflow only adds finite terms to
+/// infinity. RHS arithmetic stays scalar and preserves each original operand.
+fn accumulate_plane_row_paired(
+    ata: &mut [[f64; 6]; 6],
+    atb: &mut [f64; 6],
+    row: &[f64; 6],
+    residual: f64,
+) {
+    #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+    {
+        use core::arch::wasm32::*;
+        // SAFETY: these three unaligned loads cover exactly six f64 values;
+        // each matrix load/store covers a complete pair within its 6-f64 row.
+        unsafe {
+            let columns = [
+                v128_load(row.as_ptr().cast()),
+                v128_load(row.as_ptr().add(2).cast()),
+                v128_load(row.as_ptr().add(4).cast()),
+            ];
+            for i in 0..6 {
+                atb[i] += row[i] * residual;
+                let factor = f64x2_splat(row[i]);
+                for (j, columns) in columns.iter().enumerate() {
+                    let target = ata[i].as_mut_ptr().add(j * 2).cast();
+                    v128_store(
+                        target,
+                        f64x2_add(v128_load(target), f64x2_mul(factor, *columns)),
+                    );
+                }
+            }
+        }
+    }
+    #[cfg(not(all(target_arch = "wasm32", target_feature = "simd128")))]
+    accumulate_plane_row(ata, atb, row, residual, &mut false);
+}
+
+fn accumulate_plane_upper<const I: usize>(
+    ata: &mut [[f64; 6]; 6],
+    atb: &mut [f64; 6],
+    row: &[f64; 6],
+    residual: f64,
+) {
+    atb[I] += row[I] * residual;
+    for j in I..6 {
+        ata[I][j] += row[I] * row[j];
+    }
+}
+
+fn mirror_plane_system(ata: &mut [[f64; 6]; 6]) {
+    for i in 1..6 {
+        let (upper, lower) = ata.split_at_mut(i);
+        for (value, row) in lower[0][..i].iter_mut().zip(upper) {
+            *value = row[i];
+        }
+    }
 }
 
 /// Solve a 6x6 linear system by Gaussian elimination with partial pivoting.
@@ -583,6 +903,365 @@ fn jacobi<const N: usize>(mut a: [[f64; N]; N]) -> ([f64; N], [[f64; N]; N]) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn paired_plane_rows_preserve_full_system_and_guard_extreme_inputs() {
+        let mut seed = 0x3910_449b_13e7_a91f_u64;
+        for scale in [0.0, 1e-160, 1.0, 1e150] {
+            let mut expected = [[0.0; 6]; 6];
+            let mut rhs = [0.0; 6];
+            let mut paired = expected;
+            let mut paired_rhs = rhs;
+            for step in 0..2048 {
+                let mut next = || {
+                    seed ^= seed << 13;
+                    seed ^= seed >> 7;
+                    seed ^= seed << 17;
+                    ((seed >> 11) as f64 / (1_u64 << 53) as f64 * 2.0 - 1.0) * scale
+                };
+                let row = std::array::from_fn(|_| next());
+                let residual = if step % 17 == 0 { f64::NAN } else { next() };
+                assert!(paired_plane_row_safe(&row));
+                accumulate_plane_row(&mut expected, &mut rhs, &row, residual, &mut false);
+                accumulate_plane_row_paired(&mut paired, &mut paired_rhs, &row, residual);
+                assert_eq!(
+                    expected.map(|r| r.map(f64::to_bits)),
+                    paired.map(|r| r.map(f64::to_bits))
+                );
+                assert_eq!(rhs.map(f64::to_bits), paired_rhs.map(f64::to_bits));
+            }
+        }
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 1e151, -1e151] {
+            for axis in 0..6 {
+                let mut row = [0.0; 6];
+                row[axis] = bad;
+                assert!(!paired_plane_row_safe(&row));
+            }
+        }
+    }
+
+    #[test]
+    fn temporal_correspondences_keep_overlap_pair_order_and_complete_fits() {
+        let same = |a: IcpResult, b: IcpResult| {
+            assert_eq!(
+                a.transform.to_matrix().map(f64::to_bits),
+                b.transform.to_matrix().map(f64::to_bits)
+            );
+            assert_eq!(
+                (
+                    a.rms_initial.to_bits(),
+                    a.rms_final.to_bits(),
+                    a.iterations,
+                    a.converged
+                ),
+                (
+                    b.rms_initial.to_bits(),
+                    b.rms_final.to_bits(),
+                    b.iterations,
+                    b.converged
+                )
+            );
+        };
+        for count in [17, 257, 1500] {
+            let mut reference = surface(count, 71);
+            reference[1] = reference[0];
+            let tree = KdTree::new(&reference).unwrap();
+            let hints = NearestRadiusHints::new(&tree);
+            for keep in [3, count / 2, count] {
+                let mut scalar = Vec::new();
+                let mut bounded = Vec::new();
+                let mut control = CorrespondenceSearch {
+                    simd: false,
+                    hints: None,
+                    slots: Vec::new(),
+                    bounded: 0,
+                };
+                let mut temporal = CorrespondenceSearch {
+                    simd: false,
+                    hints: Some(&hints),
+                    slots: vec![u32::MAX; count],
+                    bounded: 0,
+                };
+                for z in [0.0, 0.02, -0.01, 0.03] {
+                    let transform = Rigid {
+                        rotation: Rigid::IDENTITY.rotation,
+                        translation: [0.0, 0.0, z],
+                    };
+                    let a = match_pairs(
+                        &reference,
+                        &transform,
+                        &tree,
+                        &reference,
+                        keep,
+                        &mut scalar,
+                        &mut control,
+                    );
+                    let b = match_pairs(
+                        &reference,
+                        &transform,
+                        &tree,
+                        &reference,
+                        keep,
+                        &mut bounded,
+                        &mut temporal,
+                    );
+                    assert_eq!(a.to_bits(), b.to_bits());
+                    for (a, b) in scalar.iter().zip(&bounded) {
+                        assert_eq!(
+                            (
+                                a.reference_index,
+                                a.distance_sq.to_bits(),
+                                a.moving.map(f64::to_bits)
+                            ),
+                            (
+                                b.reference_index,
+                                b.distance_sq.to_bits(),
+                                b.moving.map(f64::to_bits)
+                            )
+                        );
+                    }
+                }
+                assert!(temporal.bounded > 0);
+            }
+            let reference = cloud(reference);
+            let mut prepared = IcpPrepared::new(&reference).unwrap();
+            let bytes = prepared.retained_bytes();
+            for (shift, sample, overlap, centroids) in [
+                (0.02, 50_000, 0.8, false),
+                (-0.03, 50, 1.0, true),
+                (0.0, 3, 1.0, false),
+            ] {
+                let moving = cloud(
+                    reference
+                        .positions
+                        .iter()
+                        .map(|p| [p[0], p[1], p[2] + shift])
+                        .collect(),
+                );
+                for metric in [IcpMetric::PointToPoint, IcpMetric::PointToPlane] {
+                    let params = IcpParams {
+                        metric,
+                        sample,
+                        overlap,
+                        match_centroids: centroids,
+                        max_iterations: 8,
+                        ..Default::default()
+                    };
+                    let expected = IcpPrepared::new(&reference)
+                        .unwrap()
+                        .compute_with_correspondence(&moving, params, false, false)
+                        .unwrap();
+                    for simd in [false, true] {
+                        same(
+                            expected,
+                            prepared
+                                .compute_with_correspondence(&moving, params, simd, true)
+                                .unwrap(),
+                        );
+                        assert_eq!(bytes, prepared.retained_bytes());
+                        let samples = moving.len().div_ceil(moving.len().div_ceil(sample.max(3)));
+                        assert_eq!(prepared.temporal_scratch_bytes(), samples * 4);
+                        same(
+                            expected,
+                            prepared
+                                .compute_with_correspondence(&moving, params, simd, false)
+                                .unwrap(),
+                        );
+                        assert_eq!(prepared.temporal_queries(), 0);
+                        assert_eq!(prepared.temporal_scratch_bytes(), 0);
+                    }
+                }
+            }
+            assert!(
+                prepared
+                    .compute(&PointCloud::default(), IcpParams::default())
+                    .is_none()
+            );
+            assert_eq!(prepared.temporal_queries(), 0);
+            assert_eq!(prepared.temporal_scratch_bytes(), 0);
+        }
+    }
+
+    #[test]
+    fn paired_correspondences_preserve_pairs_overlap_and_complete_fits() {
+        let same = |a: IcpResult, b: IcpResult| {
+            assert_eq!(
+                a.transform.to_matrix().map(f64::to_bits),
+                b.transform.to_matrix().map(f64::to_bits)
+            );
+            assert_eq!(
+                (
+                    a.rms_initial.to_bits(),
+                    a.rms_final.to_bits(),
+                    a.iterations,
+                    a.converged
+                ),
+                (
+                    b.rms_initial.to_bits(),
+                    b.rms_final.to_bits(),
+                    b.iterations,
+                    b.converged
+                )
+            );
+        };
+        for count in [3, 17, 65, 257] {
+            let mut reference = surface(count, 93);
+            if count > 3 {
+                reference[1] = reference[0];
+                reference[2] = reference[0];
+            }
+            let tree = KdTree::new(&reference).unwrap();
+            for shift in [0.0, 0.02, -0.03] {
+                let moving: Vec<_> = reference
+                    .iter()
+                    .map(|p| [p[0], p[1], p[2] + shift])
+                    .collect();
+                for keep in [3, count] {
+                    let mut scalar = Vec::new();
+                    let mut paired = Vec::new();
+                    let mut scalar_search = CorrespondenceSearch {
+                        simd: false,
+                        hints: None,
+                        slots: Vec::new(),
+                        bounded: 0,
+                    };
+                    let mut paired_search = CorrespondenceSearch {
+                        simd: true,
+                        hints: None,
+                        slots: Vec::new(),
+                        bounded: 0,
+                    };
+                    let a = match_pairs(
+                        &moving,
+                        &Rigid::IDENTITY,
+                        &tree,
+                        &reference,
+                        keep,
+                        &mut scalar,
+                        &mut scalar_search,
+                    );
+                    let b = match_pairs(
+                        &moving,
+                        &Rigid::IDENTITY,
+                        &tree,
+                        &reference,
+                        keep,
+                        &mut paired,
+                        &mut paired_search,
+                    );
+                    assert_eq!(a.to_bits(), b.to_bits());
+                    for (a, b) in scalar.iter().zip(&paired) {
+                        assert_eq!(a.reference_index, b.reference_index);
+                        assert_eq!(a.distance_sq.to_bits(), b.distance_sq.to_bits());
+                        assert_eq!(a.moving.map(f64::to_bits), b.moving.map(f64::to_bits));
+                        assert_eq!(a.reference.map(f64::to_bits), b.reference.map(f64::to_bits));
+                    }
+                }
+                let (moving, reference) = (cloud(moving), cloud(reference.clone()));
+                let mut prepared = IcpPrepared::new(&reference).unwrap();
+                let bytes = prepared.retained_bytes();
+                for metric in [IcpMetric::PointToPoint, IcpMetric::PointToPlane] {
+                    for (sample, overlap, match_centroids) in
+                        [(3, 1.0, false), (50, 0.8, true), (50_000, 1.0, false)]
+                    {
+                        let params = IcpParams {
+                            metric,
+                            sample,
+                            overlap,
+                            match_centroids,
+                            max_iterations: 8,
+                            ..Default::default()
+                        };
+                        let Some(expected) = icp_with_simd(&moving, &reference, params, false)
+                        else {
+                            assert!(icp_with_simd(&moving, &reference, params, true).is_none());
+                            assert!(prepared.compute_with_simd(&moving, params, true).is_none());
+                            continue;
+                        };
+                        same(
+                            expected,
+                            icp_with_simd(&moving, &reference, params, true).unwrap(),
+                        );
+                        same(
+                            expected,
+                            prepared.compute_with_simd(&moving, params, true).unwrap(),
+                        );
+                        same(
+                            expected,
+                            prepared.compute_with_simd(&moving, params, false).unwrap(),
+                        );
+                        assert_eq!(bytes, prepared.retained_bytes());
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn triangular_plane_system_preserves_full_matrix_and_rhs_bits() {
+        let mut seed = 0x81de_b00b_573a_922d_u64;
+        for mode in 0..6 {
+            let mut full = [[0.0; 6]; 6];
+            let mut rhs = [0.0; 6];
+            let mut upper = full;
+            let mut upper_rhs = rhs;
+            let mut symmetric = true;
+            for step in 0..2048 {
+                let mut next = || {
+                    seed ^= seed << 13;
+                    seed ^= seed >> 7;
+                    seed ^= seed << 17;
+                    let v = (seed >> 11) as f64 / (1_u64 << 53) as f64 * 2.0 - 1.0;
+                    match mode {
+                        1 => v * 1e-160,
+                        2 => v * 1e155,
+                        3 => {
+                            if seed & 1 == 0 {
+                                0.0
+                            } else {
+                                -0.0
+                            }
+                        }
+                        _ => v * 1e5,
+                    }
+                };
+                let mut row = std::array::from_fn(|_| next());
+                let mut residual = next();
+                if mode == 4 && step >= 1024 && step % 17 == 0 {
+                    row[step % 6] = [
+                        f64::INFINITY,
+                        f64::NEG_INFINITY,
+                        f64::from_bits(0x7ff8_0000_0000_1234),
+                        f64::from_bits(0xfff8_0000_0000_5678),
+                    ][step % 4];
+                }
+                if mode == 5 && step % 13 == 0 {
+                    residual = f64::from_bits(0x7ff8_0000_0000_9876);
+                }
+                for i in 0..6 {
+                    rhs[i] += row[i] * residual;
+                    for j in 0..6 {
+                        full[i][j] += row[i] * row[j];
+                    }
+                }
+                accumulate_plane_row(&mut upper, &mut upper_rhs, &row, residual, &mut symmetric);
+                let mut expanded = upper;
+                if symmetric {
+                    mirror_plane_system(&mut expanded);
+                }
+                assert_eq!(
+                    expanded.map(|r| r.map(f64::to_bits)),
+                    full.map(|r| r.map(f64::to_bits)),
+                    "mode={mode}, step={step}"
+                );
+                assert_eq!(
+                    upper_rhs.map(f64::to_bits),
+                    rhs.map(f64::to_bits),
+                    "mode={mode}, step={step}"
+                );
+            }
+        }
+    }
 
     fn rotation(rx: f64, ry: f64, rz: f64) -> [[f64; 3]; 3] {
         let (sx, cx) = rx.sin_cos();

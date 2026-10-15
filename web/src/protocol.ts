@@ -105,6 +105,17 @@ export interface MapQuality {
   voxels: number;
 }
 
+export interface VoxelReferenceCompute {
+  cached: boolean;
+  reused: boolean;
+  bytes?: number;
+  rootsReused?: number;
+  rootsComputed?: number;
+  neighborVoxels?: number;
+  neighborsUsed?: number;
+  fallback?: string;
+}
+
 export interface C2cOutput {
   /** Cloud-to-cloud, cloud-to-mesh, a cut/fill height difference, or raster heights. */
   kind: "c2c" | "c2m" | "volume" | "m3c2" | "raster";
@@ -118,9 +129,101 @@ export interface C2cOutput {
   workers: number;
   /** Set by the Map quality method. */
   quality?: MapQuality;
+  /** Paired f64 leaves in ordinary CPU C2C; absent for GPU verification/C2M. */
+  cpuSimd?: boolean;
+  /** Pool C2C results are joined as slices finish; false for serial C2C. */
+  cpuStreaming?: boolean;
+  /** Immutable CPU partition/tree/query preparation retained on pool workers. */
+  cpuCached?: boolean;
+  /** Both source identities, workflow and partition layout reused preparation. */
+  cpuCacheReused?: boolean;
+  /** Cold prepared CPU searches enqueue before their preparation acknowledgement. */
+  cpuPipelined?: boolean;
+  /** Retained reference/query XYZ and output-index bytes; excludes derived tree/order storage. */
+  cpuCacheInputBytes?: number;
+  /** Owned mesh/BVH retained across C2M batches, within an aggregate budget. */
+  meshCached?: boolean;
+  meshCacheReused?: boolean;
+  meshCacheBytes?: number;
+  /** Every logical C2M slice reused the exact coordinate-matched Morton order. */
+  meshQueryOrderHit?: boolean;
+  /** Sum of each active lane's observed query-order payload; at most 64 MiB. */
+  meshQueryOrderBytes?: number;
+  meshQueryOrderEntries?: number;
+  /** Logical query slices stay fixed even with fewer resident BVHs. */
+  meshSlices?: number;
+  meshCacheFallback?: string;
+  /** Experimental GPU triangle slots, verified with the original f64 traversal. */
+  meshCompute?: { backend: "cpu" | "webgpu"; fallback?: string; prepareMillis: number; gpuMillis: number;
+    verifyMillis: number; batches: number; completeRows: number; referenceReused: boolean; gpuBytes: number };
+  /** Matching voxel settings and immutable source identities reused three voxel scores. */
+  voxelCacheHit?: boolean;
+  voxelReference?: VoxelReferenceCompute;
+  /** Internal comparison: full-sort median instead of the default selection. */
+  summarySort?: boolean;
+  /** Experimental GPU candidate search; final distances still use f64 WASM. */
+  compute?: { backend: "cpu" | "webgpu"; fallback?: string; prepareMillis: number;
+    gpuMillis: number; verifyMillis: number; batches: number;
+    /** Time awaiting GPU setup/readbacks, excluding overlapping batch verification.
+     * Includes host scheduling/queue delays; not GPU shader execution time. */
+    gpuWaitMillis?: number;
+    /** Query chunk cap, clamped to the device when available; 0 for outer CPU fallback. */
+    batchSize: number;
+    /** Immutable reference tree and buffers retained from an earlier job. */
+    referenceReused: boolean;
+    /** A ready device/pipeline existed before this job, including prewarming. */
+    deviceReused: boolean;
+    /** Queries verified without evaluating points outside the candidate leaf. */
+    certified: number;
+    /** Next-batch dispatch overlaps exact CPU verification. */
+    prefetch: boolean;
+    /** Two buffer slots permit GPU submission before the previous readback completes. */
+    bufferedReadback?: boolean;
+    /** Exact subtree boxes verify ancestral siblings after the leaf scan. */
+    verifyBounds: boolean;
+    /** Pairwise f64 SIMD for leaf verification in the WASM build. */
+    verifySimd: boolean;
+    /** A single near-leaf GPU hint; complete f64 verification is unchanged. */
+    leafOnly: boolean;
+    /** GPU invocations per workgroup; 0 for outer CPU fallback. */
+    workgroupSize: number;
+    /** Independent WASM verification lanes; absent for outer CPU fallback. */
+    verifyWorkers?: number;
+    /** The analysis worker uses its immutable job as one of the exact lanes. */
+    verifyMainWorker?: boolean;
+    /** Independent pool references needed in addition to the resident tree. */
+    verifyPoolWorkers?: number;
+    /** Worker reference preparation, including transfers; overlaps GPU setup. */
+    verifyPrepareMillis?: number;
+    /** Import an exact built tree; false retains per-worker rebuilding. */
+    verifySnapshot?: boolean;
+    /** Reuse validated finite subtree extrema during exact-tree import. */
+    verifyReuseImportBounds?: boolean;
+    /** Size of the exact reference payload per verification lane. */
+    verifyReferenceBytes?: number;
+    /** Original f64 queries retained in each lane for this job. */
+    verifyStagedQueries?: boolean;
+    /** Per-job packing/transfers/WASM query ownership; may overlap first GPU batch. */
+    verifyQueryPrepareMillis?: number;
+    /** Total f64 coordinate bytes staged across lanes (no reference replication). */
+    verifyQueryBytes?: number;
+    verifyReferenceReused?: boolean;
+    /** Worker failure recovered by exact verification on the main snapshot. */
+    verifyFallback?: string };
 }
 
 export interface IcpOutput {
+  /** Recomputed prior-iteration correspondence radii are enabled. */
+  correspondenceTemporal?: boolean;
+  /** Number of queries with a tighter finite radius; not a branch-saving count. */
+  temporalQueries?: number;
+  /** Last call's temporary slot-vector payload, released before returning. */
+  temporalScratchBytes?: number;
+  /** Whether paired f64 correspondence leaves are enabled and supported. */
+  correspondenceSimd?: boolean;
+  referenceReused?: boolean;
+  referenceCached?: boolean;
+  referenceBytes?: number;
   /** The moving cloud after the transform (new point order and octree). */
   cloud: LoadedCloud;
   /** Row-major 4x4 transform applied to the moving cloud. */
@@ -180,6 +283,28 @@ export interface M3c2Output {
   lod95: Float32Array;
   significant: Float32Array;
   millis: number;
+  /** Number of CPU/WASM workers used (1 for serial computation). */
+  workers: number;
+  /** Combined split-plane radius pruning used by every input tree. */
+  radiusBounds: boolean;
+  /** Shared reference traversal enabled for fresh normal fitting. */
+  sharedSearch: boolean;
+  /** Every lane accumulates independent projection searches during traversal. */
+  fusedProjection: boolean;
+  /** Analysis worker computes one core lane alongside the pool. */
+  mainWorker: boolean;
+  /** Exact trees were transferred and retained for this immutable input pair. */
+  preparedTrees: boolean;
+  /** This call reused an already prepared pair on every lane. */
+  treeCacheHit: boolean;
+  /** Every lane reused normals for the exact ordered cores and normal radius. */
+  normalCacheHit: boolean;
+  /** Retained core/normal intermediate bytes across the prepared lanes. */
+  normalCacheBytes: number;
+  /** This call reused the ordered compared-source voxel core selection. */
+  coreSelectionCacheHit?: boolean;
+  /** Index payload used by this call, at most 8 MiB on the analysis lane. */
+  coreSelectionCacheBytes?: number;
 }
 
 export interface MeshOutput {
@@ -652,7 +777,53 @@ export type Request =
       /** Positions come back relative to this (the cloud's `shift`). */
       shift: Vec3;
     }
-  | { kind: "c2c"; compared: number; reference: number; signed: boolean }
+  | { kind: "gpu-prepare" }
+  /** Internal benchmark setup: await the already-started CPU pool warm-up. */
+  | { kind: "cpu-prepare" }
+  /** Internal diagnostics for immutable normal/SOR worker preparation. */
+  | { kind: "knn-cache-state" }
+  /** Internal diagnostics for the optional GPU/CPU block-hint comparison. */
+  | { kind: "knn-hint-state" }
+  | { kind: "mesh-cache-state" }
+  | { kind: "c2c"; compared: number; reference: number; signed: boolean; backend?: "cpu" | "webgpu";
+      /** Internal benchmark control; experimental CPU leaf SIMD defaults off. */
+      cpuNearestSimd?: boolean;
+      /** Internal benchmark control; pool results are joined as they arrive. */
+      cpuStream?: boolean;
+      /** Internal comparison: false rebuilds CPU C2C preparation on every call. */
+      cpuCache?: boolean;
+      /** Internal C2M comparison: false copies/builds the full mesh each time. */
+      meshCache?: boolean;
+      /** Internal C2M comparison: false recomputes query order (default true). */
+      meshOrderCache?: boolean;
+      /** Internal opt-in comparison; standard C2M uses retained CPU only. */
+      meshGpu?: boolean;
+      /** Internal comparison: true queues cold searches; ordinary C2C defaults to waiting. */
+      cpuPipeline?: boolean;
+      /** Internal benchmark control; median selection is the default. */
+      summarySort?: boolean;
+      /** Internal benchmark control; GPU batching overlaps by default. */
+      gpuPrefetch?: boolean;
+      /** Internal comparison: two readback slots; defaults off. Requires prefetch. */
+      gpuBufferedReadback?: boolean;
+      /** Internal benchmark control; exact subtree box verification defaults on. */
+      gpuVerifyBounds?: boolean;
+      /** Internal benchmark control; the device/pipeline is shared by default. */
+      gpuReuseDevice?: boolean;
+      /** Internal benchmark control; exact WASM leaf SIMD defaults on. */
+      gpuVerifySimd?: boolean;
+      /** Internal benchmark control; capped at 262144 and device limits. */
+      gpuBatchSize?: number;
+      /** Internal comparison of near-leaf hints and backtracking GPU search. */
+      gpuLeafOnly?: boolean;
+      /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */
+      gpuWorkgroupSize?: number;
+      /** Experimental exact CPU verification pool; 1 (serial) by default. */
+      gpuVerifyWorkers?: number; gpuVerifySnapshot?: boolean; gpuStageQueries?: boolean;
+      /** Internal validated import-extrema reuse control (default true). */
+      gpuReuseImportBounds?: boolean;
+      /** Experimental resident lane comparison; defaults false after mixed real timings. */
+      gpuMainWorker?: boolean }
   | { kind: "remove"; id: number }
   | { kind: "point"; id: number; index: number }
   | {
@@ -663,6 +834,12 @@ export type Request =
       overlap: number;
       matchCentroids: boolean;
       pointToPlane: boolean;
+      /** Internal comparison: retain the exact ICP reference (default true). */
+      icpCache?: boolean;
+      /** Experimental paired f64 WASM correspondence leaves (default false). */
+      icpSimd?: boolean;
+      /** Experimental exact prior-iteration correspondence radii (default false). */
+      icpTemporal?: boolean;
     }
   | { kind: "transform"; id: number; matrix: number[] }
   | {
@@ -688,6 +865,12 @@ export type Request =
   | {
       kind: "filter";
       id: number;
+        /** Reuse immutable normal/SOR preparation; default true, false is the fresh control. */
+        knnCache?: boolean;
+        /** Internal prepared-neighbour search control. */
+        knnBounds?: boolean;
+        /** Internal prototype; original CPU search remains the default. */
+        knnHint?: "cpu" | "webgpu" | "webgpu-knn";
       op: FilterOp;
       /**
        * voxel: edge length; random: point count; spatial: minimum distance;
@@ -706,6 +889,45 @@ export type Request =
       maxDepth: number;
       /** Core points: one per voxel of this size (0 = every compared point). */
       coreSpacing: number;
+      /** Internal serial control for parity checks and benchmarks. */
+      parallel?: boolean;
+      /** Internal comparison of cyclic core blocks with contiguous slices. */
+      interleaved?: boolean;
+      /** Internal control for combined split-plane radius pruning (default false). */
+      radiusBounds?: boolean;
+      /** Internal shared reference traversal control (default true). */
+      sharedSearch?: boolean;
+      /** Ordered projection traversal; automatic for reused normals by default. */
+      fusedProjection?: boolean;
+      /** Internal control for using a resident analysis lane under the copy budget. */
+      mainWorker?: boolean;
+      /** Internal exact-tree transfer/reuse control (default true). */
+      preparedTrees?: boolean;
+      /** Bounded normal reuse: automatic on repeated fitting settings; false disables it. */
+      cacheNormals?: boolean;
+      /** Internal control for bounded original core-index reuse (default true). */
+      cacheCoreSelection?: boolean;
+    }
+  | {
+      /** Bidirectional C2C and voxel scores, evaluated from the same inputs. */
+      kind: "map-evaluate";
+      compared: number;
+      reference: number;
+      threshold: number;
+      voxel: number;
+      minPoints: number;
+      /** Internal control: retain the former collect-all, two-summary path. */
+      streamSummaries?: boolean;
+      /** Internal comparison: false rebuilds the bidirectional CPU slices. */
+      cpuCache?: boolean;
+      /** Internal comparison: false waits for cold preparation before search dispatch. */
+      cpuPipeline?: boolean;
+      /** Internal comparison: independent f64 moment channels use WASM SIMD. */
+      voxelSimd?: boolean;
+      /** Internal comparison: retain scores for the immutable pair/settings (default true). */
+      voxelCache?: boolean;
+      /** Reference Gaussian/root reuse; automatic on repeated reference by default. */
+      voxelReferenceCache?: boolean;
     }
   | {
       /** Voxel Gaussian scores of `compared` against the ground-truth map `reference` (see `ca_core::map_quality`). */
@@ -714,9 +936,13 @@ export type Request =
       reference: number;
       voxel: number;
       minPoints: number;
+      /** Internal comparison: independent f64 moment channels use WASM SIMD. */
+      voxelSimd?: boolean;
+      voxelCache?: boolean;
+      voxelReferenceCache?: boolean;
     }
   | { kind: "merge"; ids: number[]; fills: Vec3[] }
-  | { kind: "normals"; id: number; k: number; orientation: "up" | "outward" }
+  | { kind: "normals"; id: number; k: number; orientation: "up" | "outward"; knnCache?: boolean; knnBounds?: boolean; knnHint?: "cpu" | "webgpu" | "webgpu-knn" }
   | { kind: "split"; id: number; by: "classification" | "source" }
   | {
       kind: "shapes";

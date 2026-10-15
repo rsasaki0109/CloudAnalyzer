@@ -1,0 +1,744 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "points": 531908,
+  "bounds": [
+    -248.849609375,
+    -167.49281311035156,
+    -5.325576305389404,
+    135.99053955078125,
+    225.13357543945312,
+    38.40226364135742
+  ],
+  "keepEvery": 1,
+  "cases": [
+    {
+      "method": "normals",
+      "excludedFirstUse": {
+        "freshMillis": 565,
+        "preparedMillis": 490.80000001192093,
+        "cache": {
+          "job": 1,
+          "points": 531908,
+          "parts": 5,
+          "bytes": 35138912,
+          "pending": false,
+          "reuses": 0
+        },
+        "resultParity": true,
+        "archivedParity": true,
+        "outputPoints": 531908
+      },
+      "archivedOracle": {
+        "points": 531908,
+        "bytes": 6382896
+      },
+      "warmups": [
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 424.0999999642372,
+          "preparedMillis": 399.19999998807907,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 1
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 493.69999998807907,
+          "preparedMillis": 378.89999997615814,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 2
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 441.7999999523163,
+          "preparedMillis": 387.2999999523163,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 3
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 418.0999999642372,
+          "preparedMillis": 373.9000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 4
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 437,
+          "preparedMillis": 416.80000001192093,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 5
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 516,
+          "preparedMillis": 513.1999999880791,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 6
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 423.39999997615814,
+          "preparedMillis": 452,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 7
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 478.39999997615814,
+          "preparedMillis": 393.30000001192093,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 8
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 477.69999998807907,
+          "preparedMillis": 385.89999997615814,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 9
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 424.19999998807907,
+          "preparedMillis": 428.9000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 10
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 434.69999998807907,
+          "preparedMillis": 380.7999999523163,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 11
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 421.69999998807907,
+          "preparedMillis": 399.39999997615814,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 12
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 454.5,
+          "preparedMillis": 414.7000000476837,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 13
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 444.69999998807907,
+          "preparedMillis": 397.9000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 14
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 491.30000001192093,
+          "preparedMillis": 396.30000001192093,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 531908,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 15
+          }
+        }
+      ]
+    },
+    {
+      "method": "sor",
+      "excludedFirstUse": {
+        "freshMillis": 539.0999999642372,
+        "preparedMillis": 522.7000000476837,
+        "cache": {
+          "job": 1,
+          "points": 531908,
+          "parts": 5,
+          "bytes": 35138912,
+          "pending": false,
+          "reuses": 0
+        },
+        "resultParity": true,
+        "archivedParity": true,
+        "outputPoints": 498305,
+        "exportedBytes": 11959469
+      },
+      "archivedOracle": {
+        "points": 498305,
+        "bytes": 11959469
+      },
+      "warmups": [
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 492.80000001192093,
+          "preparedMillis": 442.30000001192093,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 1
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 496.10000002384186,
+          "preparedMillis": 488,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 2
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 587.6000000238419,
+          "preparedMillis": 553.2000000476837,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 3
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 564.8999999761581,
+          "preparedMillis": 470,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 4
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 526.1000000238419,
+          "preparedMillis": 495.69999998807907,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 5
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 466.10000002384186,
+          "preparedMillis": 484.5999999642372,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 6
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 507.4000000357628,
+          "preparedMillis": 434.80000001192093,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 7
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 486.5,
+          "preparedMillis": 438.39999997615814,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 8
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 432.7999999523163,
+          "preparedMillis": 432.89999997615814,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 9
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 478.39999997615814,
+          "preparedMillis": 417.7999999523163,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 10
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 449.5,
+          "preparedMillis": 410.89999997615814,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 11
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 456.10000002384186,
+          "preparedMillis": 437.30000001192093,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 12
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 488.5999999642372,
+          "preparedMillis": 442.9000000357628,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 13
+          }
+        },
+        {
+          "order": [
+            "fresh",
+            "prepared"
+          ],
+          "freshMillis": 475.4000000357628,
+          "preparedMillis": 439.10000002384186,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 14
+          }
+        },
+        {
+          "order": [
+            "prepared",
+            "fresh"
+          ],
+          "freshMillis": 458.60000002384186,
+          "preparedMillis": 420.0999999642372,
+          "resultParity": true,
+          "archivedParity": true,
+          "outputPoints": 498305,
+          "exportedBytes": 11959469,
+          "cache": {
+            "job": 1,
+            "points": 531908,
+            "parts": 5,
+            "bytes": 35138912,
+            "pending": false,
+            "reuses": 15
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "same-build-cpu-knn-preparation",
+  "createdAt": "2026-10-12T05:53:09.089Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\knn-preparation-baseline-20261012\\dist",
+      "worker": "worker-C8RuKzXn.js",
+      "artifactHashes": {
+        "c2c-worker-Bygl9p01.js": "74232abf342402a8d2c221a669333055bad0245b2f75f04befdeb34337d4163b",
+        "ca_wasm_bg-B9WDv0qt.wasm": "390ef24b4453c8179d8fbae994226eff475318de5360a1985fffc8a47542f345",
+        "worker-C8RuKzXn.js": "b50fe839cf6a9de7f7e1313d749da1c21849829886b3b67cc8acd700b2374827"
+      }
+    },
+    "optimized": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-Bi2ftahU.js",
+      "artifactHashes": {
+        "c2c-worker-Cm5O4znW.js": "c2fd1e8a56fcc67a7cc6353fbee6d00d259b5409d5e66319ef26f3a20b8f43a0",
+        "ca_wasm_bg-dx7fFc55.wasm": "e08cc5c9d9702c1fd09767f0adfd9c6d2c86f249075f99ead53feb13cd88a520",
+        "worker-Bi2ftahU.js": "e85af60d8505d3f217cfabfb642d88863043d7072ddd11b5d4526819d7fc882c"
+      }
+    }
+  },
+  "scriptSha256": "291fce708ae975b3873d48c1749f67fb438a74fd9f341d9840ef091493d6ef6e",
+  "sourceHashes": {
+    "web/src/knn-preparation.ts": "125fe1078a70fa9402449786f0841c4b145856356be37e0a1fd1720624b72464",
+    "web/src/worker.ts": "7b15ad8a34eb23fde25894cd8749a94fbd973f3adbf63a597a31aba08ff5ffb5",
+    "web/src/c2c-worker.ts": "e1e487cc399df962ec6b5da2b42810909c63e09c4b4684b425a6cb19c963d990",
+    "web/src/pool.ts": "b92c0720a1b5dcf13bdeb4cbe19216a580a4a8b409065f6413138fcce2ad2b17",
+    "rust/crates/ca-core/src/filter.rs": "b059b2ee4c03942fe6e551e54886ef1573cbaadc21013b2f00e597ddb81bdfb0",
+    "rust/crates/ca-core/src/normals.rs": "ac355d2d89e166eae4a26bced07c7c04e9749bf983b99c23b118ba7d0d57d5eb",
+    "rust/crates/ca-wasm/src/lib.rs": "5e368de37e713797a96a4c42ca13b8fe8f9366af84309ffefe70c886c06e2f9a"
+  },
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "input": {
+    "path": "notes/c2c-real-pandaset/compared.ply",
+    "name": "compared.ply",
+    "bytes": 12765915,
+    "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "note": "Two current-build analysis workers compare knnCache:false versus true, with separate source clouds and pools. An archived pre-change build supplies one untimed full-output oracle per method, then terminates before timing. Every pair checks all normal f32 bits or kept count and byte-identical SOR PLY against both the fresh current build and archived output. Full unchanged measured input, k=24, normals up, SOR ratio=1. Pool startup/loading excluded. One excluded first-use pair per method, five excluded alternating warm-up pairs, ten alternating timed pairs unless overridden. First-use samples are not cold medians. Whole RPC includes native search/PCA/filter, partition/tree/order construction as applicable, messages, joins, output copies, SOR filtered-cloud indexing. Cache diagnostics/verification/exports/result removal outside timing. Fresh controls must retain no preparation; prepared controls must reuse the same group, with exact incremental reuse counts and actual retained capacities plus root index/region bytes at most 128 MiB. Parameters/results not cached. Eligibility uses a conservative preallocation estimate; native capacity checks follow preparation. One idle source group plus leased in-flight groups; this is not a total process-memory cap. No builds/tests/scans run during timing. Input/manifest/source/script/both-build artifact hashes checked before/after. CPU clocks/power/GC/other apps uncontrolled. Measured subsets are not independent surveys or ground truth. No GPU metadata collected."
+}

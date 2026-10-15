@@ -8,7 +8,7 @@ import shlex
 from pathlib import Path
 from typing import Any
 
-from ca.scan_match_debug import run_scan_match_debug
+from ca.scan_match_debug import _ScanMatchMapContext, run_scan_match_debug
 
 
 def _as_float(row: dict[str, str], key: str) -> float | None:
@@ -595,90 +595,104 @@ def analyze_slam_run(
     out_base = Path(artifact_dir) if artifact_dir else None
     map_arg = str(Path(map_path)) if map_path else None
 
-    for rank, row in enumerate(ranked, start=1):
-        scan_id = row.get("scan_id", "")
-        timestamp = row.get("timestamp_sec", "")
-        scan_path = scans.get(scan_id)
-        initial_x = _as_float(row, "initial_x_m")
-        initial_y = _as_float(row, "initial_y_m")
-        initial_z = _as_float(row, "initial_z_m")
-        initial_matrix = (
-            _translation_matrix(initial_x, initial_y, initial_z)
-            if initial_x is not None and initial_y is not None and initial_z is not None
-            else None
-        )
-        frame_artifact_dir = str(out_base / f"{rank:02d}_{scan_id}") if out_base else None
-
-        command = None
-        if scan_path is not None and map_arg is not None:
-            parts = ["ca", "scan-match-debug", scan_path, map_arg]
-            parts.extend(["--method", scan_match_method])
-            parts.extend(
-                [
-                    "--max-correspondence-distance",
-                    f"{scan_match_max_correspondence_distance:.12g}",
-                ]
+    map_context = (
+        _ScanMatchMapContext(map_arg, scan_match_map_voxel_size)
+        if run_scan_match_debug_frames and map_arg is not None
+        and sum(scans.get(row.get("scan_id", "")) is not None for row in ranked) > 1
+        else None
+    )
+    scan_debug_runner = run_scan_match_debug if map_context is None else map_context.run
+    try:
+        for rank, row in enumerate(ranked, start=1):
+            scan_id = row.get("scan_id", "")
+            timestamp = row.get("timestamp_sec", "")
+            scan_path = scans.get(scan_id)
+            initial_x = _as_float(row, "initial_x_m")
+            initial_y = _as_float(row, "initial_y_m")
+            initial_z = _as_float(row, "initial_z_m")
+            initial_matrix = (
+                _translation_matrix(initial_x, initial_y, initial_z)
+                if initial_x is not None and initial_y is not None and initial_z is not None
+                else None
             )
-            if initial_matrix is not None:
-                parts.extend(["--initial-matrix", _matrix_csv(initial_matrix)])
-            if scan_match_scan_voxel_size is not None:
-                parts.extend(["--scan-voxel-size", f"{scan_match_scan_voxel_size:.12g}"])
-            if scan_match_map_voxel_size is not None:
-                parts.extend(["--map-voxel-size", f"{scan_match_map_voxel_size:.12g}"])
-            if scan_match_crop_margin is not None:
-                parts.extend(["--crop-margin", f"{scan_match_crop_margin:.12g}"])
-            if scan_match_threshold is not None:
-                parts.extend(["--threshold", f"{scan_match_threshold:.12g}"])
-            if frame_artifact_dir is not None:
-                parts.extend(["--artifact-dir", frame_artifact_dir])
-            command = " ".join(shlex.quote(part) for part in parts)
-            scan_debug_commands.append(command)
+            frame_artifact_dir = str(out_base / f"{rank:02d}_{scan_id}") if out_base else None
 
-        scan_match_debug_result = None
-        scan_match_debug_error = None
-        if run_scan_match_debug_frames and scan_path is not None and map_arg is not None:
-            try:
-                scan_match_debug_result = run_scan_match_debug(
-                    scan_path=scan_path,
-                    map_path=map_arg,
-                    method=scan_match_method,
-                    max_correspondence_distance=scan_match_max_correspondence_distance,
-                    initial_transform=initial_matrix,
-                    scan_voxel_size=scan_match_scan_voxel_size,
-                    map_voxel_size=scan_match_map_voxel_size,
-                    crop_margin=scan_match_crop_margin,
-                    threshold=scan_match_threshold,
-                    artifact_dir=frame_artifact_dir,
+            command = None
+            if scan_path is not None and map_arg is not None:
+                parts = ["ca", "scan-match-debug", scan_path, map_arg]
+                parts.extend(["--method", scan_match_method])
+                parts.extend(
+                    [
+                        "--max-correspondence-distance",
+                        f"{scan_match_max_correspondence_distance:.12g}",
+                    ]
                 )
-            except (FileNotFoundError, ValueError, RuntimeError) as exc:
-                scan_match_debug_error = str(exc)
+                if initial_matrix is not None:
+                    parts.extend(["--initial-matrix", _matrix_csv(initial_matrix)])
+                if scan_match_scan_voxel_size is not None:
+                    parts.extend(["--scan-voxel-size", f"{scan_match_scan_voxel_size:.12g}"])
+                if scan_match_map_voxel_size is not None:
+                    parts.extend(["--map-voxel-size", f"{scan_match_map_voxel_size:.12g}"])
+                if scan_match_crop_margin is not None:
+                    parts.extend(["--crop-margin", f"{scan_match_crop_margin:.12g}"])
+                if scan_match_threshold is not None:
+                    parts.extend(["--threshold", f"{scan_match_threshold:.12g}"])
+                if frame_artifact_dir is not None:
+                    parts.extend(["--artifact-dir", frame_artifact_dir])
+                command = " ".join(shlex.quote(part) for part in parts)
+                scan_debug_commands.append(command)
 
-        frame = {
-            "rank": rank,
-            "score": _score_row(row, sort_by),
-            "scan_id": scan_id,
-            "timestamp_sec": _as_float(row, "timestamp_sec"),
-            "scan_path": scan_path,
-            "reasons": _row_reasons(row),
-            "scan_match_failed": _as_bool(row, "scan_match_failed"),
-            "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
-            "scan_match_weighted_rmse": _as_float(row, "scan_match_weighted_rmse"),
-            "scan_match_rejection_rate": _as_float(
-                row, "scan_match_correspondence_rejection_rate"
-            ),
-            "prediction_delta_m": _as_float(row, "prediction_delta_m"),
-            "initial_delta_m": _as_float(row, "scan_match_vs_initial_pose_delta_m"),
-            "glim_metrics": _frame_metrics(row),
-            "initial_pose_translation_m": [initial_x, initial_y, initial_z]
-            if initial_matrix is not None
-            else None,
-            "final_pose": trajectory.get(timestamp),
-            "scan_match_debug_command": command,
-            "scan_match_debug_result": scan_match_debug_result,
-            "scan_match_debug_error": scan_match_debug_error,
-        }
-        frame["diagnosis"] = diagnose_slam_frame(frame)
-        frames.append(frame)
+            scan_match_debug_result = None
+            scan_match_debug_error = None
+            if run_scan_match_debug_frames and scan_path is not None and map_arg is not None:
+                try:
+                    scan_match_debug_result = scan_debug_runner(
+                        scan_path=scan_path,
+                        map_path=map_arg,
+                        method=scan_match_method,
+                        max_correspondence_distance=scan_match_max_correspondence_distance,
+                        initial_transform=initial_matrix,
+                        scan_voxel_size=scan_match_scan_voxel_size,
+                        map_voxel_size=scan_match_map_voxel_size,
+                        crop_margin=scan_match_crop_margin,
+                        threshold=scan_match_threshold,
+                        artifact_dir=frame_artifact_dir,
+                    )
+                except (FileNotFoundError, ValueError, RuntimeError) as exc:
+                    scan_match_debug_error = str(exc)
+                    if map_context is not None:
+                        map_context.invalidate()
+
+            frame = {
+                "rank": rank,
+                "score": _score_row(row, sort_by),
+                "scan_id": scan_id,
+                "timestamp_sec": _as_float(row, "timestamp_sec"),
+                "scan_path": scan_path,
+                "reasons": _row_reasons(row),
+                "scan_match_failed": _as_bool(row, "scan_match_failed"),
+                "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
+                "scan_match_weighted_rmse": _as_float(row, "scan_match_weighted_rmse"),
+                "scan_match_rejection_rate": _as_float(
+                    row, "scan_match_correspondence_rejection_rate"
+                ),
+                "prediction_delta_m": _as_float(row, "prediction_delta_m"),
+                "initial_delta_m": _as_float(row, "scan_match_vs_initial_pose_delta_m"),
+                "glim_metrics": _frame_metrics(row),
+                "initial_pose_translation_m": [initial_x, initial_y, initial_z]
+                if initial_matrix is not None
+                else None,
+                "final_pose": trajectory.get(timestamp),
+                "scan_match_debug_command": command,
+                "scan_match_debug_result": scan_match_debug_result,
+                "scan_match_debug_error": scan_match_debug_error,
+            }
+            frame["diagnosis"] = diagnose_slam_frame(frame)
+            frames.append(frame)
+
+    finally:
+        if map_context is not None:
+            map_context.clear()
 
     commands: dict[str, Any] = {"scan_match_debug": scan_debug_commands}
     if map_arg is not None and trajectory_csv is not None:

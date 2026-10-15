@@ -1,0 +1,981 @@
+{
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "workers": 2,
+  "cores": 696739,
+  "finiteDistances": 160487,
+  "oracleHashes": {
+    "distance": "cc0f5a715a8e66ebcd139961fe9c1a84dfef6062ae7ccdbbc69bf0c71d8ad490",
+    "lod95": "8a3586b9eddfb7c556adbe861e1b8c5dc07436c1a6dea0c491a0bef4b931208e",
+    "significant": "438dc0c5c2e37d29daca336d0d291a4e6b5ff898b70ede9a9bb4900103a9d06d",
+    "ply": "8e55acf9e8fee58886722f152bf55cdcb27d0ecb63bb40c35549b4a59458dce0"
+  },
+  "cases": [
+    {
+      "name": "fresh-normals",
+      "cacheNormals": false,
+      "firstUse": {
+        "single": {
+          "elapsedMillis": 1266.3999999761581,
+          "workerMillis": 1266.1000000238419,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "resultParity": true
+        },
+        "paired": {
+          "elapsedMillis": 1386.8999999761581,
+          "workerMillis": 1386.1999999284744,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1178,
+            "workerMillis": 1177.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 1138.1999999284744,
+            "workerMillis": 1137.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 1009.5,
+            "workerMillis": 1008.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1128,
+            "workerMillis": 1127.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 2544.6999999284744,
+            "workerMillis": 2543.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 1135.5,
+            "workerMillis": 1134.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 911.1000000238419,
+            "workerMillis": 910.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1250.5,
+            "workerMillis": 1250.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1028.3999999761581,
+            "workerMillis": 1027.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 992.1000000238419,
+            "workerMillis": 991.3000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 1032.3999999761581,
+            "workerMillis": 1032.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1024.5,
+            "workerMillis": 1024,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1040.6999999284744,
+            "workerMillis": 1039.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 963.1000000238419,
+            "workerMillis": 962.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 974.7999999523163,
+            "workerMillis": 974.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1046.5,
+            "workerMillis": 1045.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1203.3999999761581,
+            "workerMillis": 1203.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 1014,
+            "workerMillis": 1013.3000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 980.1000000238419,
+            "workerMillis": 979.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 988.2999999523163,
+            "workerMillis": 987.6999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 924.6000000238419,
+            "workerMillis": 924.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 1002.1000000238419,
+            "workerMillis": 1001.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 981.6999999284744,
+            "workerMillis": 980.9000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 974.1000000238419,
+            "workerMillis": 973.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1003.9000000953674,
+            "workerMillis": 1003.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 886.8000000715256,
+            "workerMillis": 886.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 962.5,
+            "workerMillis": 961.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1175.2000000476837,
+            "workerMillis": 1174.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1000.2999999523163,
+            "workerMillis": 999.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 1085.6000000238419,
+            "workerMillis": 1084.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "singleMedianMillis": 1014.2000000476837,
+        "pairedMedianMillis": 980.8999999761581,
+        "medianPairedReductionPercent": 3.8405585180674273,
+        "fasterTrials": 6,
+        "trials": 10
+      }
+    },
+    {
+      "name": "reused-normals",
+      "cacheNormals": true,
+      "firstUse": {
+        "single": {
+          "elapsedMillis": 1637.3999999761581,
+          "workerMillis": 1637.0999999046326,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 39017384,
+          "fusedProjection": false,
+          "resultParity": true
+        },
+        "paired": {
+          "elapsedMillis": 1613.3999999761581,
+          "workerMillis": 1613,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 39017384,
+          "fusedProjection": false,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1285.8999999761581,
+            "workerMillis": 1285.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 914.8999999761581,
+            "workerMillis": 914.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 846.7000000476837,
+            "workerMillis": 846.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 852.5,
+            "workerMillis": 851.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 845.3999999761581,
+            "workerMillis": 845.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 799.2000000476837,
+            "workerMillis": 798.6999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 831.2000000476837,
+            "workerMillis": 830.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 784.3000000715256,
+            "workerMillis": 784,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 876.7999999523163,
+            "workerMillis": 876.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 821.3000000715256,
+            "workerMillis": 820.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 1039.8999999761581,
+            "workerMillis": 1039,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 912.5,
+            "workerMillis": 912.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 935,
+            "workerMillis": 934.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 979.3000000715256,
+            "workerMillis": 978.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 873.1000000238419,
+            "workerMillis": 872.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1023.0999999046326,
+            "workerMillis": 1022.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1154.9000000953674,
+            "workerMillis": 1154,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 1036.1000000238419,
+            "workerMillis": 1035.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 1076.7999999523163,
+            "workerMillis": 1076.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 849.8000000715256,
+            "workerMillis": 849.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 894.6000000238419,
+            "workerMillis": 894,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 844.6999999284744,
+            "workerMillis": 844.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 935.1999999284744,
+            "workerMillis": 934.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1006.1000000238419,
+            "workerMillis": 1005.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1161,
+            "workerMillis": 1160.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 958,
+            "workerMillis": 957.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 933.2999999523163,
+            "workerMillis": 932.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 942.3000000715256,
+            "workerMillis": 941.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 890,
+            "workerMillis": 889.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 875.5,
+            "workerMillis": 875.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 39017384,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "singleMedianMillis": 938.6500000357628,
+        "pairedMedianMillis": 946.5999999642372,
+        "medianPairedReductionPercent": 3.603562704798918,
+        "fasterTrials": 7,
+        "trials": 10
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "paired-fresh-m3c2-eigen",
+  "createdAt": "2026-10-13T02:45:14.836Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\m3c2-pair-baseline-20261013\\dist",
+      "worker": "worker-B5uBBdCh.js",
+      "artifactHashes": {
+        "c2c-worker-U2-NSBqA.js": "54f283a7011203b08e2976a45891f39ce3463c0ed4217d4edca13d9398f297df",
+        "ca_wasm_bg-DLfX314K.wasm": "b04c113e3fe7537bdbeebbf38fa0bda09aa21158483384b9cc0a9057f73373a1",
+        "worker-B5uBBdCh.js": "867dffd97fdb759bab7cc5776482793fe5053259641aeecd8f0b5a352be52764"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-CE6BwDOc.js",
+      "artifactHashes": {
+        "c2c-worker-Dwxhunar.js": "d6edb81fb74c25d1c81652f51869d6a38c20da8aa276db750d14134ca8c9b69b",
+        "ca_wasm_bg-DvW2bQZu.wasm": "1f847faf8a130265a4f63ac573c8086ef0455c907a8177795291c0fd8ba2c9b7",
+        "worker-CE6BwDOc.js": "9a62c463aa4bea5f12f44c9ac7e6bc12b5b6a81496a9a25a4eb400c49ef66ca6"
+      }
+    }
+  },
+  "scriptSha256": "dd16cbc7b8ce84ec5687fbf62ea2096ef080b3152496a12c307f17cb6a2aa6c5",
+  "sourceHashes": {
+    "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+    "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+    "rust/crates/ca-core/src/icp.rs": "c8877991626c138d55b7619439e30ad96216f7be22a1392432b0f696755aec2e",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+    "web/src/m3c2-workers.ts": "26be13b10662ba462361649699e17548ef1fdfa32bfb9cc2cc2a608908325cdd",
+    "web/src/m3c2-preparation.ts": "345d4908fd32ee7a3f9c537df15d79429ed4266d5a2c4fd1148c4076e95b2f14",
+    "web/src/worker.ts": "d39805b393c83e80a87514f11b113acece881c17b5631a937dd36be77c41cec9",
+    "web/src/c2c-worker.ts": "fb90d8b07c6ed821b2295024624fd1ee5d11ff2df3822e97e49816c3e60db880",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "6eeb14fc67edaa6591dcbf3727495b4556dcdeb998b992a21d5a5205e0441a57",
+    "rust/crates/ca-core/src/m3c2.rs": "ebef1a2bb645f9692087dae991621041b4da9983ba616c675f044addadbced6d",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-wasm/src/m3c2.rs": "630c15b99eeca9922691e2da28743e6897cc3aed9f77a07f768b7c04fce69834",
+    "rust/crates/ca-wasm/src/lib.rs": "2063a07d5badd8e95ad70c29423b63d346f0ebd29c647f5677132d5ea6b92153"
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-autoware/reference.ply",
+      "name": "reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "notes/c2c-real-autoware/compared.ply",
+      "name": "compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured source-index split inputs; no generated/transformed/thinned coordinates. Original-point core representatives at spacing 0.25 m, not independent surveys/change ground truth. Normal radius 0.4, projection radius 0.25, half-depth 0.5; bounds off, shared reference search on, prepared trees and interleaving on, same lane count and 64 MiB normal allowance. Archived individual and current paired production use independent workers per fitting case. Fresh fitting disables normal reuse and projection fusion in BOTH builds; cached fitting enables normal retention and both builds automatically fuse projection on matching normal-cache hits. Two excluded first observations build each context trees and optionally capture normals, then five alternating warm-up pairs precede ten alternating timed pairs. Candidate pairs two independent fresh normal eigensolves only in SIMD-enabled prepared WASM, while retaining both cores reference hit lists and original projection arithmetic/order. Cached normals, odd tails, unsafe matrices and unsupported targets keep individual kernels. Additional per-slice hit buffers and scheduling/allocation/code-layout effects are included. Cached timing is a separate control without new pair fitting. Independent archived worker supplies full distance/LoD/significance/PLY oracle and terminates before timing; both timed results require exact output bits and PLY bytes against it. Whole RPC includes core planning, bindings/transfers, radius queries, moments/eigen fitting, projection, join, attributes/LOD and result arrays. Startup/loading/first observations/warmups/export/parity/removal excluded. Source, artifacts, inputs, manifest, original source and script checked before/after. No builds/tests/scans alongside timing. Clocks/power/scheduling/GC/other applications/WASM pages uncontrolled. No GPU dispatch/model identifiers collected."
+}

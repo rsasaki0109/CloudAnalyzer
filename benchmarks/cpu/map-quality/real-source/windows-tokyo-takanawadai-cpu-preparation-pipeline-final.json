@@ -1,0 +1,1657 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 941933,
+    "filePoints": 941933,
+    "keepEvery": 1,
+    "bounds": [
+      -9341,
+      -40867,
+      26.044749999999997,
+      -9261,
+      -40746,
+      93.7765
+    ]
+  },
+  "compared": {
+    "points": 941933,
+    "filePoints": 941933,
+    "keepEvery": 1,
+    "bounds": [
+      -9341,
+      -40867,
+      26.039749999999998,
+      -9261,
+      -40746,
+      93.8015
+    ]
+  },
+  "cases": [
+    {
+      "method": "c2c",
+      "warmups": [
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 344.5999999642372,
+          "pipelinedMillis": 384.5,
+          "waitingWorkerMillis": 342.2999999523163,
+          "pipelinedWorkerMillis": 384.10000002384186,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 73.60000002384186,
+            "pipelinedMillis": 82.90000003576279,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 348.10000002384186,
+          "pipelinedMillis": 353.60000002384186,
+          "waitingWorkerMillis": 347.89999997615814,
+          "pipelinedWorkerMillis": 353.2999999523163,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 74.09999996423721,
+            "pipelinedMillis": 83.89999997615814,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 385.5,
+          "pipelinedMillis": 339.5,
+          "waitingWorkerMillis": 385.0999999642372,
+          "pipelinedWorkerMillis": 339.19999998807907,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 83.19999998807907,
+            "pipelinedMillis": 84.60000002384186,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 393.39999997615814,
+          "pipelinedMillis": 370.5999999642372,
+          "waitingWorkerMillis": 393.0999999642372,
+          "pipelinedWorkerMillis": 370.30000001192093,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 87.5,
+            "pipelinedMillis": 85,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 376.69999998807907,
+          "pipelinedMillis": 389,
+          "waitingWorkerMillis": 376.19999998807907,
+          "pipelinedWorkerMillis": 388.69999998807907,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 89.69999998807907,
+            "pipelinedMillis": 89.40000003576279,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 399.0999999642372,
+          "pipelinedMillis": 371.19999998807907,
+          "waitingWorkerMillis": 398.7000000476837,
+          "pipelinedWorkerMillis": 370.80000001192093,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 122.90000003576279,
+            "pipelinedMillis": 91.80000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 369.89999997615814,
+          "pipelinedMillis": 370.19999998807907,
+          "waitingWorkerMillis": 369.60000002384186,
+          "pipelinedWorkerMillis": 369.89999997615814,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 99.60000002384186,
+            "pipelinedMillis": 86.5,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 348,
+          "pipelinedMillis": 362.10000002384186,
+          "waitingWorkerMillis": 347.19999998807907,
+          "pipelinedWorkerMillis": 361.7000000476837,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 98.69999998807907,
+            "pipelinedMillis": 86.80000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 356.9000000357628,
+          "pipelinedMillis": 368.10000002384186,
+          "waitingWorkerMillis": 356.69999998807907,
+          "pipelinedWorkerMillis": 367.80000001192093,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 86.80000001192093,
+            "pipelinedMillis": 87.19999998807907,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 386.30000001192093,
+          "pipelinedMillis": 398.7999999523163,
+          "waitingWorkerMillis": 386,
+          "pipelinedWorkerMillis": 398.39999997615814,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 94.69999998807907,
+            "pipelinedMillis": 97.90000003576279,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 423,
+          "pipelinedMillis": 412.7999999523163,
+          "waitingWorkerMillis": 422.69999998807907,
+          "pipelinedWorkerMillis": 412,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 91,
+            "pipelinedMillis": 106.5,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 413.5,
+          "pipelinedMillis": 383.30000001192093,
+          "waitingWorkerMillis": 413.2000000476837,
+          "pipelinedWorkerMillis": 382.9000000357628,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 90.5,
+            "pipelinedMillis": 86.30000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 458.19999998807907,
+          "pipelinedMillis": 384.5,
+          "waitingWorkerMillis": 457.80000001192093,
+          "pipelinedWorkerMillis": 384.10000002384186,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 109.19999998807907,
+            "pipelinedMillis": 83.40000003576279,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 384.2000000476837,
+          "pipelinedMillis": 357.19999998807907,
+          "waitingWorkerMillis": 383.5999999642372,
+          "pipelinedWorkerMillis": 356.89999997615814,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 123.19999998807907,
+            "pipelinedMillis": 77.80000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 341.5999999642372,
+          "pipelinedMillis": 339.7999999523163,
+          "waitingWorkerMillis": 341.4000000357628,
+          "pipelinedWorkerMillis": 339.5999999642372,
+          "workers": 8,
+          "cacheInputBytes": 60764660,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 0,
+          "warm": {
+            "waitingMillis": 81.90000003576279,
+            "pipelinedMillis": 79.20000004768372,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 0
+          }
+        }
+      ]
+    },
+    {
+      "method": "map-quality",
+      "warmups": [
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 724.7999999523163,
+          "pipelinedMillis": 716.6999999880791,
+          "waitingWorkerMillis": 723.1000000238419,
+          "pipelinedWorkerMillis": 714.7999999523163,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.061887064290004054,
+            "scs": 0.02658366889327268,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.8735013540549517e-16,
+          "warm": {
+            "waitingMillis": 342.80000001192093,
+            "pipelinedMillis": 355.10000002384186,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.122502256758253e-16
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 875.5999999642372,
+          "pipelinedMillis": 780.9000000357628,
+          "waitingWorkerMillis": 873,
+          "pipelinedWorkerMillis": 774.2000000476837,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000359,
+            "scs": 0.026583668893272818,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 3.469446951953614e-16,
+          "warm": {
+            "waitingMillis": 439.4000000357628,
+            "pipelinedMillis": 337,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.6653345369377348e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 879.5999999642372,
+          "pipelinedMillis": 646.9000000357628,
+          "waitingWorkerMillis": 876.1000000238419,
+          "pipelinedWorkerMillis": 638,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.061887064290004054,
+            "scs": 0.02658366889327271,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-16,
+          "warm": {
+            "waitingMillis": 388.19999998807907,
+            "pipelinedMillis": 335.89999997615814,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.498001805406602e-16
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 853.3000000119209,
+          "pipelinedMillis": 925,
+          "waitingWorkerMillis": 845.9000000357628,
+          "pipelinedWorkerMillis": 922.6000000238419,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000356,
+            "scs": 0.026583668893272808,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.498001805406602e-16,
+          "warm": {
+            "waitingMillis": 407.89999997615814,
+            "pipelinedMillis": 439.19999998807907,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.95516952522712e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 1004.1000000238419,
+          "pipelinedMillis": 909.8999999761581,
+          "waitingWorkerMillis": 1001.3000000119209,
+          "pipelinedWorkerMillis": 906.8999999761581,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000395,
+            "scs": 0.026583668893272783,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 5.204170427930421e-17,
+          "warm": {
+            "waitingMillis": 472.80000001192093,
+            "pipelinedMillis": 420.30000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 9.367506770274758e-17
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 1034.199999988079,
+          "pipelinedMillis": 882,
+          "waitingWorkerMillis": 1030.9000000357628,
+          "pipelinedWorkerMillis": 867.0999999642372,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.061887064290003915,
+            "scs": 0.026583668893272763,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.85722573273506e-17,
+          "warm": {
+            "waitingMillis": 437.9000000357628,
+            "pipelinedMillis": 402.30000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.2612801348363973e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 979.6999999880791,
+          "pipelinedMillis": 809.3999999761581,
+          "waitingWorkerMillis": 973.3000000119209,
+          "pipelinedWorkerMillis": 800.3000000119209,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000393,
+            "scs": 0.026583668893272797,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.440892098500626e-16,
+          "warm": {
+            "waitingMillis": 423.19999998807907,
+            "pipelinedMillis": 460.80000001192093,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.0122792321330962e-16
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 850.3000000119209,
+          "pipelinedMillis": 875.8999999761581,
+          "waitingWorkerMillis": 841.6999999880791,
+          "pipelinedWorkerMillis": 866,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000399,
+            "scs": 0.02658366889327284,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.3877787807814457e-17,
+          "warm": {
+            "waitingMillis": 417.39999997615814,
+            "pipelinedMillis": 496.89999997615814,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.2612801348363973e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 866.9000000357628,
+          "pipelinedMillis": 847.8000000119209,
+          "waitingWorkerMillis": 863.8999999761581,
+          "pipelinedWorkerMillis": 836.8000000119209,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.061887064290003485,
+            "scs": 0.02658366889327263,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 7.008282842946301e-16,
+          "warm": {
+            "waitingMillis": 404,
+            "pipelinedMillis": 423,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.3877787807814457e-17
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 824,
+          "pipelinedMillis": 725.5,
+          "waitingWorkerMillis": 814.8000000119209,
+          "pipelinedWorkerMillis": 717.1999999880791,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.061887064290003915,
+            "scs": 0.026583668893272776,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.914335439641036e-16,
+          "warm": {
+            "waitingMillis": 394.2000000476837,
+            "pipelinedMillis": 377,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.6653345369377348e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 834.2000000476837,
+          "pipelinedMillis": 705.5999999642372,
+          "waitingWorkerMillis": 831.6999999880791,
+          "pipelinedWorkerMillis": 702.9000000357628,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000384,
+            "scs": 0.026583668893272856,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.2327252813834093e-16,
+          "warm": {
+            "waitingMillis": 425.2999999523163,
+            "pipelinedMillis": 397.5,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 1.249000902703301e-16
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 898.5,
+          "pipelinedMillis": 814,
+          "waitingWorkerMillis": 895.8999999761581,
+          "pipelinedWorkerMillis": 811,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.061887064290003874,
+            "scs": 0.026583668893272766,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.1510571102112408e-16,
+          "warm": {
+            "waitingMillis": 409.7000000476837,
+            "pipelinedMillis": 438.5,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.95516952522712e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 881.1000000238419,
+          "pipelinedMillis": 762.6999999880791,
+          "waitingWorkerMillis": 871.6999999880791,
+          "pipelinedWorkerMillis": 760.1999999880791,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000375,
+            "scs": 0.026583668893272672,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.249000902703301e-16,
+          "warm": {
+            "waitingMillis": 414.80000001192093,
+            "pipelinedMillis": 402.39999997615814,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 3.469446951953614e-17
+          }
+        },
+        {
+          "order": [
+            "waiting",
+            "pipelined"
+          ],
+          "waitingMillis": 780.1000000238419,
+          "pipelinedMillis": 744.3999999761581,
+          "waitingWorkerMillis": 777.8000000119209,
+          "pipelinedWorkerMillis": 736.3000000119209,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000342,
+            "scs": 0.026583668893272933,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.7755575615628914e-16,
+          "warm": {
+            "waitingMillis": 362.69999998807907,
+            "pipelinedMillis": 419.39999997615814,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 2.0469737016526324e-16
+          }
+        },
+        {
+          "order": [
+            "pipelined",
+            "waiting"
+          ],
+          "waitingMillis": 759.4000000357628,
+          "pipelinedMillis": 803.1999999880791,
+          "waitingWorkerMillis": 750.8000000119209,
+          "pipelinedWorkerMillis": 793.7999999523163,
+          "workers": 8,
+          "cacheInputBytes": 110153944,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "quality": {
+            "threshold": 0.15,
+            "accuracy": 0.07473158984021497,
+            "precision": 0.9900311380958093,
+            "completeness": 0.9898188087687766,
+            "f1": 0.9899249620466465,
+            "chamfer": 0.06993068289757842,
+            "awd": 0.06188706429000418,
+            "scs": 0.026583668893272717,
+            "voxels": 18175
+          },
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 4.163336342344337e-16,
+          "warm": {
+            "waitingMillis": 365.60000002384186,
+            "pipelinedMillis": 449.89999997615814,
+            "distanceBitMismatches": 0,
+            "statsExact": true,
+            "inlierMetricsExact": true,
+            "maxVoxelDifference": 5.759281940243e-16
+          }
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "cpu-preparation-pipeline",
+  "createdAt": "2026-10-11T14:35:32.044Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "561174195a7ad6504bb5590046059729436c1d59689daa3d26f1853cf47052c9",
+  "poolWorkerSha256": "73124711329934dcf01fc659df1c490cba009c17e1cd1b8515883e4d69bb798c",
+  "wasmSha256": "b49e945097dd022c7a633af57118298b0c559fbcd29999101264e26b4012b479",
+  "scriptSha256": "842b00f0fff65f67160a76a3626f3b0057c42e3fd43cd6123bbd658db3fa17ea",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "params": {
+    "threshold": 0.15,
+    "voxel": 1,
+    "minPoints": 10
+  },
+  "method": "both",
+  "warmupRounds": 5,
+  "repeats": 10,
+  "note": "Full supplied point clouds, no thinning, one production analysis worker and pool. Five warm-up pairs precede alternating sequential waiting/pipelined cold prepared CPU computations. Every mode reloads identical reference bytes under a fresh identity, submitting release of the preceding CPU preparation before timing; the compared cloud stays unchanged. Both controls build the same exact partitions, reference trees and Morton order and use scalar f64 searches, progressive joins, adaptive summaries, f32 inlier arithmetic and the existing Map quality voxel kernel. Only cold search dispatch differs: waiting requires the lane preparation ack; pipelined queues search on the same live worker generation immediately behind preparation, allowing it to search without another main-worker turn. Both messages must succeed and are drained on failure. Each cold call is followed by an independently recomputed warm call with the same mode/preparation; those times and parity are separate and warm order follows cold order. Wall times include planning, transfers, tree construction, search, joins, metrics and result RPCs; pool initialization/prewarming, loading, old-state release submission and validation are excluded. Release acknowledgements are not awaited; a lane may still handle its preceding release before the new preparation. Worker millis are recorded separately. This measures cold source-pair preparation in an already warmed worker pool, not browser/process startup. Neither result distances nor voxel scores are cached. Every cold and warm pair must preserve all distance bits and f64 summary fields; inlier metrics/voxel counts are exact and existing HashMap voxel reductions allow 1e-12 relative/absolute roundoff. Retained input bytes exclude derived tree/order storage, allocator overhead, source clouds and outputs and are equal between controls. Other applications, CPU clocks, power and GC are uncontrolled. Measured-source even/odd subsets are not independent survey ground truth."
+}

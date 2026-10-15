@@ -1,0 +1,569 @@
+{
+  "schemaVersion": 1,
+  "comparison": "map-stream-expanded",
+  "createdAt": "2026-10-14T15:32:03.992847+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/core/map_evaluate.py": "97055da05831447c14923c4ac5b026abf9e397e05487f759f6c03133e49f95dc",
+    "cloudanalyzer/ca/io.py": "7c8da3882c933fc86a2db9fe255bc2872c8ec93c7074de4f38a1218915fff085",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_map_nn_parallel.py": "b721c2fe415531c4afdf95d7580a4a107c0c302a6e6fcc1f2f502450a0fc840c",
+    "cloudanalyzer/tests/test_map_scs_index.py": "1eaddd4fbc23857b47f386ce18a41b0d683a80791bed427f6722c0360fde6d70",
+    "cloudanalyzer/tests/test_map_covariance.py": "92cdf3c06b1f391722ee27d8ec23878072183845f85a5318311f01d9a98e4f9b",
+    "cloudanalyzer/tests/test_map_grouping.py": "a48e29bffe47a7291226756e3911e95a8f7565ffd9d56d2686196c46f24a254c",
+    "cloudanalyzer/tests/test_map_stream_groups.py": "e6106010547efa80c6f8326e182d4efea722bba447e368f1cc22cfc285a5d847",
+    "cloudanalyzer/tests/test_map_downsample_centroids.py": "8e534616a8035055c71f70d23c200a58cd97327be7114ab06806d3f096751fc6",
+    "cloudanalyzer/tests/test_map_downsample_small_groups.py": "167c0357022856323fd4b74ce52f325c59ee7407ee429191a13a8904f8b1a5b5",
+    "cloudanalyzer/tests/test_map_mean_sums.py": "1cdb24008486a89b53755aa1ec25359166860de43c245c008bc198ab24e7854b",
+    "cloudanalyzer/tests/test_map_wasserstein_batch.py": "8261af3d1fe1cf261c50bc45005de64c922d07023f6b1add33eef9878150f1d3",
+    "cloudanalyzer/tests/test_map_scs_batch.py": "5b9aa5532ae13c898ff2699e694f658975b3f0d443c851c42ab3a61246774933",
+    "cloudanalyzer/tests/test_map_nn_midpoint.py": "4e99fb4a276192728b923395ec26e7c98f9b667e73229a4e53aa26dee1b2171e",
+    "cloudanalyzer/tests/test_map_scs_query_batch.py": "bffc672bca9188bc53b015983b46a62ce0ad53f418cbc4dc73abd52275b32bae",
+    "cloudanalyzer/tests/test_map_stream_accumulators.py": "c62a462f1d1e280df4ff4a19829ab36db610d167626d5f62d854671160d97848",
+    "cloudanalyzer/tests/test_map_stream_moments.py": "4d2986c41046d828566a7c408782129124c2c92cb3249f078f482acae38c8d37",
+    "cloudanalyzer/tests/test_io.py": "86889024ac37a90fb185d16a92ecf147f24c6f2490bb0f7457a87a952068db72",
+    "cloudanalyzer/tests/test_map_stream_expanded.py": "d88c9281a4387cf866cb12390e8075dcefd818e0e8b7eaec54f8581dd9421a91",
+    "cloudanalyzer/scripts/benchmark_map_stream_expanded.py": "9c26971d14c36df3e8f3878b7382dd2cd039c6eac527c57a4e4bb5ca1fa2a7d7"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\inputs.json",
+      "bytes": 1578,
+      "sha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-baseline-20261015.py",
+      "bytes": 48229,
+      "sha256": "a304c83fdabb808b3889b89ffb136de8c055c289b7301e5fcff3eed2d2ad0d3d"
+    },
+    "io_baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-io-baseline-20261015.py",
+      "bytes": 15140,
+      "sha256": "7c8da3882c933fc86a2db9fe255bc2872c8ec93c7074de4f38a1218915fff085"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\pandaset-vector-map\\map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "coordinateSnapshots": {
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\compared-xyz-f64.bin",
+      "bytes": 12765792,
+      "sha256": "a958ef839bea9c3d8bdde29e3b8439d1e0b3059943ef1acee617ca6c0e47de43",
+      "points": 531908
+    },
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\reference-xyz-f64.bin",
+      "bytes": 12765792,
+      "sha256": "e54e6d06031028720505f1923f4740c017495fe7d23d847924ef5c90e5e1f908",
+      "points": 531908
+    }
+  },
+  "compiledTree": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\scipy\\spatial\\_ckdtree.cp312-win_amd64.pyd",
+    "bytes": 1523200,
+    "sha256": "8894f6d534e6d514926a8272eb3a1088c02502a921e1cd890390865097ed4813"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "scipy": "1.17.1",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "ompNumThreads": "12",
+    "openblasNumThreads": "1"
+  },
+  "policy": {
+    "groupSort": "stable",
+    "accumulatorAllocation": "first_occurrence",
+    "packedVoxelMinPoints": 64,
+    "packedCapacityMax": 9223372036854775807,
+    "scsIndexMinVoxels": 64,
+    "scsExactSpan": 4503599627370496,
+    "momentBatchMinPoints": 1024,
+    "momentBatchMaxGroups": 1024,
+    "momentBatchMaxGroupPoints": 128,
+    "momentBatchMinSameSize": 8,
+    "momentBatchMinSelected": 128,
+    "momentBatchSafeMagnitude": 1e+150,
+    "momentBatchMaxPoints": 32768,
+    "priorMomentBatchMaxGroupPoints": 32,
+    "priorMomentBatchMinSameSize": 32
+  },
+  "repeats": 5,
+  "warmupRounds": 2,
+  "chunkSize": 100000,
+  "structureVoxelSize": 3.0,
+  "parity": {
+    "small": {
+      "millis": 3760.8602,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.1307763758093312,
+          "scs": 0.5436378780520496,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+      "gaussians": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\small-gaussians-0.bin",
+          "bytes": 1179264,
+          "sha256": "10a3b68e30a3eb48e87951295e44104928e96c7925c882da4280c3d9f7394320",
+          "voxels": 9213,
+          "recordBytes": 128,
+          "bounds": {
+            "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\small-bounds-0.bin",
+            "bytes": 663336,
+            "sha256": "47f98ab35dff0cf94c7e4d38b2413a4f2f2dea8f7dd155c7e273e37795e0d55e",
+            "recordBytes": 72
+          },
+          "constructorCalls": 9213,
+          "groupCalls": 24871,
+          "groupPoints": 531908,
+          "groupsSha256": "f317b3089c99d0abf9a000994a446b8f4c678df7e91976a17bfd7d220eda47a8",
+          "scalarUpdates": 9983,
+          "batchedGroups": 14888,
+          "batchedPoints": 37545
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\small-gaussians-1.bin",
+          "bytes": 1175808,
+          "sha256": "334971759bcd0252fb5bf13e1ea8bcf69e1b486458be23b69bce86c879674694",
+          "voxels": 9186,
+          "recordBytes": 128,
+          "bounds": {
+            "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\small-bounds-1.bin",
+            "bytes": 661392,
+            "sha256": "d71083408e600a7f56c866003d4438935322a239a682988e4f3602d742a85126",
+            "recordBytes": 72
+          },
+          "constructorCalls": 9186,
+          "groupCalls": 24889,
+          "groupPoints": 531908,
+          "groupsSha256": "2391b399092a143f94468e6aee6b6b1d19efe0c6c241b9e6b0911ee391d885ec",
+          "scalarUpdates": 10272,
+          "batchedGroups": 14617,
+          "batchedPoints": 36224
+        }
+      ]
+    },
+    "expanded": {
+      "millis": 3167.1012,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.1307763758093312,
+          "scs": 0.5436378780520496,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+      "gaussians": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\expanded-gaussians-0.bin",
+          "bytes": 1179264,
+          "sha256": "10a3b68e30a3eb48e87951295e44104928e96c7925c882da4280c3d9f7394320",
+          "voxels": 9213,
+          "recordBytes": 128,
+          "bounds": {
+            "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\expanded-bounds-0.bin",
+            "bytes": 663336,
+            "sha256": "47f98ab35dff0cf94c7e4d38b2413a4f2f2dea8f7dd155c7e273e37795e0d55e",
+            "recordBytes": 72
+          },
+          "constructorCalls": 9213,
+          "groupCalls": 24871,
+          "groupPoints": 531908,
+          "groupsSha256": "f317b3089c99d0abf9a000994a446b8f4c678df7e91976a17bfd7d220eda47a8",
+          "scalarUpdates": 4611,
+          "batchedGroups": 20260,
+          "batchedPoints": 113826
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\expanded-gaussians-1.bin",
+          "bytes": 1175808,
+          "sha256": "334971759bcd0252fb5bf13e1ea8bcf69e1b486458be23b69bce86c879674694",
+          "voxels": 9186,
+          "recordBytes": 128,
+          "bounds": {
+            "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-expanded-pandaset-final-20261015\\expanded-bounds-1.bin",
+            "bytes": 661392,
+            "sha256": "d71083408e600a7f56c866003d4438935322a239a682988e4f3602d742a85126",
+            "recordBytes": 72
+          },
+          "constructorCalls": 9186,
+          "groupCalls": 24889,
+          "groupPoints": 531908,
+          "groupsSha256": "2391b399092a143f94468e6aee6b6b1d19efe0c6c241b9e6b0911ee391d885ec",
+          "scalarUpdates": 4712,
+          "batchedGroups": 20177,
+          "batchedPoints": 112005
+        }
+      ]
+    }
+  },
+  "firstUse": {
+    "small": {
+      "millis": 3317.8927,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.1307763758093312,
+          "scs": 0.5436378780520496,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+      "gaussians": []
+    },
+    "expanded": {
+      "millis": 2417.3559,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.1307763758093312,
+          "scs": 0.5436378780520496,
+          "n_awd_voxels": 1202.0,
+          "n_scs_voxels": 1200.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+      "gaussians": []
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "small",
+        "expanded"
+      ],
+      "millis": {
+        "small": 3125.3362,
+        "expanded": 2561.3625
+      },
+      "reportHashes": {
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    },
+    {
+      "order": [
+        "expanded",
+        "small"
+      ],
+      "millis": {
+        "expanded": 2741.5052,
+        "small": 2847.3099
+      },
+      "reportHashes": {
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "small",
+        "expanded"
+      ],
+      "millis": {
+        "small": 2101.5583,
+        "expanded": 2125.9959
+      },
+      "reportHashes": {
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    },
+    {
+      "order": [
+        "expanded",
+        "small"
+      ],
+      "millis": {
+        "expanded": 2106.6359,
+        "small": 2262.5646
+      },
+      "reportHashes": {
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    },
+    {
+      "order": [
+        "small",
+        "expanded"
+      ],
+      "millis": {
+        "small": 2318.5351,
+        "expanded": 1913.8054
+      },
+      "reportHashes": {
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    },
+    {
+      "order": [
+        "expanded",
+        "small"
+      ],
+      "millis": {
+        "expanded": 1794.57,
+        "small": 2206.608
+      },
+      "reportHashes": {
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    },
+    {
+      "order": [
+        "small",
+        "expanded"
+      ],
+      "millis": {
+        "small": 2235.6386,
+        "expanded": 1885.2439
+      },
+      "reportHashes": {
+        "small": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8",
+        "expanded": "6c743f6f27bd4f08eab820be5947fa62f51e7112b271c439207d5fe746b71ce8"
+      }
+    }
+  ],
+  "summary": {
+    "smallMedianMillis": 2235.6386,
+    "expandedMedianMillis": 1913.8054,
+    "pairedShorteningPercent": 15.673136973033131,
+    "pairedSavedMedianMillis": 350.3947000000003,
+    "fasterTrials": 4
+  },
+  "accuracy": {
+    "gaussianMapsChecked": 4,
+    "orderedGroupStreamsChecked": 4,
+    "boundsMapsChecked": 4,
+    "reportsChecked": 18
+  },
+  "note": "Complete streaming AWD/SCS reduction includes fixed XYZ f64 memory-map chunk iteration, integer classification, stable grouping, allocation, moment reductions/merges/finalization, Wasserstein and SCS setup/queries/statistics. Control already contains preceding 1-32-point moment batches requiring 32 groups per size, allocation reuse and all preceding MapEval optimizations. Both policies require 128 selected groups per 1024-group window and retain preceding chunk/numerical guards. Current allows 1-128-point groups with eight groups per size, splitting each size cohort into at most 32768-point gather blocks and releasing gathered/centered/mean scratch before each next block. Merging order and arithmetic stay fixed. Source coordinates, sampling and 100000-point chunk boundaries are unchanged; no generated data. Original-file loading, snapshot preparation/mapping/hashing, Gaussian/bounds/group/ allocation tracing and CLI writes are outside clocks. A parity pair, excluded first pair and two warm-ups precede five default alternating timed pairs. All observations remain. Pages are warmed; cold ingestion and peak RSS are not measured. No NN/PLY, resident-evaluation, GPU, worker-pool or persistent-cache speed claim."
+}

@@ -1,0 +1,271 @@
+{
+  "fixture": "files",
+  "backend": "cpu-vs-webgpu",
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "isFallbackAdapter": false
+  },
+  "poolPrepareMillis": 2761.400000035763,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 531908,
+      "reference": {
+        "points": 531908,
+        "filePoints": 531908,
+        "keepEvery": 1,
+        "bounds": [
+          -249.30506896972656,
+          -165.7618865966797,
+          -5.276854515075684,
+          141.1042938232422,
+          222.24327087402344,
+          38.41987991333008
+        ],
+        "timings": {
+          "parse": 33.60000002384186,
+          "index": 51.89999997615814,
+          "workers": 1,
+          "prepare": 27
+        }
+      },
+      "compared": {
+        "points": 531908,
+        "filePoints": 531908,
+        "keepEvery": 1,
+        "bounds": [
+          -248.849609375,
+          -167.49281311035156,
+          -5.325576305389404,
+          135.99053955078125,
+          225.13357543945312,
+          38.40226364135742
+        ],
+        "timings": {
+          "parse": 30.200000047683716,
+          "index": 46.40000003576279,
+          "workers": 1,
+          "prepare": 13.800000011920929
+        }
+      },
+      "trials": [
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 48.19999998807907,
+          "webgpuMillis": 186.80000001192093,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.199999988079071,
+            "gpuMillis": 179,
+            "gpuWaitMillis": 21.499999940395355,
+            "verifyMillis": 148.70000004768372,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64,
+            "verifyWorkers": 1,
+            "verifyPrepareMillis": 0,
+            "verifyReferenceReused": false,
+            "verifySnapshot": true,
+            "verifyStagedQueries": false,
+            "verifyQueryPrepareMillis": 0
+          },
+          "cpuCached": true,
+          "cpuCacheReused": true,
+          "cpuCacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 50.90000003576279,
+          "webgpuMillis": 174.5,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.199999988079071,
+            "gpuMillis": 165.60000002384186,
+            "gpuWaitMillis": 18.30000001192093,
+            "verifyMillis": 139.1000000834465,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64,
+            "verifyWorkers": 1,
+            "verifyPrepareMillis": 0,
+            "verifyReferenceReused": false,
+            "verifySnapshot": true,
+            "verifyStagedQueries": false,
+            "verifyQueryPrepareMillis": 0
+          },
+          "cpuCached": true,
+          "cpuCacheReused": true,
+          "cpuCacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 57.80000001192093,
+          "webgpuMillis": 166.60000002384186,
+          "workers": 1,
+          "controlWorkers": 5,
+          "stats": {
+            "count": 531908,
+            "min": 0.0011159376115308776,
+            "max": 22.133454559864617,
+            "mean": 0.11220683299568356,
+            "rms": 0.2091378612746992,
+            "stdDev": 0.17648872952014272,
+            "median": 0.07472814965335946
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.2000000476837158,
+            "gpuMillis": 157.89999997615814,
+            "gpuWaitMillis": 16.700000047683716,
+            "verifyMillis": 133.39999997615814,
+            "batches": 9,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 235714,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64,
+            "verifyWorkers": 1,
+            "verifyPrepareMillis": 0,
+            "verifyReferenceReused": false,
+            "verifySnapshot": true,
+            "verifyStagedQueries": false,
+            "verifyQueryPrepareMillis": 0
+          },
+          "cpuCached": true,
+          "cpuCacheReused": true,
+          "cpuCacheInputBytes": 38713496,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T13:03:08.788Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "backend",
+  "gpuModelOmitted": true,
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-pandaset/reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-pandaset/compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "inputManifestSha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e",
+  "benchmarkScriptSha256": "d768be8a0879f9e6e3c44b97f5094cfb3d105127070602127abdfae509e054a8",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "01bb588d6291cab6cff57e6842af53488ba3e0d22a83d94ba3c7e5249801174c",
+  "poolWorkerSha256": "73124711329934dcf01fc659df1c490cba009c17e1cd1b8515883e4d69bb798c",
+  "wasmSha256": "b49e945097dd022c7a633af57118298b0c559fbcd29999101264e26b4012b479",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Supplied input files, unchanged by the benchmark. Source-file hashes, optional provenance, decoded/file point counts, thinning factors and loaded bounds are recorded. Production parallel CPU and hybrid WebGPU C2C, same input clouds and snapshots, with backend-specific query planning, trees and worker counts. Await the already-started automatic CPU pool warm-up before any fixture/trial; its time is recorded separately and excluded. Five unmeasured CPU/WebGPU warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no cross-machine speed guarantee. Both backends use adaptive exact summaries. CPU uses scalar leaves, progressive joining and default preparation reuse for parallel jobs; timed CPU calls must reuse prepared exact queries/trees and report retained input bytes. GPU uses default prefetch, bounds, SIMD verification, batch caps and 64-invocation workgroups, with warmed reference/device reuse. Timed GPU fallback is rejected. Backend timing includes CPU parallel workers versus one hybrid main worker; worker counts need not match. GPU phase intervals exclude final summaries and can overlap."
+}

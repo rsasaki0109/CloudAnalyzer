@@ -62,6 +62,48 @@ There are **39** CLI subcommands (see `ca --help`). Summary:
 | `ca stats` | Detailed statistics (density, robust density, spacing distribution) |
 | `ca batch` | Run info on all files in a directory |
 
+`ca scan-match-debug --artifact-dir ...` shares before/after distance arrays
+between metrics and PLY coloring. It performs two nearest-neighbour searches
+instead of four, with unchanged ICP/GICP and output formats. The measured
+diagnostic/artifact interval improves by 9.75–17.27% across six real-source
+comparisons; loading/registration time is separate. [Measurements and memory
+lifetime](../docs/cpu-scan-match-distance-reuse.md).
+
+With a supporting Rust core, `scan-match-debug` also shares one working-map
+tree across the two searches and releases it before artifact writing. The
+diagnostic/statistics interval, including construction and cleanup, improves
+by 20.55–24.45% in six real-source comparisons. Loading, registration and PLY
+writing are outside that measurement. [Scoped lifetime and compatibility](../docs/cpu-scan-match-reference.md).
+
+Multi-frame `slam-debug` also shares a lazy map snapshot and, without cropping,
+one reference across selected attempts. A three-attempt real-source diagnostic
+comparison is 17.47–44.66% shorter with 29/30 faster pairs and identical outputs.
+Loading is included; ICP solving and artifacts are excluded. These repeated
+attempts are not independent drive frames. [Scope and lifetime](../docs/cpu-slam-map-reuse.md).
+
+GICP and artifact-producing ICP also share pre-solver target normals across
+uncropped multi-frame attempts, with private working copies. The preceding measured
+registration-preparation/result-copy interval is 21.05–36.37% shorter across
+six real-source comparisons, with 18/18 faster pairs. Actual ICP iterations
+are excluded. [Normal reuse measurements](../docs/cpu-registration-target-normals.md).
+
+ICP diagnostics without PLY artifacts skip unused normal estimation. With
+loading and distance/report assembly included, six real-source comparisons
+are 72.16–81.47% shorter with 18/18 faster pairs. Actual ICP iterations are
+excluded; GICP, artifact output and ordinary registration keep their normal
+preparation. [Scope and verification](../docs/cpu-scan-icp-normals.md).
+
+Verified little-endian binary PLY files containing only double XYZ coordinates
+now use bulk loading. Six real-source comparisons shorten loading by
+78.01–83.25% and diagnostic assembly by 23.08–31.70%, with 30/30 faster pairs
+in both intervals. Actual ICP iterations are excluded; complex layouts retain
+Open3D loading. [Supported layout and measurements](../docs/cpu-ply-xyz-loading.md).
+
+Comparisons without a snapshot skip unused heatmap coloring. Six real-source
+comparisons with registration disabled are 78.45–82.21% shorter, with 60/60
+faster pairs and identical numeric/file reports. Snapshot colors and pixels
+are preserved. [Conditions and measurements](../docs/cpu-compare-requested-colors.md).
+
 ### Processing
 
 | Command | Description |
@@ -213,6 +255,128 @@ ca batch /path/to/results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer
 # Density heatmap
 ca density-map cloud.pcd -o density.png -r 1.0 -a z
 ```
+
+`ca batch --evaluate` loads one reference snapshot per invocation and shares
+its search tree across candidates when the Rust core supports it. Reference
+edits are observed on the next batch. [Real-source measurements](../docs/cpu-batch-reference.md)
+show 23.83–33.78% shorter whole batch functions for three candidates, including
+loading, tree construction/destruction, both distance directions and statistics.
+
+`ca loop-closure-report` shares one reference snapshot/tree for its before/after
+map evaluations and releases it before optional trajectory/posegraph work.
+[Actual-input report measurements](../docs/cpu-loop-reference.md) show
+10.77–23.88% shorter map-only report functions, including loading, searches,
+statistics and cleanup. The inputs use an archived actual ICP result; solving
+and CLI serialization are outside those clocks.
+
+`ca map-evaluate` parallelizes exact SciPy distance queries with at least 65,536
+query points per direction. [Real-source measurements](../docs/cpu-map-nn-parallel.md)
+show 16.57–26.35% shorter resident evaluations including default AWD/SCS, with
+29/30 faster pairs and identical metrics/PLY outputs. Loading and CLI writes
+are excluded. Large queries use all available CPU threads; small inputs keep
+single-thread dispatch.
+
+`map-evaluate` also indexes supported SCS error cells for exact cube-neighborhood
+lookup. [Real-source measurements](../docs/cpu-map-scs-index.md) show 5.43–18.12%
+shorter resident evaluations against the preceding parallel-NN implementation,
+with identical full metrics/PLY outputs. Index setup/cleanup is included; file
+loading and CLI writes are excluded. Small/radius-1/wide-span cases retain the
+grid lookup, and the scoped index is released per structural evaluation.
+
+Resident Gaussian covariance now accumulates six symmetric components in point
+order. [Real-source measurements](../docs/cpu-map-covariance.md) show a further
+5.13–17.64% shorter evaluation against the parallel-NN/indexed-SCS baseline,
+with 27/30 faster pairs and identical full voxel summaries, metrics and PLYs.
+The point-product temporary drops from 72 to 8 bytes per point, plus component
+result arrays per voxel. Non-finite/extreme centered values retain scatter.
+
+Resident voxel classification now uses bounded scalar integer codes for exact
+grouping. [Real-source measurements](../docs/cpu-map-grouping.md) show a further
+45.73–54.44% shorter evaluation against the preceding covariance implementation,
+with 30/30 faster pairs and identical memberships, full Gaussians, metrics and
+PLYs. Small inputs and ranges beyond signed-int64 capacity retain axis grouping.
+
+Streaming AWD/SCS now groups each chunk once with stable point order, removing
+full-chunk scans for every occupied voxel.
+[Real-source measurements](../docs/cpu-map-stream-groups.md) show 69.87–82.36%
+shorter complete streaming reduction with 18/18 faster pairs and identical
+ordered update streams, Gaussians and reports. Fixed 100,000-point memory-map
+chunks are timed; original-file loading/snapshot preparation are excluded.
+
+Optional core-API centroid preprocessing now detects adjacent sorted groups,
+batches singleton means and preallocates its output.
+[Real-source API measurements](../docs/cpu-map-downsample-centroids.md) show
+33.67–81.01% shorter complete evaluation with requested 0.2 m downsampling,
+18/18 faster pairs and identical centroids, full metrics and PLYs. Loading and
+CLI writes are excluded; this is not a disabled-downsampling speed claim.
+
+Resident voxel means also use point-order coordinate reductions.
+[Mean-sum measurements](../docs/cpu-map-mean-sums.md) show 65.02–74.36% shorter
+aggregation with identical full outputs. Complete resident evaluation has a
+smaller mixed result (−2.73% to +4.10%, 18/30 faster pairs); the component rate
+does not describe whole-evaluation acceleration. Small/unsafe inputs keep scatter.
+
+Supported Gaussian Wasserstein distances now use bounded matrix batches.
+[Real-source measurements](../docs/cpu-map-wasserstein-batch.md) show
+9.05–27.16% shorter complete resident evaluation, with 28/30 faster pairs and
+identical per-voxel distances, full metrics and PLYs. Small/unsafe batches and
+explicit NumPy error settings keep scalar calls; loading/CLI writes are excluded.
+
+SCS also groups equal-length neighborhoods within bounded windows.
+[SCS statistics measurements](../docs/cpu-map-scs-batch.md) show 10.38–31.92%
+shorter SCS work with identical full outputs. Complete resident evaluation is
+mixed (−2.30% to +5.99%, 16/30 faster pairs), so the component rate does not
+describe a consistent whole-evaluation gain. Unsafe inputs retain scalar calls.
+
+Large resident pairs also use compact midpoint point trees, preserving exact
+distances and the existing worker policy.
+[Point-tree measurements](../docs/cpu-map-nn-midpoint.md) show 7.92–17.04%
+shorter complete resident evaluation, with 27/30 faster pairs and identical
+full outputs. Both maps must have at least 65,536 points; loading/CLI writes
+are excluded.
+
+Eligible SCS indexes also use bounded vector queries with one worker.
+[Query-batch measurements](../docs/cpu-map-scs-query-batch.md) show 14.47–26.73%
+shorter complete SCS work, with 30/30 faster pairs and identical full outputs.
+Whole resident evaluation is mixed (−5.08% to +9.51%, 18/30 faster pairs);
+PandaSet regresses in both passes, so the component rate is not a universal
+whole-evaluation improvement. Small or insufficient-capacity indexes retain
+single-center queries.
+
+Streaming voxel accumulation also constructs each cell's accumulator once.
+[Allocation measurements](../docs/cpu-map-stream-accumulators.md) show
+52.62–68.59% fewer constructions with identical Gaussian bits and full reports.
+Whole streaming timings are mixed (−11.27% to +9.93%, 20/30 faster pairs),
+without a consistent whole-evaluation speedup across sources.
+
+Streaming accumulation also batches enough equal-size small-group moments
+inside bounded windows. [Moment measurements](../docs/cpu-map-stream-moments.md)
+show 1.66–28.90% shorter complete streaming AWD/SCS work, with 28/30 faster
+pairs and identical Gaussian/bounds bits, ordered groups and full reports.
+Loading/CLI writes are excluded; unsafe or insufficient groups use scalar updates.
+
+[Expanded moment measurements](../docs/cpu-map-stream-expanded.md) accept
+1–128-point groups with eight groups per size, retaining a 32,768-point gather
+limit. Complete streaming work is a further 7.98–18.80% shorter, with 27/30
+faster pairs and identical Gaussian/bounds bits, group inputs and reports.
+These comparisons already include the preceding small-group optimization.
+
+[Verified-scalar measurements](../docs/cpu-map-stream-finite.md) reuse the
+existing whole-chunk guard to avoid repeated finite checks and coordinate
+copies in remaining scalar groups. Complete streaming work is a further
+6.88–16.46% shorter, with 25/30 faster pairs and identical full outputs.
+Unsafe/small chunks keep filtering; loading/CLI writes are excluded.
+
+[Moment-merge candidates](../docs/cpu-map-stream-merge-candidates.md) were
+tested on the same real sources. All outputs match, but every candidate
+regresses on at least one source; none is adopted.
+
+The optional helper also batches sufficiently many 2–8-point means.
+[Small-group API measurements](../docs/cpu-map-downsample-small-groups.md) show
+55.24–70.38% shorter complete 0.2 m downsampled evaluation for eligible
+PandaSet/Tokyo inputs, with 12/12 faster pairs and identical full outputs.
+Autoware retains preceding means and has mixed timings (−16.50%, +2.62%);
+no acceleration is claimed there. Input/error-policy guards preserve fallbacks.
 
 `ca info` and `ca stats` also report p01-p99 robust extents and the number/ratio
 of points outside that robust bounding box. These fields are useful for SLAM maps

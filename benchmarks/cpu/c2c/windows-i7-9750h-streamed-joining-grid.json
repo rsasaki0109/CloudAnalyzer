@@ -1,0 +1,487 @@
+{
+  "fixture": "grid",
+  "poolPrepareMillis": 3090.400000035763,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "trials": [
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 4.399999976158142,
+          "streamingMillis": 4.600000023841858,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 3.900000035762787,
+          "streamingMillis": 4,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 3.899999976158142,
+          "streamingMillis": 4.299999952316284,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 4.199999988079071,
+          "streamingMillis": 4.199999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 4.300000011920929,
+          "streamingMillis": 5.199999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 5.700000047683716,
+          "streamingMillis": 4.600000023841858,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 3.700000047683716,
+          "streamingMillis": 3.599999964237213,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 4.100000023841858,
+          "streamingMillis": 3.800000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 3.799999952316284,
+          "streamingMillis": 3.699999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 4.399999976158142,
+          "streamingMillis": 3.899999976158142,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "trials": [
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 43,
+          "streamingMillis": 41.80000001192093,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 40.30000001192093,
+          "streamingMillis": 44.10000002384186,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 42.90000003576279,
+          "streamingMillis": 41.69999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 42.89999997615814,
+          "streamingMillis": 39.19999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 40.30000001192093,
+          "streamingMillis": 43.700000047683716,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 53.10000002384186,
+          "streamingMillis": 41.09999996423721,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 41.19999998807907,
+          "streamingMillis": 40,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 48.10000002384186,
+          "streamingMillis": 42.5,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 45.39999997615814,
+          "streamingMillis": 46.80000001192093,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 51.30000001192093,
+          "streamingMillis": 48.09999996423721,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "trials": [
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 302.19999998807907,
+          "streamingMillis": 326.7000000476837,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 298.5,
+          "streamingMillis": 301.89999997615814,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 317.39999997615814,
+          "streamingMillis": 315.0999999642372,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 274.10000002384186,
+          "streamingMillis": 301.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 271.80000001192093,
+          "streamingMillis": 280.30000001192093,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 262.10000002384186,
+          "streamingMillis": 278.30000001192093,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 268.80000001192093,
+          "streamingMillis": 252.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 262.5,
+          "streamingMillis": 254.89999997615814,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 270.19999998807907,
+          "streamingMillis": 260.9000000357628,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 259.89999997615814,
+          "streamingMillis": 268.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 2000000,
+      "trials": [
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 490.80000001192093,
+          "streamingMillis": 492.60000002384186,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 502.89999997615814,
+          "streamingMillis": 476.9000000357628,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 552.8999999761581,
+          "streamingMillis": 554.6999999880791,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 569.6000000238419,
+          "streamingMillis": 588.3000000119209,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 526.6000000238419,
+          "streamingMillis": 591.1000000238419,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 597.4000000357628,
+          "streamingMillis": 595.2999999523163,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 570.9000000357628,
+          "streamingMillis": 580.0999999642372,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 545.3000000119209,
+          "streamingMillis": 572.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 621.8000000119209,
+          "streamingMillis": 698.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 685.7000000476837,
+          "streamingMillis": 688.2000000476837,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T03:19:04.521Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "joining",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "66265be6674153dd6af2b24d13e2a371a584392c5fd73d50482abe010bdfddc4",
+  "poolWorkerSha256": "13032b482dda62d7be44f19e9a8685c43b8ae0e1fc582a677ecdb19c93793ec3",
+  "wasmSha256": "c512890f2c17f0bdfb3754f81256a011ec2be4aca9e34f0fad5c36d6c2e8990b",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Synthetic UTM wavy grid or seeded 50x50x10m scatter, 0.05m vertical offset. Ordinary production CPU C2C, same snapshots, spatial partitions, Morton query order, reference construction and worker counts. Await the already-started automatic CPU pool warm-up before any fixture/trial; its time is recorded separately and excluded. Five unmeasured collect-all/progressive-join warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no real-source or cross-machine speed claim. Both joining controls use scalar leaves; collectedMillis waits for every result before joining, streamingMillis joins each result on arrival. Serial cases have identical joining behavior. Summary arithmetic/order is unchanged."
+}

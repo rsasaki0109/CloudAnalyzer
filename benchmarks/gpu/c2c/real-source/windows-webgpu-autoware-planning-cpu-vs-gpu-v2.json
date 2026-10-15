@@ -1,0 +1,501 @@
+{
+  "fixture": "files",
+  "backend": "cpu-vs-webgpu",
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+  },
+  "poolPrepareMillis": 3217.599999964237,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 878920,
+      "reference": {
+        "points": 878921,
+        "filePoints": 878921,
+        "keepEvery": 1,
+        "bounds": [
+          3567.701904296875,
+          73441.4140625,
+          -2.3429999351501465,
+          3959.455322265625,
+          73910.3828125,
+          37.89099884033203
+        ],
+        "timings": {
+          "parse": 70.90000003576279,
+          "index": 74,
+          "workers": 1,
+          "prepare": 38.700000047683716
+        }
+      },
+      "compared": {
+        "points": 878920,
+        "filePoints": 878920,
+        "keepEvery": 1,
+        "bounds": [
+          3567.662353515625,
+          73441.3125,
+          3.188999891281128,
+          3956.874267578125,
+          73910.6796875,
+          37.35900115966797
+        ],
+        "timings": {
+          "parse": 41.799999952316284,
+          "index": 78.80000001192093,
+          "workers": 1,
+          "prepare": 25.100000023841858
+        }
+      },
+      "trials": [
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 304.30000001192093,
+          "webgpuMillis": 296.69999998807907,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.899999976158142,
+            "gpuMillis": 278.30000001192093,
+            "verifyMillis": 225.6000000834465,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 306.0999999642372,
+          "webgpuMillis": 292,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.099999964237213,
+            "gpuMillis": 267.9000000357628,
+            "verifyMillis": 234.30000007152557,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 325.4000000357628,
+          "webgpuMillis": 303.30000001192093,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.899999976158142,
+            "gpuMillis": 282.9000000357628,
+            "verifyMillis": 243.80000007152557,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 280.69999998807907,
+          "webgpuMillis": 291,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.100000023841858,
+            "gpuMillis": 271.4000000357628,
+            "verifyMillis": 233.10000002384186,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 282,
+          "webgpuMillis": 290.89999997615814,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.100000023841858,
+            "gpuMillis": 272.39999997615814,
+            "verifyMillis": 229.99999994039536,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 253.30000001192093,
+          "webgpuMillis": 283.39999997615814,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.100000023841858,
+            "gpuMillis": 266.69999998807907,
+            "verifyMillis": 227.9000000357628,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 256.10000002384186,
+          "webgpuMillis": 253.60000002384186,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.9000000357627869,
+            "gpuMillis": 236,
+            "verifyMillis": 201.5999999642372,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 264.30000001192093,
+          "webgpuMillis": 274.80000001192093,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 2.700000047683716,
+            "gpuMillis": 253.89999997615814,
+            "verifyMillis": 216.5,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "cpu",
+            "webgpu"
+          ],
+          "cpuMillis": 282.4000000357628,
+          "webgpuMillis": 266.30000001192093,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.800000011920929,
+            "gpuMillis": 247.5999999642372,
+            "verifyMillis": 209.29999995231628,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "webgpu",
+            "cpu"
+          ],
+          "cpuMillis": 259,
+          "webgpuMillis": 251.60000002384186,
+          "workers": 1,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 878920,
+            "min": 0.0011123489776313801,
+            "max": 17.569516561587182,
+            "mean": 0.1605535211803437,
+            "rms": 0.1827401061717965,
+            "stdDev": 0.08727263740871127,
+            "median": 0.15680755885770015
+          },
+          "optimizedCompute": {
+            "backend": "webgpu",
+            "prepareMillis": 1.800000011920929,
+            "gpuMillis": 235.69999998807907,
+            "verifyMillis": 201.29999995231628,
+            "batches": 14,
+            "batchSize": 65536,
+            "referenceReused": true,
+            "deviceReused": true,
+            "certified": 421096,
+            "prefetch": true,
+            "verifyBounds": true,
+            "verifySimd": true,
+            "leafOnly": false,
+            "workgroupSize": 64
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T04:51:17.892Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "backend",
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-autoware/reference.ply",
+      "name": "reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-autoware/compared.ply",
+      "name": "compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "benchmarkScriptSha256": "721635cabeea25ff76f3d4315c5097ccd7832a00d4e9f82922e39bda6480c139",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "5335c026be9130c380b8d06b8c41b2e2f21b80722b336a863b93b902deacc420",
+  "poolWorkerSha256": "7e6aa4f8ae5152c28392804ce66a717cbb5bae7fab0b981d1f7ecea25a381abc",
+  "wasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Supplied input files, unchanged by the benchmark. Source-file hashes, optional provenance, decoded/file point counts, thinning factors and loaded bounds are recorded. Production parallel CPU and hybrid WebGPU C2C, same input clouds and snapshots, with backend-specific query planning, trees and worker counts. Await the already-started automatic CPU pool warm-up before any fixture/trial; its time is recorded separately and excluded. Five unmeasured CPU/WebGPU warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no cross-machine speed guarantee. Both backends use adaptive exact summaries. CPU uses scalar leaves and progressive joining; GPU uses default prefetch, bounds, SIMD verification, batch caps and 64-invocation workgroups, with warmed reference/device reuse. Timed GPU fallback is rejected. Backend timing includes CPU parallel workers versus one hybrid main worker; worker counts need not match. GPU phase intervals exclude final summaries and can overlap."
+}

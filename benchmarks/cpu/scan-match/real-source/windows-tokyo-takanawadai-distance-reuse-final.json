@@ -1,0 +1,1720 @@
+{
+  "schemaVersion": 1,
+  "comparison": "scan-match-distance-reuse",
+  "createdAt": "2026-10-14T01:07:21.407045+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/scan_match_debug.py": "8b16e278af480bb6ad1e83d68573d59311b86838872585d192571563014b15a2",
+    "cloudanalyzer/ca/metrics.py": "587c4d4d11675a8978b59213d2c178023a1d1e806cdccfc4eccd17283f3c6598",
+    "cloudanalyzer/ca/registration.py": "b14e9a6a2afa4c9924ace43b2576f8b18aa4537795e4678e100a2f07927584b7",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/visualization.py": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_scan_match_debug.py": "ab39a29e41ccf12408cd8cb7a1790fa20d55ffb6a45fb0af082e29784d66c85d",
+    "cloudanalyzer/scripts/benchmark_scan_match_distance_reuse.py": "faba0a47a2ef41ee885a78f62eb65a113f591ac183cf24cc6ddccb79e881520b"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    },
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\inputs.json",
+      "bytes": 10395,
+      "sha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\hard-intersection-prepared-v2\\geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-20261014\\baseline.py",
+      "bytes": 6124,
+      "sha256": "7ba2178e8eab69682cce8b1ef5f3a2efe32477f3314244a27c25b3b5157a9701"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6815744,
+    "sha256": "03a5f2c7ac5e4243a54ae89a30cc0fc4802ba344b6e9cc9156782275706ba9ff"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "matplotlib": "3.10.8",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12
+  },
+  "registration": {
+    "method": "icp",
+    "maxCorrespondenceDistance": 1.0,
+    "fitness": 0.9999893835336484,
+    "rmse": 0.07678829386849233,
+    "transformation": [
+      [
+        0.9999999220799861,
+        8.875824508748935e-05,
+        0.00038465829469566703,
+        3.589146368573636
+      ],
+      [
+        -8.870716969500931e-05,
+        0.999999987248105,
+        -0.00013279623295930958,
+        -0.8280962738201519
+      ],
+      [
+        -0.0003846700765503241,
+        0.00013276210066285555,
+        0.9999999172015795,
+        1.8415855398630658
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "snapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-tokyo-takanawadai-final-20261014\\registration.npz",
+      "bytes": 135640294,
+      "sha256": "d08788efcd95f6cfd55d7abba3d775174dd6ae3cf7b2e7d6274dd7218d8580f8"
+    }
+  },
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "firstUse": {
+    "fresh": {
+      "millis": 5633.3807,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 941933,
+          "scan_points_used": 941933,
+          "map_points_raw": 941933,
+          "map_points_used": 941933,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9999893835336484,
+          "inlier_rmse": 0.07678829386849233,
+          "delta_transform": [
+            [
+              0.9999999220799861,
+              8.875824508748935e-05,
+              0.00038465829469566703,
+              3.589146368573636
+            ],
+            [
+              -8.870716969500931e-05,
+              0.999999987248105,
+              -0.00013279623295930958,
+              -0.8280962738201519
+            ],
+            [
+              -0.0003846700765503241,
+              0.00013276210066285555,
+              0.9999999172015795,
+              1.8415855398630658
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999220799861,
+              8.875824508748935e-05,
+              0.00038465829469566703,
+              3.589146368573636
+            ],
+            [
+              -8.870716969500931e-05,
+              0.999999987248105,
+              -0.00013279623295930958,
+              -0.8280962738201519
+            ],
+            [
+              -0.0003846700765503241,
+              0.00013276210066285555,
+              0.9999999172015795,
+              1.8415855398630658
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.07118245769663767,
+            "median": 0.06930413047278237,
+            "max": 5.45636789677758,
+            "min": 0.0014361406598045739,
+            "std": 0.030444886668687863
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 941933,
+            "exceed_count": 71,
+            "exceed_ratio": 7.537691109664913e-05
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.07080819436545752,
+            "median": 0.0703360993674929,
+            "max": 5.470658086842102,
+            "min": 0.0010247543208182777,
+            "std": 0.03070573186884895
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 941933,
+            "exceed_count": 67,
+            "exceed_ratio": 7.113032455599283e-05
+          }
+        },
+        "improvement": {
+          "mean": 0.0003742633311801524,
+          "median": -0.0010319688947105221,
+          "max": -0.014290190064521369
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 48038849,
+          "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 48038849,
+          "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 45212990,
+          "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41"
+        },
+        {
+          "bytes": 7535464,
+          "sha256": "acffd742f824e34840c25cf2327d9562343f2c6bc535463992d6699a21c4cf7b"
+        },
+        {
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41"
+        },
+        {
+          "bytes": 7535464,
+          "sha256": "acffd742f824e34840c25cf2327d9562343f2c6bc535463992d6699a21c4cf7b"
+        }
+      ]
+    },
+    "reuse": {
+      "millis": 4801.7798,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 941933,
+          "scan_points_used": 941933,
+          "map_points_raw": 941933,
+          "map_points_used": 941933,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9999893835336484,
+          "inlier_rmse": 0.07678829386849233,
+          "delta_transform": [
+            [
+              0.9999999220799861,
+              8.875824508748935e-05,
+              0.00038465829469566703,
+              3.589146368573636
+            ],
+            [
+              -8.870716969500931e-05,
+              0.999999987248105,
+              -0.00013279623295930958,
+              -0.8280962738201519
+            ],
+            [
+              -0.0003846700765503241,
+              0.00013276210066285555,
+              0.9999999172015795,
+              1.8415855398630658
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999220799861,
+              8.875824508748935e-05,
+              0.00038465829469566703,
+              3.589146368573636
+            ],
+            [
+              -8.870716969500931e-05,
+              0.999999987248105,
+              -0.00013279623295930958,
+              -0.8280962738201519
+            ],
+            [
+              -0.0003846700765503241,
+              0.00013276210066285555,
+              0.9999999172015795,
+              1.8415855398630658
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.07118245769663767,
+            "median": 0.06930413047278237,
+            "max": 5.45636789677758,
+            "min": 0.0014361406598045739,
+            "std": 0.030444886668687863
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 941933,
+            "exceed_count": 71,
+            "exceed_ratio": 7.537691109664913e-05
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.07080819436545752,
+            "median": 0.0703360993674929,
+            "max": 5.470658086842102,
+            "min": 0.0010247543208182777,
+            "std": 0.03070573186884895
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 941933,
+            "exceed_count": 67,
+            "exceed_ratio": 7.113032455599283e-05
+          }
+        },
+        "improvement": {
+          "mean": 0.0003742633311801524,
+          "median": -0.0010319688947105221,
+          "max": -0.014290190064521369
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 48038849,
+          "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 48038849,
+          "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 45212990,
+          "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41"
+        },
+        {
+          "bytes": 7535464,
+          "sha256": "acffd742f824e34840c25cf2327d9562343f2c6bc535463992d6699a21c4cf7b"
+        }
+      ]
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5554.9498,
+        "reuse": 5329.5848
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 5045.6255,
+        "fresh": 5760.7542
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5577.1605,
+        "reuse": 5072.9824
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 7775.6804,
+        "fresh": 6842.8189
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5835.3073,
+        "reuse": 5918.091
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4777.5996,
+        "fresh": 5613.4
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5660.4273,
+        "reuse": 4675.9438
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 5033.4659,
+        "fresh": 5715.1099
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 6180.1389,
+        "reuse": 5433.0083
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 5151.4327,
+        "fresh": 5820.3135
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 6028.1747,
+        "reuse": 4716.6609
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4822.8138,
+        "fresh": 5377.7994
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4657.6654,
+        "reuse": 4763.9074
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4328.2607,
+        "fresh": 4978.0968
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4635.2237,
+        "reuse": 4470.0308
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 48038849,
+            "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 48038849,
+            "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 45212990,
+            "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 5636.91365,
+    "reuseMedianMillis": 4770.7535,
+    "pairedShorteningPercent": 12.008134963578977,
+    "pairedSavedMedianMillis": 675.2624000000001,
+    "fasterTrials": 9
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 6,
+    "plyOutputsChecked": 96,
+    "report": {
+      "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "method": "icp",
+      "max_correspondence_distance": 1.0,
+      "preprocess": {
+        "scan_points_raw": 941933,
+        "scan_points_used": 941933,
+        "map_points_raw": 941933,
+        "map_points_used": 941933,
+        "scan_voxel_size": null,
+        "map_voxel_size": null,
+        "crop_margin": null
+      },
+      "registration": {
+        "fitness": 0.9999893835336484,
+        "inlier_rmse": 0.07678829386849233,
+        "delta_transform": [
+          [
+            0.9999999220799861,
+            8.875824508748935e-05,
+            0.00038465829469566703,
+            3.589146368573636
+          ],
+          [
+            -8.870716969500931e-05,
+            0.999999987248105,
+            -0.00013279623295930958,
+            -0.8280962738201519
+          ],
+          [
+            -0.0003846700765503241,
+            0.00013276210066285555,
+            0.9999999172015795,
+            1.8415855398630658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "initial_transform": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "final_transform": [
+          [
+            0.9999999220799861,
+            8.875824508748935e-05,
+            0.00038465829469566703,
+            3.589146368573636
+          ],
+          [
+            -8.870716969500931e-05,
+            0.999999987248105,
+            -0.00013279623295930958,
+            -0.8280962738201519
+          ],
+          [
+            -0.0003846700765503241,
+            0.00013276210066285555,
+            0.9999999172015795,
+            1.8415855398630658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "distance_before": {
+        "stats": {
+          "mean": 0.07118245769663767,
+          "median": 0.06930413047278237,
+          "max": 5.45636789677758,
+          "min": 0.0014361406598045739,
+          "std": 0.030444886668687863
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 71,
+          "exceed_ratio": 7.537691109664913e-05
+        }
+      },
+      "distance_after": {
+        "stats": {
+          "mean": 0.07080819436545752,
+          "median": 0.0703360993674929,
+          "max": 5.470658086842102,
+          "min": 0.0010247543208182777,
+          "std": 0.03070573186884895
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 941933,
+          "exceed_count": 67,
+          "exceed_ratio": 7.113032455599283e-05
+        }
+      },
+      "improvement": {
+        "mean": 0.0003742633311801524,
+        "median": -0.0010319688947105221,
+        "max": -0.014290190064521369
+      },
+      "artifacts": {
+        "scan_initial_error_ply": "scan_initial_error.ply",
+        "scan_aligned_error_ply": "scan_aligned_error.ply",
+        "map_debug_ply": "map_debug.ply"
+      }
+    },
+    "artifacts": {
+      "scan_initial_error_ply": {
+        "file": "scan_initial_error.ply",
+        "bytes": 48038849,
+        "sha256": "c708a972bf293ecb078c83b34a873b5860a27e4cb15004eb50f6eb071d9f68ea"
+      },
+      "scan_aligned_error_ply": {
+        "file": "scan_aligned_error.ply",
+        "bytes": 48038849,
+        "sha256": "a99e7f6620d9658844ec09addbe75b19173ce27881bb94a4881ede0de962ebd0"
+      },
+      "map_debug_ply": {
+        "file": "map_debug.ply",
+        "bytes": 45212990,
+        "sha256": "1b5c373512c0d799af47281ce321e652b34017367c8f0ff117c6aa2898fe4815"
+      }
+    }
+  },
+  "memory": {
+    "additionalRetainedBeforeDistanceBytes": 7535464
+  },
+  "note": "Diagnostic/preprocessing/color/PLY-write interval of production run_scan_match_debug, using one actual full-source ICP result fixed across both workflows. Source loading, normal estimation and ICP solving are excluded; frozen result/normal assignment and workflow copies are included. First-use observations trace/retain distance arrays for correctness and are excluded from performance summaries. Output hashing/checks are excluded. No outliers removed. Generated artifact paths in the new work directory are overwritten between trials. This does not measure full registration/CLI speed or change the registration algorithm, NN kernel or thread dispatch."
+}

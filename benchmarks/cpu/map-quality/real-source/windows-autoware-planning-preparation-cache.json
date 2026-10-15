@@ -1,0 +1,432 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 878921,
+    "filePoints": 878921,
+    "keepEvery": 1,
+    "bounds": [
+      3567.701904296875,
+      73441.4140625,
+      -2.3429999351501465,
+      3959.455322265625,
+      73910.3828125,
+      37.89099884033203
+    ]
+  },
+  "compared": {
+    "points": 878920,
+    "filePoints": 878920,
+    "keepEvery": 1,
+    "bounds": [
+      3567.662353515625,
+      73441.3125,
+      3.188999891281128,
+      3956.874267578125,
+      73910.6796875,
+      37.35900115966797
+    ]
+  },
+  "setup": {
+    "uncachedMillis": 647.6000000238419,
+    "cachedFirstMillis": 643.5,
+    "workers": 8,
+    "reused": false,
+    "inputBytes": 103744548,
+    "distanceBitMismatches": 0,
+    "statsExact": true,
+    "inlierMetricsExact": true,
+    "maxVoxelDifference": 4.0245584642661925e-16
+  },
+  "warmups": [
+    {
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 1.6653345369377348e-16
+    },
+    {
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 2.0122792321330962e-16
+    },
+    {
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 4.163336342344337e-16
+    },
+    {
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 4.718447854656915e-16
+    },
+    {
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 6.800116025829084e-16
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "uncached",
+        "cached"
+      ],
+      "uncachedMillis": 577.7000000476837,
+      "cachedMillis": 443.0999999642372,
+      "uncachedWorkerMillis": 575.5,
+      "cachedWorkerMillis": 442.5999999642372,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.1036716375689323,
+        "scs": 0.034315528767637625,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 3.0531133177191805e-16
+    },
+    {
+      "order": [
+        "cached",
+        "uncached"
+      ],
+      "uncachedMillis": 643.8999999761581,
+      "cachedMillis": 478,
+      "uncachedWorkerMillis": 641.8999999761581,
+      "cachedWorkerMillis": 477.69999998807907,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.10367163756893213,
+        "scs": 0.03431552876763765,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 2.7755575615628914e-17
+    },
+    {
+      "order": [
+        "uncached",
+        "cached"
+      ],
+      "uncachedMillis": 583.3999999761581,
+      "cachedMillis": 342.39999997615814,
+      "uncachedWorkerMillis": 582.0999999642372,
+      "cachedWorkerMillis": 342.19999998807907,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.10367163756893194,
+        "scs": 0.03431552876763764,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 2.0816681711721685e-16
+    },
+    {
+      "order": [
+        "cached",
+        "uncached"
+      ],
+      "uncachedMillis": 536,
+      "cachedMillis": 361.89999997615814,
+      "uncachedWorkerMillis": 534.8999999761581,
+      "cachedWorkerMillis": 361.5999999642372,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.1036716375689313,
+        "scs": 0.03431552876763754,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 8.465450562766819e-16
+    },
+    {
+      "order": [
+        "uncached",
+        "cached"
+      ],
+      "uncachedMillis": 576.6999999880791,
+      "cachedMillis": 355.5,
+      "uncachedWorkerMillis": 575,
+      "cachedWorkerMillis": 355.0999999642372,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.10367163756893216,
+        "scs": 0.0343155287676377,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 4.440892098500626e-16
+    },
+    {
+      "order": [
+        "cached",
+        "uncached"
+      ],
+      "uncachedMillis": 551.8000000119209,
+      "cachedMillis": 348.5,
+      "uncachedWorkerMillis": 550.1000000238419,
+      "cachedWorkerMillis": 348.4000000357628,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.10367163756893161,
+        "scs": 0.03431552876763795,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 2.706168622523819e-16
+    },
+    {
+      "order": [
+        "uncached",
+        "cached"
+      ],
+      "uncachedMillis": 597.1000000238419,
+      "cachedMillis": 384.5,
+      "uncachedWorkerMillis": 596,
+      "cachedWorkerMillis": 384.30000001192093,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.10367163756893234,
+        "scs": 0.034315528767637965,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 5.134781488891349e-16
+    },
+    {
+      "order": [
+        "cached",
+        "uncached"
+      ],
+      "uncachedMillis": 519.1999999880791,
+      "cachedMillis": 380.60000002384186,
+      "uncachedWorkerMillis": 517.5,
+      "cachedWorkerMillis": 380,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.1036716375689327,
+        "scs": 0.034315528767637604,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 1.3877787807814457e-15
+    },
+    {
+      "order": [
+        "uncached",
+        "cached"
+      ],
+      "uncachedMillis": 546.1999999880791,
+      "cachedMillis": 370.89999997615814,
+      "uncachedWorkerMillis": 544.4000000357628,
+      "cachedWorkerMillis": 370.69999998807907,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.1036716375689324,
+        "scs": 0.03431552876763742,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 6.245004513516506e-16
+    },
+    {
+      "order": [
+        "cached",
+        "uncached"
+      ],
+      "uncachedMillis": 559.3999999761581,
+      "cachedMillis": 351.60000002384186,
+      "uncachedWorkerMillis": 557.6999999880791,
+      "cachedWorkerMillis": 351.39999997615814,
+      "workers": 8,
+      "cacheReused": true,
+      "cacheInputBytes": 103744548,
+      "quality": {
+        "threshold": 0.15,
+        "accuracy": 0.115928126989885,
+        "precision": 0.45417899239976334,
+        "completeness": 0.4545334563629723,
+        "f1": 0.45435615524800155,
+        "chamfer": 0.112812361448018,
+        "awd": 0.10367163756893175,
+        "scs": 0.03431552876763785,
+        "voxels": 38656
+      },
+      "distanceBitMismatches": 0,
+      "statsExact": true,
+      "inlierMetricsExact": true,
+      "maxVoxelDifference": 6.938893903907228e-17
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "map-quality-cpu-preparation-cache",
+  "createdAt": "2026-10-11T13:33:07.315Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "b992844d01e1bd0324723c1b9058649207453fe5e82dd553835f7a30a73dfe27",
+  "poolWorkerSha256": "73124711329934dcf01fc659df1c490cba009c17e1cd1b8515883e4d69bb798c",
+  "wasmSha256": "b49e945097dd022c7a633af57118298b0c559fbcd29999101264e26b4012b479",
+  "scriptSha256": "4bdd69e9aef35d1ad842d3e35af7dceb2d9c54d817dc70cecaf159c0cbeb895b",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-autoware/reference.ply",
+      "name": "reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-autoware/compared.ply",
+      "name": "compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "params": {
+    "threshold": 0.15,
+    "voxel": 1,
+    "minPoints": 10
+  },
+  "warmupRounds": 5,
+  "repeats": 10,
+  "note": "Full supplied point clouds with no thinning. Five warm-up pairs, then alternating sequential uncached/cached Map quality calls on the same production analysis worker and pool. Both controls use identical bidirectional partitions, scalar f64 searches, progressive joins, adaptive forward summaries, f32 inlier arithmetic and the existing voxel kernel; only immutable CPU preparation reuse differs. All distances and all voxel scores are recomputed every call. Wall times include RPC/result transfers, voxel work, exact nearest searches, joins and metrics; file loading, viewer rendering and validation are excluded. Worker millis are recorded separately. Setup is one fixed-order uncached-then-cached pair and is not a paired first-use performance claim. The prepared pair remains resident during uncached control calls; memory/allocator/locality effects are not isolated. Retained input bytes cover exact query/reference XYZ and output indices, excluding derived trees/Morton order, allocator overhead, source clouds and outputs. Voxel HashMap reductions allow only 1e-12 relative/absolute roundoff; voxel counts and inlier metrics are exact. Other applications and CPU power/clocks are uncontrolled. Supplied input provenance determines whether the pair represents independent surveys; measured-source even/odd subsets are not accuracy ground truth."
+}

@@ -1,0 +1,791 @@
+{
+  "schemaVersion": 1,
+  "comparison": "native-c2m-centroid-bounds",
+  "createdAt": "2026-10-13T13:50:07.335Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-centroid-bounds-baseline-20261013",
+      "exe": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-centroid-bounds-baseline-20261013\\bench_c2m_source.exe",
+      "exeSha256": "feec6b4f39e7de096ee74a9d2d55d387aadbe20802205cf71775e2bc8029e55e",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sourceHashes": {
+        "rust/crates/ca-core/src/distance.rs": "89a335e4309202723bbcb894d069af4c1c0f4247006f82e2127cec37bc83133f",
+        "rust/crates/ca-core/src/mesh.rs": "6a54804b75c67b39872a301c5883e972e04ba9ca4c8e0fee25a91723114a8110",
+        "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+        "rust/crates/ca-py/src/lib.rs": "8b31ac4e3f5b5e90d23c1afe924c2c356339321bc7eb07306f0ee3b6bafc2113",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85"
+      }
+    },
+    "scanned": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-centroid-bounds-measured-20261013",
+      "exe": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\native-mesh-centroid-bounds-measured-20261013\\bench_c2m_source.exe",
+      "exeSha256": "f1d00bbd78e7947351c54a553c2baee607520c6d0b9acaf33370fcee8ca6c636",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sourceHashes": {
+        "rust/crates/ca-core/src/distance.rs": "89a335e4309202723bbcb894d069af4c1c0f4247006f82e2127cec37bc83133f",
+        "rust/crates/ca-core/src/mesh.rs": "40cc00288819650a6310a71880e86849cb8d915dec21f3e79b25c44903138baf",
+        "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+        "rust/crates/ca-py/src/lib.rs": "8b31ac4e3f5b5e90d23c1afe924c2c356339321bc7eb07306f0ee3b6bafc2113",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85"
+      }
+    }
+  },
+  "scriptSha256": "e1565e3279274f6efd6fef58c417f6283d91a7933579b33e1b077b1c417d70ec",
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948",
+      "points": 878921
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc",
+      "points": 878920
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "mesh": {
+    "chunkSize": 4096,
+    "kind": "ready",
+    "maxEdge": 0.763709338115621,
+    "queryOrder": "original decoded PLY order; unchanged XYZ",
+    "queryPoints": 878920,
+    "referencePoints": 878921,
+    "removed": 67261,
+    "threads": 12,
+    "triangles": 1688821,
+    "vertices": 873771
+  },
+  "geometry": {
+    "bytes": 42925386,
+    "sha256": "121ff3ac3abf69e14b4d4cbcf184dffff82a40b92614f1eb6cb0097909d76318"
+  },
+  "oracle": {
+    "distanceBytes": 7031360,
+    "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+    "scalarPlyBytes": 24609935,
+    "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+    "count": 878920,
+    "statisticsBits": [
+      "0000000000000000",
+      "403a834a38b81646",
+      "3fad90b020d523c3",
+      "3fc4be85aedfd2cb",
+      "3fc361fd16c9f7eb",
+      "3f9a9465fcc5cac0"
+    ]
+  },
+  "firstUse": {
+    "baseline": {
+      "elapsedMillis": 594.2581,
+      "distanceBytes": 7031360,
+      "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+      "scalarPlyBytes": 24609935,
+      "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+      "count": 878920,
+      "statisticsBits": [
+        "0000000000000000",
+        "403a834a38b81646",
+        "3fad90b020d523c3",
+        "3fc4be85aedfd2cb",
+        "3fc361fd16c9f7eb",
+        "3f9a9465fcc5cac0"
+      ],
+      "resultParity": true
+    },
+    "scanned": {
+      "elapsedMillis": 562.5283,
+      "distanceBytes": 7031360,
+      "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+      "scalarPlyBytes": 24609935,
+      "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+      "count": 878920,
+      "statisticsBits": [
+        "0000000000000000",
+        "403a834a38b81646",
+        "3fad90b020d523c3",
+        "3fc4be85aedfd2cb",
+        "3fc361fd16c9f7eb",
+        "3f9a9465fcc5cac0"
+      ],
+      "resultParity": true
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 599.0259,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 591.1278,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 601.8228,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 612.7601000000001,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 604.1155,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 663.2936000000001,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 631.1641,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 603.3693999999999,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 597.5292,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 613.6712,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 647.3858,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 659.9644,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 591.0092999999999,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 622.0932,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 618.3693000000001,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 640.2117000000001,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 647.0316,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 603.3515,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 587.8107,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 611.0531,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 639.4400999999999,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 614.3568,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 617.658,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 635.6912,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 628.8394000000001,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 601.6554,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "scanned",
+        "baseline"
+      ],
+      "scanned": {
+        "elapsedMillis": 622.1756,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "baseline": {
+        "elapsedMillis": 652.2306,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    },
+    {
+      "order": [
+        "baseline",
+        "scanned"
+      ],
+      "baseline": {
+        "elapsedMillis": 759.8556,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      },
+      "scanned": {
+        "elapsedMillis": 673.8029,
+        "distanceBytes": 7031360,
+        "distanceSha256": "414132a6132e4ad36a7a713fd5f801009e5e8ef3fd3d5b693b303830402f9b06",
+        "scalarPlyBytes": 24609935,
+        "scalarPlySha256": "dd0918ff7907828c8c51cc283899e506ae1844408eb74f00bafcd5590b5b0efe",
+        "count": 878920,
+        "statisticsBits": [
+          "0000000000000000",
+          "403a834a38b81646",
+          "3fad90b020d523c3",
+          "3fc4be85aedfd2cb",
+          "3fc361fd16c9f7eb",
+          "3f9a9465fcc5cac0"
+        ],
+        "resultParity": true
+      }
+    }
+  ],
+  "summary": {
+    "baselineMedianMillis": 639.8259,
+    "scannedMedianMillis": 618.0136500000001,
+    "medianPairedReductionPercent": 3.863180130902777,
+    "fasterTrials": 9,
+    "trials": 10
+  },
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured-source XYZ, not independent surveys or accuracy ground truth. Native PLY order is preserved and differs from browser LOD indexing. Full-input production Delaunay TIN uses automatic edge rejection without extra thinning or transformed/generated coordinates. Independent archived native baseline supplies complete f64 distance bits, six f64 statistics bits and scalar PLY oracle, then exits before timing. Separate baseline/candidate contexts use identical TIN, original 4096-point Morton query chunks and fixed Rayon thread count. Whole native cloud_to_mesh_par includes fresh BVH construction, original serial Morton preparation/sorting, parallel queries, compact result allocation and serial scatter, BVH destruction and pool installation. Both builds keep adopted compact results, stack reuse, cached traversal bounds, indexed mesh preparation, bottom-up bounds and parallel construction enabled, with rejected duplicate-seed skipping, Morton, parallel restoration, push-time pruning and triangle-seed experiments disabled. Candidate computes centroid extrema in 16384-item parallel chunks only at native parallel-builder nodes with at least 262144 items. Chunk extrema and finite/nonzero guards are reduced on the same Rayon pool without a new heap vector. If any centroid component is zero or nonfinite, the complete original serial scan is repeated to preserve target-dependent zero/NaN tie bits. Eligible finite nonzero extrema have order-independent identical bits. Original centroid arithmetic, extent calculations, split-axis tie policy, serial unstable midpoint partition, triangle order, preorder node IDs, child-subtree scheduling, corner order, node/corner/order capacities and downstream query chunks/hits/signs remain unchanged. Smaller nodes and sequential/WASM builders retain the original scan. The native prepared-mesh builder shares the candidate, but only fresh native C2M API calls are timed. All parallel scan, guard, reduction and possible fallback costs are included in whole timing. No unsafe access, new persistent cache, precision conversion or floating-point summation regrouping is introduced. Loading, meshing, pool construction, first use, five alternating warmups, f64/statistics/PLY serialization and verification and cleanup are excluded. Ten alternating timed pairs are retained without outlier removal. No builds/tests/scans/edits run alongside timing. Archived sources, executables, compiler, script, inputs/manifests/original PCD are checked before/after. Clocks, power, scheduling, other applications, allocator, code layout and retained pages are uncontrolled. No isolated centroid scan, retained-mesh query, Python conversion, C2C, browser, WASM or GPU speedup claim. No GPU model identifiers collected."
+}

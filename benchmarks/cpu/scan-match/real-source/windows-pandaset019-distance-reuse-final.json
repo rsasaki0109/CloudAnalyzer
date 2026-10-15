@@ -1,0 +1,1342 @@
+{
+  "schemaVersion": 1,
+  "comparison": "scan-match-distance-reuse",
+  "createdAt": "2026-10-14T01:12:30.271433+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/scan_match_debug.py": "8b16e278af480bb6ad1e83d68573d59311b86838872585d192571563014b15a2",
+    "cloudanalyzer/ca/metrics.py": "587c4d4d11675a8978b59213d2c178023a1d1e806cdccfc4eccd17283f3c6598",
+    "cloudanalyzer/ca/registration.py": "b14e9a6a2afa4c9924ace43b2576f8b18aa4537795e4678e100a2f07927584b7",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/visualization.py": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_scan_match_debug.py": "ab39a29e41ccf12408cd8cb7a1790fa20d55ffb6a45fb0af082e29784d66c85d",
+    "cloudanalyzer/scripts/benchmark_scan_match_distance_reuse.py": "faba0a47a2ef41ee885a78f62eb65a113f591ac183cf24cc6ddccb79e881520b"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    },
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\inputs.json",
+      "bytes": 1578,
+      "sha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\pandaset-vector-map\\map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-20261014\\baseline.py",
+      "bytes": 6124,
+      "sha256": "7ba2178e8eab69682cce8b1ef5f3a2efe32477f3314244a27c25b3b5157a9701"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6815744,
+    "sha256": "03a5f2c7ac5e4243a54ae89a30cc0fc4802ba344b6e9cc9156782275706ba9ff"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "matplotlib": "3.10.8",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12
+  },
+  "registration": {
+    "method": "icp",
+    "maxCorrespondenceDistance": 1.0,
+    "fitness": 0.9961121096129406,
+    "rmse": 0.1479994070322054,
+    "transformation": [
+      [
+        0.9999999971825353,
+        -1.887286308715729e-05,
+        -7.265500474439487e-05,
+        -0.001283682514419214
+      ],
+      [
+        1.8864798279811216e-05,
+        0.9999999936615094,
+        -0.00011100048306184766,
+        0.013554289417342737
+      ],
+      [
+        7.265709918074803e-05,
+        0.00011099911212703652,
+        0.9999999912000737,
+        -0.002909789043073442
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "snapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-pandaset019-final-20261014\\registration.npz",
+      "bytes": 76596694,
+      "sha256": "9d2641f17bc7c30ac0c6f07b833d01cacb669d6eb04961404f48e87a1223c1e3"
+    }
+  },
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "firstUse": {
+    "fresh": {
+      "millis": 2833.8087,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 531908,
+          "scan_points_used": 531908,
+          "map_points_raw": 531908,
+          "map_points_used": 531908,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9961121096129406,
+          "inlier_rmse": 0.1479994070322054,
+          "delta_transform": [
+            [
+              0.9999999971825353,
+              -1.887286308715729e-05,
+              -7.265500474439487e-05,
+              -0.001283682514419214
+            ],
+            [
+              1.8864798279811216e-05,
+              0.9999999936615094,
+              -0.00011100048306184766,
+              0.013554289417342737
+            ],
+            [
+              7.265709918074803e-05,
+              0.00011099911212703652,
+              0.9999999912000737,
+              -0.002909789043073442
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999971825353,
+              -1.887286308715729e-05,
+              -7.265500474439487e-05,
+              -0.001283682514419214
+            ],
+            [
+              1.8864798279811216e-05,
+              0.9999999936615094,
+              -0.00011100048306184766,
+              0.013554289417342737
+            ],
+            [
+              7.265709918074803e-05,
+              0.00011099911212703652,
+              0.9999999912000737,
+              -0.002909789043073442
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.1118241809576015,
+            "median": 0.07441380916607088,
+            "max": 22.144665686339504,
+            "min": 0.0010013426013248791,
+            "std": 0.17662909457415557
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9444,
+            "exceed_ratio": 0.01775495010415335
+          }
+        },
+        "improvement": {
+          "mean": 0.000382652038082007,
+          "median": 0.00031434048728858077,
+          "max": -0.011211126474886868
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 27127574,
+          "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 27127574,
+          "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 25531790,
+          "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        {
+          "bytes": 4255264,
+          "sha256": "7dc678fc79e7cfc04625f10a8bdbd104f15f01849202f6b273c41226bbc480d3"
+        },
+        {
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        {
+          "bytes": 4255264,
+          "sha256": "7dc678fc79e7cfc04625f10a8bdbd104f15f01849202f6b273c41226bbc480d3"
+        }
+      ]
+    },
+    "reuse": {
+      "millis": 2562.022,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 531908,
+          "scan_points_used": 531908,
+          "map_points_raw": 531908,
+          "map_points_used": 531908,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.9961121096129406,
+          "inlier_rmse": 0.1479994070322054,
+          "delta_transform": [
+            [
+              0.9999999971825353,
+              -1.887286308715729e-05,
+              -7.265500474439487e-05,
+              -0.001283682514419214
+            ],
+            [
+              1.8864798279811216e-05,
+              0.9999999936615094,
+              -0.00011100048306184766,
+              0.013554289417342737
+            ],
+            [
+              7.265709918074803e-05,
+              0.00011099911212703652,
+              0.9999999912000737,
+              -0.002909789043073442
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999971825353,
+              -1.887286308715729e-05,
+              -7.265500474439487e-05,
+              -0.001283682514419214
+            ],
+            [
+              1.8864798279811216e-05,
+              0.9999999936615094,
+              -0.00011100048306184766,
+              0.013554289417342737
+            ],
+            [
+              7.265709918074803e-05,
+              0.00011099911212703652,
+              0.9999999912000737,
+              -0.002909789043073442
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.1118241809576015,
+            "median": 0.07441380916607088,
+            "max": 22.144665686339504,
+            "min": 0.0010013426013248791,
+            "std": 0.17662909457415557
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9444,
+            "exceed_ratio": 0.01775495010415335
+          }
+        },
+        "improvement": {
+          "mean": 0.000382652038082007,
+          "median": 0.00031434048728858077,
+          "max": -0.011211126474886868
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 27127574,
+          "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 27127574,
+          "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 25531790,
+          "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        {
+          "bytes": 4255264,
+          "sha256": "7dc678fc79e7cfc04625f10a8bdbd104f15f01849202f6b273c41226bbc480d3"
+        }
+      ]
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2765.3164,
+        "reuse": 2460.8792
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2454.1005,
+        "fresh": 3089.5094
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2815.6322,
+        "reuse": 2382.7536
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2381.0448,
+        "fresh": 2807.9752
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2736.0587,
+        "reuse": 2745.8225
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2419.5472,
+        "fresh": 2883.2856
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2809.7901,
+        "reuse": 2411.9799
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2367.9437,
+        "fresh": 2686.8153
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 3348.8494,
+        "reuse": 2428.545
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2567.0065,
+        "fresh": 2779.1365
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5002.4258,
+        "reuse": 5104.5997
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 3511.8576,
+        "fresh": 3706.2933
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 3622.8536,
+        "reuse": 3421.3039
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 3219.0762,
+        "fresh": 3452.3125
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2992.412,
+        "reuse": 2460.2607
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 27127574,
+            "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 27127574,
+            "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 25531790,
+            "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 3170.6306999999997,
+    "reuseMedianMillis": 2513.6336,
+    "pairedShorteningPercent": 9.750479913322602,
+    "pairedSavedMedianMillis": 276.0539500000002,
+    "fasterTrials": 9
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 6,
+    "plyOutputsChecked": 96,
+    "report": {
+      "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "method": "icp",
+      "max_correspondence_distance": 1.0,
+      "preprocess": {
+        "scan_points_raw": 531908,
+        "scan_points_used": 531908,
+        "map_points_raw": 531908,
+        "map_points_used": 531908,
+        "scan_voxel_size": null,
+        "map_voxel_size": null,
+        "crop_margin": null
+      },
+      "registration": {
+        "fitness": 0.9961121096129406,
+        "inlier_rmse": 0.1479994070322054,
+        "delta_transform": [
+          [
+            0.9999999971825353,
+            -1.887286308715729e-05,
+            -7.265500474439487e-05,
+            -0.001283682514419214
+          ],
+          [
+            1.8864798279811216e-05,
+            0.9999999936615094,
+            -0.00011100048306184766,
+            0.013554289417342737
+          ],
+          [
+            7.265709918074803e-05,
+            0.00011099911212703652,
+            0.9999999912000737,
+            -0.002909789043073442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "initial_transform": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "final_transform": [
+          [
+            0.9999999971825353,
+            -1.887286308715729e-05,
+            -7.265500474439487e-05,
+            -0.001283682514419214
+          ],
+          [
+            1.8864798279811216e-05,
+            0.9999999936615094,
+            -0.00011100048306184766,
+            0.013554289417342737
+          ],
+          [
+            7.265709918074803e-05,
+            0.00011099911212703652,
+            0.9999999912000737,
+            -0.002909789043073442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "distance_before": {
+        "stats": {
+          "mean": 0.1122068329956835,
+          "median": 0.07472814965335946,
+          "max": 22.133454559864617,
+          "min": 0.0011159376115308776,
+          "std": 0.17648872952004035
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 531908,
+          "exceed_count": 9427,
+          "exceed_ratio": 0.017722989689946383
+        }
+      },
+      "distance_after": {
+        "stats": {
+          "mean": 0.1118241809576015,
+          "median": 0.07441380916607088,
+          "max": 22.144665686339504,
+          "min": 0.0010013426013248791,
+          "std": 0.17662909457415557
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 531908,
+          "exceed_count": 9444,
+          "exceed_ratio": 0.01775495010415335
+        }
+      },
+      "improvement": {
+        "mean": 0.000382652038082007,
+        "median": 0.00031434048728858077,
+        "max": -0.011211126474886868
+      },
+      "artifacts": {
+        "scan_initial_error_ply": "scan_initial_error.ply",
+        "scan_aligned_error_ply": "scan_aligned_error.ply",
+        "map_debug_ply": "map_debug.ply"
+      }
+    },
+    "artifacts": {
+      "scan_initial_error_ply": {
+        "file": "scan_initial_error.ply",
+        "bytes": 27127574,
+        "sha256": "cce92dd1871ff5d97b2d0161f60c6d4f601019ab1689147037c091a534b8b404"
+      },
+      "scan_aligned_error_ply": {
+        "file": "scan_aligned_error.ply",
+        "bytes": 27127574,
+        "sha256": "0f580149f5682321ebd783e75dfe9a1f5c82100ba6ac6704e0345b26f5e862de"
+      },
+      "map_debug_ply": {
+        "file": "map_debug.ply",
+        "bytes": 25531790,
+        "sha256": "ea981206222827d1b68108e2c0fceddfc771a0b9c75887b0916df05beb75fd03"
+      }
+    }
+  },
+  "memory": {
+    "additionalRetainedBeforeDistanceBytes": 4255264
+  },
+  "note": "Diagnostic/preprocessing/color/PLY-write interval of production run_scan_match_debug, using one actual full-source ICP result fixed across both workflows. Source loading, normal estimation and ICP solving are excluded; frozen result/normal assignment and workflow copies are included. First-use observations trace/retain distance arrays for correctness and are excluded from performance summaries. Output hashing/checks are excluded. No outliers removed. Generated artifact paths in the new work directory are overwritten between trials. This does not measure full registration/CLI speed or change the registration algorithm, NN kernel or thread dispatch."
+}

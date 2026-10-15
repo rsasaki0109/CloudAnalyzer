@@ -1,0 +1,186 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "cases": [
+    {
+      "pointsPerCloud": 1000000,
+      "coldPreviousMillis": 2105.699999988079,
+      "coldCombinedMillis": 1711.199999988079,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 3.885780586188048e-16
+      },
+      "trials": [
+        {
+          "order": "previous-first",
+          "previousMillis": 2033.3999999761581,
+          "combinedMillis": 1972.4000000357628,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.220446049250313e-16
+        },
+        {
+          "order": "combined-first",
+          "previousMillis": 1897.3999999761581,
+          "combinedMillis": 1906.199999988079,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 7.771561172376096e-16
+        },
+        {
+          "order": "previous-first",
+          "previousMillis": 1851.2999999523163,
+          "combinedMillis": 1564,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.0547118733938987e-15
+        },
+        {
+          "order": "combined-first",
+          "previousMillis": 1785.800000011921,
+          "combinedMillis": 1489.9000000357628,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 5.551115123125783e-16
+        },
+        {
+          "order": "previous-first",
+          "previousMillis": 1590,
+          "combinedMillis": 1326.6000000238419,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.1102230246251565e-16
+        },
+        {
+          "order": "combined-first",
+          "previousMillis": 1667.5999999642372,
+          "combinedMillis": 1336.300000011921,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 3.885780586188048e-16
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 2000000,
+      "coldPreviousMillis": 3215.699999988079,
+      "coldCombinedMillis": 2792,
+      "coldParity": {
+        "distanceBitMismatches": 0,
+        "statsExact": true,
+        "inlierMetricsExact": true,
+        "maxVoxelDifference": 7.771561172376096e-16
+      },
+      "trials": [
+        {
+          "order": "previous-first",
+          "previousMillis": 3248.199999988079,
+          "combinedMillis": 2923.199999988079,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 9.71445146547012e-16
+        },
+        {
+          "order": "combined-first",
+          "previousMillis": 6083.400000035763,
+          "combinedMillis": 4064.099999964237,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 1.942890293094024e-16
+        },
+        {
+          "order": "previous-first",
+          "previousMillis": 6400.699999988079,
+          "combinedMillis": 5617.699999988079,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 6.938893903907228e-16
+        },
+        {
+          "order": "combined-first",
+          "previousMillis": 6324.799999952316,
+          "combinedMillis": 5388.700000047684,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 2.7755575615628914e-16
+        },
+        {
+          "order": "previous-first",
+          "previousMillis": 7571.5,
+          "combinedMillis": 5462.099999964237,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 6.38378239159465e-16
+        },
+        {
+          "order": "combined-first",
+          "previousMillis": 7268,
+          "combinedMillis": 5600.099999964237,
+          "previousWorkersPerDirection": 8,
+          "combinedPoolWorkers": 8,
+          "distanceBitMismatches": 0,
+          "statsExact": true,
+          "inlierMetricsExact": true,
+          "maxVoxelDifference": 7.494005416219807e-16
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T01:08:23.512Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "7dd084d189b0f22e2bcbc37af476c7989e004d2a5c810baa4307ae9386c25d61",
+  "poolWorkerSha256": "3f8e9bc7ef82f568e0357ddf4592775bece3a4367e5aadb9b9c8c1f8225174f8",
+  "wasmSha256": "ded1a69cee0f4106bcb614b711bedfe0868f3226f105213b8c8a56d63a1b468d",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "params": {
+    "threshold": 0.15,
+    "voxel": 1,
+    "minPoints": 10
+  },
+  "fixture": "UTM wavy grid, 0.1m spacing; half shifted 0.07m, half shifted 1.1m",
+  "note": "Synthetic data. Previous and combined CPU workflows run sequentially, alternating order, both warmed before trials. Previous workflow retains its existing per-direction worker splitting. Wall timings include all worker RPCs, snapshots/copies, tree builds, both exact C2C searches, voxel scores, summaries and inlier metrics. File load and viewer rendering are excluded. Distances are bit-exact and statistics/inlier metrics exact every trial; existing voxel HashMap reductions allow 1e-12 relative/absolute roundoff. Combined workers count pool lanes; the main WASM worker computes voxel scores concurrently. Other applications and CPU power/clocks are uncontrolled."
+}

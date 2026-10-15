@@ -1,0 +1,1342 @@
+{
+  "schemaVersion": 1,
+  "comparison": "scan-match-distance-reuse",
+  "createdAt": "2026-10-14T01:10:31.012737+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/scan_match_debug.py": "8b16e278af480bb6ad1e83d68573d59311b86838872585d192571563014b15a2",
+    "cloudanalyzer/ca/metrics.py": "587c4d4d11675a8978b59213d2c178023a1d1e806cdccfc4eccd17283f3c6598",
+    "cloudanalyzer/ca/registration.py": "b14e9a6a2afa4c9924ace43b2576f8b18aa4537795e4678e100a2f07927584b7",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/visualization.py": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_scan_match_debug.py": "ab39a29e41ccf12408cd8cb7a1790fa20d55ffb6a45fb0af082e29784d66c85d",
+    "cloudanalyzer/scripts/benchmark_scan_match_distance_reuse.py": "faba0a47a2ef41ee885a78f62eb65a113f591ac183cf24cc6ddccb79e881520b"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+      "bytes": 1583,
+      "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-20261014\\baseline.py",
+      "bytes": 6124,
+      "sha256": "7ba2178e8eab69682cce8b1ef5f3a2efe32477f3314244a27c25b3b5157a9701"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6815744,
+    "sha256": "03a5f2c7ac5e4243a54ae89a30cc0fc4802ba344b6e9cc9156782275706ba9ff"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "matplotlib": "3.10.8",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12
+  },
+  "registration": {
+    "method": "icp",
+    "maxCorrespondenceDistance": 1.0,
+    "fitness": 0.99926614481409,
+    "rmse": 0.15061526760087193,
+    "transformation": [
+      [
+        0.9999999967589387,
+        6.43966520301333e-05,
+        -4.8323914057168725e-05,
+        -4.611516280656574
+      ],
+      [
+        -6.439527446272559e-05,
+        0.9999999975202735,
+        2.8507976706577276e-05,
+        0.24403218150683825
+      ],
+      [
+        4.8325749755622146e-05,
+        -2.850486478248116e-05,
+        0.9999999984260484,
+        1.9201375689532314
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "snapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-autoware-planning-final-20261014\\registration.npz",
+      "bytes": 126566470,
+      "sha256": "bd9327e3ef6522f57e3816b0e4fbb053d476519494a2f4419472e9ab75836922"
+    }
+  },
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "firstUse": {
+    "fresh": {
+      "millis": 4386.5094,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 878920,
+          "scan_points_used": 878920,
+          "map_points_raw": 878921,
+          "map_points_used": 878921,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.99926614481409,
+          "inlier_rmse": 0.15061526760087193,
+          "delta_transform": [
+            [
+              0.9999999967589387,
+              6.43966520301333e-05,
+              -4.8323914057168725e-05,
+              -4.611516280656574
+            ],
+            [
+              -6.439527446272559e-05,
+              0.9999999975202735,
+              2.8507976706577276e-05,
+              0.24403218150683825
+            ],
+            [
+              4.8325749755622146e-05,
+              -2.850486478248116e-05,
+              0.9999999984260484,
+              1.9201375689532314
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999967589387,
+              6.43966520301333e-05,
+              -4.8323914057168725e-05,
+              -4.611516280656574
+            ],
+            [
+              -6.439527446272559e-05,
+              0.9999999975202735,
+              2.8507976706577276e-05,
+              0.24403218150683825
+            ],
+            [
+              4.8325749755622146e-05,
+              -2.850486478248116e-05,
+              0.9999999984260484,
+              1.9201375689532314
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.16055352118034574,
+            "median": 0.15680755885770015,
+            "max": 17.569516561587182,
+            "min": 0.0011123489776313801,
+            "std": 0.08727263740870753
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 878920,
+            "exceed_count": 4327,
+            "exceed_ratio": 0.004923087425476721
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.12719962669421478,
+            "median": 0.09969163652133253,
+            "max": 17.699186764338915,
+            "min": 0.0008876544601559321,
+            "std": 0.10243487538901207
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 878920,
+            "exceed_count": 4634,
+            "exceed_ratio": 0.005272379738770309
+          }
+        },
+        "improvement": {
+          "mean": 0.033353894486130964,
+          "median": 0.057115922336367614,
+          "max": -0.1296702027517327
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 44825186,
+          "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 44825186,
+          "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 42188414,
+          "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e"
+        },
+        {
+          "bytes": 7031360,
+          "sha256": "c4c520ab1c3c089d34b53b68287774fe56e51c9406eb3fb1b87c6c568bea4e21"
+        },
+        {
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e"
+        },
+        {
+          "bytes": 7031360,
+          "sha256": "c4c520ab1c3c089d34b53b68287774fe56e51c9406eb3fb1b87c6c568bea4e21"
+        }
+      ]
+    },
+    "reuse": {
+      "millis": 4215.5327,
+      "report": {
+        "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+        "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+        "method": "icp",
+        "max_correspondence_distance": 1.0,
+        "preprocess": {
+          "scan_points_raw": 878920,
+          "scan_points_used": 878920,
+          "map_points_raw": 878921,
+          "map_points_used": 878921,
+          "scan_voxel_size": null,
+          "map_voxel_size": null,
+          "crop_margin": null
+        },
+        "registration": {
+          "fitness": 0.99926614481409,
+          "inlier_rmse": 0.15061526760087193,
+          "delta_transform": [
+            [
+              0.9999999967589387,
+              6.43966520301333e-05,
+              -4.8323914057168725e-05,
+              -4.611516280656574
+            ],
+            [
+              -6.439527446272559e-05,
+              0.9999999975202735,
+              2.8507976706577276e-05,
+              0.24403218150683825
+            ],
+            [
+              4.8325749755622146e-05,
+              -2.850486478248116e-05,
+              0.9999999984260484,
+              1.9201375689532314
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "initial_transform": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "final_transform": [
+            [
+              0.9999999967589387,
+              6.43966520301333e-05,
+              -4.8323914057168725e-05,
+              -4.611516280656574
+            ],
+            [
+              -6.439527446272559e-05,
+              0.9999999975202735,
+              2.8507976706577276e-05,
+              0.24403218150683825
+            ],
+            [
+              4.8325749755622146e-05,
+              -2.850486478248116e-05,
+              0.9999999984260484,
+              1.9201375689532314
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "distance_before": {
+          "stats": {
+            "mean": 0.16055352118034574,
+            "median": 0.15680755885770015,
+            "max": 17.569516561587182,
+            "min": 0.0011123489776313801,
+            "std": 0.08727263740870753
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 878920,
+            "exceed_count": 4327,
+            "exceed_ratio": 0.004923087425476721
+          }
+        },
+        "distance_after": {
+          "stats": {
+            "mean": 0.12719962669421478,
+            "median": 0.09969163652133253,
+            "max": 17.699186764338915,
+            "min": 0.0008876544601559321,
+            "std": 0.10243487538901207
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 878920,
+            "exceed_count": 4634,
+            "exceed_ratio": 0.005272379738770309
+          }
+        },
+        "improvement": {
+          "mean": 0.033353894486130964,
+          "median": 0.057115922336367614,
+          "max": -0.1296702027517327
+        },
+        "artifacts": {
+          "scan_initial_error_ply": "scan_initial_error.ply",
+          "scan_aligned_error_ply": "scan_aligned_error.ply",
+          "map_debug_ply": "map_debug.ply"
+        }
+      },
+      "artifacts": {
+        "scan_initial_error_ply": {
+          "file": "scan_initial_error.ply",
+          "bytes": 44825186,
+          "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+        },
+        "scan_aligned_error_ply": {
+          "file": "scan_aligned_error.ply",
+          "bytes": 44825186,
+          "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+        },
+        "map_debug_ply": {
+          "file": "map_debug.ply",
+          "bytes": 42188414,
+          "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+        }
+      },
+      "capturedDistances": [
+        {
+          "bytes": 7031360,
+          "sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e"
+        },
+        {
+          "bytes": 7031360,
+          "sha256": "c4c520ab1c3c089d34b53b68287774fe56e51c9406eb3fb1b87c6c568bea4e21"
+        }
+      ]
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4920.6497,
+        "reuse": 4291.7741
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4447.5498,
+        "fresh": 4680.908
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 6491.6296,
+        "reuse": 5326.5579
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 6738.8494,
+        "fresh": 5369.9995
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5260.8028,
+        "reuse": 4342.2459
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 3765.9063,
+        "fresh": 4648.0361
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4856.7406,
+        "reuse": 4087.2566
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 3763.8297,
+        "fresh": 4141.4071
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4604.6996,
+        "reuse": 4023.487
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4234.6022,
+        "fresh": 4924.5689
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4665.1207,
+        "reuse": 5109.9906
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4910.5492,
+        "fresh": 5183.3946
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 5317.7017,
+        "reuse": 3834.5535
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 4491.0233,
+        "fresh": 4272.3037
+      },
+      "artifactHashes": {
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 4440.0928,
+        "reuse": 4077.0683
+      },
+      "artifactHashes": {
+        "fresh": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        },
+        "reuse": {
+          "scan_initial_error_ply": {
+            "file": "scan_initial_error.ply",
+            "bytes": 44825186,
+            "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+          },
+          "scan_aligned_error_ply": {
+            "file": "scan_aligned_error.ply",
+            "bytes": 44825186,
+            "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+          },
+          "map_debug_ply": {
+            "file": "map_debug.ply",
+            "bytes": 42188414,
+            "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 4656.5784,
+    "reuseMedianMillis": 4082.16245,
+    "pairedShorteningPercent": 10.869644697029667,
+    "pairedSavedMedianMillis": 479.3950000000002,
+    "fasterTrials": 8
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 6,
+    "plyOutputsChecked": 96,
+    "report": {
+      "scan": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "map": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\reference.ply",
+      "method": "icp",
+      "max_correspondence_distance": 1.0,
+      "preprocess": {
+        "scan_points_raw": 878920,
+        "scan_points_used": 878920,
+        "map_points_raw": 878921,
+        "map_points_used": 878921,
+        "scan_voxel_size": null,
+        "map_voxel_size": null,
+        "crop_margin": null
+      },
+      "registration": {
+        "fitness": 0.99926614481409,
+        "inlier_rmse": 0.15061526760087193,
+        "delta_transform": [
+          [
+            0.9999999967589387,
+            6.43966520301333e-05,
+            -4.8323914057168725e-05,
+            -4.611516280656574
+          ],
+          [
+            -6.439527446272559e-05,
+            0.9999999975202735,
+            2.8507976706577276e-05,
+            0.24403218150683825
+          ],
+          [
+            4.8325749755622146e-05,
+            -2.850486478248116e-05,
+            0.9999999984260484,
+            1.9201375689532314
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "initial_transform": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "final_transform": [
+          [
+            0.9999999967589387,
+            6.43966520301333e-05,
+            -4.8323914057168725e-05,
+            -4.611516280656574
+          ],
+          [
+            -6.439527446272559e-05,
+            0.9999999975202735,
+            2.8507976706577276e-05,
+            0.24403218150683825
+          ],
+          [
+            4.8325749755622146e-05,
+            -2.850486478248116e-05,
+            0.9999999984260484,
+            1.9201375689532314
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "distance_before": {
+        "stats": {
+          "mean": 0.16055352118034574,
+          "median": 0.15680755885770015,
+          "max": 17.569516561587182,
+          "min": 0.0011123489776313801,
+          "std": 0.08727263740870753
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4327,
+          "exceed_ratio": 0.004923087425476721
+        }
+      },
+      "distance_after": {
+        "stats": {
+          "mean": 0.12719962669421478,
+          "median": 0.09969163652133253,
+          "max": 17.699186764338915,
+          "min": 0.0008876544601559321,
+          "std": 0.10243487538901207
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 878920,
+          "exceed_count": 4634,
+          "exceed_ratio": 0.005272379738770309
+        }
+      },
+      "improvement": {
+        "mean": 0.033353894486130964,
+        "median": 0.057115922336367614,
+        "max": -0.1296702027517327
+      },
+      "artifacts": {
+        "scan_initial_error_ply": "scan_initial_error.ply",
+        "scan_aligned_error_ply": "scan_aligned_error.ply",
+        "map_debug_ply": "map_debug.ply"
+      }
+    },
+    "artifacts": {
+      "scan_initial_error_ply": {
+        "file": "scan_initial_error.ply",
+        "bytes": 44825186,
+        "sha256": "609b2cfa14a7248365ca635207bd948a289d788dddc98415f1db841628b47342"
+      },
+      "scan_aligned_error_ply": {
+        "file": "scan_aligned_error.ply",
+        "bytes": 44825186,
+        "sha256": "18a0bcc4483d44d3d1eab6adf768455c8730d9545ef2c5a12424f93d78e0d4b8"
+      },
+      "map_debug_ply": {
+        "file": "map_debug.ply",
+        "bytes": 42188414,
+        "sha256": "c79ad0bbac97ba1ba8be8097190d1c1303f050d4a98675eae40a7e6ed07c6dce"
+      }
+    }
+  },
+  "memory": {
+    "additionalRetainedBeforeDistanceBytes": 7031360
+  },
+  "note": "Diagnostic/preprocessing/color/PLY-write interval of production run_scan_match_debug, using one actual full-source ICP result fixed across both workflows. Source loading, normal estimation and ICP solving are excluded; frozen result/normal assignment and workflow copies are included. First-use observations trace/retain distance arrays for correctness and are excluded from performance summaries. Output hashing/checks are excluded. No outliers removed. Generated artifact paths in the new work directory are overwritten between trials. This does not measure full registration/CLI speed or change the registration algorithm, NN kernel or thread dispatch."
+}

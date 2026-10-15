@@ -1,0 +1,893 @@
+{
+  "schemaVersion": 1,
+  "comparison": "map-stream-accumulators",
+  "createdAt": "2026-10-14T14:24:20.593922+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/core/map_evaluate.py": "17b5380498569d39a88be03a99a9092c57dca195238787d2d03948e06151e347",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_map_nn_parallel.py": "b721c2fe415531c4afdf95d7580a4a107c0c302a6e6fcc1f2f502450a0fc840c",
+    "cloudanalyzer/tests/test_map_scs_index.py": "1eaddd4fbc23857b47f386ce18a41b0d683a80791bed427f6722c0360fde6d70",
+    "cloudanalyzer/tests/test_map_covariance.py": "92cdf3c06b1f391722ee27d8ec23878072183845f85a5318311f01d9a98e4f9b",
+    "cloudanalyzer/tests/test_map_grouping.py": "a48e29bffe47a7291226756e3911e95a8f7565ffd9d56d2686196c46f24a254c",
+    "cloudanalyzer/tests/test_map_stream_groups.py": "e6106010547efa80c6f8326e182d4efea722bba447e368f1cc22cfc285a5d847",
+    "cloudanalyzer/tests/test_map_downsample_centroids.py": "8e534616a8035055c71f70d23c200a58cd97327be7114ab06806d3f096751fc6",
+    "cloudanalyzer/tests/test_map_downsample_small_groups.py": "167c0357022856323fd4b74ce52f325c59ee7407ee429191a13a8904f8b1a5b5",
+    "cloudanalyzer/tests/test_map_mean_sums.py": "1cdb24008486a89b53755aa1ec25359166860de43c245c008bc198ab24e7854b",
+    "cloudanalyzer/tests/test_map_wasserstein_batch.py": "8261af3d1fe1cf261c50bc45005de64c922d07023f6b1add33eef9878150f1d3",
+    "cloudanalyzer/tests/test_map_scs_batch.py": "5b9aa5532ae13c898ff2699e694f658975b3f0d443c851c42ab3a61246774933",
+    "cloudanalyzer/tests/test_map_nn_midpoint.py": "4e99fb4a276192728b923395ec26e7c98f9b667e73229a4e53aa26dee1b2171e",
+    "cloudanalyzer/tests/test_map_scs_query_batch.py": "bffc672bca9188bc53b015983b46a62ce0ad53f418cbc4dc73abd52275b32bae",
+    "cloudanalyzer/tests/test_map_stream_accumulators.py": "c62a462f1d1e280df4ff4a19829ab36db610d167626d5f62d854671160d97848",
+    "cloudanalyzer/scripts/benchmark_map_stream_accumulators.py": "e1128f2f6665dbd9b5eb7249303b8f65ef18546d99fd9f25181cda6ce6e5df4b"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\inputs.json",
+      "bytes": 10395,
+      "sha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-baseline-20261014.py",
+      "bytes": 44197,
+      "sha256": "6214aca846a19f905b7c6db9ac3fd0afc55750a05cc95a440d68869e82d46c00"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\hard-intersection-prepared-v2\\geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "coordinateSnapshots": {
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-tokyo-initial-20261014\\compared-xyz-f64.bin",
+      "bytes": 22606392,
+      "sha256": "96298b0393066d2f4d4d9389fde881aa9cfc39ac84a959d8e09e820de57dbb37",
+      "points": 941933
+    },
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-tokyo-initial-20261014\\reference-xyz-f64.bin",
+      "bytes": 22606392,
+      "sha256": "974efc5b8c5cce8b6a2522feb00d8ed7c9c95d3ff5441a580045643ecdaf0155",
+      "points": 941933
+    }
+  },
+  "compiledTree": {
+    "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\scipy\\spatial\\_ckdtree.cp312-win_amd64.pyd",
+    "bytes": 1523200,
+    "sha256": "8894f6d534e6d514926a8272eb3a1088c02502a921e1cd890390865097ed4813"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "scipy": "1.17.1",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "ompNumThreads": "12",
+    "openblasNumThreads": "1"
+  },
+  "policy": {
+    "groupSort": "stable",
+    "accumulatorAllocation": "first_occurrence",
+    "packedVoxelMinPoints": 64,
+    "packedCapacityMax": 9223372036854775807,
+    "scsIndexMinVoxels": 64,
+    "scsExactSpan": 4503599627370496
+  },
+  "repeats": 5,
+  "warmupRounds": 2,
+  "chunkSize": 100000,
+  "structureVoxelSize": 3.0,
+  "parity": {
+    "eager": {
+      "millis": 4547.1926,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.039347055272204966,
+          "scs": 0.5623559467991448,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+      "gaussians": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-tokyo-initial-20261014\\eager-gaussians-0.bin",
+          "bytes": 368512,
+          "sha256": "06fb8a01a5eef749170576a152b4ad8471a469c8664e19e28dcbd23f682df52b",
+          "voxels": 2879,
+          "recordBytes": 128,
+          "constructorCalls": 9174,
+          "updateCalls": 9174,
+          "updatePoints": 941933,
+          "updatesSha256": "01306bb605f221332321ca95eff50297b0485455d5655c6c59f6c9a46ac78870"
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-tokyo-initial-20261014\\eager-gaussians-1.bin",
+          "bytes": 368640,
+          "sha256": "c8fef920387ce9b9be452c506eea60000f3a7a3c875e1a2ba5530d201ee9726e",
+          "voxels": 2880,
+          "recordBytes": 128,
+          "constructorCalls": 9158,
+          "updateCalls": 9158,
+          "updatePoints": 941933,
+          "updatesSha256": "bb592e4bc24d0673f0880eff71f35c4699067de56ccb06486e1e49b6cce96019"
+        }
+      ]
+    },
+    "reuse": {
+      "millis": 4156.1574,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.039347055272204966,
+          "scs": 0.5623559467991448,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+      "gaussians": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-tokyo-initial-20261014\\reuse-gaussians-0.bin",
+          "bytes": 368512,
+          "sha256": "06fb8a01a5eef749170576a152b4ad8471a469c8664e19e28dcbd23f682df52b",
+          "voxels": 2879,
+          "recordBytes": 128,
+          "constructorCalls": 2879,
+          "updateCalls": 9174,
+          "updatePoints": 941933,
+          "updatesSha256": "01306bb605f221332321ca95eff50297b0485455d5655c6c59f6c9a46ac78870"
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\map-stream-accumulators-tokyo-initial-20261014\\reuse-gaussians-1.bin",
+          "bytes": 368640,
+          "sha256": "c8fef920387ce9b9be452c506eea60000f3a7a3c875e1a2ba5530d201ee9726e",
+          "voxels": 2880,
+          "recordBytes": 128,
+          "constructorCalls": 2880,
+          "updateCalls": 9158,
+          "updatePoints": 941933,
+          "updatesSha256": "bb592e4bc24d0673f0880eff71f35c4699067de56ccb06486e1e49b6cce96019"
+        }
+      ]
+    }
+  },
+  "firstUse": {
+    "eager": {
+      "millis": 3782.5789,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.039347055272204966,
+          "scs": 0.5623559467991448,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+      "gaussians": []
+    },
+    "reuse": {
+      "millis": 3801.2608,
+      "report": {
+        "strategy": "mapeval_awd_scs_streaming",
+        "design": "functional",
+        "metrics": {
+          "awd_m": 0.039347055272204966,
+          "scs": 0.5623559467991448,
+          "n_awd_voxels": 1966.0,
+          "n_scs_voxels": 1966.0
+        },
+        "artifacts": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          }
+        },
+        "metric_family": "reference_based_mapeval_awd_scs",
+        "reference_required": true,
+        "mode": "streaming",
+        "sampling_policy": {
+          "map_eval_protocol": {
+            "name": "cloudanalyzer.mapeval_awd_scs.v1",
+            "version": "cloudanalyzer.mapeval_awd_scs.v1",
+            "voxel_size_m": 3.0,
+            "min_voxel_points": 100,
+            "neighbor_radius": 5,
+            "accuracy_level_m": [
+              0.2,
+              0.1,
+              0.08,
+              0.05,
+              0.01
+            ],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation"
+          },
+          "nn_backend": "not_applicable_streaming"
+        }
+      },
+      "reportSha256": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+      "gaussians": []
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "eager",
+        "reuse"
+      ],
+      "millis": {
+        "eager": 3728.1896,
+        "reuse": 3685.8281
+      },
+      "reportHashes": {
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "eager"
+      ],
+      "millis": {
+        "reuse": 3405.1099,
+        "eager": 3283.7179
+      },
+      "reportHashes": {
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "eager",
+        "reuse"
+      ],
+      "millis": {
+        "eager": 2805.1806,
+        "reuse": 2579.9881
+      },
+      "reportHashes": {
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "eager"
+      ],
+      "millis": {
+        "reuse": 2535.0514,
+        "eager": 2430.7988
+      },
+      "reportHashes": {
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    },
+    {
+      "order": [
+        "eager",
+        "reuse"
+      ],
+      "millis": {
+        "eager": 2655.5792,
+        "reuse": 2241.9699
+      },
+      "reportHashes": {
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "eager"
+      ],
+      "millis": {
+        "reuse": 2346.6047,
+        "eager": 2490.5858
+      },
+      "reportHashes": {
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    },
+    {
+      "order": [
+        "eager",
+        "reuse"
+      ],
+      "millis": {
+        "eager": 2218.5166,
+        "reuse": 2321.2088
+      },
+      "reportHashes": {
+        "eager": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84",
+        "reuse": "cd4f9e026cdff28f65d3718580f13e19659c672c301f984c32a95151fb7c4a84"
+      }
+    }
+  ],
+  "summary": {
+    "eagerMedianMillis": 2490.5858,
+    "reuseMedianMillis": 2346.6047,
+    "pairedShorteningPercent": 5.781013446716033,
+    "pairedSavedMedianMillis": 143.98109999999997,
+    "fasterTrials": 3
+  },
+  "accuracy": {
+    "gaussianMapsChecked": 4,
+    "orderedBatchStreamsChecked": 4,
+    "reportsChecked": 18
+  },
+  "note": "Complete streaming AWD/SCS reduction includes fixed XYZ f64 memory-map chunk iteration, integer classification, stable grouping, PointAccumulator allocation/update/finalization, Wasserstein and SCS index setup/destruction. Both policies contain all preceding MapEval optimizations. The control eagerly constructs an accumulator for every group; current constructs once per occupied stream cell. Updates, math, original coordinates, point order and chunk boundaries are unchanged; no generated data. Original file loading, coordinate snapshot preparation/mapping/hashing, Gaussian/update/allocation tracing and CLI writes are outside clocks. A parity pair, excluded first pair and two warm-up pairs precede five default alternating timed pairs. No observations removed. Pages are warmed; cold ingestion and peak RSS are not measured. No NN/PLY, resident-evaluation, GPU, worker-pool or persistent-cache speed claim."
+}

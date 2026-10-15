@@ -1,0 +1,412 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "cores": 10000,
+      "workers": 1,
+      "coldSerialMillis": 137.5,
+      "coldParallelMillis": 170.4000000357628,
+      "coldContiguousMillis": 180.10000002384186,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 256,
+          "parallelMillis": 182.5,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0,
+          "contiguousMillis": 199,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 192,
+          "parallelMillis": 188.10000002384186,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0,
+          "contiguousMillis": 185.80000001192093,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 131.39999997615814,
+          "parallelMillis": 164.19999998807907,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0,
+          "contiguousMillis": 96.69999998807907,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 76.19999998807907,
+          "parallelMillis": 94.40000003576279,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0,
+          "contiguousMillis": 80.59999996423721,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 88.19999998807907,
+          "parallelMillis": 87.69999998807907,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0,
+          "contiguousMillis": 75.69999998807907,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 95.19999998807907,
+          "parallelMillis": 81.19999998807907,
+          "workers": 1,
+          "cores": 10000,
+          "mismatches": 0,
+          "contiguousMillis": 84.10000002384186,
+          "contiguousMismatches": 0
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 40000,
+      "cores": 40000,
+      "workers": 4,
+      "coldSerialMillis": 358.69999998807907,
+      "coldParallelMillis": 147.4000000357628,
+      "coldContiguousMillis": 338.69999998807907,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 432.89999997615814,
+          "parallelMillis": 161.0999999642372,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0,
+          "contiguousMillis": 297.9000000357628,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 421.60000002384186,
+          "parallelMillis": 176.19999998807907,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0,
+          "contiguousMillis": 330,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 541.6000000238419,
+          "parallelMillis": 178.30000001192093,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0,
+          "contiguousMillis": 385.7000000476837,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 475.19999998807907,
+          "parallelMillis": 167.60000002384186,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0,
+          "contiguousMillis": 319.69999998807907,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 391.30000001192093,
+          "parallelMillis": 173.70000004768372,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0,
+          "contiguousMillis": 340.7000000476837,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 377.4000000357628,
+          "parallelMillis": 141.19999998807907,
+          "workers": 4,
+          "cores": 40000,
+          "mismatches": 0,
+          "contiguousMillis": 256.5,
+          "contiguousMismatches": 0
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "cores": 100000,
+      "workers": 4,
+      "coldSerialMillis": 1003.1000000238419,
+      "coldParallelMillis": 390.60000002384186,
+      "coldContiguousMillis": 717.3999999761581,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 976.7999999523163,
+          "parallelMillis": 439.10000002384186,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0,
+          "contiguousMillis": 751.6000000238419,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 977.7000000476837,
+          "parallelMillis": 402.9000000357628,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0,
+          "contiguousMillis": 725.8999999761581,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 1015.7999999523163,
+          "parallelMillis": 400.69999998807907,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0,
+          "contiguousMillis": 852.9000000357628,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 1004.1000000238419,
+          "parallelMillis": 376.69999998807907,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0,
+          "contiguousMillis": 802.3000000119209,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 983.8000000119209,
+          "parallelMillis": 402.80000001192093,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0,
+          "contiguousMillis": 734,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 1122.6000000238419,
+          "parallelMillis": 373.39999997615814,
+          "workers": 4,
+          "cores": 100000,
+          "mismatches": 0,
+          "contiguousMillis": 860.5,
+          "contiguousMismatches": 0
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 200000,
+      "cores": 200000,
+      "workers": 4,
+      "coldSerialMillis": 2087.699999988079,
+      "coldParallelMillis": 895.4000000357628,
+      "coldContiguousMillis": 1612.8999999761581,
+      "exportsEqual": true,
+      "trials": [
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 2033.2999999523163,
+          "parallelMillis": 813.7999999523163,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0,
+          "contiguousMillis": 1586.6000000238419,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 2061.600000023842,
+          "parallelMillis": 780.8999999761581,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0,
+          "contiguousMillis": 1468.699999988079,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 1990,
+          "parallelMillis": 807.5,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0,
+          "contiguousMillis": 1622.300000011921,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "serial",
+            "contiguous",
+            "interleaved"
+          ],
+          "serialMillis": 2109.900000035763,
+          "parallelMillis": 862.5,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0,
+          "contiguousMillis": 1858.300000011921,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "contiguous",
+            "interleaved",
+            "serial"
+          ],
+          "serialMillis": 2050.7999999523163,
+          "parallelMillis": 781.6999999880791,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0,
+          "contiguousMillis": 1629.9000000357628,
+          "contiguousMismatches": 0
+        },
+        {
+          "order": [
+            "interleaved",
+            "serial",
+            "contiguous"
+          ],
+          "serialMillis": 2005.3999999761581,
+          "parallelMillis": 765.0999999642372,
+          "workers": 4,
+          "cores": 200000,
+          "mismatches": 0,
+          "contiguousMillis": 1560.5,
+          "contiguousMismatches": 0
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 2,
+  "compareLayouts": true,
+  "coreBlock": 1024,
+  "coreTail": "balanced",
+  "createdAt": "2026-10-11T02:12:57.267Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "9626d4ebcedec742143bcbc16a4bd88fd247f92e82192b7e70404a0d01567eaa",
+  "poolWorkerSha256": "f7bcd6c917ee6ca5cc628e43bd3aa58a7d5f6e588ace2e0b701b17368d0f9436",
+  "wasmSha256": "0cd7fc649089dc60beae7957a0c0ae7ba53444c32f2307b027ae73b5415e3fc3",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0
+  },
+  "fixture": "UTM wavy grids separated by 100m in x; first quarter of points at 0.035m spacing, remaining points at 0.14m spacing; 0.07m vertical offset",
+  "note": "Synthetic data. Requested CPU modes run sequentially. Three modes rotate when comparing layouts, otherwise serial and automatic modes alternate. Every mode is warmed before trials. Timings include core selection, input snapshots/copies, per-worker tree builds, computation, assembly and result indexing; file load/export and UI rendering are excluded. Automatic mode uses serial for small or memory-heavy jobs. Exact result attributes are checked each trial; full PLY bytes checked on warm-up. Other applications and CPU power/clocks are uncontrolled. Contiguous and interleaved modes use identical complete input clouds, worker counts, tree kernels and per-core arithmetic. Interleaved mode packs 1024-core blocks cyclically across workers, balances the final partial cycle so lane counts differ by at most one core, and restores results to original core order. Every contiguous result also passes bit parity."
+}

@@ -57,6 +57,18 @@ Output: registration fitness / inlier RMSE, before/after nearest-neighbor distan
 statistics, the delta and final transform matrices, optional threshold exceed counts,
 and colored PLY artifacts for the initial and aligned scan.
 
+With `--artifact-dir`, the before/after distance arrays also supply artifact
+colors, reducing nearest-neighbour searches from four to two. Registration
+and report/output formats stay unchanged. Without artifacts, the arrays are
+released after their metric blocks. [Measured diagnostic/artifact costs and
+memory lifetime](../cpu-scan-match-distance-reuse.md) cover this reuse.
+
+With a Rust core supporting `PreparedReference`, both searches also share one
+working-map tree. It is prepared per invocation and released after the aligned
+search, before artifact writing. Older/disabled cores keep stateless dispatch.
+[Scoped reference measurements](../cpu-scan-match-reference.md) include
+construction/cleanup and report retained memory separately from solver costs.
+
 | Option | Default | Description |
 |---|---|---|
 | `--method` | `gicp` | Registration method: `icp` or `gicp` |
@@ -101,6 +113,40 @@ label, secondary labels, and suggested action, such as `bad_initial_guess`, `wea
 `downsampled_points` and raw/filtered range summaries are preserved in the
 diagnosis signals when present.
 
+With multiple eligible selected frames, execution lazily shares one loaded/
+downsampled map snapshot for the run. Each solver target remains private;
+positive crops prepare separate frame references, while uncropped frames can
+share a native reference. The next analysis reloads the map. A controlled
+three-attempt diagnostic comparison, including loading but excluding ICP
+solving/artifacts, is 17.47–44.66% shorter with identical outputs and 29/30
+faster pairs. [Measurements and snapshot lifetime](../cpu-slam-map-reuse.md).
+
+For GICP and artifact-producing ICP, uncropped selected frames reuse owned
+pre-solver target normals; source preparation remains per frame and crops
+keep separate estimation. The preceding controlled preparation/result-copy
+interval is 21.05–36.37% shorter with 18/18
+faster pairs; ICP iterations are excluded. [Normal preparation and live-solver
+checks](../cpu-registration-target-normals.md).
+
+For point-to-point ICP without artifacts, diagnostics now skip estimation of
+missing normals, including cropped and standalone calls. GICP, PLY output
+and ordinary registration retain normal preparation. A controlled diagnostic
+comparison including loading but excluding ICP iterations is 72.16–81.47%
+shorter with matching reports and 18/18 faster pairs.
+[Conditions and measurements](../cpu-scan-icp-normals.md).
+
+Verified binary PLY files with only little-endian double XYZ fields use bulk
+loading up to 64 MiB of coordinate payload. Other layouts retain Open3D.
+Controlled real-source diagnostic assembly is 23.08–31.70% shorter, excluding
+ICP iterations, with unchanged coordinates and reports.
+[Layout, fallback and measurements](../cpu-ply-xyz-loading.md).
+
+`ca compare` computes heatmap colors when `--snapshot` is requested. Numeric-only
+calls skip unused coloring; registered comparisons retain the same solver and
+reports. With `--register none` and no snapshot, six real-source function
+comparisons are 78.45–82.21% shorter, including actual loading and native NN work.
+[Output compatibility and measurements](../cpu-compare-requested-colors.md).
+
 | Option | Default | Description |
 |---|---|---|
 | `--scans-manifest-csv` | `None` | Optional scan manifest with `scan_id,timestamp_sec,points_csv` |
@@ -121,6 +167,111 @@ diagnosis signals when present.
 | `--output-markdown` | `None` | Write a Markdown SLAM debug report |
 
 ## ca map-evaluate
+
+Resident nearest-neighbor queries use all available CPU threads when a direction
+has at least 65,536 query points after preprocessing. Small/empty inputs retain
+their preceding behavior. [Real-source measurements](../cpu-map-nn-parallel.md)
+include both fresh trees, distance directions and default AWD/SCS; input loading
+and CLI/PLY writes are outside those clocks.
+
+SCS also indexes eligible integer error cells for cube-neighborhood lookup,
+preserving neighbor/reduction order. [Measured sparse lookup](../cpu-map-scs-index.md)
+reduces complete resident evaluation against that parallel-NN baseline. Small,
+radius-1 or unsafe-span inputs retain the grid lookup; streaming shares the
+lookup helper but has no performance claim from those resident timings.
+
+Resident covariance accumulation computes six symmetric components in original
+point order, using a one-component temporary. [Measured covariance reduction](../cpu-map-covariance.md)
+shortens evaluation against the preceding parallel-NN/indexed-SCS baseline
+with identical full voxel summaries, metrics and PLYs. Non-finite/extreme
+centered values retain the scatter path; the streaming accumulator is unchanged.
+
+Resident voxel grouping also uses exact bounded scalar integer codes, preserving
+lexicographic keys, point memberships and all Gaussian bits.
+[Measured scalar grouping](../cpu-map-grouping.md) shortens complete evaluation
+against the preceding covariance baseline. Small inputs or coordinate ranges
+beyond signed-int64 capacity retain the axis grouping.
+
+The separate streaming AWD/SCS core API now uses stable groups within each
+chunk, preserving its point-batch/update order and all Gaussian bits.
+[Streaming reduction measurements](../cpu-map-stream-groups.md) use fixed
+100,000-point chunks and include moment/Wasserstein/SCS work; original-file
+loading and coordinate-snapshot preparation are excluded.
+
+The core request API's optional centroid preprocessing also avoids repeated
+classification and batches singleton means.
+[Downsampled API measurements](../cpu-map-downsample-centroids.md) include
+requested 0.2 m downsampling and complete resident evaluation, with identical
+centroids/metrics/PLYs. The command's existing options/defaults are unchanged.
+
+The optional API helper additionally batches enough equal-length 2–8-point
+groups while retaining their point order and mean bits.
+[Small-group measurements](../cpu-map-downsample-small-groups.md) report the
+eligible PandaSet/Tokyo improvements and the mixed, ineligible Autoware timings.
+Sparse groups, large/extreme/non-finite inputs and requested underflow reporting
+retain the preceding multi-point mean path.
+
+Resident mean accumulation uses three point-order coordinate reductions for
+safe inputs of at least 64 points. [Mean-sum measurements](../cpu-map-mean-sums.md)
+show 65.02–74.36% shorter aggregation, while complete evaluation ranges from
+−2.73% to +4.10%. The whole result is mixed for Autoware/Tokyo; small/unsafe
+inputs retain scatter and all outputs match.
+
+Supported Gaussian distances additionally use batches of at most 256 pairs,
+retaining the scalar Wasserstein formula and distance bits.
+[Batch measurements](../cpu-map-wasserstein-batch.md) show 9.05–27.16% shorter
+complete resident evaluation with 28/30 faster pairs. Small/unsafe batches or
+explicit NumPy error settings retain scalar calls. Streaming shares the helper
+with correctness coverage but has no performance claim from these measurements.
+
+Equal-length SCS statistics use bounded windows while retaining ordered values
+and scalar mean/std bits. [SCS measurements](../cpu-map-scs-batch.md) show
+10.38–31.92% shorter SCS work; whole evaluation is mixed (−2.30% to +5.99%).
+Non-finite/negative/extreme or nonstandard values and explicit NumPy error
+settings retain ordered scalar calls. Streaming has correctness coverage but
+no performance claim from these resident measurements.
+
+Point NN trees use compact midpoint partitioning when both maps contain at
+least 65,536 points, preserving exact distances and existing worker selection.
+[Point-tree measurements](../cpu-map-nn-midpoint.md) show 7.92–17.04% shorter
+complete resident evaluation with 27/30 faster pairs and identical full outputs.
+Smaller/asymmetric pairs retain the preceding tree constructor; these timings
+exclude loading and CLI writes.
+
+Eligible SCS indexes batch radius queries under a conservative returned-index
+budget with one worker and unchanged center/neighbor order.
+[Query-batch measurements](../cpu-map-scs-query-batch.md) show 14.47–26.73%
+shorter complete SCS work; whole evaluation is mixed (−5.08% to +9.51%).
+Small/insufficient-capacity or unsupported indexes retain preceding lookup.
+Streaming has correctness coverage without a speed claim from these timings.
+
+Streaming accumulation constructs an accumulator only when a cell first
+appears. [Allocation measurements](../cpu-map-stream-accumulators.md) show
+52.62–68.59% fewer constructions with identical Gaussian bits and reports.
+Whole streaming timings are mixed (−11.27% to +9.93%, 20/30 faster pairs);
+original-file loading and CLI writes are excluded.
+
+Eligible streaming chunks also reduce enough equal-size small-group moments
+in bounded windows. [Moment measurements](../cpu-map-stream-moments.md) show
+1.66–28.90% shorter complete streaming AWD/SCS work, with 28/30 faster pairs
+and identical Gaussian/bounds bits and full reports. Unsafe or insufficient
+groups retain scalar updates; loading/CLI writes are excluded.
+
+[Expanded moment measurements](../cpu-map-stream-expanded.md) allow
+1–128-point groups with eight groups per size, while keeping a 32,768-point
+gather limit. Complete streaming work is a further 7.98–18.80% shorter with
+27/30 faster pairs and identical full outputs. The control already includes
+the preceding small-group change; loading/CLI writes are excluded.
+
+[Verified-scalar measurements](../cpu-map-stream-finite.md) reuse whole-chunk
+verification for scalar groups, avoiding repeated finite masks and coordinate
+copies. Complete streaming work is a further 6.88–16.46% shorter with 25/30
+faster pairs and identical outputs. Unsafe/small chunks retain filtering;
+loading/CLI writes are excluded.
+
+[Moment-merge candidates](../cpu-map-stream-merge-candidates.md) preserve
+complete outputs but have inconsistent timings, including regressions.
+They are isolated experiments and do not change the runtime.
 
 Map-to-map evaluation against a reference/GT map. The default path reports
 nearest-neighbor accuracy/completeness/Chamfer plus the explicit AWD/SCS
@@ -197,6 +348,12 @@ Output: g2o vertex/edge/connectivity counts, optional TUM trajectory summary, op
 
 Compare before/after manual loop-closure outputs against one reference map, with optional trajectory and posegraph checks.
 
+The two map evaluations share one loaded reference snapshot and, with a
+supporting Rust core, one reference search tree. Reference edits are observed
+on the next report. The tree is released before optional trajectory/posegraph
+work. [Real-source report measurements](../cpu-loop-reference.md) include
+loading, both distance directions, preparation/destruction, deltas and gates.
+
 ```bash
 # Map-only before/after report
 ca loop-closure-report before/map.pcd after/map.pcd reference/map.pcd
@@ -247,6 +404,12 @@ Metric note: `loop-closure-report` uses the existing `ca.evaluate` AUC/F1-curve 
 ## ca batch
 
 Run info on all point cloud files in a directory.
+
+With `--evaluate`, one reference snapshot is loaded per invocation. A supporting
+Rust core shares one reference tree across multiple candidates; single-file
+batches and older/disabled cores retain stateless distance calls. Reference edits
+are observed on the next invocation. The [whole-function real-source benchmark](../cpu-batch-reference.md)
+includes loading, bidirectional evaluation, preparation and cleanup.
 
 ```bash
 # Current directory

@@ -4,7 +4,7 @@ import numpy as np
 import open3d as o3d
 
 from ca.io import load_point_cloud
-from ca.metrics import compute_nn_distance
+from ca.metrics import _PreparedReference, compute_nn_distance
 
 
 def _f1_at_threshold(
@@ -45,8 +45,29 @@ def evaluate(
     source = load_point_cloud(source_path)
     target = load_point_cloud(target_path)
 
+    return _evaluate_clouds(source_path, target_path, source, target, thresholds)
+
+
+def _evaluate_clouds(
+    source_path: str,
+    target_path: str,
+    source: o3d.geometry.PointCloud,
+    target: o3d.geometry.PointCloud,
+    thresholds: list[float] | None = None,
+    *,
+    prepared_reference: _PreparedReference | None = None,
+) -> dict:
+    """Evaluate loaded clouds; an optional tree must represent this target."""
+    if thresholds is None:
+        thresholds = [0.05, 0.1, 0.2, 0.3, 0.5, 1.0]
+    thresholds = sorted(thresholds)
+
     # Bidirectional nearest neighbor distances
-    dist_s2t = compute_nn_distance(source, target)
+    dist_s2t = (
+        compute_nn_distance(source, target)
+        if prepared_reference is None
+        else np.asarray(prepared_reference.distances(np.asarray(source.points)))
+    )
     dist_t2s = compute_nn_distance(target, source)
 
     # Chamfer Distance (mean of bidirectional means)

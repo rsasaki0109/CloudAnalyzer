@@ -1,0 +1,1359 @@
+{
+  "params": {
+    "normalRadius": 0.4,
+    "projectionRadius": 0.25,
+    "maxDepth": 0.5,
+    "coreSpacing": 0.25
+  },
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "workers": 2,
+  "cores": 299755,
+  "finiteDistances": 281763,
+  "oracleHashes": {
+    "distance": "93e49290288c25ffe66007a0a502bb08958e44d0432af2c809d1f5fcaa88fb40",
+    "lod95": "04f3aa9551c46dc7ff3f1c51cf6df9e0265cb384a514cf680a9854e13e740d56",
+    "significant": "b680fe90fbbe4e0caf550d3dd6222b4eab5af529299c928459e2a9feae6b6410",
+    "ply": "79e5aaf368166932a04c18adab4ed595bdcb5a0491bdfd2a1c8714691f9d06c6"
+  },
+  "cases": [
+    {
+      "name": "fresh-normals",
+      "cacheNormals": false,
+      "firstUse": {
+        "single": {
+          "elapsedMillis": 1288.2000000476837,
+          "workerMillis": 1287.8999999761581,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "resultParity": true
+        },
+        "paired": {
+          "elapsedMillis": 1160.1000000238419,
+          "workerMillis": 1159.7999999523163,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 0,
+          "fusedProjection": false,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 854.8999999761581,
+            "workerMillis": 854.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 828.1999999284744,
+            "workerMillis": 827.9000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 805,
+            "workerMillis": 804.6999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 840.8999999761581,
+            "workerMillis": 840.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 901.2999999523163,
+            "workerMillis": 901,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 816.5,
+            "workerMillis": 816.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 1047.4000000953674,
+            "workerMillis": 1047,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 909,
+            "workerMillis": 908.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 798.3000000715256,
+            "workerMillis": 798,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 839,
+            "workerMillis": 837.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 857.5999999046326,
+            "workerMillis": 857.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 828.1999999284744,
+            "workerMillis": 827.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 852.6999999284744,
+            "workerMillis": 852.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 784.5,
+            "workerMillis": 784.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 794.3999999761581,
+            "workerMillis": 794.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 997.6999999284744,
+            "workerMillis": 997.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1010.7000000476837,
+            "workerMillis": 1010.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 924.2999999523163,
+            "workerMillis": 923.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 949.1999999284744,
+            "workerMillis": 948.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 1052.2999999523163,
+            "workerMillis": 1052.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 1085.3999999761581,
+            "workerMillis": 1085,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 942.2999999523163,
+            "workerMillis": 942.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 961.2999999523163,
+            "workerMillis": 961,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 980,
+            "workerMillis": 979.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 962.2000000476837,
+            "workerMillis": 961.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 799.5,
+            "workerMillis": 799.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 782.7000000476837,
+            "workerMillis": 782.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 888.3000000715256,
+            "workerMillis": 888,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 937.1000000238419,
+            "workerMillis": 936.6999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 786.6000000238419,
+            "workerMillis": 786.4000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": false,
+            "normalCacheBytes": 0,
+            "fusedProjection": false,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "singleMedianMillis": 971.1000000238419,
+        "pairedMedianMillis": 828.5499999523163,
+        "medianPairedReductionPercent": 10.842730980882443,
+        "fasterTrials": 9,
+        "trials": 10
+      }
+    },
+    {
+      "name": "reused-normals",
+      "cacheNormals": true,
+      "firstUse": {
+        "single": {
+          "elapsedMillis": 1257.1000000238419,
+          "workerMillis": 1256.7000000476837,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 16786280,
+          "fusedProjection": false,
+          "resultParity": true
+        },
+        "paired": {
+          "elapsedMillis": 1186,
+          "workerMillis": 1185.3999999761581,
+          "workers": 2,
+          "treeCacheHit": false,
+          "normalCacheHit": false,
+          "normalCacheBytes": 16786280,
+          "fusedProjection": false,
+          "resultParity": true
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 680.8999999761581,
+            "workerMillis": 680.6000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 657.7999999523163,
+            "workerMillis": 657.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 649.5,
+            "workerMillis": 649.3000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 624,
+            "workerMillis": 623.7999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 623.6000000238419,
+            "workerMillis": 623.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 673,
+            "workerMillis": 672.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 647.3999999761581,
+            "workerMillis": 647.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 659.8000000715256,
+            "workerMillis": 659.3999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 642.7000000476837,
+            "workerMillis": 642.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 617.7999999523163,
+            "workerMillis": 617.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 714.1000000238419,
+            "workerMillis": 713.5999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 751.8999999761581,
+            "workerMillis": 751,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 665.6999999284744,
+            "workerMillis": 665.1999999284744,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 646.6999999284744,
+            "workerMillis": 646.3000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 722.4000000953674,
+            "workerMillis": 722.1000000238419,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 677.2999999523163,
+            "workerMillis": 677,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 706.8999999761581,
+            "workerMillis": 706.5,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 758.8999999761581,
+            "workerMillis": 758.5999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 745.2000000476837,
+            "workerMillis": 744.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 697.1999999284744,
+            "workerMillis": 696.8000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 697.1000000238419,
+            "workerMillis": 696.8999999761581,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 664.8999999761581,
+            "workerMillis": 664.7000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 715.5,
+            "workerMillis": 715.3000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 743.6000000238419,
+            "workerMillis": 743.2999999523163,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 698.5999999046326,
+            "workerMillis": 698.3000000715256,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 737.6999999284744,
+            "workerMillis": 737.5999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "paired",
+            "single"
+          ],
+          "paired": {
+            "elapsedMillis": 653.5,
+            "workerMillis": 653.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "single": {
+            "elapsedMillis": 693.6999999284744,
+            "workerMillis": 693.4000000953674,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        },
+        {
+          "order": [
+            "single",
+            "paired"
+          ],
+          "single": {
+            "elapsedMillis": 701.3999999761581,
+            "workerMillis": 701.0999999046326,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          },
+          "paired": {
+            "elapsedMillis": 626.5,
+            "workerMillis": 626.2000000476837,
+            "workers": 2,
+            "treeCacheHit": true,
+            "normalCacheHit": true,
+            "normalCacheBytes": 16786280,
+            "fusedProjection": true,
+            "resultParity": true
+          }
+        }
+      ],
+      "summary": {
+        "singleMedianMillis": 697.8999999165535,
+        "pairedMedianMillis": 714.8000000119209,
+        "medianPairedReductionPercent": 3.3165259492579926,
+        "fasterTrials": 6,
+        "trials": 10
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "paired-fresh-m3c2-eigen",
+  "createdAt": "2026-10-13T02:41:02.451Z",
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\m3c2-pair-baseline-20261013\\dist",
+      "worker": "worker-B5uBBdCh.js",
+      "artifactHashes": {
+        "c2c-worker-U2-NSBqA.js": "54f283a7011203b08e2976a45891f39ce3463c0ed4217d4edca13d9398f297df",
+        "ca_wasm_bg-DLfX314K.wasm": "b04c113e3fe7537bdbeebbf38fa0bda09aa21158483384b9cc0a9057f73373a1",
+        "worker-B5uBBdCh.js": "867dffd97fdb759bab7cc5776482793fe5053259641aeecd8f0b5a352be52764"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-CE6BwDOc.js",
+      "artifactHashes": {
+        "c2c-worker-Dwxhunar.js": "d6edb81fb74c25d1c81652f51869d6a38c20da8aa276db750d14134ca8c9b69b",
+        "ca_wasm_bg-DvW2bQZu.wasm": "1f847faf8a130265a4f63ac573c8086ef0455c907a8177795291c0fd8ba2c9b7",
+        "worker-CE6BwDOc.js": "9a62c463aa4bea5f12f44c9ac7e6bc12b5b6a81496a9a25a4eb400c49ef66ca6"
+      }
+    }
+  },
+  "scriptSha256": "dd16cbc7b8ce84ec5687fbf62ea2096ef080b3152496a12c307f17cb6a2aa6c5",
+  "sourceHashes": {
+    "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+    "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+    "rust/crates/ca-core/src/icp.rs": "c8877991626c138d55b7619439e30ad96216f7be22a1392432b0f696755aec2e",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+    "web/src/m3c2-workers.ts": "26be13b10662ba462361649699e17548ef1fdfa32bfb9cc2cc2a608908325cdd",
+    "web/src/m3c2-preparation.ts": "345d4908fd32ee7a3f9c537df15d79429ed4266d5a2c4fd1148c4076e95b2f14",
+    "web/src/worker.ts": "d39805b393c83e80a87514f11b113acece881c17b5631a937dd36be77c41cec9",
+    "web/src/c2c-worker.ts": "fb90d8b07c6ed821b2295024624fd1ee5d11ff2df3822e97e49816c3e60db880",
+    "web/src/pool.ts": "fbd3efa17d3ee1b8df630362e45210a47b516f5a0abda4c9f7d85fe54c2be809",
+    "web/src/protocol.ts": "6eeb14fc67edaa6591dcbf3727495b4556dcdeb998b992a21d5a5205e0441a57",
+    "rust/crates/ca-core/src/m3c2.rs": "ebef1a2bb645f9692087dae991621041b4da9983ba616c675f044addadbced6d",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-wasm/src/m3c2.rs": "630c15b99eeca9922691e2da28743e6897cc3aed9f77a07f768b7c04fce69834",
+    "rust/crates/ca-wasm/src/lib.rs": "2063a07d5badd8e95ad70c29423b63d346f0ebd29c647f5677132d5ea6b92153"
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured source-index split inputs; no generated/transformed/thinned coordinates. Original-point core representatives at spacing 0.25 m, not independent surveys/change ground truth. Normal radius 0.4, projection radius 0.25, half-depth 0.5; bounds off, shared reference search on, prepared trees and interleaving on, same lane count and 64 MiB normal allowance. Archived individual and current paired production use independent workers per fitting case. Fresh fitting disables normal reuse and projection fusion in BOTH builds; cached fitting enables normal retention and both builds automatically fuse projection on matching normal-cache hits. Two excluded first observations build each context trees and optionally capture normals, then five alternating warm-up pairs precede ten alternating timed pairs. Candidate pairs two independent fresh normal eigensolves only in SIMD-enabled prepared WASM, while retaining both cores reference hit lists and original projection arithmetic/order. Cached normals, odd tails, unsafe matrices and unsupported targets keep individual kernels. Additional per-slice hit buffers and scheduling/allocation/code-layout effects are included. Cached timing is a separate control without new pair fitting. Independent archived worker supplies full distance/LoD/significance/PLY oracle and terminates before timing; both timed results require exact output bits and PLY bytes against it. Whole RPC includes core planning, bindings/transfers, radius queries, moments/eigen fitting, projection, join, attributes/LOD and result arrays. Startup/loading/first observations/warmups/export/parity/removal excluded. Source, artifacts, inputs, manifest, original source and script checked before/after. No builds/tests/scans alongside timing. Clocks/power/scheduling/GC/other applications/WASM pages uncontrolled. No GPU dispatch/model identifiers collected."
+}

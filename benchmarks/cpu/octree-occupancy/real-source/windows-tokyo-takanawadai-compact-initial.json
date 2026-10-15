@@ -1,0 +1,1591 @@
+{
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "reference": {
+    "points": 941933
+  },
+  "compared": {
+    "points": 941933,
+    "keepEvery": 1
+  },
+  "cases": [
+    {
+      "method": "load",
+      "excludedFirstUse": {
+        "baselineMillis": 170.80000001192093,
+        "optimizedMillis": 170,
+        "baselineIndexMillis": 61.10000002384186,
+        "optimizedIndexMillis": 77.5,
+        "baselineParseMillis": 42.39999997615814,
+        "optimizedParseMillis": 37.30000001192093,
+        "baselinePrepareMillis": 45.80000001192093,
+        "optimizedPrepareMillis": 54,
+        "resultParity": true,
+        "exportedBytes": 22606541,
+        "points": 941933
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 133.19999998807907,
+          "optimizedMillis": 131.10000002384186,
+          "baselineIndexMillis": 69.29999995231628,
+          "optimizedIndexMillis": 72.69999998807907,
+          "baselineParseMillis": 35.5,
+          "optimizedParseMillis": 27.600000023841858,
+          "baselinePrepareMillis": 26.899999976158142,
+          "optimizedPrepareMillis": 29.899999976158142,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 110.19999998807907,
+          "optimizedMillis": 146.9000000357628,
+          "baselineIndexMillis": 62.89999997615814,
+          "optimizedIndexMillis": 91.60000002384186,
+          "baselineParseMillis": 25,
+          "optimizedParseMillis": 21.30000001192093,
+          "baselinePrepareMillis": 21.69999998807907,
+          "optimizedPrepareMillis": 33.60000002384186,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 147.80000001192093,
+          "optimizedMillis": 129.19999998807907,
+          "baselineIndexMillis": 80,
+          "optimizedIndexMillis": 67.89999997615814,
+          "baselineParseMillis": 33.19999998807907,
+          "optimizedParseMillis": 23.69999998807907,
+          "baselinePrepareMillis": 34.19999998807907,
+          "optimizedPrepareMillis": 37.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 117.10000002384186,
+          "optimizedMillis": 127.79999995231628,
+          "baselineIndexMillis": 67.79999995231628,
+          "optimizedIndexMillis": 72.60000002384186,
+          "baselineParseMillis": 24.399999976158142,
+          "optimizedParseMillis": 29.100000023841858,
+          "baselinePrepareMillis": 24.5,
+          "optimizedPrepareMillis": 25.599999964237213,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 109.10000002384186,
+          "optimizedMillis": 105,
+          "baselineIndexMillis": 62.5,
+          "optimizedIndexMillis": 59.19999998807907,
+          "baselineParseMillis": 22.799999952316284,
+          "optimizedParseMillis": 21.5,
+          "baselinePrepareMillis": 23.600000023841858,
+          "optimizedPrepareMillis": 23.899999976158142,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 144.10000002384186,
+          "optimizedMillis": 125.09999996423721,
+          "baselineIndexMillis": 87,
+          "optimizedIndexMillis": 74.89999997615814,
+          "baselineParseMillis": 26.899999976158142,
+          "optimizedParseMillis": 22.100000023841858,
+          "baselinePrepareMillis": 29.700000047683716,
+          "optimizedPrepareMillis": 27.600000023841858,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 111.5,
+          "optimizedMillis": 102.89999997615814,
+          "baselineIndexMillis": 63.39999997615814,
+          "optimizedIndexMillis": 59.09999996423721,
+          "baselineParseMillis": 27.399999976158142,
+          "optimizedParseMillis": 19.30000001192093,
+          "baselinePrepareMillis": 20.30000001192093,
+          "optimizedPrepareMillis": 23.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 118.59999996423721,
+          "optimizedMillis": 112.5,
+          "baselineIndexMillis": 59.799999952316284,
+          "optimizedIndexMillis": 59.69999998807907,
+          "baselineParseMillis": 28.600000023841858,
+          "optimizedParseMillis": 27.399999976158142,
+          "baselinePrepareMillis": 29.80000001192093,
+          "optimizedPrepareMillis": 25,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 124.30000001192093,
+          "optimizedMillis": 137.5,
+          "baselineIndexMillis": 70.30000001192093,
+          "optimizedIndexMillis": 88,
+          "baselineParseMillis": 29.5,
+          "optimizedParseMillis": 28.399999976158142,
+          "baselinePrepareMillis": 24.099999964237213,
+          "optimizedPrepareMillis": 20.599999964237213,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 110.09999996423721,
+          "optimizedMillis": 103.39999997615814,
+          "baselineIndexMillis": 61.89999997615814,
+          "optimizedIndexMillis": 62.30000001192093,
+          "baselineParseMillis": 24.80000001192093,
+          "optimizedParseMillis": 19.900000035762787,
+          "baselinePrepareMillis": 22.899999976158142,
+          "optimizedPrepareMillis": 20.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 139.30000001192093,
+          "optimizedMillis": 137.0999999642372,
+          "baselineIndexMillis": 85.40000003576279,
+          "optimizedIndexMillis": 83.10000002384186,
+          "baselineParseMillis": 30.19999998807907,
+          "optimizedParseMillis": 27,
+          "baselinePrepareMillis": 23.30000001192093,
+          "optimizedPrepareMillis": 26.600000023841858,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 114.69999998807907,
+          "optimizedMillis": 113.10000002384186,
+          "baselineIndexMillis": 62.5,
+          "optimizedIndexMillis": 66,
+          "baselineParseMillis": 25.5,
+          "optimizedParseMillis": 25.799999952316284,
+          "baselinePrepareMillis": 26.19999998807907,
+          "optimizedPrepareMillis": 20.799999952316284,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 126.89999997615814,
+          "optimizedMillis": 101.20000004768372,
+          "baselineIndexMillis": 68.19999998807907,
+          "optimizedIndexMillis": 56.30000001192093,
+          "baselineParseMillis": 27.80000001192093,
+          "optimizedParseMillis": 21.600000023841858,
+          "baselinePrepareMillis": 30.599999964237213,
+          "optimizedPrepareMillis": 22.900000035762787,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 118.19999998807907,
+          "optimizedMillis": 118.09999996423721,
+          "baselineIndexMillis": 68.60000002384186,
+          "optimizedIndexMillis": 68.09999996423721,
+          "baselineParseMillis": 26,
+          "optimizedParseMillis": 23.69999998807907,
+          "baselinePrepareMillis": 23.100000023841858,
+          "optimizedPrepareMillis": 26,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 139.5,
+          "optimizedMillis": 134.19999998807907,
+          "baselineIndexMillis": 88.80000001192093,
+          "optimizedIndexMillis": 77.39999997615814,
+          "baselineParseMillis": 28.399999976158142,
+          "optimizedParseMillis": 30.5,
+          "baselinePrepareMillis": 22.099999964237213,
+          "optimizedPrepareMillis": 25.600000023841858,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        }
+      ]
+    },
+    {
+      "method": "transform",
+      "fittedTransform": {
+        "matrix": [
+          0.9999999999271575,
+          0.000011890987253195147,
+          0.000002071055733601007,
+          0.4847435472456709,
+          -0.000011890993392099846,
+          0.9999999999249091,
+          0.000002964155594069499,
+          -0.11090569756925106,
+          -0.000002071020486709104,
+          -0.0000029641802207636258,
+          0.9999999999934622,
+          -0.14049428452238288,
+          0,
+          0,
+          0,
+          1
+        ],
+        "resultParity": true,
+        "exportedBytes": 22606541,
+        "points": 941933,
+        "baselineReferenceReused": false,
+        "optimizedReferenceReused": false
+      },
+      "excludedFirstUse": {
+        "baselineMillis": 104.5,
+        "optimizedMillis": 94.20000004768372,
+        "resultParity": true,
+        "exportedBytes": 22606541,
+        "points": 941933
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 105.5,
+          "optimizedMillis": 114.5,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 125.80000001192093,
+          "optimizedMillis": 95.10000002384186,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 96.29999995231628,
+          "optimizedMillis": 100.39999997615814,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 101.90000003576279,
+          "optimizedMillis": 112.60000002384186,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 92.60000002384186,
+          "optimizedMillis": 85,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 113.19999998807907,
+          "optimizedMillis": 113.80000001192093,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 115.69999998807907,
+          "optimizedMillis": 105,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 102.09999996423721,
+          "optimizedMillis": 117.19999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 112.69999998807907,
+          "optimizedMillis": 117.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 107.30000001192093,
+          "optimizedMillis": 126.5,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 112.80000001192093,
+          "optimizedMillis": 110.30000001192093,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 114.79999995231628,
+          "optimizedMillis": 150.69999998807907,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 104.89999997615814,
+          "optimizedMillis": 126.30000001192093,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 125.89999997615814,
+          "optimizedMillis": 93.80000001192093,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 120.90000003576279,
+          "optimizedMillis": 138,
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933
+        }
+      ]
+    },
+    {
+      "method": "icp",
+      "excludedFirstUse": {
+        "baselineMillis": 558,
+        "optimizedMillis": 550.1999999880791,
+        "baselineWorkerMillis": 553.5,
+        "optimizedWorkerMillis": 543.3999999761581,
+        "referenceBytes": 84773988,
+        "iterations": 1,
+        "rmsInitial": 0.06402336190401405,
+        "rmsFinal": 0.06402397448633225,
+        "converged": true,
+        "matrix": [
+          0.9999999999271575,
+          0.000011890987253195147,
+          0.000002071055733601007,
+          0.4847435472456709,
+          -0.000011890993392099846,
+          0.9999999999249091,
+          0.000002964155594069499,
+          -0.11090569756925106,
+          -0.000002071020486709104,
+          -0.0000029641802207636258,
+          0.9999999999934622,
+          -0.14049428452238288,
+          0,
+          0,
+          0,
+          1
+        ],
+        "resultParity": true,
+        "exportedBytes": 22606541,
+        "points": 941933,
+        "baselineReferenceReused": false,
+        "optimizedReferenceReused": false
+      },
+      "warmups": [
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 182.70000004768372,
+          "optimizedMillis": 170.80000001192093,
+          "baselineWorkerMillis": 178.9000000357628,
+          "optimizedWorkerMillis": 170.39999997615814,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 153.79999995231628,
+          "optimizedMillis": 142.39999997615814,
+          "baselineWorkerMillis": 153.5,
+          "optimizedWorkerMillis": 141.79999995231628,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 176,
+          "optimizedMillis": 171.80000001192093,
+          "baselineWorkerMillis": 175.5,
+          "optimizedWorkerMillis": 171.60000002384186,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 156.30000001192093,
+          "optimizedMillis": 161.9000000357628,
+          "baselineWorkerMillis": 150.20000004768372,
+          "optimizedWorkerMillis": 156,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 148,
+          "optimizedMillis": 156.5,
+          "baselineWorkerMillis": 147.69999998807907,
+          "optimizedWorkerMillis": 156.20000004768372,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 125.5,
+          "optimizedMillis": 127,
+          "baselineWorkerMillis": 125.30000001192093,
+          "optimizedWorkerMillis": 126.60000002384186,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 135.4000000357628,
+          "optimizedMillis": 142.5,
+          "baselineWorkerMillis": 127.19999998807907,
+          "optimizedWorkerMillis": 135.19999998807907,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 123.59999996423721,
+          "optimizedMillis": 145.10000002384186,
+          "baselineWorkerMillis": 123.40000003576279,
+          "optimizedWorkerMillis": 144.5999999642372,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 122.69999998807907,
+          "optimizedMillis": 129.80000001192093,
+          "baselineWorkerMillis": 122.30000001192093,
+          "optimizedWorkerMillis": 129.60000002384186,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 137,
+          "optimizedMillis": 131.5,
+          "baselineWorkerMillis": 129.5,
+          "optimizedWorkerMillis": 124,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 134.80000001192093,
+          "optimizedMillis": 167.5,
+          "baselineWorkerMillis": 134.20000004768372,
+          "optimizedWorkerMillis": 167.30000001192093,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 160.69999998807907,
+          "optimizedMillis": 158.19999998807907,
+          "baselineWorkerMillis": 160.5,
+          "optimizedWorkerMillis": 157.69999998807907,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 132.5999999642372,
+          "optimizedMillis": 149.69999998807907,
+          "baselineWorkerMillis": 124.39999997615814,
+          "optimizedWorkerMillis": 141.19999998807907,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "baseline",
+            "optimized"
+          ],
+          "baselineMillis": 130.5,
+          "optimizedMillis": 155.4000000357628,
+          "baselineWorkerMillis": 130.30000001192093,
+          "optimizedWorkerMillis": 155,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        },
+        {
+          "order": [
+            "optimized",
+            "baseline"
+          ],
+          "baselineMillis": 124.40000003576279,
+          "optimizedMillis": 138.30000001192093,
+          "baselineWorkerMillis": 124.10000002384186,
+          "optimizedWorkerMillis": 138.0999999642372,
+          "referenceBytes": 84773988,
+          "iterations": 1,
+          "rmsInitial": 0.06402336190401405,
+          "rmsFinal": 0.06402397448633225,
+          "converged": true,
+          "matrix": [
+            0.9999999999271575,
+            0.000011890987253195147,
+            0.000002071055733601007,
+            0.4847435472456709,
+            -0.000011890993392099846,
+            0.9999999999249091,
+            0.000002964155594069499,
+            -0.11090569756925106,
+            -0.000002071020486709104,
+            -0.0000029641802207636258,
+            0.9999999999934622,
+            -0.14049428452238288,
+            0,
+            0,
+            0,
+            1
+          ],
+          "resultParity": true,
+          "exportedBytes": 22606541,
+          "points": 941933,
+          "baselineReferenceReused": true,
+          "optimizedReferenceReused": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "cpu-octree-compact-occupancy",
+  "createdAt": "2026-10-12T09:35:57.721Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\octree-occupancy-baseline-20261012\\dist",
+      "worker": "worker-BSJuKkLq.js",
+      "artifactHashes": {
+        "c2c-worker-nC3pJ-DH.js": "cc4e470f6998b80cabcf0785936ebef1414bb5fe76180239a8346cab8f94cb19",
+        "ca_wasm_bg-BrHnY6FE.wasm": "2bb05665390ee2ef67028307ee571f16b11904a91e8f6b9cdf13cceee810d970",
+        "worker-BSJuKkLq.js": "f308346bc77eba5733318bf008733363825f255f548059ced5969d963aaeaaba"
+      }
+    },
+    "optimized": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-DP_3xQD9.js",
+      "artifactHashes": {
+        "c2c-worker-FW3z7Lw3.js": "b18708641f0b78b25535534f235df311710bdaa7fd55471a7e25350e6fb84910",
+        "ca_wasm_bg-BQw-lYQb.wasm": "6301b2b65d4751cb287a7fb3495cda288b78398d5517e0c9eee2346573b39aa4",
+        "worker-DP_3xQD9.js": "6075212093775527164cadb78c957b0218d5d33a0a5c52ca0a5922fe866213b0"
+      }
+    }
+  },
+  "sourceHashes": {
+    "rust/crates/ca-core/src/octree.rs": "8f4bd1525b59992a90de7ded3cbb916f2403427c7089b7edae4619b00975c67f",
+    "rust/crates/ca-core/src/lib.rs": "44fb3bad9dd132c25a418ef406e03d349fd46f8b548aac7fcd43b27ae50e355e",
+    "rust/crates/ca-core/src/icp.rs": "7d3dc9dfdd71a551542babbf25dbcc18cf1d31eda5388609df0b80667905af48",
+    "rust/crates/ca-wasm/src/lib.rs": "6987592e4ca46985a89882db215e0e787fc13259c4402470f771295986a340eb",
+    "web/src/worker.ts": "a95e9dfa752842b66b7ca2e5b819ed695bb6d1b3e835a4a4781f0f592c707665",
+    "web/src/icp-preparation.ts": "144d80f9f3400f7955ef3b74c95733c250a461d126e72e6f376ca0a0c9d50c36"
+  },
+  "scriptSha256": "31804679d6f3ab7555e16d3817df34e2ac841918f9cae66e031e95319458c03e",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "inputs": {
+    "reference": {
+      "path": "notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "settings": {
+    "maxIterations": 10,
+    "overlap": 0.8,
+    "matchCentroids": false,
+    "pointToPlane": true,
+    "icpCache": true,
+    "sampleLimit": 50000
+  },
+  "repeats": 10,
+  "warmupRounds": 5,
+  "methods": [
+    "load",
+    "transform",
+    "icp"
+  ],
+  "note": "Two immutable production builds compare generation-stamp versus compact-bit occupancy in the same octree builder. Full measured inputs unchanged, no thinning. Both ICP workers retain unchanged reference/tree/lazy-normal caches under the existing 128 MiB capacity budget; full-matrix accumulation remains standard. Load timing covers full load/parse/index/description/RPC and also records existing worker index/parse/prepare fields. Transform timing covers applying the actual ICP-fitted matrix, rebuilding the octree, description and RPC; its fresh load and untimed fitted-matrix derivation are excluded. ICP timing includes exact fitting, applying the transform, rebuilding the octree, description and RPC, with every fresh moving-cloud load outside timing. One excluded first-use pair per method, five excluded alternating warm-up pairs, ten alternating timed pairs unless overridden. Every pair requires identical full coordinate PLY bytes, render/attribute/LOD bits, bounds/shift/counts; ICP also requires identical matrix/RMS/iterations/convergence and cache capacity/reuse controls. Export/verification/removal excluded. Inputs/manifest/six sources/script/both production builds hashed before/after. No builds/tests/scans during timing. CPU clocks/power/GC/other apps uncontrolled. Even/odd source splits are not independent surveys or accuracy ground truth. No GPU adapter/model metadata collected."
+}

@@ -1,0 +1,712 @@
+{
+  "fixture": "files",
+  "backend": "cpu",
+  "poolPrepareMillis": 2776.5,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 941933,
+      "reference": {
+        "points": 941933,
+        "filePoints": 941933,
+        "keepEvery": 1,
+        "bounds": [
+          -9341,
+          -40867,
+          26.044749999999997,
+          -9261,
+          -40746,
+          93.7765
+        ],
+        "timings": {
+          "parse": 62.10000002384186,
+          "index": 67.80000001192093,
+          "workers": 1,
+          "prepare": 47.09999996423721
+        }
+      },
+      "compared": {
+        "points": 941933,
+        "filePoints": 941933,
+        "keepEvery": 1,
+        "bounds": [
+          -9341,
+          -40867,
+          26.039749999999998,
+          -9261,
+          -40746,
+          93.8015
+        ],
+        "timings": {
+          "parse": 41.59999996423721,
+          "index": 57.30000001192093,
+          "workers": 1,
+          "prepare": 20.80000001192093
+        }
+      },
+      "trials": [
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 276.9000000357628,
+          "streamingMillis": 270.2000000476837,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 271,
+          "streamingMillis": 277.5,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 258.5,
+          "streamingMillis": 260,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 280.80000001192093,
+          "streamingMillis": 270,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 284,
+          "streamingMillis": 281.5,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 302.30000001192093,
+          "streamingMillis": 262.80000001192093,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 300.89999997615814,
+          "streamingMillis": 288.19999998807907,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 292.80000001192093,
+          "streamingMillis": 300,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "collected",
+            "streaming"
+          ],
+          "collectedMillis": 261.4000000357628,
+          "streamingMillis": 258.19999998807907,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "streaming",
+            "collected"
+          ],
+          "collectedMillis": 264.89999997615814,
+          "streamingMillis": 279.19999998807907,
+          "workers": 8,
+          "controlWorkers": 8,
+          "stats": {
+            "count": 941933,
+            "min": 0.0014361406598045739,
+            "max": 5.45636789677758,
+            "mean": 0.07118245769664076,
+            "rms": 0.07741985151111361,
+            "stdDev": 0.03044488666868098,
+            "median": 0.06930413047278237
+          },
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T13:03:01.574Z",
+  "warmupRounds": 5,
+  "poolPrewarm": true,
+  "comparison": "joining",
+  "inputs": {
+    "reference": {
+      "path": "../notes/c2c-real-tokyo/reference.ply",
+      "name": "reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "../notes/c2c-real-tokyo/compared.ply",
+      "name": "compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "inputManifestSha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a",
+  "benchmarkScriptSha256": "d768be8a0879f9e6e3c44b97f5094cfb3d105127070602127abdfae509e054a8",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "01bb588d6291cab6cff57e6842af53488ba3e0d22a83d94ba3c7e5249801174c",
+  "poolWorkerSha256": "73124711329934dcf01fc659df1c490cba009c17e1cd1b8515883e4d69bb798c",
+  "wasmSha256": "b49e945097dd022c7a633af57118298b0c559fbcd29999101264e26b4012b479",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Supplied input files, unchanged by the benchmark. Source-file hashes, optional provenance, decoded/file point counts, thinning factors and loaded bounds are recorded. Ordinary production CPU C2C, same snapshots, spatial partitions, Morton query order, reference construction and worker counts. Await the already-started automatic CPU pool warm-up before any fixture/trial; its time is recorded separately and excluded. Five unmeasured collect-all/progressive-join warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no cross-machine speed guarantee. Both joining controls use scalar leaves; collectedMillis waits for every result before joining, streamingMillis joins each result on arrival. Serial cases have identical joining behavior. Summary arithmetic/order is unchanged."
+}

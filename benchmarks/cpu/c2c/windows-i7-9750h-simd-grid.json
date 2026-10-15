@@ -1,0 +1,484 @@
+{
+  "fixture": "grid",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 12,
+  "cases": [
+    {
+      "pointsPerCloud": 10000,
+      "trials": [
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 4.100000023841858,
+          "simdMillis": 3.599999964237213,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 3.300000011920929,
+          "simdMillis": 3.300000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 3.800000011920929,
+          "simdMillis": 5.400000035762787,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 10.399999976158142,
+          "simdMillis": 4.699999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 7.100000023841858,
+          "simdMillis": 6.199999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 7.399999976158142,
+          "simdMillis": 6.800000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 7.600000023841858,
+          "simdMillis": 7.800000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 7.399999976158142,
+          "simdMillis": 7.300000011920929,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 10.099999964237213,
+          "simdMillis": 7.900000035762787,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 9.399999976158142,
+          "simdMillis": 7.699999988079071,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 100000,
+      "trials": [
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 93.60000002384186,
+          "simdMillis": 110.59999996423721,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 91.40000003576279,
+          "simdMillis": 89,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 117.69999998807907,
+          "simdMillis": 91.80000001192093,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 86.69999998807907,
+          "simdMillis": 91.19999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 75,
+          "simdMillis": 48,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 51.5,
+          "simdMillis": 49.700000047683716,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 48.59999996423721,
+          "simdMillis": 52.69999998807907,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 50.30000001192093,
+          "simdMillis": 50.80000001192093,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 48.799999952316284,
+          "simdMillis": 50.80000001192093,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 44.80000001192093,
+          "simdMillis": 48.39999997615814,
+          "workers": 1,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 1000000,
+      "trials": [
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 306.39999997615814,
+          "simdMillis": 280.10000002384186,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 308.69999998807907,
+          "simdMillis": 294.39999997615814,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 282.69999998807907,
+          "simdMillis": 291.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 281.80000001192093,
+          "simdMillis": 291.80000001192093,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 307.19999998807907,
+          "simdMillis": 298,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 308.30000001192093,
+          "simdMillis": 323.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 299.89999997615814,
+          "simdMillis": 361.80000001192093,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 326.5999999642372,
+          "simdMillis": 352.89999997615814,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 330.19999998807907,
+          "simdMillis": 328.4000000357628,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 327.80000001192093,
+          "simdMillis": 331.4000000357628,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    },
+    {
+      "pointsPerCloud": 2000000,
+      "trials": [
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 615.1000000238419,
+          "simdMillis": 557.1000000238419,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 565.5999999642372,
+          "simdMillis": 560.0999999642372,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 590.9000000357628,
+          "simdMillis": 590.8999999761581,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 558.6999999880791,
+          "simdMillis": 562.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 569,
+          "simdMillis": 570.5,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 593.3999999761581,
+          "simdMillis": 579.1999999880791,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 608.6999999880791,
+          "simdMillis": 645.0999999642372,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 613.6000000238419,
+          "simdMillis": 549.7999999523163,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "scalar",
+            "simd"
+          ],
+          "scalarMillis": 572.6999999880791,
+          "simdMillis": 583.3000000119209,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        },
+        {
+          "order": [
+            "simd",
+            "scalar"
+          ],
+          "scalarMillis": 567.5,
+          "simdMillis": 599.6000000238419,
+          "workers": 8,
+          "mismatches": 0,
+          "statsEqual": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "createdAt": "2026-10-11T02:53:22.179Z",
+  "warmupRounds": 5,
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "workerSha256": "52637fdaf3204517d96b0e0efb948ca58ebf2503a7b039fd2e60a7cfa8f67c45",
+  "poolWorkerSha256": "d7e670f11f59a0f65021ec1b48b80d7afec503161712064c0cd9d12d38a74d0d",
+  "wasmSha256": "9fe2a450989e334ed79ba8bdc273a97aa9e41f3573afe39fa29641971e813354",
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Synthetic UTM wavy grid or seeded 50x50x10m scatter, 0.05m vertical offset. Ordinary production CPU C2C, same snapshots, spatial partitions, Morton query order, reference construction and worker counts. Five unmeasured scalar/SIMD warm-up pairs precede alternating timed pairs. Times include planning, copies/transfers, tree builds, distances, joining and exact summaries; file load/rendering are excluded. Every timed pair must match displayed f32 distance bits and exact f64 statistics. Native builds/non-SIMD WASM remain scalar. CPU clocks, power and other applications are uncontrolled; no real-source or cross-machine speed claim."
+}

@@ -1,0 +1,2545 @@
+{
+  "adapter": {
+    "vendor": "nvidia",
+    "architecture": "turing",
+    "isFallbackAdapter": false
+  },
+  "hardwareConcurrency": 12,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+  "points": 878920,
+  "bounds": [
+    3567.662353515625,
+    73441.3125,
+    3.188999891281128,
+    3956.874267578125,
+    73910.6796875,
+    37.35900115966797
+  ],
+  "keepEvery": 1,
+  "cases": [
+    {
+      "method": "normals",
+      "expectedHash": "6f56a50e928413e8207ca65e7cbab408c3b21dc71fe6a578bfdfbddb42588e2c",
+      "setup": {
+        "original": {
+          "elapsedMillis": 523.5,
+          "state": null,
+          "cache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 0
+          },
+          "resultParity": true,
+          "outputPoints": 878920
+        },
+        "webgpu-knn": {
+          "elapsedMillis": 1378.9000000357628,
+          "state": {
+            "requested": "webgpu-knn",
+            "backend": "webgpu-knn",
+            "points": 878920,
+            "k": 24,
+            "workers": 8,
+            "prepareMillis": 216.5,
+            "gpuMillis": 688.5,
+            "verifyMillis": 469.80000001192093,
+            "batches": 57,
+            "referenceReused": false,
+            "gpuBytes": 64301280,
+            "completeRows": 878920
+          },
+          "cache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 64332800,
+            "pending": false,
+            "reuses": 1
+          },
+          "resultParity": true,
+          "outputPoints": 878920
+        },
+        "webgpu": {
+          "elapsedMillis": 732.6000000238419,
+          "state": {
+            "requested": "webgpu",
+            "backend": "webgpu",
+            "points": 878920,
+            "k": 24,
+            "workers": 8,
+            "prepareMillis": 35.90000003576279,
+            "gpuMillis": 71.19999998807907,
+            "verifyMillis": 621.6000000238419,
+            "batches": 16,
+            "referenceReused": false,
+            "gpuBytes": 20878432
+          },
+          "cache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 64332800,
+            "pending": false,
+            "reuses": 2
+          },
+          "resultParity": true,
+          "outputPoints": 878920
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "original",
+            "webgpu-knn",
+            "webgpu"
+          ],
+          "original": {
+            "elapsedMillis": 476.39999997615814,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 3
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1112.1000000238419,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 633.1999999880791,
+              "verifyMillis": 475.2000000476837,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 4
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 664.8000000119209,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 64.10000002384186,
+              "verifyMillis": 597.1000000238419,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 5
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "webgpu-knn",
+            "original"
+          ],
+          "webgpu": {
+            "elapsedMillis": 757.4000000357628,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 83.5,
+              "verifyMillis": 670,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 6
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1135.199999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 671.3000000119209,
+              "verifyMillis": 460,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 7
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 473.30000001192093,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 8
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "original",
+            "webgpu"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1029,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 541.8000000119209,
+              "verifyMillis": 482.9000000357628,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 9
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 470.80000001192093,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 10
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 653.6000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 67.69999998807907,
+              "verifyMillis": 582.1000000238419,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 11
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "original",
+            "webgpu-knn"
+          ],
+          "webgpu": {
+            "elapsedMillis": 656.9000000357628,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 67,
+              "verifyMillis": 585.8000000119209,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 12
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 484.30000001192093,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 13
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1223.5,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 765.6999999880791,
+              "verifyMillis": 454.0999999642372,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 14
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu",
+            "webgpu-knn"
+          ],
+          "original": {
+            "elapsedMillis": 477.80000001192093,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 15
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 699.1999999880791,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 67,
+              "verifyMillis": 626.8999999761581,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 16
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1260.800000011921,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 600.1999999880791,
+              "verifyMillis": 654.6000000238419,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 17
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "webgpu-knn",
+            "webgpu",
+            "original"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1129.699999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 536.5,
+              "verifyMillis": 589,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 18
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 729.8000000119209,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0.10000002384185791,
+              "gpuMillis": 57.59999996423721,
+              "verifyMillis": 667.4000000357628,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 19
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 529.6000000238419,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 20
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu-knn",
+            "webgpu"
+          ],
+          "original": {
+            "elapsedMillis": 523.3000000119209,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 21
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1264.8999999761581,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 708.9000000357628,
+              "verifyMillis": 551.4000000357628,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 22
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 756.1000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 56.5,
+              "verifyMillis": 695.4000000357628,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 23
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "webgpu-knn",
+            "original"
+          ],
+          "webgpu": {
+            "elapsedMillis": 736.8999999761581,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 70.80000001192093,
+              "verifyMillis": 661.9000000357628,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 24
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1148.699999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 657.6000000238419,
+              "verifyMillis": 486.9000000357628,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 25
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 448,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 26
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "original",
+            "webgpu"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1029.5999999642372,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 559.8999999761581,
+              "verifyMillis": 466.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 27
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 482.10000002384186,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 28
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 686.8000000119209,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 72.30000001192093,
+              "verifyMillis": 610.0999999642372,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 29
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "original",
+            "webgpu-knn"
+          ],
+          "webgpu": {
+            "elapsedMillis": 700.3999999761581,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 59.69999998807907,
+              "verifyMillis": 636.1000000238419,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 30
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 500.2999999523163,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 31
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1189.300000011921,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 655.0999999642372,
+              "verifyMillis": 530.5,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 32
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu",
+            "webgpu-knn"
+          ],
+          "original": {
+            "elapsedMillis": 489.2999999523163,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 33
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 702.3000000119209,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 83.5,
+              "verifyMillis": 614.5999999642372,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 34
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1090.6000000238419,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 616.1000000238419,
+              "verifyMillis": 470.10000002384186,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 35
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "webgpu",
+            "original"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1058.800000011921,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 602.1999999880791,
+              "verifyMillis": 452.80000001192093,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 36
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 680,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 79.19999998807907,
+              "verifyMillis": 596.5,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 37
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 447.5999999642372,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 38
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu-knn",
+            "webgpu"
+          ],
+          "original": {
+            "elapsedMillis": 485.5,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 39
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1148.3999999761581,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 666.8999999761581,
+              "verifyMillis": 477.9000000357628,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 40
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 678.6000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 60.10000002384186,
+              "verifyMillis": 614.6999999880791,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 41
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "webgpu-knn",
+            "original"
+          ],
+          "webgpu": {
+            "elapsedMillis": 695.1999999880791,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 66.39999997615814,
+              "verifyMillis": 625.1999999880791,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 42
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1173.4000000357628,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 693.4000000357628,
+              "verifyMillis": 475.5,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 43
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 466,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 44
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "original",
+            "webgpu"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1045.699999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 561.2000000476837,
+              "verifyMillis": 479.9000000357628,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 45
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "original": {
+            "elapsedMillis": 475.69999998807907,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 46
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          },
+          "webgpu": {
+            "elapsedMillis": 686.4000000357628,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 24,
+              "workers": 8,
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 70,
+              "verifyMillis": 612.3999999761581,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 47
+            },
+            "resultParity": true,
+            "outputPoints": 878920
+          }
+        }
+      ],
+      "summary": {
+        "original": {
+          "medianMillis": 483.80000001192093
+        },
+        "webgpu-knn": {
+          "medianMillis": 1139.0499999821186
+        },
+        "webgpu": {
+          "medianMillis": 697.7999999821186
+        }
+      },
+      "comparisons": {
+        "webgpu-vs-original": {
+          "medianPairedReductionPercent": -43.91209857400836,
+          "fasterTrials": 0,
+          "trials": 10
+        },
+        "webgpu-knn-vs-original": {
+          "medianPairedReductionPercent": -136.54507068622488,
+          "fasterTrials": 0,
+          "trials": 10
+        },
+        "webgpu-knn-vs-webgpu": {
+          "medianPairedReductionPercent": -55.79431721380013,
+          "fasterTrials": 0,
+          "trials": 10
+        }
+      }
+    },
+    {
+      "method": "sor",
+      "expectedHash": "4a283f3bd5ad6634e0690e5f1c477a95cf7b42e5a33c27b57973cb8d80e32cda",
+      "setup": {
+        "original": {
+          "elapsedMillis": 626.6000000238419,
+          "state": null,
+          "cache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 58041728,
+            "pending": false,
+            "reuses": 0
+          },
+          "resultParity": true,
+          "outputPoints": 822878
+        },
+        "webgpu-knn": {
+          "elapsedMillis": 1582.800000011921,
+          "state": {
+            "requested": "webgpu-knn",
+            "backend": "webgpu-knn",
+            "points": 878920,
+            "k": 25,
+            "workers": 8,
+            "prepareMillis": 207,
+            "gpuMillis": 814.5,
+            "verifyMillis": 483.0999999642372,
+            "batches": 57,
+            "referenceReused": false,
+            "gpuBytes": 64301280,
+            "completeRows": 878920
+          },
+          "cache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 64332800,
+            "pending": false,
+            "reuses": 1
+          },
+          "resultParity": true,
+          "outputPoints": 822878
+        },
+        "webgpu": {
+          "elapsedMillis": 819.1999999880791,
+          "state": {
+            "requested": "webgpu",
+            "backend": "webgpu",
+            "points": 878920,
+            "k": 25,
+            "workers": 8,
+            "prepareMillis": 36.30000001192093,
+            "gpuMillis": 68.30000001192093,
+            "verifyMillis": 635.1000000238419,
+            "batches": 16,
+            "referenceReused": false,
+            "gpuBytes": 20878432
+          },
+          "cache": {
+            "job": 1,
+            "points": 878920,
+            "parts": 8,
+            "bytes": 64332800,
+            "pending": false,
+            "reuses": 2
+          },
+          "resultParity": true,
+          "outputPoints": 822878
+        }
+      },
+      "warmups": [
+        {
+          "order": [
+            "original",
+            "webgpu-knn",
+            "webgpu"
+          ],
+          "original": {
+            "elapsedMillis": 547.5999999642372,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 3
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1300.699999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 749.8999999761581,
+              "verifyMillis": 462.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 4
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 687.6000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 64.19999998807907,
+              "verifyMillis": 545.8999999761581,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 5
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "webgpu-knn",
+            "original"
+          ],
+          "webgpu": {
+            "elapsedMillis": 695.6999999880791,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 60.30000001192093,
+              "verifyMillis": 558.8999999761581,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 6
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1331.0999999642372,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0.10000002384185791,
+              "gpuMillis": 813,
+              "verifyMillis": 440,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 7
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 514.5,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 8
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "original",
+            "webgpu"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1151.1000000238419,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 642.3999999761581,
+              "verifyMillis": 430.69999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 9
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 584.3999999761581,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 10
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 732.5,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 68.19999998807907,
+              "verifyMillis": 578.1000000238419,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 11
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "original",
+            "webgpu-knn"
+          ],
+          "webgpu": {
+            "elapsedMillis": 732.7000000476837,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 68.10000002384186,
+              "verifyMillis": 569.1999999880791,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 12
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 484.69999998807907,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 13
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1351.800000011921,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 852.5999999642372,
+              "verifyMillis": 420.10000002384186,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 14
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu",
+            "webgpu-knn"
+          ],
+          "original": {
+            "elapsedMillis": 487.89999997615814,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 15
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 700.0999999642372,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 63.30000001192093,
+              "verifyMillis": 558.3000000119209,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 16
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1224.2000000476837,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 672.5,
+              "verifyMillis": 456.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 17
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        }
+      ],
+      "trials": [
+        {
+          "order": [
+            "webgpu-knn",
+            "webgpu",
+            "original"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1112,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 582.6999999880791,
+              "verifyMillis": 450.0999999642372,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 18
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 700.6000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 65.29999995231628,
+              "verifyMillis": 559.1000000238419,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 19
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 505.69999998807907,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 20
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu-knn",
+            "webgpu"
+          ],
+          "original": {
+            "elapsedMillis": 533.8000000119209,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 21
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1329.3999999761581,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 820.8999999761581,
+              "verifyMillis": 429.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 22
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 719.5,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 70.20000004768372,
+              "verifyMillis": 568.8999999761581,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 23
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "webgpu-knn",
+            "original"
+          ],
+          "webgpu": {
+            "elapsedMillis": 729.1999999880791,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 64.19999998807907,
+              "verifyMillis": 586.8000000119209,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 24
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1446.5,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 888.8000000119209,
+              "verifyMillis": 475.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 25
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 500.2999999523163,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 26
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "original",
+            "webgpu"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1095.300000011921,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0.09999996423721313,
+              "gpuMillis": 592.9000000357628,
+              "verifyMillis": 421,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 27
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 510.19999998807907,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 28
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 692.1000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 67.10000002384186,
+              "verifyMillis": 533.4000000357628,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 29
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "original",
+            "webgpu-knn"
+          ],
+          "webgpu": {
+            "elapsedMillis": 705.8000000119209,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 65.10000002384186,
+              "verifyMillis": 564,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 30
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 501.10000002384186,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 31
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1346.5,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 819.3000000119209,
+              "verifyMillis": 448.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 32
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu",
+            "webgpu-knn"
+          ],
+          "original": {
+            "elapsedMillis": 489.30000001192093,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 33
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 715.1999999880791,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 73.19999998807907,
+              "verifyMillis": 557.1000000238419,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 34
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1167.6000000238419,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 655.6000000238419,
+              "verifyMillis": 431.5999999642372,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 35
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "webgpu",
+            "original"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1098.300000011921,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 568.3999999761581,
+              "verifyMillis": 451.89999997615814,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 36
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 736.1000000238419,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 67.39999997615814,
+              "verifyMillis": 574.8000000119209,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 37
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 520.6000000238419,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 38
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "original",
+            "webgpu-knn",
+            "webgpu"
+          ],
+          "original": {
+            "elapsedMillis": 528.9000000357628,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 39
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1360.199999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 828.1999999880791,
+              "verifyMillis": 438.4000000357628,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 40
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 722,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 69.10000002384186,
+              "verifyMillis": 574.8000000119209,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 41
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu",
+            "webgpu-knn",
+            "original"
+          ],
+          "webgpu": {
+            "elapsedMillis": 713.3000000119209,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 67.30000001192093,
+              "verifyMillis": 568.4000000357628,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 42
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu-knn": {
+            "elapsedMillis": 1350.699999988079,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 786.8000000119209,
+              "verifyMillis": 470.19999998807907,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 43
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 511.30000001192093,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 44
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        },
+        {
+          "order": [
+            "webgpu-knn",
+            "original",
+            "webgpu"
+          ],
+          "webgpu-knn": {
+            "elapsedMillis": 1086.8999999761581,
+            "state": {
+              "requested": "webgpu-knn",
+              "backend": "webgpu-knn",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 575.0999999642372,
+              "verifyMillis": 430.7000000476837,
+              "batches": 57,
+              "referenceReused": true,
+              "gpuBytes": 64301280,
+              "completeRows": 878920
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 45
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "original": {
+            "elapsedMillis": 483.39999997615814,
+            "state": null,
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 46
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          },
+          "webgpu": {
+            "elapsedMillis": 713.5,
+            "state": {
+              "requested": "webgpu",
+              "backend": "webgpu",
+              "points": 878920,
+              "k": 25,
+              "workers": 8,
+              "prepareMillis": 0,
+              "gpuMillis": 64.5,
+              "verifyMillis": 554,
+              "batches": 16,
+              "referenceReused": true,
+              "gpuBytes": 20878432
+            },
+            "cache": {
+              "job": 1,
+              "points": 878920,
+              "parts": 8,
+              "bytes": 64332800,
+              "pending": false,
+              "reuses": 47
+            },
+            "resultParity": true,
+            "outputPoints": 822878
+          }
+        }
+      ],
+      "summary": {
+        "original": {
+          "medianMillis": 507.94999998807907
+        },
+        "webgpu-knn": {
+          "medianMillis": 1248.5
+        },
+        "webgpu": {
+          "medianMillis": 714.3499999940395
+        }
+      },
+      "comparisons": {
+        "webgpu-vs-original": {
+          "medianPairedReductionPercent": -40.178634187764644,
+          "fasterTrials": 0,
+          "trials": 10
+        },
+        "webgpu-knn-vs-original": {
+          "medianPairedReductionPercent": -143.835597709176,
+          "fasterTrials": 0,
+          "trials": 10
+        },
+        "webgpu-knn-vs-webgpu": {
+          "medianPairedReductionPercent": -74.0111165019232,
+          "fasterTrials": 0,
+          "trials": 10
+        }
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "comparison": "knn-nearest-candidates",
+  "createdAt": "2026-10-12T13:27:44.951Z",
+  "commit": "f546a4945542586e552cfb6c65115bc37a1c37cb",
+  "workingTreeDirty": true,
+  "builds": {
+    "baseline": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\gpu-knn-baseline-20261012\\dist",
+      "worker": "worker-Bw6KVgy3.js",
+      "artifactHashes": {
+        "c2c-worker-DBQN-YoI.js": "4a621d02afd772d40879371c17fb15ce4ff3f924f5cc3227584d213066ed7d33",
+        "ca_wasm_bg-BzK_u8lC.wasm": "7a61155d6771857b62c387d6b0c6fdd21fb1aebb0b5806389bf56b2ae4bed577",
+        "worker-Bw6KVgy3.js": "e31bca88019784f6af69bd86558e693d16d7fc3c0e90f1020d9c04bc3a17b66f"
+      }
+    },
+    "current": {
+      "root": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\dist\\",
+      "worker": "worker-DQXC1tP3.js",
+      "artifactHashes": {
+        "c2c-worker-B9v0ROzS.js": "18365411c4889ee06cce6ef877009aa5ce71a448c8892715e6b996b6bb0fc426",
+        "ca_wasm_bg-BBodVR7o.wasm": "8c27953bbfb52e5973a0fdd285bbe870736cde34fa5600a89cb7efb4c3450df9",
+        "worker-DQXC1tP3.js": "19fe61c8171e10105338771814df9b7b728bc0cf94142fd10b6180524fd781ce"
+      }
+    }
+  },
+  "scriptSha256": "d5cbb893964723c5cb482031852b08ad6b8276007aec6b00bb1f332951acb5a9",
+  "sourceHashes": {
+    "web/src/gpu-knn-candidates.ts": "811ace7106541d6a6d552aaae65cd0927e83b4303dd5f309cea79e1ffe4642ac",
+    "web/src/gpu-knn-blocks.ts": "63b03bdfcb3edf4a4ee414fc731c4fc896586dbe5c9b966fe78a9a1c029303d1",
+    "web/src/gpu-candidates.ts": "64581efaf65094054b086caa0abe2c2e70256475eab9010405249ff2ee06b586",
+    "web/src/knn-preparation.ts": "5a2a8f8e3e26750efddb9467ada4b5cd8e0de48a2c16b4a074c0564feb1337d9",
+    "web/src/worker.ts": "94c994fe3c342955f1283dc35ce63811bccd1abafe7b0f5c15a82762d970d74e",
+    "web/src/c2c-worker.ts": "b13edc42f117ca128ea532803f7d30d9cb3b22f09e18c9c59fc1f5d01a6c0ce1",
+    "web/src/pool.ts": "b1dc41a3d98c2935b354071294fd4cd80aed954b0f23ae1a31980fb7dc513c8f",
+    "rust/crates/ca-core/src/kdtree.rs": "0c8b19e2fc3947bf3ba2568245d3230b3981ab95bcb3c2d6d87eecada87bef02",
+    "rust/crates/ca-core/src/filter.rs": "a8a3604f517d5ff8d33e2137418639d62fb0f5a561b59014b89d04d0cde878f2",
+    "rust/crates/ca-core/src/normals.rs": "127623c604fa95fb5f094dbdacec07377b5e832c363298fc8b54ec0d61fa3ab7",
+    "rust/crates/ca-wasm/src/lib.rs": "d7353233204b1933415d4d2a3a62ac269325226d4d12bbf51b4d7dc153af1ed3"
+  },
+  "input": {
+    "path": "../notes/c2c-real-autoware/compared.ply",
+    "name": "compared.ply",
+    "bytes": 21094203,
+    "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputManifestSha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df",
+  "repeats": 10,
+  "warmupRounds": 5,
+  "browserVersion": "153.0.8010.12",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592
+  },
+  "note": "Full unchanged measured compared input; no added/thinned coordinates. Normals k=24/up, SOR k=24/ratio=1.0; each method gets fresh contexts. Archived production output is a bit/PLY oracle. Current prepared CPU, physical GPU rounded blocks and physical GPU nearest-k candidates share one immutable source with six counterbalanced orders. Candidate search uses rounded f32 coordinates, private sorted arrays of up to 32 hits, a 32-entry DFS stack and at most 256 node visits per query; output is k tree-order u32 slots. CPU validates distinct finite in-range points, computes the maximum original f64 seed distance and traverses the original tree in historical order with the original split-plane tests plus strict upper-radius exclusions, including before the hit list fills. The candidate verifier does not read per-node boxes; the block control still does. Incomplete/invalid candidate rows use the original query; backend success proves GPU dispatch, not that every row supplied a valid radius. Timed runs require k non-sentinel GPU slots for every row; this completeness count is not an exact-neighbour certificate. Final membership, distances, tie order, normal PCA and SOR arithmetic remain authoritative on CPU. GPU blocks remain one u32 node per query. Whole RPC includes GPU transfer/readback, CPU verification, joining and SOR indexing. GPU phase time measures host submission/readback, not device timestamps. Retained optional bounds and both GPU reference sets are shared after warm-up; no peak-memory claim. Warm reuse required; job-level fallback fails. Loading, pool startup, first setup, five warm-up rounds, output comparison/export/removal excluded. All outputs match archived normal bits/complete SOR PLY bytes. Input/source/manifest/script/source-code/build hashes checked before and after. No builds/tests/scans alongside timing; clocks, power, other applications, scheduling and GC uncontrolled. Even/odd source splits are workload geometry, not accuracy ground truth. GPU identifiers limited to vendor/architecture/fallback."
+}

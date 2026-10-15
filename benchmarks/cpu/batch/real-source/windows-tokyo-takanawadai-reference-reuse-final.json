@@ -1,0 +1,1699 @@
+{
+  "schemaVersion": 1,
+  "comparison": "batch-reference-reuse",
+  "createdAt": "2026-10-14T02:44:31.399519+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/batch.py": "fbd10495fc5e02f931a391bee96386d9767632362f2c70f318e02385c5216046",
+    "cloudanalyzer/ca/evaluate.py": "9c44f154e5f0acb8b84c78de650eb6cb12ea67c1324e9bfe44b07b8ea0766bb2",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/io.py": "bdd4f0136db73925260c7e4557c4cb42a2beb7db26a652015860673674b8e8eb",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/ca/pareto.py": "5f0ae3d4362dcdc224217abf35b5ad641a6aed30737158d07893880edbc1b2c2",
+    "cloudanalyzer/ca/log.py": "e3f8546f64fe2a417f97f7502e1a758f83559f2f75eada6764472500b428f929",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_batch_reference.py": "fe1c0c1365eb63b01a28ede6206387da31b70bd431877b5b398160b7c2b9617a",
+    "cloudanalyzer/scripts/benchmark_batch_reference.py": "2e717bba032ed8b0a26fac1b0c28b35239442fc3cc27f2961ed7eecce94ff460"
+  },
+  "nativeSourceHashes": {
+    "rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+    "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+    "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+    "rust/crates/ca-py/src/lib.rs": "1dbc9733aa85bfcf441732897e4ceeb575201672ddddddc0285d67a97cba1b1b",
+    "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+    "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+    "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85",
+    "rust/crates/ca-py/Cargo.toml": "6909895540f76e07bd63dfdcb199ee119bfd06416cfc117feb05dcfdf4018328",
+    "rust/crates/ca-py/Cargo.lock": "e1a914c99b0e3ffcf62e85125c077047b093e4abefe57e7423a9e8812765d344",
+    "rust/crates/ca-py/pyproject.toml": "50987fd7a703bfab649bc9490f2036cb3781a2acc2c206b76ad604e0486bf41b",
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "4f4c1313deac36d10c509697e54c5483e40a3378f80ed45e4e588b9ab370b3ec",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "ffbac8b261941251c9c0fb2b5b439c71c401aeeb33e48ee8de1393c4c0413446",
+    "rust/crates/ca-py/tests/test_prepared_mesh.py": "f89bb5323b5ded0b674eecbd1bf3615511cda24c9445979f84d105ddae83e387",
+    "rust/crates/ca-py/scripts/benchmark_prepared_mesh.py": "aaef94ed02f5a42555ce12b8ce21e9695b0811a84623f4d45d4cad1097ce7f5a",
+    "rust/crates/ca-py/src/bag.rs": "9103ede327fc7dd080ff394e81023576a4a456511bb587258959fb5fde482aa2",
+    "rust/crates/ca-py/src/copc_spatial.rs": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+    "rust/crates/ca-py/src/odometry.rs": "bf580c742d70c1b41b16dc1a86b93b1a2ea859d4cf3604e02483ee332c22d1cf",
+    "rust/crates/ca-py/src/pose_graph.rs": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+    "rust/crates/ca-py/src/vector_map.rs": "2f94baa82b4380a62d5014698d3e2bc80a5cd8899d8799a5f67eae4d7cec6aea",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/tests/c2c_reference.rs": "6708a0b69d138753cf8ce6bfd38b41eb1729204c246ae05cc028f5c94a359b52",
+    "rust/crates/ca-py/tests/test_prepared_reference.py": "9bad65bd47db72a79f21438f961753397b43c23bae38eb8ba915d5878dad8bf2",
+    "rust/crates/ca-py/scripts/benchmark_prepared_reference.py": "73befa31442b8ff3c07651a43bf1103fcada3ddf25558a4f21269badf1df62a3"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+      "bytes": 22606515,
+      "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+      "bytes": 22606515,
+      "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\inputs.json",
+      "bytes": 10395,
+      "sha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-baseline-20261014.py",
+      "bytes": 14713,
+      "sha256": "6c042de85677edc1b320d441bbb5681fffd82af3c5cd9c64616af7070fe9ae01"
+    },
+    "baseline_evaluate": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-evaluate-baseline-20261014.py",
+      "bytes": 4518,
+      "sha256": "f2d9160ff87b00e6c378958139cc56e3384cb1a6a060fb0fe0dd36bb1ac51ee0"
+    },
+    "build_index": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-20261014\\build.json",
+      "bytes": 4291,
+      "sha256": "77bd0f2574646721a7c27c47a5f0f9acef320340e4cb5ee2a7eb5bad6aca89cc"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\hard-intersection-prepared-v2\\geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+      "bytes": 64051671,
+      "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+      "declaredPoints": 1883866,
+      "decodedPoints": 1883866,
+      "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+      "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+      "license": "CC-BY-4.0",
+      "preparation": {
+        "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+        "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+        "metadata": {
+          "crs": "EPSG:6677",
+          "height": "source orthometric, unchanged",
+          "source_points": 35668990,
+          "retained_points": 1883866,
+          "voxel_m": 0.1,
+          "selection": "first original point, no averaging",
+          "semantic_fields": "classification and UserData cleared",
+          "reference_inputs": [],
+          "core_m": 20,
+          "halo_m": 12,
+          "chunk_points": 300000,
+          "tiles": [
+            {
+              "path": "tile-00-00.las",
+              "points": 226509,
+              "core_min": [
+                -9341,
+                -40867
+              ],
+              "core_max": [
+                -9321,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-00-01.las",
+              "points": 321031,
+              "core_min": [
+                -9341,
+                -40847
+              ],
+              "core_max": [
+                -9321,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-00-02.las",
+              "points": 274860,
+              "core_min": [
+                -9341,
+                -40827
+              ],
+              "core_max": [
+                -9321,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-00-03.las",
+              "points": 183289,
+              "core_min": [
+                -9341,
+                -40807
+              ],
+              "core_max": [
+                -9321,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-00-04.las",
+              "points": 155448,
+              "core_min": [
+                -9341,
+                -40787
+              ],
+              "core_max": [
+                -9321,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-00-05.las",
+              "points": 72188,
+              "core_min": [
+                -9341,
+                -40767
+              ],
+              "core_max": [
+                -9321,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-00-06.las",
+              "points": 444,
+              "core_min": [
+                -9341,
+                -40747
+              ],
+              "core_max": [
+                -9321,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-01-00.las",
+              "points": 410070,
+              "core_min": [
+                -9321,
+                -40867
+              ],
+              "core_max": [
+                -9301,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-01-01.las",
+              "points": 445205,
+              "core_min": [
+                -9321,
+                -40847
+              ],
+              "core_max": [
+                -9301,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-01-02.las",
+              "points": 351091,
+              "core_min": [
+                -9321,
+                -40827
+              ],
+              "core_max": [
+                -9301,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-01-03.las",
+              "points": 290792,
+              "core_min": [
+                -9321,
+                -40807
+              ],
+              "core_max": [
+                -9301,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-01-04.las",
+              "points": 386221,
+              "core_min": [
+                -9321,
+                -40787
+              ],
+              "core_max": [
+                -9301,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-01-05.las",
+              "points": 304607,
+              "core_min": [
+                -9321,
+                -40767
+              ],
+              "core_max": [
+                -9301,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-01-06.las",
+              "points": 82409,
+              "core_min": [
+                -9321,
+                -40747
+              ],
+              "core_max": [
+                -9301,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-02-00.las",
+              "points": 564952,
+              "core_min": [
+                -9301,
+                -40867
+              ],
+              "core_max": [
+                -9281,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-02-01.las",
+              "points": 539117,
+              "core_min": [
+                -9301,
+                -40847
+              ],
+              "core_max": [
+                -9281,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-02-02.las",
+              "points": 261033,
+              "core_min": [
+                -9301,
+                -40827
+              ],
+              "core_max": [
+                -9281,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-02-03.las",
+              "points": 279663,
+              "core_min": [
+                -9301,
+                -40807
+              ],
+              "core_max": [
+                -9281,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-02-04.las",
+              "points": 414965,
+              "core_min": [
+                -9301,
+                -40787
+              ],
+              "core_max": [
+                -9281,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-02-05.las",
+              "points": 349216,
+              "core_min": [
+                -9301,
+                -40767
+              ],
+              "core_max": [
+                -9281,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-02-06.las",
+              "points": 111187,
+              "core_min": [
+                -9301,
+                -40747
+              ],
+              "core_max": [
+                -9281,
+                -40745.99999999999
+              ]
+            },
+            {
+              "path": "tile-03-00.las",
+              "points": 347332,
+              "core_min": [
+                -9281,
+                -40867
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40847
+              ]
+            },
+            {
+              "path": "tile-03-01.las",
+              "points": 440058,
+              "core_min": [
+                -9281,
+                -40847
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40827
+              ]
+            },
+            {
+              "path": "tile-03-02.las",
+              "points": 203818,
+              "core_min": [
+                -9281,
+                -40827
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40807
+              ]
+            },
+            {
+              "path": "tile-03-03.las",
+              "points": 182006,
+              "core_min": [
+                -9281,
+                -40807
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40787
+              ]
+            },
+            {
+              "path": "tile-03-04.las",
+              "points": 218833,
+              "core_min": [
+                -9281,
+                -40787
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40767
+              ]
+            },
+            {
+              "path": "tile-03-05.las",
+              "points": 174187,
+              "core_min": [
+                -9281,
+                -40767
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40747
+              ]
+            },
+            {
+              "path": "tile-03-06.las",
+              "points": 59791,
+              "core_min": [
+                -9281,
+                -40747
+              ],
+              "core_max": [
+                -9260.999999999998,
+                -40745.99999999999
+              ]
+            }
+          ],
+          "drives": [
+            {
+              "path": "26047_Record004_260217-00.csv",
+              "poses": 513,
+              "recording": "26047_Record004_260217.txt"
+            },
+            {
+              "path": "26047_Record050_260217-00.csv",
+              "poses": 480,
+              "recording": "26047_Record050_260217.txt"
+            },
+            {
+              "path": "26047a_Record004_260217-00.csv",
+              "poses": 522,
+              "recording": "26047a_Record004_260217.txt"
+            },
+            {
+              "path": "26047a_Record084_260217-00.csv",
+              "poses": 489,
+              "recording": "26047a_Record084_260217.txt"
+            }
+          ],
+          "bytes": 324264606
+        }
+      }
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 941933,
+        "bytes": 22606515,
+        "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+      }
+    }
+  },
+  "candidates": [
+    {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+      "bytes": 22606541,
+      "sha256": "d052e8384fff06979f2ed0d6a951d195768bd3b710e03e90b190954f28ddd554",
+      "stride": 1,
+      "points": 941933,
+      "xyzF64Sha256": "96298b0393066d2f4d4d9389fde881aa9cfc39ac84a959d8e09e820de57dbb37"
+    },
+    {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+      "bytes": 11303357,
+      "sha256": "dc26b944c36064e3b542cce00279e95c5d729d0ddae81162a09195f42a41cd6e",
+      "stride": 2,
+      "points": 470967,
+      "xyzF64Sha256": "15aee53a48c83835d33eaac14d9e900f64ab818878346785ed4e06659ac0dc78"
+    },
+    {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply",
+      "bytes": 5651765,
+      "sha256": "f5812f198d91267485ccb5308f4fdc399cd57d0922eb6fa1b9d670d66920285f",
+      "stride": 4,
+      "points": 235484,
+      "xyzF64Sha256": "34b04d072fb2ff536315ecf235e4a93f936e64667a12cd41e71062066ab2ad90"
+    }
+  ],
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6823424,
+    "sha256": "8a63601c290af5403f08a3c040c9e5d99e816b687bd0a0dfeea13015fb9a9a49"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12
+  },
+  "threads": 12,
+  "repeats": 10,
+  "warmupRounds": 5,
+  "parity": {
+    "fresh": {
+      "millis": 2947.3146,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 941933,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.07118032649999882,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9684372172267905,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999883218870131,
+            "recall": 0.999987260240378,
+            "f1": 0.9999877910634137
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24070289500420944,
+              "recall": 0.2407039566508446,
+              "f1": 0.24070342582635637
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8580758928713613,
+              "recall": 0.8581916123545942,
+              "f1": 0.8581337487117797
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974573563087821,
+              "recall": 0.997430815142903,
+              "f1": 0.9974440855492829
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158891343652,
+              "recall": 0.9994989027882025,
+              "f1": 0.9995073958891143
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999246230889034,
+              "recall": 0.9999055134494704,
+              "f1": 0.9999150681778847
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999883218870131,
+              "recall": 0.999987260240378,
+              "f1": 0.9999877910634137
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0712 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 470967,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.08165967924518694,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9547715090044622,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999985136962887,
+            "recall": 0.99996708895431,
+            "f1": 0.9999761128771639
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24071113262712673,
+              "recall": 0.12894016878058207,
+              "f1": 0.16792763315108153
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8587862843893521,
+              "recall": 0.6171765932396466,
+              "f1": 0.718206130186402
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9973819821770952,
+              "recall": 0.9868228419643436,
+              "f1": 0.9920743163215617
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995349992674646,
+              "recall": 0.9981506115615442,
+              "f1": 0.9988423257270825
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999171916503704,
+              "recall": 0.9997483897474662,
+              "f1": 0.9998327835742064
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999985136962887,
+              "recall": 0.99996708895431,
+              "f1": 0.9999761128771639
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0817 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 235484,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.09705282679637817,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9322069053358097,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999830137079377,
+            "recall": 0.9998885271033078,
+            "f1": 0.9999357681735497
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.2414049362164733,
+              "recall": 0.06622764039480515,
+              "f1": 0.10394009296016361
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8582196667289498,
+              "recall": 0.3693468643735807,
+              "f1": 0.5164375776282902
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974180836065295,
+              "recall": 0.910957573415519,
+              "f1": 0.9522292466681403
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158906762243,
+              "recall": 0.9905885025792704,
+              "f1": 0.9950321729901673
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999023288206418,
+              "recall": 0.9989755109970667,
+              "f1": 0.9994387050404764
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999830137079377,
+              "recall": 0.9998885271033078,
+              "f1": 0.9999357681735497
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.9322 < min_auc 0.9500",
+              "Chamfer 0.0971 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\fresh-distance-0.bin",
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\fresh-distance-1.bin",
+          "bytes": 7535464,
+          "sha256": "dac0f0b69efd5b929c9b9da4c44cfbb9e06ff91b07b1a21269cb282b91fb6604",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\fresh-distance-2.bin",
+          "bytes": 3767736,
+          "sha256": "813744aca38fcd606eda757ccf7b1097a2a2a4fbd26375b354c531b2629bbb33",
+          "points": 470967
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\fresh-distance-3.bin",
+          "bytes": 7535464,
+          "sha256": "4bd5274b05a3d8e6b18694368a321e47d64b88edc53b93cac8ca973e530ce6fd",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\fresh-distance-4.bin",
+          "bytes": 1883872,
+          "sha256": "f1060efdf7ec8a4521c107d1de08fc2275cf23aa9cba1890960e7377028f8fb2",
+          "points": 235484
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\fresh-distance-5.bin",
+          "bytes": 7535464,
+          "sha256": "4aafe9ad96708ea887f4665185df2f0bef9aeb8bf7415b16bc7ad41e6a5f8a6b",
+          "points": 941933
+        }
+      ],
+      "loads": [
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply"
+      ],
+      "referenceCapacities": []
+    },
+    "reuse": {
+      "millis": 1971.3019,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 941933,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.07118032649999882,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9684372172267905,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999883218870131,
+            "recall": 0.999987260240378,
+            "f1": 0.9999877910634137
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24070289500420944,
+              "recall": 0.2407039566508446,
+              "f1": 0.24070342582635637
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8580758928713613,
+              "recall": 0.8581916123545942,
+              "f1": 0.8581337487117797
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974573563087821,
+              "recall": 0.997430815142903,
+              "f1": 0.9974440855492829
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158891343652,
+              "recall": 0.9994989027882025,
+              "f1": 0.9995073958891143
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999246230889034,
+              "recall": 0.9999055134494704,
+              "f1": 0.9999150681778847
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999883218870131,
+              "recall": 0.999987260240378,
+              "f1": 0.9999877910634137
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0712 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 470967,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.08165967924518694,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9547715090044622,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999985136962887,
+            "recall": 0.99996708895431,
+            "f1": 0.9999761128771639
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24071113262712673,
+              "recall": 0.12894016878058207,
+              "f1": 0.16792763315108153
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8587862843893521,
+              "recall": 0.6171765932396466,
+              "f1": 0.718206130186402
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9973819821770952,
+              "recall": 0.9868228419643436,
+              "f1": 0.9920743163215617
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995349992674646,
+              "recall": 0.9981506115615442,
+              "f1": 0.9988423257270825
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999171916503704,
+              "recall": 0.9997483897474662,
+              "f1": 0.9998327835742064
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999985136962887,
+              "recall": 0.99996708895431,
+              "f1": 0.9999761128771639
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0817 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 235484,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.09705282679637817,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9322069053358097,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999830137079377,
+            "recall": 0.9998885271033078,
+            "f1": 0.9999357681735497
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.2414049362164733,
+              "recall": 0.06622764039480515,
+              "f1": 0.10394009296016361
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8582196667289498,
+              "recall": 0.3693468643735807,
+              "f1": 0.5164375776282902
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974180836065295,
+              "recall": 0.910957573415519,
+              "f1": 0.9522292466681403
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158906762243,
+              "recall": 0.9905885025792704,
+              "f1": 0.9950321729901673
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999023288206418,
+              "recall": 0.9989755109970667,
+              "f1": 0.9994387050404764
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999830137079377,
+              "recall": 0.9998885271033078,
+              "f1": 0.9999357681735497
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.9322 < min_auc 0.9500",
+              "Chamfer 0.0971 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+      "distances": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\reuse-distance-0.bin",
+          "bytes": 7535464,
+          "sha256": "7e75024ef88ae2684adc2fac1a3a92f8d6b8b3184d4143d4301aa2b5b81aef41",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\reuse-distance-1.bin",
+          "bytes": 7535464,
+          "sha256": "dac0f0b69efd5b929c9b9da4c44cfbb9e06ff91b07b1a21269cb282b91fb6604",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\reuse-distance-2.bin",
+          "bytes": 3767736,
+          "sha256": "813744aca38fcd606eda757ccf7b1097a2a2a4fbd26375b354c531b2629bbb33",
+          "points": 470967
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\reuse-distance-3.bin",
+          "bytes": 7535464,
+          "sha256": "4bd5274b05a3d8e6b18694368a321e47d64b88edc53b93cac8ca973e530ce6fd",
+          "points": 941933
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\reuse-distance-4.bin",
+          "bytes": 1883872,
+          "sha256": "f1060efdf7ec8a4521c107d1de08fc2275cf23aa9cba1890960e7377028f8fb2",
+          "points": 235484
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\reuse-distance-5.bin",
+          "bytes": 7535464,
+          "sha256": "4aafe9ad96708ea887f4665185df2f0bef9aeb8bf7415b16bc7ad41e6a5f8a6b",
+          "points": 941933
+        }
+      ],
+      "loads": [
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply"
+      ],
+      "referenceCapacities": [
+        32025740
+      ]
+    }
+  },
+  "firstUse": {
+    "fresh": {
+      "millis": 2668.741,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 941933,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.07118032649999882,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9684372172267905,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999883218870131,
+            "recall": 0.999987260240378,
+            "f1": 0.9999877910634137
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24070289500420944,
+              "recall": 0.2407039566508446,
+              "f1": 0.24070342582635637
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8580758928713613,
+              "recall": 0.8581916123545942,
+              "f1": 0.8581337487117797
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974573563087821,
+              "recall": 0.997430815142903,
+              "f1": 0.9974440855492829
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158891343652,
+              "recall": 0.9994989027882025,
+              "f1": 0.9995073958891143
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999246230889034,
+              "recall": 0.9999055134494704,
+              "f1": 0.9999150681778847
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999883218870131,
+              "recall": 0.999987260240378,
+              "f1": 0.9999877910634137
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0712 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 470967,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.08165967924518694,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9547715090044622,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999985136962887,
+            "recall": 0.99996708895431,
+            "f1": 0.9999761128771639
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24071113262712673,
+              "recall": 0.12894016878058207,
+              "f1": 0.16792763315108153
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8587862843893521,
+              "recall": 0.6171765932396466,
+              "f1": 0.718206130186402
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9973819821770952,
+              "recall": 0.9868228419643436,
+              "f1": 0.9920743163215617
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995349992674646,
+              "recall": 0.9981506115615442,
+              "f1": 0.9988423257270825
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999171916503704,
+              "recall": 0.9997483897474662,
+              "f1": 0.9998327835742064
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999985136962887,
+              "recall": 0.99996708895431,
+              "f1": 0.9999761128771639
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0817 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 235484,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.09705282679637817,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9322069053358097,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999830137079377,
+            "recall": 0.9998885271033078,
+            "f1": 0.9999357681735497
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.2414049362164733,
+              "recall": 0.06622764039480515,
+              "f1": 0.10394009296016361
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8582196667289498,
+              "recall": 0.3693468643735807,
+              "f1": 0.5164375776282902
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974180836065295,
+              "recall": 0.910957573415519,
+              "f1": 0.9522292466681403
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158906762243,
+              "recall": 0.9905885025792704,
+              "f1": 0.9950321729901673
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999023288206418,
+              "recall": 0.9989755109970667,
+              "f1": 0.9994387050404764
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999830137079377,
+              "recall": 0.9998885271033078,
+              "f1": 0.9999357681735497
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.9322 < min_auc 0.9500",
+              "Chamfer 0.0971 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+      "distances": [],
+      "loads": [],
+      "referenceCapacities": []
+    },
+    "reuse": {
+      "millis": 1858.5435,
+      "report": [
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply",
+          "num_points": 941933,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.07118032649999882,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9684372172267905,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999883218870131,
+            "recall": 0.999987260240378,
+            "f1": 0.9999877910634137
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24070289500420944,
+              "recall": 0.2407039566508446,
+              "f1": 0.24070342582635637
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8580758928713613,
+              "recall": 0.8581916123545942,
+              "f1": 0.8581337487117797
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974573563087821,
+              "recall": 0.997430815142903,
+              "f1": 0.9974440855492829
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158891343652,
+              "recall": 0.9994989027882025,
+              "f1": 0.9995073958891143
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999246230889034,
+              "recall": 0.9999055134494704,
+              "f1": 0.9999150681778847
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999883218870131,
+              "recall": 0.999987260240378,
+              "f1": 0.9999877910634137
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0712 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-1.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-1_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply",
+          "num_points": 470967,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.08165967924518694,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9547715090044622,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.999985136962887,
+            "recall": 0.99996708895431,
+            "f1": 0.9999761128771639
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.24071113262712673,
+              "recall": 0.12894016878058207,
+              "f1": 0.16792763315108153
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8587862843893521,
+              "recall": 0.6171765932396466,
+              "f1": 0.718206130186402
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9973819821770952,
+              "recall": 0.9868228419643436,
+              "f1": 0.9920743163215617
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995349992674646,
+              "recall": 0.9981506115615442,
+              "f1": 0.9988423257270825
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999171916503704,
+              "recall": 0.9997483897474662,
+              "f1": 0.9998327835742064
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.999985136962887,
+              "recall": 0.99996708895431,
+              "f1": 0.9999761128771639
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "Chamfer 0.0817 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-2.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-2_vs_reference_heatmap.png"
+          },
+          "compression": null
+        },
+        {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply",
+          "num_points": 235484,
+          "reference_path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply",
+          "reference_points": 941933,
+          "chamfer_distance": 0.09705282679637817,
+          "hausdorff_distance": 5.45636789677758,
+          "auc": 0.9322069053358097,
+          "best_f1": {
+            "threshold": 1.0,
+            "precision": 0.9999830137079377,
+            "recall": 0.9998885271033078,
+            "f1": 0.9999357681735497
+          },
+          "f1_scores": [
+            {
+              "threshold": 0.05,
+              "precision": 0.2414049362164733,
+              "recall": 0.06622764039480515,
+              "f1": 0.10394009296016361
+            },
+            {
+              "threshold": 0.1,
+              "precision": 0.8582196667289498,
+              "recall": 0.3693468643735807,
+              "f1": 0.5164375776282902
+            },
+            {
+              "threshold": 0.2,
+              "precision": 0.9974180836065295,
+              "recall": 0.910957573415519,
+              "f1": 0.9522292466681403
+            },
+            {
+              "threshold": 0.3,
+              "precision": 0.9995158906762243,
+              "recall": 0.9905885025792704,
+              "f1": 0.9950321729901673
+            },
+            {
+              "threshold": 0.5,
+              "precision": 0.9999023288206418,
+              "recall": 0.9989755109970667,
+              "f1": 0.9994387050404764
+            },
+            {
+              "threshold": 1.0,
+              "precision": 0.9999830137079377,
+              "recall": 0.9998885271033078,
+              "f1": 0.9999357681735497
+            }
+          ],
+          "quality_gate": {
+            "passed": false,
+            "min_auc": 0.95,
+            "max_chamfer": 0.02,
+            "reasons": [
+              "AUC 0.9322 < min_auc 0.9500",
+              "Chamfer 0.0971 > max_chamfer 0.0200"
+            ]
+          },
+          "inspect": {
+            "web_heatmap": "ca web 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' --heatmap",
+            "heatmap3d": "ca heatmap3d 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\batch-reference-tokyo-final-20261014\\candidates\\stride-4.ply' 'C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\reference.ply' -o stride-4_vs_reference_heatmap.png"
+          },
+          "compression": null
+        }
+      ],
+      "reportSha256": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+      "distances": [],
+      "loads": [],
+      "referenceCapacities": []
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 3173.8117,
+        "reuse": 1983.9078
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2087.0801,
+        "fresh": 3030.1762
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2879.4701,
+        "reuse": 1948.2803
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 2067.3141,
+        "fresh": 3082.149
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2958.3913,
+        "reuse": 1930.38
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1972.5127,
+        "fresh": 2802.2253
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2716.1521,
+        "reuse": 1684.1268
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1639.4025,
+        "fresh": 2406.5214
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2390.049,
+        "reuse": 1610.1133
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1591.0802,
+        "fresh": 2443.2266
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2349.7979,
+        "reuse": 1538.2892
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1682.4548,
+        "fresh": 2455.8866
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2447.1895,
+        "reuse": 1665.7048
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "reuse",
+        "fresh"
+      ],
+      "millis": {
+        "reuse": 1574.5808,
+        "fresh": 2433.1705
+      },
+      "reportHashes": {
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    },
+    {
+      "order": [
+        "fresh",
+        "reuse"
+      ],
+      "millis": {
+        "fresh": 2464.4603,
+        "reuse": 1618.0958
+      },
+      "reportHashes": {
+        "fresh": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1",
+        "reuse": "7196e76b9d8bf0938ad45838f362ba40290db56d4f438a22402c9d925ef1a4b1"
+      }
+    }
+  ],
+  "summary": {
+    "freshMedianMillis": 2445.20805,
+    "reuseMedianMillis": 1628.74915,
+    "pairedShorteningPercent": 33.48770843723621,
+    "pairedSavedMedianMillis": 820.6106500000001,
+    "fasterTrials": 10
+  },
+  "accuracy": {
+    "fullF64ArraysChecked": 12,
+    "batchReportsChecked": 34
+  },
+  "memory": {
+    "referenceNativePayloadBytes": 32025740
+  },
+  "note": "Whole batch function includes file discovery and loading, per-invocation reference preparation/destruction, six bidirectional queries, all evaluation summaries and quality gates. Three candidates select unchanged real compared coordinates at strides 1/2/4; they are subsets of one source, not independent surveys. Full-f64 parity and excluded first pairs precede five warm-up and alternating timed pairs. Candidate writes, imports, hashing, correctness checks and CLI report serialization are outside clocks. No outliers removed; warmed OS file cache, clocks and scheduling remain uncontrolled. Native capacity is payload, not RSS. No browser/GPU speed claim."
+}

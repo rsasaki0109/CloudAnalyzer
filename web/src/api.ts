@@ -7,6 +7,7 @@ import type {
   FilterOp,
   IcpOutput,
   LoadedCloud,
+  MapQuality,
   M3c2Output,
   MeshFormat,
   MeshOutput,
@@ -136,9 +137,13 @@ export function evaluateTrajectory(
 }
 
 /** C2C, or C2M when `reference` is a mesh (`signed` then applies). */
-export function cloudToCloud(compared: number, reference: number, signed = true): Promise<C2cOutput> {
-  return call({ kind: "c2c", compared, reference, signed });
+export function cloudToCloud(compared: number, reference: number, signed = true,
+  backend: "cpu" | "webgpu" = "cpu", gpuVerifyWorkers = 1): Promise<C2cOutput> {
+  return call({ kind: "c2c", compared, reference, signed, backend, gpuVerifyWorkers });
 }
+
+/** Prepare the WebGPU device/pipeline before a distance computation starts. */
+export function prepareGpuC2c(): Promise<void> { return call({ kind: "gpu-prepare" }); }
 
 export function removeCloud(id: number): Promise<void> {
   return call({ kind: "remove", id });
@@ -246,7 +251,13 @@ export function extractGround(params: Omit<Extract<Request, { kind: "ground" }>,
   return call({ kind: "ground", ...params });
 }
 
-/** M3C2 change between two clouds, at core points from `compared`. */
+/** Complete map quality, with both C2C directions sharing the CPU pool. */
+export function evaluateMapQuality(
+  params: Omit<Extract<Request, { kind: "map-evaluate" }>, "kind">,
+): Promise<C2cOutput & { quality: MapQuality }> {
+  return call({ kind: "map-evaluate", ...params });
+}
+
 /** `[AWD, SCS, voxels]` of `compared` against the ground-truth map `reference`. */
 export function mapVoxelScores(
   params: Omit<Extract<Request, { kind: "map-quality" }>, "kind">,
@@ -254,6 +265,7 @@ export function mapVoxelScores(
   return call({ kind: "map-quality", ...params });
 }
 
+/** M3C2 change between two clouds, at core points from `compared`. */
 export function computeM3c2(params: Omit<Extract<Request, { kind: "m3c2" }>, "kind">): Promise<M3c2Output> {
   return call({ kind: "m3c2", ...params });
 }

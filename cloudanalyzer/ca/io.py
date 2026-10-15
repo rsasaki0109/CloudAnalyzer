@@ -17,6 +17,7 @@ from ca._rust import core
 SUPPORTED_EXTENSIONS = {".pcd", ".ply", ".las", ".laz", ".csv"}
 
 _BINARY_XYZ_PLY_MAX_BYTES = 64 * 1024 * 1024
+_CSV_POINT_BATCH_SIZE = 65_536
 
 
 def _validate_chunk_size(chunk_size: int) -> int:
@@ -320,6 +321,15 @@ def _load_csv_point_cloud(path: Path) -> o3d.geometry.PointCloud:
             has_header = True
 
         points: list[list[float]] = []
+        chunks: list[np.ndarray] = []
+
+        def flush() -> None:
+            if points:
+                chunk = _filter_chunk(np.asarray(points, dtype=float), None)
+                if len(chunk):
+                    chunks.append(chunk)
+                points.clear()
+
         if has_header:
             dict_reader = csv.DictReader(f)
             if dict_reader.fieldnames is None:
@@ -336,19 +346,31 @@ def _load_csv_point_cloud(path: Path) -> o3d.geometry.PointCloud:
                 )
             for dict_row in dict_reader:
                 xyz = [float(dict_row[name]) for name in axis_names]
-                if np.isfinite(xyz).all():
-                    points.append(xyz)
+                points.append(xyz)
+                if len(points) >= _CSV_POINT_BATCH_SIZE:
+                    flush()
         else:
             plain_reader = csv.reader(f)
             for row in plain_reader:
                 if len(row) < 3:
                     continue
                 xyz = [float(row[0]), float(row[1]), float(row[2])]
-                if np.isfinite(xyz).all():
-                    points.append(xyz)
+                points.append(xyz)
+                if len(points) >= _CSV_POINT_BATCH_SIZE:
+                    flush()
 
+        flush()
+
+    if len(chunks) == 1:
+        values = chunks[0]
+    elif chunks:
+        values = np.concatenate(chunks, axis=0)
+    else:
+        # Retain the original empty-array conversion and its error behavior.
+        values = np.asarray([], dtype=float)
+    chunks.clear()
     pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(np.asarray(points, dtype=float))
+    pcd.points = o3d.utility.Vector3dVector(values)
     return pcd
 
 

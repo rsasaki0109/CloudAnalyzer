@@ -105,6 +105,12 @@ Four full real-source loads with the optional Rust core disabled are
 identical coordinate bits. Native and streaming readers retain their existing
 paths. [Scope and measurements](../docs/cpu-las-packed-coordinates.md).
 
+Whole-file CSV loading validates finite coordinates in batches while preserving
+the existing parser and coordinate bits. Six real-source format-export loads
+are 46.61–60.15% shorter by median paired duration, with 30/30 faster pairs.
+Temporary Python row lists are bounded; the complete output remains in memory.
+[Parsing compatibility and measurements](../docs/cpu-csv-batch-filter.md).
+
 Comparisons without a snapshot skip unused heatmap coloring. Six real-source
 comparisons with registration disabled are 78.45–82.21% shorter, with 60/60
 faster pairs and identical numeric/file reports. Snapshot colors and pixels

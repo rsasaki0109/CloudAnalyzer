@@ -1,0 +1,1020 @@
+{
+  "schemaVersion": 1,
+  "comparison": "csv-batch-finite-filter",
+  "createdAt": "2026-10-15T05:59:20.189211+00:00",
+  "dataset": "autoware-planning",
+  "inputManifest": {
+    "schemaVersion": 1,
+    "sources": {
+      "pandaset019": {
+        "points": 531908,
+        "csv": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\pandaset019.csv",
+          "bytes": 30915566,
+          "sha256": "b75ff6f79c9c9e4d74d2a2a3f7b2cac6e09debdc63f25baf2e513c5aa2d9ce51"
+        },
+        "header": [
+          "x",
+          "y",
+          "z"
+        ],
+        "coordinateOracle": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\pandaset019-xyz-f64.bin",
+          "bytes": 12765792,
+          "sha256": "a958ef839bea9c3d8bdde29e3b8439d1e0b3059943ef1acee617ca6c0e47de43"
+        },
+        "geometry": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+          "bytes": 12765915,
+          "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+        },
+        "originalSource": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\pandaset-vector-map\\map.pcd",
+          "bytes": 17021251,
+          "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc"
+        },
+        "sourceManifest": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\inputs.json",
+          "bytes": 1578,
+          "sha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e"
+        },
+        "provenance": {
+          "schemaVersion": 1,
+          "source": {
+            "path": "../demo_data/pandaset-vector-map/map.pcd",
+            "bytes": 17021251,
+            "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+            "declaredPoints": 1063816,
+            "decodedPoints": 1063816,
+            "url": "https://github.com/scaleapi/pandaset-devkit",
+            "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+            "license": "CC-BY-4.0"
+          },
+          "split": {
+            "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+            "disjointSourceIndices": true,
+            "geometricDuplicatesPossible": true,
+            "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+            "attributes": "Only XYZ is exported; original source attributes are not modified",
+            "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+          },
+          "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+          "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+          "inputs": {
+            "reference": {
+              "file": "reference.ply",
+              "points": 531908,
+              "bytes": 12765915,
+              "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+            },
+            "compared": {
+              "file": "compared.ply",
+              "points": 531908,
+              "bytes": 12765915,
+              "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+            }
+          }
+        },
+        "encoding": "UTF-8 CSV with CRLF records, Python float round-trip strings, XYZ column order.",
+        "interpretation": "Format export of the full existing compared subset of one measured cloud. All f64 coordinate bits and point order retained; no new coordinates, thinning, perturbation or geometric conversion. Not independent surveys or native sensor CSV logs."
+      },
+      "autoware-planning": {
+        "points": 878920,
+        "csv": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\autoware-planning.csv",
+          "bytes": 43410905,
+          "sha256": "1802af79afca2e0593c6e5e6345bae85d02deafb245e988e0efb9662066e4641"
+        },
+        "header": null,
+        "coordinateOracle": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\autoware-planning-xyz-f64.bin",
+          "bytes": 21094080,
+          "sha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700"
+        },
+        "geometry": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+          "bytes": 21094203,
+          "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+        },
+        "originalSource": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+          "bytes": 28125828,
+          "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+        },
+        "sourceManifest": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+          "bytes": 1583,
+          "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+        },
+        "provenance": {
+          "schemaVersion": 1,
+          "source": {
+            "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+            "bytes": 28125828,
+            "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+            "declaredPoints": 1757841,
+            "decodedPoints": 1757841,
+            "url": "https://docs.autoware.org/main/demos/planning-sim/",
+            "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+            "license": "No separate dataset license asserted"
+          },
+          "split": {
+            "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+            "disjointSourceIndices": true,
+            "geometricDuplicatesPossible": true,
+            "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+            "attributes": "Only XYZ is exported; original source attributes are not modified",
+            "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+          },
+          "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+          "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+          "inputs": {
+            "reference": {
+              "file": "reference.ply",
+              "points": 878921,
+              "bytes": 21094227,
+              "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+            },
+            "compared": {
+              "file": "compared.ply",
+              "points": 878920,
+              "bytes": 21094203,
+              "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+            }
+          }
+        },
+        "encoding": "UTF-8 CSV with CRLF records, Python float round-trip strings, XYZ column order.",
+        "interpretation": "Format export of the full existing compared subset of one measured cloud. All f64 coordinate bits and point order retained; no new coordinates, thinning, perturbation or geometric conversion. Not independent surveys or native sensor CSV logs."
+      },
+      "tokyo-takanawadai": {
+        "points": 941933,
+        "csv": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\tokyo-takanawadai.csv",
+          "bytes": 34855677,
+          "sha256": "b32de38be5d33fac512c1ab00e9087eeb25202e1feee9af8093654fcbdcc9de8"
+        },
+        "header": [
+          "x_m",
+          "y_m",
+          "z_m"
+        ],
+        "coordinateOracle": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\tokyo-takanawadai-xyz-f64.bin",
+          "bytes": 22606392,
+          "sha256": "96298b0393066d2f4d4d9389fde881aa9cfc39ac84a959d8e09e820de57dbb37"
+        },
+        "geometry": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\compared.ply",
+          "bytes": 22606515,
+          "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+        },
+        "originalSource": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\hard-intersection-prepared-v2\\geometry.las",
+          "bytes": 64051671,
+          "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+        },
+        "sourceManifest": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-tokyo\\inputs.json",
+          "bytes": 10395,
+          "sha256": "e60e7bc9ee4dbfc6fff8521fa627bd43eb920429e0017b0facf397adacbb7b0a"
+        },
+        "provenance": {
+          "schemaVersion": 1,
+          "source": {
+            "path": "../notes/hard-intersection-prepared-v2/geometry.las",
+            "bytes": 64051671,
+            "sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+            "declaredPoints": 1883866,
+            "decodedPoints": 1883866,
+            "url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+            "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026; locally retained first original point per 0.1 m voxel",
+            "license": "CC-BY-4.0",
+            "preparation": {
+              "path": "../notes/hard-intersection-prepared-v2/preparation.json",
+              "sha256": "978a7801e43957d5bf8baf3c82fbcb4559755bcbf309e705969b189666776c63",
+              "metadata": {
+                "crs": "EPSG:6677",
+                "height": "source orthometric, unchanged",
+                "source_points": 35668990,
+                "retained_points": 1883866,
+                "voxel_m": 0.1,
+                "selection": "first original point, no averaging",
+                "semantic_fields": "classification and UserData cleared",
+                "reference_inputs": [],
+                "core_m": 20,
+                "halo_m": 12,
+                "chunk_points": 300000,
+                "tiles": [
+                  {
+                    "path": "tile-00-00.las",
+                    "points": 226509,
+                    "core_min": [
+                      -9341,
+                      -40867
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40847
+                    ]
+                  },
+                  {
+                    "path": "tile-00-01.las",
+                    "points": 321031,
+                    "core_min": [
+                      -9341,
+                      -40847
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40827
+                    ]
+                  },
+                  {
+                    "path": "tile-00-02.las",
+                    "points": 274860,
+                    "core_min": [
+                      -9341,
+                      -40827
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40807
+                    ]
+                  },
+                  {
+                    "path": "tile-00-03.las",
+                    "points": 183289,
+                    "core_min": [
+                      -9341,
+                      -40807
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40787
+                    ]
+                  },
+                  {
+                    "path": "tile-00-04.las",
+                    "points": 155448,
+                    "core_min": [
+                      -9341,
+                      -40787
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40767
+                    ]
+                  },
+                  {
+                    "path": "tile-00-05.las",
+                    "points": 72188,
+                    "core_min": [
+                      -9341,
+                      -40767
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40747
+                    ]
+                  },
+                  {
+                    "path": "tile-00-06.las",
+                    "points": 444,
+                    "core_min": [
+                      -9341,
+                      -40747
+                    ],
+                    "core_max": [
+                      -9321,
+                      -40745.99999999999
+                    ]
+                  },
+                  {
+                    "path": "tile-01-00.las",
+                    "points": 410070,
+                    "core_min": [
+                      -9321,
+                      -40867
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40847
+                    ]
+                  },
+                  {
+                    "path": "tile-01-01.las",
+                    "points": 445205,
+                    "core_min": [
+                      -9321,
+                      -40847
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40827
+                    ]
+                  },
+                  {
+                    "path": "tile-01-02.las",
+                    "points": 351091,
+                    "core_min": [
+                      -9321,
+                      -40827
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40807
+                    ]
+                  },
+                  {
+                    "path": "tile-01-03.las",
+                    "points": 290792,
+                    "core_min": [
+                      -9321,
+                      -40807
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40787
+                    ]
+                  },
+                  {
+                    "path": "tile-01-04.las",
+                    "points": 386221,
+                    "core_min": [
+                      -9321,
+                      -40787
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40767
+                    ]
+                  },
+                  {
+                    "path": "tile-01-05.las",
+                    "points": 304607,
+                    "core_min": [
+                      -9321,
+                      -40767
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40747
+                    ]
+                  },
+                  {
+                    "path": "tile-01-06.las",
+                    "points": 82409,
+                    "core_min": [
+                      -9321,
+                      -40747
+                    ],
+                    "core_max": [
+                      -9301,
+                      -40745.99999999999
+                    ]
+                  },
+                  {
+                    "path": "tile-02-00.las",
+                    "points": 564952,
+                    "core_min": [
+                      -9301,
+                      -40867
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40847
+                    ]
+                  },
+                  {
+                    "path": "tile-02-01.las",
+                    "points": 539117,
+                    "core_min": [
+                      -9301,
+                      -40847
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40827
+                    ]
+                  },
+                  {
+                    "path": "tile-02-02.las",
+                    "points": 261033,
+                    "core_min": [
+                      -9301,
+                      -40827
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40807
+                    ]
+                  },
+                  {
+                    "path": "tile-02-03.las",
+                    "points": 279663,
+                    "core_min": [
+                      -9301,
+                      -40807
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40787
+                    ]
+                  },
+                  {
+                    "path": "tile-02-04.las",
+                    "points": 414965,
+                    "core_min": [
+                      -9301,
+                      -40787
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40767
+                    ]
+                  },
+                  {
+                    "path": "tile-02-05.las",
+                    "points": 349216,
+                    "core_min": [
+                      -9301,
+                      -40767
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40747
+                    ]
+                  },
+                  {
+                    "path": "tile-02-06.las",
+                    "points": 111187,
+                    "core_min": [
+                      -9301,
+                      -40747
+                    ],
+                    "core_max": [
+                      -9281,
+                      -40745.99999999999
+                    ]
+                  },
+                  {
+                    "path": "tile-03-00.las",
+                    "points": 347332,
+                    "core_min": [
+                      -9281,
+                      -40867
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40847
+                    ]
+                  },
+                  {
+                    "path": "tile-03-01.las",
+                    "points": 440058,
+                    "core_min": [
+                      -9281,
+                      -40847
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40827
+                    ]
+                  },
+                  {
+                    "path": "tile-03-02.las",
+                    "points": 203818,
+                    "core_min": [
+                      -9281,
+                      -40827
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40807
+                    ]
+                  },
+                  {
+                    "path": "tile-03-03.las",
+                    "points": 182006,
+                    "core_min": [
+                      -9281,
+                      -40807
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40787
+                    ]
+                  },
+                  {
+                    "path": "tile-03-04.las",
+                    "points": 218833,
+                    "core_min": [
+                      -9281,
+                      -40787
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40767
+                    ]
+                  },
+                  {
+                    "path": "tile-03-05.las",
+                    "points": 174187,
+                    "core_min": [
+                      -9281,
+                      -40767
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40747
+                    ]
+                  },
+                  {
+                    "path": "tile-03-06.las",
+                    "points": 59791,
+                    "core_min": [
+                      -9281,
+                      -40747
+                    ],
+                    "core_max": [
+                      -9260.999999999998,
+                      -40745.99999999999
+                    ]
+                  }
+                ],
+                "drives": [
+                  {
+                    "path": "26047_Record004_260217-00.csv",
+                    "poses": 513,
+                    "recording": "26047_Record004_260217.txt"
+                  },
+                  {
+                    "path": "26047_Record050_260217-00.csv",
+                    "poses": 480,
+                    "recording": "26047_Record050_260217.txt"
+                  },
+                  {
+                    "path": "26047a_Record004_260217-00.csv",
+                    "poses": 522,
+                    "recording": "26047a_Record004_260217.txt"
+                  },
+                  {
+                    "path": "26047a_Record084_260217-00.csv",
+                    "poses": 489,
+                    "recording": "26047a_Record084_260217.txt"
+                  }
+                ],
+                "bytes": 324264606
+              }
+            }
+          },
+          "split": {
+            "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+            "disjointSourceIndices": true,
+            "geometricDuplicatesPossible": true,
+            "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+            "attributes": "Only XYZ is exported; original source attributes are not modified",
+            "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+          },
+          "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+          "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+          "inputs": {
+            "reference": {
+              "file": "reference.ply",
+              "points": 941933,
+              "bytes": 22606515,
+              "sha256": "ebc245a61b48e519947363303f462d666946f55abe94ad4c3b40ec5e7498e61c"
+            },
+            "compared": {
+              "file": "compared.ply",
+              "points": 941933,
+              "bytes": 22606515,
+              "sha256": "dadc1295597c033e25f50f97923922cbe950ccdafb8b1ffdee7a4dbbc38020fd"
+            }
+          }
+        },
+        "encoding": "UTF-8 CSV with CRLF records, Python float round-trip strings, XYZ column order.",
+        "interpretation": "Format export of the full existing compared subset of one measured cloud. All f64 coordinate bits and point order retained; no new coordinates, thinning, perturbation or geometric conversion. Not independent surveys or native sensor CSV logs."
+      }
+    },
+    "exporter": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\prepare-csv-batch-inputs-20261015.py",
+      "bytes": 3264,
+      "sha256": "0b2abc56c3a43d5852c217826e247a68b371ed66c1006cf5a1da3127ffa81c23"
+    },
+    "oracleMethod": "Original Open3D PLY reader; all decoded compared coordinates stored as packed little-endian f64 XYZ. CSV uses csv.writer over unchanged Python float values."
+  },
+  "inputs": {
+    "csv": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\autoware-planning.csv",
+      "bytes": 43410905,
+      "sha256": "1802af79afca2e0593c6e5e6345bae85d02deafb245e988e0efb9662066e4641"
+    },
+    "oracle": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\autoware-planning-xyz-f64.bin",
+      "bytes": 21094080,
+      "sha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700"
+    },
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\csv-batch-inputs.json",
+      "bytes": 22835,
+      "sha256": "76de7c72552011a6015f49b2070fa054067a43965250a53e66a104968bebd064"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-filter-v2-20261015\\io-baseline.py",
+      "bytes": 17579,
+      "sha256": "615049edf4da6dba73a11ac5149b025582438411b05d0dd8d5b78465e77d348d"
+    },
+    "geometry": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    },
+    "sourceManifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+      "bytes": 1583,
+      "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+    }
+  },
+  "sourceHashes": {
+    "cloudanalyzer/ca/io.py": "5ef37270a62c412e03a23cb1b214afe1ab761892f5f6b3945f1c0d1b4fc0bb29",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/ca/__init__.py": "27a73a136bffd3143dfc56c537b6d402e53df3c1f80154dfeebd4500c52af85b",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_io_csv_batch_filter.py": "481e8b188cdc6571c3cab52566ce8d3d45c3e865b9fbc7ab6bc9101680b1448c",
+    "cloudanalyzer/tests/test_io.py": "86889024ac37a90fb185d16a92ecf147f24c6f2490bb0f7457a87a952068db72",
+    "cloudanalyzer/tests/test_io_binary_xyz_ply.py": "4d70f38eb80b25f356a604c7599331832c3017f2b88fac5cc481cb13ccb0b9fb",
+    "cloudanalyzer/tests/test_io_las_packed_coordinates.py": "b65729429255040ad5c47bab0bb697f55b316cac258132cc35e61212d22fede0",
+    "cloudanalyzer/tests/test_compare.py": "df40df5afdf91027401ae5e3de630872bc103b34c3dfcb17b6e330f856489ceb",
+    "cloudanalyzer/tests/test_cli.py": "31dcb5a5902c74ab76940974247f5d22eeccc1412027cc2a657783f512d82461",
+    "cloudanalyzer/scripts/benchmark_csv_filter.py": "6243eca9e5ad55e2543a452b7f830b7527f054db4d7d67afbbeec592d3d48187"
+  },
+  "libraries": {
+    "open3d": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+      "bytes": 151434752,
+      "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+    },
+    "csv": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\csv.py",
+      "bytes": 16837,
+      "sha256": "8486cb388fe0db87ec3f3330117ee3a9d70fc98baa82b24a1d369e71e571f018"
+    },
+    "csvParser": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\python312.dll",
+      "bytes": 6945272,
+      "sha256": "9a0e3435aaa680d868150f87ab3e388ad2eebc22f87e036155c7b4eda8cd2120",
+      "moduleOrigin": "built-in"
+    }
+  },
+  "environment": {
+    "platform": "Windows",
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1,
+    "disableRustCore": true,
+    "csvBatchRows": 65536
+  },
+  "startPolicy": "batched",
+  "repeats": 5,
+  "warmupRounds": 2,
+  "parity": {
+    "batched": {
+      "millis": 3843.7242,
+      "output": {
+        "shape": [
+          878920,
+          3
+        ],
+        "dtype": "<f8",
+        "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+        "colors": 0,
+        "normals": 0,
+        "covariances": 0
+      }
+    },
+    "per_row": {
+      "millis": 9738.2138,
+      "output": {
+        "shape": [
+          878920,
+          3
+        ],
+        "dtype": "<f8",
+        "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+        "colors": 0,
+        "normals": 0,
+        "covariances": 0
+      }
+    }
+  },
+  "firstUntraced": {
+    "order": [
+      "batched",
+      "per_row"
+    ],
+    "observations": {
+      "batched": {
+        "millis": 3056.2618,
+        "output": {
+          "shape": [
+            878920,
+            3
+          ],
+          "dtype": "<f8",
+          "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+          "colors": 0,
+          "normals": 0,
+          "covariances": 0
+        }
+      },
+      "per_row": {
+        "millis": 8674.0161,
+        "output": {
+          "shape": [
+            878920,
+            3
+          ],
+          "dtype": "<f8",
+          "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+          "colors": 0,
+          "normals": 0,
+          "covariances": 0
+        }
+      }
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "per_row",
+        "batched"
+      ],
+      "observations": {
+        "per_row": {
+          "millis": 9695.9775,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "batched": {
+          "millis": 3654.543,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "batched",
+        "per_row"
+      ],
+      "observations": {
+        "batched": {
+          "millis": 3784.2641,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "per_row": {
+          "millis": 9036.5752,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "batched",
+        "per_row"
+      ],
+      "observations": {
+        "batched": {
+          "millis": 3586.3997,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "per_row": {
+          "millis": 8550.6416,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "per_row",
+        "batched"
+      ],
+      "observations": {
+        "per_row": {
+          "millis": 7948.46,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "batched": {
+          "millis": 3167.5677,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "batched",
+        "per_row"
+      ],
+      "observations": {
+        "batched": {
+          "millis": 3243.3628,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "per_row": {
+          "millis": 8785.0836,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "per_row",
+        "batched"
+      ],
+      "observations": {
+        "per_row": {
+          "millis": 9673.2237,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "batched": {
+          "millis": 3242.543,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "batched",
+        "per_row"
+      ],
+      "observations": {
+        "batched": {
+          "millis": 3407.1808,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "per_row": {
+          "millis": 8477.7719,
+          "output": {
+            "shape": [
+              878920,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "perRowMedianMillis": 8550.6416,
+    "batchedMedianMillis": 3243.3628,
+    "pairedShorteningPercent": 60.14866150172487,
+    "pairedSavedMedianMillis": 5070.5911,
+    "fasterTrials": 5
+  },
+  "note": "Complete load_point_cloud CSV function: real file parsing, Python float conversions, finite validation, XYZ assembly, owned Open3D conversion, empty check and internal cleanup. Returned-cloud release, output hashing/byte validation, imports, fingerprints, CSV export and CLI serialization excluded from timing. Only finite-filter batching changes. Full existing compared subsets of measured source clouds are exported to CSV without changing any f64 coordinate bits or order; they are not native sensor CSV logs or independent surveys. No generated points, perturbation, further thinning, replaced parser or read result. All measured inputs are finite; nonfinite/malformed semantics are tested separately. Excluded full byte-parity pair, separate first pair and two warm-up pairs precede five default alternating timed pairs. Fresh process per dataset/pass; first policy balanced across passes; all observations retained. Warm pages. Full cloud remains in memory; this is not a streaming API. No cold CLI, peak RSS, whole comparison, registration or GPU speed claim."
+}

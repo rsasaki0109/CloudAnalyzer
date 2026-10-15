@@ -104,6 +104,13 @@ comparisons with registration disabled are 78.45–82.21% shorter, with 60/60
 faster pairs and identical numeric/file reports. Snapshot colors and pixels
 are preserved. [Conditions and measurements](../docs/cpu-compare-requested-colors.md).
 
+Snapshot-producing comparisons pack RGB rows before Open3D color conversion.
+Six complete real-source comparisons with registration disabled are
+20.16–35.84% shorter by median paired duration, with 29/30 faster pairs and
+identical colors, reports and PNG bytes. Actual loading, native NN work and
+Matplotlib PNG output are included.
+[Scope and measurements](../docs/cpu-colorize-packed-rgb.md).
+
 ### Processing
 
 | Command | Description |

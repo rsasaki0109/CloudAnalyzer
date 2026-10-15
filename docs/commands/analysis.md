@@ -147,6 +147,12 @@ reports. With `--register none` and no snapshot, six real-source function
 comparisons are 78.45–82.21% shorter, including actual loading and native NN work.
 [Output compatibility and measurements](../cpu-compare-requested-colors.md).
 
+With `--snapshot`, RGB rows are packed before Open3D color conversion.
+Six complete real-source comparisons with registration disabled and Matplotlib
+PNG output are 20.16–35.84% shorter by median paired duration, with 29/30 faster
+pairs and byte-identical images. Loading and actual native NN work are included.
+[Rendering scope and measurements](../cpu-colorize-packed-rgb.md).
+
 | Option | Default | Description |
 |---|---|---|
 | `--scans-manifest-csv` | `None` | Optional scan manifest with `scan_id,timestamp_sec,points_csv` |

@@ -1,0 +1,905 @@
+{
+  "schemaVersion": 1,
+  "comparison": "snapshot-packed-rgb",
+  "createdAt": "2026-10-15T04:06:19.270150+00:00",
+  "sourceHashes": {
+    "cloudanalyzer/ca/__init__.py": "27a73a136bffd3143dfc56c537b6d402e53df3c1f80154dfeebd4500c52af85b",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/ca/align.py": "fe07043c125fb45e63ef81d7765f65ec847bcaea31e94454d31cc9d8678e4692",
+    "cloudanalyzer/ca/baseline_history.py": "460e14dcfaa23447c74940f220992a6e0b8d65982a0c38f2f7b7e77a299b69fd",
+    "cloudanalyzer/ca/batch.py": "fbd10495fc5e02f931a391bee96386d9767632362f2c70f318e02385c5216046",
+    "cloudanalyzer/ca/benchmark.py": "ac2b1e55412fefbfec98efa28546d7559b1f0081aeab86384e46db8db9c29cfb",
+    "cloudanalyzer/ca/bridge.py": "0c0910a436ebed0a95fa6db44039ed4276e4c634fed98147665d4aee31770270",
+    "cloudanalyzer/ca/bridge_damage.py": "f5f5788ce03c77dfb618c0ff29443da84ca84d8deadd6b057035d6e0eb3eec45",
+    "cloudanalyzer/ca/bridge_plan.py": "07af8f34c018386a57c345802f2391031efef90437db94b85ae87bdf30f61778",
+    "cloudanalyzer/ca/bundle.py": "e9f57b6d5dd4dd286f9e23335dcf6ba314fd420d0242147ff412dafc87d1b0a5",
+    "cloudanalyzer/ca/compare.py": "1a154fe91ab00664d77ab9aebf2859b779b3754c84b1de52ac9b2199913e786a",
+    "cloudanalyzer/ca/convert.py": "e509dfc50009da4ffa56f58d9244cc2ff6193da19552d051b06284a0c22597d3",
+    "cloudanalyzer/ca/copc_tiles.py": "637aa6b130954c6b28bb29237cc61f909a38a930545a071e22c290bc6e809e36",
+    "cloudanalyzer/ca/crop.py": "c0663b343fed2f5243360cdecd30583a1cbebb90a191be53c5bd766bb408871e",
+    "cloudanalyzer/ca/density_map.py": "f72ee386a57ff5e38a537af46501f7df64250f0f162308b3bad4ca420bdd5c9f",
+    "cloudanalyzer/ca/detection.py": "c38ada44bdc83f3fe58e87b12929d6edfb3a2ecd71f3325818ad8139f47a8843",
+    "cloudanalyzer/ca/diff.py": "f776855179788a37d61d85d75600add70ce76e6aa7f43c4384881676ede12786",
+    "cloudanalyzer/ca/downsample.py": "2728e60f9180d880404d3670ac410c98df4afce8f983cbba112572ed639627be",
+    "cloudanalyzer/ca/evaluate.py": "9c44f154e5f0acb8b84c78de650eb6cb12ea67c1324e9bfe44b07b8ea0766bb2",
+    "cloudanalyzer/ca/filter.py": "a1d0d7b135c3aff578e05f5317a31897f60896440634886cdcfeb88a8423ebf8",
+    "cloudanalyzer/ca/geometry.py": "f1f329857f4b7e1a67349a3883315a52be13dfcf3f2cfe57ae258112c2cb5718",
+    "cloudanalyzer/ca/ground_evaluate.py": "badb9efa1527143e141b1a520a799505223261e38e42c908874ffe509c4ef26b",
+    "cloudanalyzer/ca/history.py": "ba35b769a00bd7abe9ce928ee665e56270ac337988711f37e4eaa1630398184e",
+    "cloudanalyzer/ca/info.py": "1a492bd8cfb77f2aa0881c4119d0be7ac6755a9247155f10280525180732298c",
+    "cloudanalyzer/ca/io.py": "81466b64f9af7f784f7799c94870e755c256552e2f7c13f90add2a74c062601e",
+    "cloudanalyzer/ca/kitti.py": "eedbb5314ec6b634298cb2495866d5e77cd4353920f9284813d31ea6d6b7c117",
+    "cloudanalyzer/ca/leaderboard.py": "4848ba8db1a35c57778d26d4fe28ee07ae4736472f5f06a52d9363c3172d9030",
+    "cloudanalyzer/ca/log.py": "e3f8546f64fe2a417f97f7502e1a758f83559f2f75eada6764472500b428f929",
+    "cloudanalyzer/ca/loop_closure_report.py": "7f8daf2172d874fad24c14aa8ebc2bfa81e5586d86392b8788aaa23bac0097a4",
+    "cloudanalyzer/ca/mapeval_benchmark.py": "e2a6804b6840f21fc704c76da340aff26929efeb1f43c1cd143a0199b342e671",
+    "cloudanalyzer/ca/mapeval_parity.py": "a81a9e013f3d5120986f18b9f35d752fdb92aacab572e7c19beab6c7f0d5c43c",
+    "cloudanalyzer/ca/mapping_bundle.py": "45ae7aa583d777fe10694eaf805dba85a91811addaf89cd9ec938ccdce71a0b9",
+    "cloudanalyzer/ca/mapping_connections.py": "caf7a2afaeab610a67211e357889e4e72dd2b94d0f2df1d5a0a214ab2aecf489",
+    "cloudanalyzer/ca/mapping_frames.py": "f992150d0cd8c694d5b7740dd96f90a41e3ef7c1aa0ffddaa58b49331078de06",
+    "cloudanalyzer/ca/mapping_geometry.py": "a2a5e5ad640edc75ccbcf53b7d32d570b7f985f67f056c410d55e0d8b8abfd55",
+    "cloudanalyzer/ca/mapping_hd_plan.py": "d6ff3140872976e0658539d6e484dfafa493675211e6611cf1aa4ce007c6ee56",
+    "cloudanalyzer/ca/mapping_hd_repair.py": "1c2f4b4f10a02036fcb044b52a75ee40ce5d9b8fbccfe9b6017852c8f2f561e6",
+    "cloudanalyzer/ca/mapping_heights.py": "4dffb7b37778bf8c26c875ba85747fc5cde0afacbd2b9dc19787dbf3e9a124c6",
+    "cloudanalyzer/ca/mapping_job.py": "499faa995556478fc3e5830ec96ec39be4b19ff5eb69bebcc6f04474a34d1abe",
+    "cloudanalyzer/ca/mapping_local_points.py": "bee52275f81b36c0683c039cd81a6e4571babef0a583a4d30b02c30521cdbafa",
+    "cloudanalyzer/ca/mapping_motion_run.py": "3f842d9319e6fbe9971f426977a3aa387a36ae204c545fea8df89f2fd5751af4",
+    "cloudanalyzer/ca/mapping_motion_trial.py": "0876a22f7ad0d412317367cc4fcae9b07f7ea1478574d063bbe3427891b1033a",
+    "cloudanalyzer/ca/mapping_patch.py": "90f2ed8b3f25da1399c19925d9d31efd150d8b234c1f65fdaa0a4bfcc01e995e",
+    "cloudanalyzer/ca/mapping_plan_apply.py": "28fdca3478974dce06d8016fbcd0be5976a86bbdd9f8ff156a87612d02e2e14c",
+    "cloudanalyzer/ca/mapping_point_protection.py": "72b2fcf1339d86c92a55d2ce92a2895fa0b08268b965e6d1e1ef6d7fecfb1c32",
+    "cloudanalyzer/ca/mapping_preview.py": "927daee392c69bb62462bf27d26c6438231a91cdf8c0f1f65e3379de0e9d889a",
+    "cloudanalyzer/ca/mapping_retry.py": "b9a341efe1898976e46ebb831e8783e96156fc615b3657fcfcb53ec054e8cf32",
+    "cloudanalyzer/ca/mapping_revision.py": "b424b5e4bc82636b1f7c2132aed7dfc90a99eddb41ec6700c0a75b9bb7723eb8",
+    "cloudanalyzer/ca/mapping_run.py": "efdabc7ef59989203aa10ddb8608bebc41d24c1e3ae5c6d6742a218914d238c4",
+    "cloudanalyzer/ca/mapping_trajectory.py": "cbf03f39287314fd530f19877f2dbc5d65546d9780c3b6eb304867e8c7b419d2",
+    "cloudanalyzer/ca/mapping_trajectory_review.py": "41bc3c642e200d9de52594f632287d1935e529b32a0ea09cc82d8cab9a4def03",
+    "cloudanalyzer/ca/mcp_server.py": "92c4a38584f8ff5bb581e711c7491362e7980443a2d011376d47788b2df364d9",
+    "cloudanalyzer/ca/merge.py": "25f3fa6466673a04ef673176524bc4fee04fbe0efda5359e67dd5e388c699bad",
+    "cloudanalyzer/ca/metrics.py": "7026da9dca9cba515b1ce591015f60c35b609d9b17e93e99a9d0b4775080d532",
+    "cloudanalyzer/ca/mme.py": "ec02609242f2ab84b9680660aed7d766a0996966312872957a463f12a5177c8a",
+    "cloudanalyzer/ca/normals.py": "d64b3a60fb251102e75739fdb5ec9aece45289a6495f5495771ee6fd6db1ee31",
+    "cloudanalyzer/ca/object_eval.py": "cb3d8bf31543a0b7912885c057e7f0b93a83ff8e945f7386a056d19b17c2b4d5",
+    "cloudanalyzer/ca/pareto.py": "5f0ae3d4362dcdc224217abf35b5ad641a6aed30737158d07893880edbc1b2c2",
+    "cloudanalyzer/ca/pipeline.py": "0a362aee193fa3b692630504481c139d66f4cbba6a0474922493ad29099f4a84",
+    "cloudanalyzer/ca/plot.py": "cc0f028cd257adbeeab0285a1e29d5885effd287b04f4d5af563cfb6f9f4cec3",
+    "cloudanalyzer/ca/point_summary.py": "2bea4817fcea6a134f1db1dbaf2ebd6a03504e940424c35ea60c1ffc19a663cc",
+    "cloudanalyzer/ca/posegraph.py": "9b1737424329facb009a1c28201c04f58840e45fec7ea738ea1f2bee31637404",
+    "cloudanalyzer/ca/posegraph_fix.py": "a79e0ba22642c43a9e1bcd0b568f248f693d11dc76c25ee9a4898d79943e52d9",
+    "cloudanalyzer/ca/pr_comment.py": "f973322a5387ab8a33a2270f0390e637b7a87f76bc8bdc1a85aa0b4791d87f12",
+    "cloudanalyzer/ca/protocol.py": "57b5970e82288f962b3732f9a57288d94becd5adc05e30346adb2a8999df050a",
+    "cloudanalyzer/ca/registration.py": "7eb22bbab5ce993962478e59f2746225d506c9239b36aba118f4aaf8c715be5b",
+    "cloudanalyzer/ca/report.py": "b8a1da6485fa1974e7db8d1f0e01ee57a1f057d8a7d03e6920925386b4579683",
+    "cloudanalyzer/ca/report_paths.py": "7ed5798dccaa36284399b611913932af780d2199fabfffcad5b6fd17b8757080",
+    "cloudanalyzer/ca/run_evaluate.py": "255309a54c1ffaa653693989409b3bcc1c1a13764e9d40cc19997f0bd1f1d7a1",
+    "cloudanalyzer/ca/sample.py": "678c8a753dc2a61fc9c71012801d86ac1b85f0a74514af97cd45092fdf8a1b17",
+    "cloudanalyzer/ca/scan_match_debug.py": "1dd3192eaf3d61d41cbaec477899baee44b49141e675f7bf10fc9a519120e532",
+    "cloudanalyzer/ca/slam_debug.py": "f0c2881c2d0212975074d65f8f4ba3d9e8ab428388aa0be170ec604c06da1c8c",
+    "cloudanalyzer/ca/split.py": "851547878ad8f76458e75cbd06869c16c4588575c6984d0a5032f2486e4102ef",
+    "cloudanalyzer/ca/stats.py": "cd54eda517b867e350352a8428fa71af6747f93e2e41aba49a8ff73bc43667ba",
+    "cloudanalyzer/ca/tracking.py": "ce85434ca3a9686fa6ba1513de0cc8d1deb1f741f8bd327a1d849e484dcd8e1a",
+    "cloudanalyzer/ca/trajectory.py": "214c375f636460ed79e14217857532510e1749cae34701c740bb5c45aa84fb2c",
+    "cloudanalyzer/ca/vector_map.py": "a8686f2848d1cc84faafd97f6573c6958b210946cd926ed6821e63135d380698",
+    "cloudanalyzer/ca/view.py": "bde255166138c80f8bf01cb032895c5eb8396fd38c53971d0ab48465286d8879",
+    "cloudanalyzer/ca/visualization.py": "d01ec148c93e32b24ee21e24c7069bf8965116e64214f21b34ed6788703f29a3",
+    "cloudanalyzer/ca/web.py": "89c1d3382dfe7521dd9fc879cc804e21852a7782934887ab8d69c773eab18b8c",
+    "cloudanalyzer/ca/web_view.py": "ebb063bcb3ea3a9bb9157ad84fc4483a0eb863328972a2be93ad960f62f724da",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_visualization_packed_colors.py": "09b025755591aaf87cb5358f65330e910f4ad9478c42a2e1d293a00493d8244e",
+    "cloudanalyzer/tests/test_visualization.py": "b28b1124b90fd79210a415f596bbdeb2ba6886d27ef8700aa5ccea568aa64b99",
+    "cloudanalyzer/tests/test_compare_color_consumers.py": "dbb60f2002de75e0057136fea67c9fb2eca088c774f0e5167b51c9f752a039f0",
+    "cloudanalyzer/scripts/benchmark_snapshot_colors.py": "abe4b8938e700c975e470452343cf58b6f5d500969626eb8b0102bb3245ac409"
+  },
+  "nativeSourceRoot": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\compare-requested-colors-20261015",
+  "nativeSourceHashes": {
+    "rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/lib.rs": "690ec21b247c50028177c95e93340a268212183c69c720d24c4183621b5b2a90",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-core/src/io/ply.rs": "4aa18db93e95328b6fe2f33b7f514ac8fa72db8d23d10e09b28edeef982ed4a6",
+    "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+    "rust/crates/ca-core/examples/bench_c2m_source.rs": "8bf2f9de573ca3217fbc3387cc8b4815cab641708e9f5aa60362c2d5493bece9",
+    "rust/crates/ca-py/src/lib.rs": "1dbc9733aa85bfcf441732897e4ceeb575201672ddddddc0285d67a97cba1b1b",
+    "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+    "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+    "rust/Cargo.lock": "99ea90d13eb68d19869ce2034ff1bcd8c14036f9f9dab03303b6f6fbb140fc85",
+    "rust/crates/ca-py/Cargo.toml": "6909895540f76e07bd63dfdcb199ee119bfd06416cfc117feb05dcfdf4018328",
+    "rust/crates/ca-py/Cargo.lock": "e1a914c99b0e3ffcf62e85125c077047b093e4abefe57e7423a9e8812765d344",
+    "rust/crates/ca-py/pyproject.toml": "50987fd7a703bfab649bc9490f2036cb3781a2acc2c206b76ad604e0486bf41b",
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "4f4c1313deac36d10c509697e54c5483e40a3378f80ed45e4e588b9ab370b3ec",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "ffbac8b261941251c9c0fb2b5b439c71c401aeeb33e48ee8de1393c4c0413446",
+    "rust/crates/ca-py/tests/test_prepared_mesh.py": "f89bb5323b5ded0b674eecbd1bf3615511cda24c9445979f84d105ddae83e387",
+    "rust/crates/ca-py/scripts/benchmark_prepared_mesh.py": "aaef94ed02f5a42555ce12b8ce21e9695b0811a84623f4d45d4cad1097ce7f5a",
+    "rust/crates/ca-py/src/bag.rs": "9103ede327fc7dd080ff394e81023576a4a456511bb587258959fb5fde482aa2",
+    "rust/crates/ca-py/src/copc_spatial.rs": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+    "rust/crates/ca-py/src/odometry.rs": "bf580c742d70c1b41b16dc1a86b93b1a2ea859d4cf3604e02483ee332c22d1cf",
+    "rust/crates/ca-py/src/pose_graph.rs": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+    "rust/crates/ca-py/src/vector_map.rs": "2f94baa82b4380a62d5014698d3e2bc80a5cd8899d8799a5f67eae4d7cec6aea",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/tests/c2c_reference.rs": "6708a0b69d138753cf8ce6bfd38b41eb1729204c246ae05cc028f5c94a359b52",
+    "rust/crates/ca-py/tests/test_prepared_reference.py": "9bad65bd47db72a79f21438f961753397b43c23bae38eb8ba915d5878dad8bf2",
+    "rust/crates/ca-py/scripts/benchmark_prepared_reference.py": "73befa31442b8ff3c07651a43bf1103fcada3ddf25558a4f21269badf1df62a3"
+  },
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    },
+    "input_manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-pandaset\\inputs.json",
+      "bytes": 1578,
+      "sha256": "6a1eb7be28786b7a454ad150e4283222e9a6b0a47e6fca20e84a4e8b9602ae0e"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\colorize-packed-rgb-20261015\\visualization-baseline.py",
+      "bytes": 5579,
+      "sha256": "27189c975b86b46e390ca1f1d864311965ac61bd5b41785143602d301548f030"
+    },
+    "build_index": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-20261014\\build.json",
+      "bytes": 4291,
+      "sha256": "77bd0f2574646721a7c27c47a5f0f9acef320340e4cb5ee2a7eb5bad6aca89cc"
+    },
+    "prior_colors": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\compare\\real-source\\windows-pandaset019-requested-colors-initial.json",
+      "bytes": 19720,
+      "sha256": "bcc0f0e337a0be714663abca811a0287e73e909d2757e0372cb1fe6fa343867f"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\pandaset-vector-map\\map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc"
+    },
+    "coordinateSnapshot": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\scan-match-distance-reuse-pandaset019-initial-20261014\\registration.npz",
+      "bytes": 76596694,
+      "sha256": "fe2f097108547344fe9bc07a418792f295d2b5190e2c5e7c148e1ff57ab798ed"
+    },
+    "distanceRecord": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\scan-match\\real-source\\windows-pandaset019-distance-reuse-initial.json",
+      "bytes": 44527,
+      "sha256": "df9c7a272d8add89936112d21c8378afb900d2dc81194441b2b60691b4617630"
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; locally prepared scene 019, Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "extension": {
+    "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\_core.pyd",
+    "bytes": 6823424,
+    "sha256": "8a63601c290af5403f08a3c040c9e5d99e816b687bd0a0dfeea13015fb9a9a49"
+  },
+  "libraries": {
+    "open3d": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+      "bytes": 151434752,
+      "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+    },
+    "wrapper": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-reference-venv-20261014\\Lib\\site-packages\\cloudanalyzer_core\\__init__.py",
+      "bytes": 1928,
+      "sha256": "4f4c1313deac36d10c509697e54c5483e40a3378f80ed45e4e588b9ab370b3ec"
+    }
+  },
+  "environment": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "matplotlib": "3.10.8",
+    "platform": "Windows",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1,
+    "renderBackend": "matplotlib",
+    "imageWidth": 1920,
+    "imageHeight": 1080,
+    "rendererMaxPoints": 200000
+  },
+  "repeats": 5,
+  "warmupRounds": 2,
+  "parity": {
+    "strided": {
+      "millis": 2002.1703,
+      "report": {
+        "source_points": 531908,
+        "target_points": 531908,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.1122068329956835,
+          "median": 0.07472814965335946,
+          "max": 22.133454559864617,
+          "min": 0.0011159376115308776,
+          "std": 0.17648872952004035
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 531908,
+          "exceed_count": 9427,
+          "exceed_ratio": 0.017722989689946383
+        }
+      },
+      "captured": {
+        "distance": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\001-strided\\distance-f64.bin",
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        "colors": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\001-strided\\colors-f64.bin",
+          "bytes": 12765792,
+          "sha256": "96e99c53bd58b00836a541230d7695301481718069e20515b15b73beffe83f7c"
+        }
+      },
+      "outputFiles": {
+        "png": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\001-strided\\snapshot.png",
+          "bytes": 147998,
+          "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+        },
+        "json": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\001-strided\\report.json",
+          "bytes": 431,
+          "sha256": "4127b24197e970030b65f49516f964b7f6b625719937aec349fab12cba8cd83e"
+        },
+        "md": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\001-strided\\report.md",
+          "bytes": 180,
+          "sha256": "c792a7340e74dc0d9abf8a3e78fd39fafa5a57e5a9ad98eef39362617c5e2a03"
+        }
+      }
+    },
+    "packed": {
+      "millis": 1607.2523,
+      "report": {
+        "source_points": 531908,
+        "target_points": 531908,
+        "fitness": null,
+        "rmse": null,
+        "distance_stats": {
+          "mean": 0.1122068329956835,
+          "median": 0.07472814965335946,
+          "max": 22.133454559864617,
+          "min": 0.0011159376115308776,
+          "std": 0.17648872952004035
+        },
+        "threshold": {
+          "threshold": 0.5,
+          "total": 531908,
+          "exceed_count": 9427,
+          "exceed_ratio": 0.017722989689946383
+        }
+      },
+      "captured": {
+        "distance": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\002-packed\\distance-f64.bin",
+          "bytes": 4255264,
+          "sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9"
+        },
+        "colors": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\002-packed\\colors-f64.bin",
+          "bytes": 12765792,
+          "sha256": "96e99c53bd58b00836a541230d7695301481718069e20515b15b73beffe83f7c"
+        }
+      },
+      "outputFiles": {
+        "png": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\002-packed\\snapshot.png",
+          "bytes": 147998,
+          "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+        },
+        "json": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\002-packed\\report.json",
+          "bytes": 431,
+          "sha256": "4127b24197e970030b65f49516f964b7f6b625719937aec349fab12cba8cd83e"
+        },
+        "md": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\002-packed\\report.md",
+          "bytes": 180,
+          "sha256": "c792a7340e74dc0d9abf8a3e78fd39fafa5a57e5a9ad98eef39362617c5e2a03"
+        }
+      }
+    }
+  },
+  "firstUntraced": {
+    "order": [
+      "strided",
+      "packed"
+    ],
+    "observations": {
+      "strided": {
+        "millis": 2099.6142,
+        "report": {
+          "source_points": 531908,
+          "target_points": 531908,
+          "fitness": null,
+          "rmse": null,
+          "distance_stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "captured": {},
+        "outputFiles": {
+          "png": {
+            "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\003-strided\\snapshot.png",
+            "bytes": 147998,
+            "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+          }
+        }
+      },
+      "packed": {
+        "millis": 1552.8797,
+        "report": {
+          "source_points": 531908,
+          "target_points": 531908,
+          "fitness": null,
+          "rmse": null,
+          "distance_stats": {
+            "mean": 0.1122068329956835,
+            "median": 0.07472814965335946,
+            "max": 22.133454559864617,
+            "min": 0.0011159376115308776,
+            "std": 0.17648872952004035
+          },
+          "threshold": {
+            "threshold": 0.5,
+            "total": 531908,
+            "exceed_count": 9427,
+            "exceed_ratio": 0.017722989689946383
+          }
+        },
+        "captured": {},
+        "outputFiles": {
+          "png": {
+            "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\004-packed\\snapshot.png",
+            "bytes": 147998,
+            "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+          }
+        }
+      }
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 1523.4819,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\005-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "strided": {
+          "millis": 2058.1575,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\006-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 2122.9715,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\007-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "packed": {
+          "millis": 1681.1281,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\008-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 1565.9079,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\009-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "strided": {
+          "millis": 2146.6802,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\010-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 2002.8182,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\011-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "packed": {
+          "millis": 1511.5091,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\012-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 1628.3507,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\013-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "strided": {
+          "millis": 2097.7325,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\014-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 2033.254,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\015-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "packed": {
+          "millis": 1597.1365,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\016-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 1500.4349,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\017-packed\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        },
+        "strided": {
+          "millis": 2301.1232,
+          "report": {
+            "source_points": 531908,
+            "target_points": 531908,
+            "fitness": null,
+            "rmse": null,
+            "distance_stats": {
+              "mean": 0.1122068329956835,
+              "median": 0.07472814965335946,
+              "max": 22.133454559864617,
+              "min": 0.0011159376115308776,
+              "std": 0.17648872952004035
+            },
+            "threshold": {
+              "threshold": 0.5,
+              "total": 531908,
+              "exceed_count": 9427,
+              "exceed_ratio": 0.017722989689946383
+            }
+          },
+          "captured": {},
+          "outputFiles": {
+            "png": {
+              "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\packed-colors-pandaset019-final-20261015\\018-strided\\snapshot.png",
+              "bytes": 147998,
+              "sha256": "d6032d6ae88af07fd440cef6d32e462100e04ec7704ebbc00d956149cb495498"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "stridedMedianMillis": 2097.7325,
+    "packedMedianMillis": 1565.9079,
+    "pairedShorteningPercent": 24.530888524979446,
+    "pairedSavedMedianMillis": 491.30909999999994,
+    "fasterTrials": 5
+  },
+  "note": "Complete run_compare with method=None, threshold=.5 and PNG output, using full unchanged real-source geometry and actual native NN. Normalization/colormap/owned RGB assignment, deterministic Matplotlib projection, PNG encoding/write and function cleanup included. Renderer retains its existing 200000-point display cap; distances and coloring use all compared points. Only colorize changes between policies. Directory creation, imports/hashing, output validation, CLI serialization, traced parity and extra JSON/Markdown writes are excluded from timing summaries. Excluded first untraced pair after parity, two warm-up pairs, then five default alternating timed pairs, starting packed. Every report and PNG is checked. Fresh process per source/pass, warmed pages. Native sources come from the installed binary's archived build, not the later checkout. No cold-process, peak RSS, default registered comparison, interactive Open3D renderer, GPU or independent-survey accuracy claim."
+}

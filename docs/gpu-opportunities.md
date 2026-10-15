@@ -256,6 +256,14 @@ Full colors, reports and PNG bytes match. Future GPU coloring comparisons
 should include this CPU conversion baseline; default registered and interactive
 Open3D renderer performance remain unmeasured by this study.
 
+The subsequent [packed LAS/LAZ coordinate reader](cpu-las-packed-coordinates.md)
+removes column-strided Open3D conversion in the standard laspy path. Four full
+real-source loads are 85.79–95.94% shorter by median paired duration, with
+20/20 faster pairs and full coordinate-bit parity. These measurements disable
+the optional Rust core; native loading and spatial/streaming COPC paths are
+unchanged. This establishes a CPU loading baseline, without adding whole
+comparison, registration or GPU speedup claims.
+
 The subsequent [scoped batch reference reuse](cpu-batch-reference.md) loads one
 reference snapshot per batch and shares its native tree across candidates.
 Complete three-candidate batch functions improve by 23.83–33.78% across six

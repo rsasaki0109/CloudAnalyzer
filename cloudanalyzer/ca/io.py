@@ -435,7 +435,8 @@ def load_point_cloud(path: str) -> o3d.geometry.PointCloud:
         else:
             import laspy
             las = laspy.read(str(p))
-            xyz = np.vstack([las.x, las.y, las.z]).T
+            # Build packed XYZ rows for Open3D's bulk array conversion.
+            xyz = np.column_stack((las.x, las.y, las.z))
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(xyz)
     else:

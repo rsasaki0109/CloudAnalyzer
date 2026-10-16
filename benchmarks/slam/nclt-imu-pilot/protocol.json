@@ -1,0 +1,83 @@
+{
+  "schema": "cloudanalyzer.nclt_imu_pilot_protocol.v1",
+  "frozen_at_utc": "2026-10-16T04:01:49.931398+00:00",
+  "source_commit": "3584cd2f6d88e24926bb6de71371416495d89040",
+  "purpose": "First bounded offline real LiDAR-pose/raw-IMU fusion pilot; no production LIO, speed, GPU or calibrated uncertainty claim",
+  "sessions": [
+    "2012-04-29",
+    "2012-06-15"
+  ],
+  "lidar": {
+    "min_range": 1.5,
+    "max_range": 80.0,
+    "map_voxel": 1.0,
+    "map_points": 20,
+    "deskew": false,
+    "rayon_num_threads": 1,
+    "scan_coordinates": "velodyne_sync body z up at axle; legacy velodyne header"
+  },
+  "initialization": {
+    "gravity": "-9.81 * body_up_from_rpy(last raw ms25_euler roll/pitch at or before first scan, max age .05 s), in first LiDAR body world",
+    "velocities": "Second-order finite differences of all LiDAR-derived IMU-origin positions; offline, includes future LiDAR poses; lever arm included",
+    "bias": "zero gyro/accel; no ground-truth initialization, calibration or tuning"
+  },
+  "windows": {
+    "min_states": 4,
+    "max_states": 16,
+    "selection": "All consecutive valid-IMU runs, greedily disjoint chunks <=16; discard tails <4; no crossing invalid edges; no splicing as continuous LIO",
+    "max_imu_gap_s": 0.05
+  },
+  "noise": {
+    "gyro_measurement": 0.02,
+    "accel_measurement": 0.15,
+    "gyro_bias_walk": 0.005,
+    "accel_bias_walk": 0.05,
+    "pose_rotation_sigma_rad": 0.02,
+    "pose_position_sigma_m": 0.1,
+    "state_sigmas": [
+      0.02,
+      0.02,
+      0.02,
+      0.5,
+      0.5,
+      0.5,
+      0.05,
+      0.05,
+      0.05,
+      0.02,
+      0.02,
+      0.02,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "purpose": "Fixed diagnostic model inherited from numerical probes; not sensor/pose covariance calibration"
+  },
+  "solver": {
+    "max_iterations": 80,
+    "initial_damping": 0.001,
+    "gradient_tolerance": 1e-08,
+    "step_tolerance": 1e-09,
+    "cost_tolerance": 1e-10,
+    "bias_reintegration": false
+  },
+  "evaluation": {
+    "truth": "Original body reference rows, z-up conversion only; separate evaluator opens truth after estimated outputs are frozen",
+    "matching": "Both bracketing GT rows within .05 s, interpolate xyz and SLERP SO3, no extrapolation",
+    "primary": "Pooled consecutive SE3 RPE translation and rotation RMSE on exactly the same within-window edges",
+    "secondary": "Per-window SE3 position-aligned ATE (no scale) pooled over nodes; window endpoint SE3 RPE",
+    "coverage": "Report all scans, rejected IMU edges, excluded short runs/tails, eligible windows/nodes/edges, solver nonconvergence",
+    "comparison": "LiDAR-only and fused estimates from identical actual scans; all eligible windows retained regardless of score",
+    "adoption": "Pilot only. Do not enable default fusion; improvement would require primary translation and rotation RPE in both sessions without material regression and later independent validation"
+  },
+  "limitations": [
+    "Shared-map LiDAR pose priors are correlated; diagonal priors are an explicit approximation.",
+    "Adjacent factors may share a clipped held measurement at scan endpoints; ignored edge cross-covariance.",
+    "Within-interval bias diffusion and clock residuals are not calibrated.",
+    "Fixed gravity from one sensor attitude; velocity and pose priors reuse the same LiDAR estimates.",
+    "Single first-order bias correction; inspect correction sizes, not certified validity.",
+    "NCLT reference uses SLAM/RTK and interpolated odometry; not statistically independent sensor truth.",
+    "Bundled scans are thinned and sampled about 0.8 s; synchronized sweeps are already motion compensated."
+  ],
+  "original_preregistration_sha256": "ff5639eb7ff0bacfca8f0865eb0f2463ab2b02423f803bb455b284e06f02efb1"
+}

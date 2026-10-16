@@ -11,6 +11,14 @@ extrinsic calibration. Numerical agreement with independent solvers does not
 establish fused SLAM trajectory accuracy. Existing LiDAR odometry does not
 automatically use this class.
 
+The [NCLT offline pilot](slam-nclt-imu-pilot.md) combines actual LiDAR estimates
+with original IMU channels under an explicit diagnostic model and evaluates
+the frozen outputs separately.
+
+Its first [frozen real-data scores](../benchmarks/slam/nclt-imu-pilot/README.md)
+include public pose arrays and an independent verifier, with explicit missing
+IMU coverage and no default-fusion adoption.
+
 ## Constructing a problem
 
 All poses are float64 IMU-to-world transforms at the **IMU origin**. Velocities

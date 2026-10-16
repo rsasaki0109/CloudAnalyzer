@@ -17,3 +17,7 @@ benchmarks/vector-map/evidence-overlay/** text eol=lf
 benchmarks/vector-map/intensity-paint/** text eol=lf
 benchmarks/vector-map/paint-neighbourhood/** text eol=lf
 benchmarks/vector-map/paint-candidates/** text eol=lf
+# Keep the new pilot's public evidence and controllers stable on checkout.
+benchmarks/slam/nclt-imu-pilot/** text eol=lf
+scripts/pilot_nclt_imu_window.py text eol=lf
+scripts/evaluate_nclt_imu_pilot.py text eol=lf

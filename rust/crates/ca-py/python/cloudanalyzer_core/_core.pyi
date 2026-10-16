@@ -298,6 +298,12 @@ class ImuSeries:
         State is available after the final reference; arrays are independent copies.
         """
         ...
+    def rotation_trajectory(
+        self, start_ns: int, end_ns: int, *, gyro_bias: tuple[float, float, float],
+        max_gap_s: float = 0.05,
+    ) -> ImuRotationTrajectory:
+        """Gyro-only fixed IMU-origin compensation; ignores acceleration and attitude."""
+        ...
     def trajectory(
         self, start_ns: int, end_ns: int, pose_i: npt.NDArray[np.float64],
         velocity_i: npt.NDArray[np.float64], *, gravity: tuple[float, float, float],
@@ -313,6 +319,31 @@ class ImuSeries:
         accel_noise_density: float, max_gap_s: float = 0.05,
         bias: tuple[float, float, float, float, float, float] | None = None,
     ) -> ImuFactor: ...
+
+class ImuRotationTrajectory:
+    """Immutable held-gyro knots in an identity start gauge, without estimated
+    position, velocity or gravity. Translation of the IMU origin is unmodeled.
+    The full IMU-from-LiDAR transform includes the lever arm under rotation.
+    """
+    @property
+    def start_ns(self) -> int: ...
+    @property
+    def end_ns(self) -> int: ...
+    @property
+    def frame_id(self) -> str: ...
+    @property
+    def gyro_bias(self) -> tuple[float, float, float]: ...
+    def __len__(self) -> int: ...
+    def timestamps_ns(self) -> npt.NDArray[np.int64]: ...
+    def rotation(self, stamp_ns: int) -> npt.NDArray[np.float64]: ...
+    def deskew(
+        self, points: npt.NDArray[np.float64], point_times_ns: npt.NDArray[np.int64],
+        reference_ns: int, *, imu_from_lidar: npt.NDArray[np.float64], parallel: bool = False,
+    ) -> npt.NDArray[np.float64]:
+        """Reference-time LiDAR coordinates with fixed IMU origin, preserving input
+        order. Validates all points/times; parallel uses identical scalar arithmetic.
+        """
+        ...
 
 class ImuTrajectory:
     """Immutable fixed-anchor nominal motion, created by ImuSeries.trajectory().

@@ -15,6 +15,7 @@ mod bag;
 mod copc_spatial;
 mod imu;
 mod imu_odometry;
+mod imu_rotation;
 mod imu_window;
 mod odometry;
 mod pose_graph;
@@ -794,6 +795,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<imu::ImuFactor>()?;
     m.add_class::<imu::ImuSeries>()?;
     m.add_class::<imu::ImuTrajectory>()?;
+    m.add_class::<imu_rotation::ImuRotationTrajectory>()?;
     m.add_class::<imu_window::ImuWindow>()?;
     m.add_class::<bag::BagMessages>()?;
     m.add_class::<bag::Scan>()?;

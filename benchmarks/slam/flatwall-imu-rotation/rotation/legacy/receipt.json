@@ -1,0 +1,73 @@
+{
+  "case": "legacy",
+  "registration_voxel": null,
+  "scans": 64,
+  "previous_undeskewed": {
+    "accepted": false,
+    "failed_limits": [
+      "rotation_rms",
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.2139604100538719,
+      "rotation_rms": 0.05933967342107588,
+      "velocity_rms": 1.5761586341339282,
+      "gyro_singular_ratio": 0.9998931823364315,
+      "max_gyro_bias_change": 0.025748521520088396,
+      "optimizer_success": true
+    }
+  },
+  "rotation_compensated": {
+    "accepted": false,
+    "failed_limits": [
+      "rotation_rms",
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.0946873118232574,
+      "rotation_rms": 0.05160495180503244,
+      "velocity_rms": 1.545272795476693,
+      "gyro_singular_ratio": 0.9999417360491916,
+      "max_gyro_bias_change": 0.033498057335443594,
+      "optimizer_success": true
+    }
+  },
+  "native": {
+    "accepted": false,
+    "error": "IMU initialization rejected: rotation_rms 5.160495181e-2 exceeds 5.000000000e-2; velocity_rms 1.545272795e0 exceeds 2.000000000e-1"
+  },
+  "serial_parallel_outcomes_match": true,
+  "previous_raw_pose_bits_and_reports_match": true,
+  "termination_counts": {
+    "empty_map": 1,
+    "converged": 63
+  },
+  "registration_points": {
+    "min": 12,
+    "median": 30.0,
+    "max": 33
+  },
+  "poses_sha256": "425a83913a634d351e190fbcd22796c71d1ba20a3d7601e317dae3d859af2920",
+  "outputs": {
+    "independent.json": {
+      "name": "independent.json",
+      "bytes": 6515,
+      "sha256": "49368ef4470d29bcb3222c1cba88315e9c20455b9d8b064f147eb0fadb117360"
+    },
+    "lidar-diagnostics.json": {
+      "name": "lidar-diagnostics.json",
+      "bytes": 20892,
+      "sha256": "909cc3934322df1f1b42474050dea8314b2d3a3d78e0e016f96077786eacbeb6"
+    },
+    "native.json": {
+      "name": "native.json",
+      "bytes": 169,
+      "sha256": "1d3b5f5851799c602236351a8d48672bf9f2fbbe49e19c7818e293825e5466d9"
+    },
+    "startup-poses.npz": {
+      "name": "startup-poses.npz",
+      "bytes": 6680,
+      "sha256": "84abff0ec97b3596798f99200d6d8011544806627fdc2c58edcbacf16322c694"
+    }
+  }
+}

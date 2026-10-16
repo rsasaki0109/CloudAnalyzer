@@ -9,6 +9,9 @@ LiDAR observations. To connect compensation to ICP and map insertion, see
 [IMU-compensated LiDAR registration](slam-imu-odometry.md).
 For a checked startup state from metric LiDAR poses, see
 [LiDAR/IMU initialization](slam-imu-initialization.md).
+For gyro-only compensation before physical velocity/gravity initialization, see
+[scan rotation compensation](slam-imu-rotation.md), which explicitly leaves
+IMU-origin translation unmodeled.
 
 The application supplies the initial IMU-to-world pose, world velocity, world
 gravity and IMU-frame bias. Acceleration uses the scale configured when creating

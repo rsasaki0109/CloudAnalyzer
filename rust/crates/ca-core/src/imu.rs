@@ -39,24 +39,26 @@ pub struct PreintegratedImu {
     pub covariance: [[f64; 9]; 9],
     /// Rows follow covariance; columns are gyro bias then accelerometer bias.
     pub bias_jacobian: [[f64; 6]; 9],
+    /// Bias used during integration: gyro then accelerometer, in the IMU frame.
+    pub linearization_bias: [f64; 6],
 }
 
-fn skew([x, y, z]: [f64; 3]) -> Mat3 {
+pub(crate) fn skew([x, y, z]: [f64; 3]) -> Mat3 {
     [[0.0, -z, y], [z, 0.0, -x], [-y, x, 0.0]]
 }
 
-fn multiply<const M: usize, const N: usize, const P: usize>(
+pub(crate) fn multiply<const M: usize, const N: usize, const P: usize>(
     a: &[[f64; N]; M],
     b: &[[f64; P]; N],
 ) -> [[f64; P]; M] {
     std::array::from_fn(|i| std::array::from_fn(|j| (0..N).map(|k| a[i][k] * b[k][j]).sum()))
 }
 
-fn transpose<const M: usize, const N: usize>(a: &[[f64; N]; M]) -> [[f64; M]; N] {
+pub(crate) fn transpose<const M: usize, const N: usize>(a: &[[f64; N]; M]) -> [[f64; M]; N] {
     std::array::from_fn(|i| std::array::from_fn(|j| a[j][i]))
 }
 
-fn right_jacobian(theta: [f64; 3]) -> Mat3 {
+pub(crate) fn right_jacobian(theta: [f64; 3]) -> Mat3 {
     let t2 = theta.iter().map(|x| x * x).sum::<f64>();
     let (a, b) = if t2 < 1e-8 {
         (
@@ -123,6 +125,13 @@ pub fn preintegrate(
         frame_id: String::new(),
         covariance: [[0.0; 9]; 9],
         bias_jacobian: [[0.0; 6]; 9],
+        linearization_bias: std::array::from_fn(|i| {
+            if i < 3 {
+                params.gyro_bias[i]
+            } else {
+                params.accel_bias[i - 3]
+            }
+        }),
     };
     for pair in samples.windows(2) {
         let (sample, next) = (&pair[0], &pair[1]);

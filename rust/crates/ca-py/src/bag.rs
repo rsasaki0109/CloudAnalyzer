@@ -81,6 +81,19 @@ impl Scan {
 }
 
 impl BagReader {
+    fn integrated_imu(
+        &self,
+        py: Python<'_>,
+        start_ns: i64,
+        end_ns: i64,
+        params: ca_core::imu::PreintegrationParams,
+        topic: Option<String>,
+    ) -> PyResult<ca_core::imu::PreintegratedImu> {
+        let samples = self.raw_imus(py, topic)?;
+        py.detach(|| ca_core::imu::preintegrate(&samples, start_ns, end_ns, &params))
+            .map_err(|e| PyValueError::new_err(e.0))
+    }
+
     fn raw_imus(&self, py: Python<'_>, topic: Option<String>) -> PyResult<Vec<bag::RawImuMessage>> {
         let Some(topic) = self.pick(bag::IMU, topic, "pick one")? else {
             return Ok(Vec::new());
@@ -327,43 +340,27 @@ impl BagReader {
         bias: Option<[f64; 6]>,
         topic: Option<String>,
     ) -> PyResult<Bound<'py, PyDict>> {
-        let samples = self.raw_imus(py, topic)?;
-        let bias = bias.unwrap_or([0.0; 6]);
-        let params = ca_core::imu::PreintegrationParams {
-            gyro_noise_density,
-            accel_noise_density,
-            max_gap_s,
-            gyro_bias: [bias[0], bias[1], bias[2]],
-            accel_bias: [bias[3], bias[4], bias[5]],
-        };
-        let out = py
-            .detach(|| ca_core::imu::preintegrate(&samples, start_ns, end_ns, &params))
-            .map_err(|e| PyValueError::new_err(e.0))?;
-        let result = PyDict::new(py);
-        result.set_item(
-            "delta_rotation",
-            rows(py, out.delta_rotation.into_iter().flatten().collect(), 3),
-        )?;
-        result.set_item(
-            "delta_velocity",
-            out.delta_velocity.to_vec().into_pyarray(py),
-        )?;
-        result.set_item(
-            "delta_position",
-            out.delta_position.to_vec().into_pyarray(py),
-        )?;
-        result.set_item(
-            "covariance",
-            rows(py, out.covariance.into_iter().flatten().collect(), 9),
-        )?;
-        result.set_item(
-            "bias_jacobian",
-            rows(py, out.bias_jacobian.into_iter().flatten().collect(), 6),
-        )?;
-        result.set_item("delta_time_s", out.delta_time_s)?;
-        result.set_item("integration_steps", out.integration_steps)?;
-        result.set_item("frame_id", out.frame_id)?;
-        Ok(result)
+        let params = crate::imu::params(gyro_noise_density, accel_noise_density, max_gap_s, bias);
+        let out = self.integrated_imu(py, start_ns, end_ns, params, topic)?;
+        crate::imu::measurement_dict(py, &out)
+    }
+
+    /// Construct a reusable, covariance-weighted IMU factor for this interval.
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None, topic=None))]
+    fn imu_factor(
+        &self,
+        py: Python<'_>,
+        start_ns: i64,
+        end_ns: i64,
+        gyro_noise_density: f64,
+        accel_noise_density: f64,
+        max_gap_s: f64,
+        bias: Option<[f64; 6]>,
+        topic: Option<String>,
+    ) -> PyResult<crate::imu::ImuFactor> {
+        let params = crate::imu::params(gyro_noise_density, accel_noise_density, max_gap_s, bias);
+        crate::imu::ImuFactor::new(self.integrated_imu(py, start_ns, end_ns, params, topic)?)
     }
 
     /// The poses of a trajectory topic (`nav_msgs/Odometry`, `geometry_msgs/PoseStamped`,

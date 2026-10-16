@@ -14,6 +14,7 @@ pub mod geotiff;
 pub mod ground;
 pub mod icp;
 pub mod imu;
+pub mod imu_factor;
 pub mod io;
 pub mod kdtree;
 pub mod loop_search;

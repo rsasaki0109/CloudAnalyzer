@@ -790,6 +790,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<odometry::LidarOdometry>()?;
     m.add_class::<bag::BagReader>()?;
     m.add_class::<imu::ImuFactor>()?;
+    m.add_class::<imu::ImuSeries>()?;
     m.add_class::<imu_window::ImuWindow>()?;
     m.add_class::<bag::BagMessages>()?;
     m.add_class::<bag::Scan>()?;

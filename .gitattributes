@@ -24,3 +24,6 @@ scripts/evaluate_nclt_imu_pilot.py text eol=lf
 benchmarks/slam/nclt-imu-fixed-lag/** text eol=lf
 scripts/replay_nclt_imu_window.py text eol=lf
 scripts/evaluate_nclt_imu_replay.py text eol=lf
+scripts/replay_nclt_imu_frontend.py text eol=lf
+scripts/evaluate_nclt_imu_frontend.py text eol=lf
+benchmarks/slam/nclt-imu-frontend/** text eol=lf

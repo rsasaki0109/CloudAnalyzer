@@ -3,7 +3,7 @@
 use ca_core::imu::{ImuError, PreintegratedImu, PreintegrationParams};
 use ca_core::imu_factor::{ImuEvaluation, ImuFactor as Factor, ImuState};
 use numpy::ndarray::Array2;
-use numpy::{IntoPyArray, PyArray2, PyReadonlyArray2, PyUntypedArrayMethods};
+use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray2, PyUntypedArrayMethods};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -87,6 +87,76 @@ fn evaluation_dict<'py>(py: Python<'py>, out: &ImuEvaluation) -> PyResult<Bound<
     )?;
     result.set_item("cost", out.cost)?;
     Ok(result)
+}
+
+/// An immutable, in-memory topic snapshot. BagReader.imu_series() decodes once;
+/// factors then search timestamps and integrate only their overlapping samples.
+#[pyclass(frozen, module = "cloudanalyzer_core._core")]
+pub struct ImuSeries {
+    pub(crate) series: ca_core::imu::ImuSeries,
+}
+
+#[pymethods]
+impl ImuSeries {
+    fn __len__(&self) -> usize {
+        self.series.samples().len()
+    }
+
+    /// Exact header timestamps, copied so callers cannot change the snapshot.
+    fn timestamps_ns<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray1<i64>> {
+        self.series
+            .samples()
+            .iter()
+            .map(|s| s.stamp_ns)
+            .collect::<Vec<_>>()
+            .into_pyarray(py)
+    }
+
+    fn frame_ids(&self) -> Vec<String> {
+        self.series
+            .samples()
+            .iter()
+            .map(|s| s.frame_id.clone())
+            .collect()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None))]
+    fn preintegrate<'py>(
+        &self,
+        py: Python<'py>,
+        start_ns: i64,
+        end_ns: i64,
+        gyro_noise_density: f64,
+        accel_noise_density: f64,
+        max_gap_s: f64,
+        bias: Option<[f64; 6]>,
+    ) -> PyResult<Bound<'py, PyDict>> {
+        let p = params(gyro_noise_density, accel_noise_density, max_gap_s, bias);
+        let out = py
+            .detach(|| self.series.preintegrate(start_ns, end_ns, &p))
+            .map_err(err)?;
+        measurement_dict(py, &out)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None))]
+    fn factor(
+        &self,
+        py: Python<'_>,
+        start_ns: i64,
+        end_ns: i64,
+        gyro_noise_density: f64,
+        accel_noise_density: f64,
+        max_gap_s: f64,
+        bias: Option<[f64; 6]>,
+    ) -> PyResult<ImuFactor> {
+        let p = params(gyro_noise_density, accel_noise_density, max_gap_s, bias);
+        let out = py
+            .detach(|| self.series.preintegrate(start_ns, end_ns, &p))
+            .map_err(err)?;
+        ImuFactor::new(out)
+    }
 }
 
 /// A preintegrated IMU factor, created by BagReader.imu_factor().

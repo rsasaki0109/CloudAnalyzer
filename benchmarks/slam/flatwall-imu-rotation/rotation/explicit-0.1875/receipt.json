@@ -1,0 +1,71 @@
+{
+  "case": "explicit-0.1875",
+  "registration_voxel": 0.1875,
+  "scans": 64,
+  "previous_undeskewed": {
+    "accepted": false,
+    "failed_limits": [
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.018041964653304987,
+      "rotation_rms": 0.027449079879726595,
+      "velocity_rms": 0.6874995764020279,
+      "gyro_singular_ratio": 0.9999748497195045,
+      "max_gyro_bias_change": 0.039345090935078014,
+      "optimizer_success": true
+    }
+  },
+  "rotation_compensated": {
+    "accepted": false,
+    "failed_limits": [
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.11010949938187586,
+      "rotation_rms": 0.031830641672841546,
+      "velocity_rms": 0.7846353540559049,
+      "gyro_singular_ratio": 0.9999653311018537,
+      "max_gyro_bias_change": 0.047631722536076886,
+      "optimizer_success": true
+    }
+  },
+  "native": {
+    "accepted": false,
+    "error": "IMU initialization rejected: velocity_rms 7.846353541e-1 exceeds 2.000000000e-1"
+  },
+  "serial_parallel_outcomes_match": true,
+  "previous_raw_pose_bits_and_reports_match": true,
+  "termination_counts": {
+    "empty_map": 1,
+    "converged": 63
+  },
+  "registration_points": {
+    "min": 396,
+    "median": 1026.5,
+    "max": 1096
+  },
+  "poses_sha256": "3ade5f25d7e9e61488085f3745791f2561fafeb976f837fbf9aca0aa1c65bee1",
+  "outputs": {
+    "independent.json": {
+      "name": "independent.json",
+      "bytes": 6581,
+      "sha256": "f69244e3cb5f9146d7dac9b198fa08d21161501062f20467c1c5835760c947fc"
+    },
+    "lidar-diagnostics.json": {
+      "name": "lidar-diagnostics.json",
+      "bytes": 21068,
+      "sha256": "9a1bcceb8c6b70e7f793c3a8c6bdd404a2a0658ede628a4129c5c08dbe3107cc"
+    },
+    "native.json": {
+      "name": "native.json",
+      "bytes": 118,
+      "sha256": "b8d2c019f9f1f8b686fec95ae34ab9af4425a59d32bffd5b0991be143fa19e47"
+    },
+    "startup-poses.npz": {
+      "name": "startup-poses.npz",
+      "bytes": 6669,
+      "sha256": "4cca234d88b88c8f81bc8913fabaab84006fbeab0197d1650ee4320328edfa64"
+    }
+  }
+}

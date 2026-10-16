@@ -1,0 +1,474 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_rotation.v1",
+  "inputs": {
+    "recording": {
+      "name": "flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "controller": {
+      "name": "audit_flatwall_imu_rotation.py",
+      "bytes": 17398,
+      "sha256": "8988d9ee8b0c8fbb90ecc34e59120d81e1a7b88c2e44c9aa5713508cdb0d13b8"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7573504,
+      "sha256": "66efeab7fbc86f0499511e6a0ba0db49e01f7ba745f935e66fba8bd1e5e81569"
+    },
+    "helpers": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "startup_controller": {
+      "name": "audit_flatwall_imu_initialization.py",
+      "bytes": 12585,
+      "sha256": "f846b35453a2908caa3e0175106c1ff82fa88de4784bb01dcb7469059484df09"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "rosbags_version": "0.11.3",
+    "rotation_backend": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    },
+    "optimizer_source": {
+      "name": "_util.py",
+      "bytes": 49981,
+      "sha256": "3a3837ae4094263e936394bae513b3a91387b12fa9cb7bae91f43117b5bc3293"
+    },
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "standard_types": {
+      "name": "ros1_noetic.py",
+      "bytes": 101472,
+      "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+    },
+    "previous": {
+      "legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6673,
+          "sha256": "38eedcdabef3209607fadb53e77b02c41ca54e232f9989e6473c337b2d14cee2"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20908,
+          "sha256": "5455cc437a5c3fe46d0eb6244c4c872b0eeb8a85f3dd57c0569f534248c331f5"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6517,
+          "sha256": "d85dba324ae0a7e35d7f9cde8650a27e195faf3e4559062824ea90ba01b43f6f"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1956,
+          "sha256": "cd13d484736119b6a7dd4064099d86914eb6a855c8f5dc70e1c3645fe3e7f510"
+        }
+      },
+      "explicit-0.1875": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6670,
+          "sha256": "1bf02c09d75236bead70fdfafe305fc57b9ce561e3a7030430f827523674dfee"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21073,
+          "sha256": "578660362b76f9b2b528e3d1a7537e10b18a0ed0660c75f2bfbb697ab46bd78a"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6592,
+          "sha256": "5c6b940c6a2a5fa5f4f7dbdb47bd625c3c615af335541d5e077fbc385313fe20"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1854,
+          "sha256": "a83d8c673dfb73f587be57e51441be4ecd5e95328b7d39ad989c7cc317913814"
+        }
+      }
+    }
+  },
+  "gyro_bias_rad_s": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "max_gap_s": 0.05,
+  "point_time": "UINT32 t in ns from exact integer PointCloud2 header",
+  "reference_time": "maximum point timestamp; same previous 64 references for startup",
+  "extrinsics": {
+    "identity": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "lever-arm-control": [
+      [
+        0.9505806179060914,
+        -0.30293271340263705,
+        -0.06803131640494,
+        0.5
+      ],
+      [
+        0.2831649605650737,
+        0.9357548032779188,
+        -0.21019170595074282,
+        -0.3
+      ],
+      [
+        0.12733457491763026,
+        0.1805400766943977,
+        0.9752903089530457,
+        0.2
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "component_tolerances": {
+    "rotation": 1e-10,
+    "coordinates": 2e-08
+  },
+  "startup": {
+    "scan_indices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64
+    ],
+    "source_cases": [
+      "legacy",
+      "explicit-0.1875"
+    ],
+    "lidar": {
+      "min_range": 1.5,
+      "max_range": 80.0,
+      "map_voxel": 1.0,
+      "map_points": 20,
+      "deskew": false,
+      "diagnostics": true
+    },
+    "initializer_parameters": {
+      "gyro_bias": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "accel_bias": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "gravity_magnitude": 9.80665,
+      "max_gravity_error": 1.0,
+      "max_rotation_rms": 0.05,
+      "max_velocity_rms": 0.2,
+      "max_gyro_bias_change": 0.2,
+      "max_iterations": 15,
+      "max_gap_s": 0.05,
+      "min_singular_ratio": 1e-06
+    },
+    "acceleration_scale": 9.80665,
+    "imu_from_lidar": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "native_oracle_tolerance": 2e-05
+  },
+  "model": "Held body gyro, identity start gauge, fixed IMU origin within each scan, including full LiDAR lever arm. Acceleration and reported attitude are ignored by compensation. No IMU-origin translation is modeled.",
+  "scope": "Numerical component agreement and same-prefix initialization consistency only. Zero bias and identity real extrinsic are declared, not calibrated. No timing, GPU execution, reference poses, physical accuracy, changed limits/defaults or state adoption.",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 6630,
+    "sha256": "7f6edd08fd4f9d4ec251147c6750c173b838c697154a0b093b2c2e8426bff275"
+  },
+  "component": {
+    "scans": 185,
+    "points_per_extrinsic": 4440000,
+    "skipped_scans": [
+      0
+    ],
+    "decreasing_point_steps_retained": 11,
+    "rotation_error": 8.881784197001252e-15,
+    "max_coordinate_errors": {
+      "identity": 7.460698725481052e-13,
+      "lever-arm-control": 8.384404281969182e-13
+    },
+    "digests": {
+      "identity": {
+        "oracle": "934e5bc209b2e446309b990203d573ffb4535d9496349dd7124f1b54301b6f1d",
+        "native": "ce607e2a6a002fa9c523669f5b5e845d48611b97667abc4c3c6d49df5dff8812"
+      },
+      "lever-arm-control": {
+        "oracle": "aab62af07eb6251ec46b75d39fde639bc7386981e26065032ba4b4a350e6c4ab",
+        "native": "2ed13d9f4e1ced9b7ad4b5742e636a5ca2b7b3570a8a2350f5b8facbd0f4e11f"
+      }
+    },
+    "serial_parallel_all_bits_match": true,
+    "reference_points_all_bits_unchanged": true,
+    "caller_buffers_unchanged": true
+  },
+  "startup_results": [
+    {
+      "case": "legacy",
+      "registration_voxel": null,
+      "scans": 64,
+      "previous_undeskewed": {
+        "accepted": false,
+        "failed_limits": [
+          "rotation_rms",
+          "velocity_rms"
+        ],
+        "diagnostics": {
+          "gravity_error": 0.2139604100538719,
+          "rotation_rms": 0.05933967342107588,
+          "velocity_rms": 1.5761586341339282,
+          "gyro_singular_ratio": 0.9998931823364315,
+          "max_gyro_bias_change": 0.025748521520088396,
+          "optimizer_success": true
+        }
+      },
+      "rotation_compensated": {
+        "accepted": false,
+        "failed_limits": [
+          "rotation_rms",
+          "velocity_rms"
+        ],
+        "diagnostics": {
+          "gravity_error": 0.0946873118232574,
+          "rotation_rms": 0.05160495180503244,
+          "velocity_rms": 1.545272795476693,
+          "gyro_singular_ratio": 0.9999417360491916,
+          "max_gyro_bias_change": 0.033498057335443594,
+          "optimizer_success": true
+        }
+      },
+      "native": {
+        "accepted": false,
+        "error": "IMU initialization rejected: rotation_rms 5.160495181e-2 exceeds 5.000000000e-2; velocity_rms 1.545272795e0 exceeds 2.000000000e-1"
+      },
+      "serial_parallel_outcomes_match": true,
+      "previous_raw_pose_bits_and_reports_match": true,
+      "termination_counts": {
+        "empty_map": 1,
+        "converged": 63
+      },
+      "registration_points": {
+        "min": 12,
+        "median": 30.0,
+        "max": 33
+      },
+      "poses_sha256": "425a83913a634d351e190fbcd22796c71d1ba20a3d7601e317dae3d859af2920",
+      "outputs": {
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6515,
+          "sha256": "49368ef4470d29bcb3222c1cba88315e9c20455b9d8b064f147eb0fadb117360"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20892,
+          "sha256": "909cc3934322df1f1b42474050dea8314b2d3a3d78e0e016f96077786eacbeb6"
+        },
+        "native.json": {
+          "name": "native.json",
+          "bytes": 169,
+          "sha256": "1d3b5f5851799c602236351a8d48672bf9f2fbbe49e19c7818e293825e5466d9"
+        },
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6680,
+          "sha256": "84abff0ec97b3596798f99200d6d8011544806627fdc2c58edcbacf16322c694"
+        }
+      }
+    },
+    {
+      "case": "explicit-0.1875",
+      "registration_voxel": 0.1875,
+      "scans": 64,
+      "previous_undeskewed": {
+        "accepted": false,
+        "failed_limits": [
+          "velocity_rms"
+        ],
+        "diagnostics": {
+          "gravity_error": 0.018041964653304987,
+          "rotation_rms": 0.027449079879726595,
+          "velocity_rms": 0.6874995764020279,
+          "gyro_singular_ratio": 0.9999748497195045,
+          "max_gyro_bias_change": 0.039345090935078014,
+          "optimizer_success": true
+        }
+      },
+      "rotation_compensated": {
+        "accepted": false,
+        "failed_limits": [
+          "velocity_rms"
+        ],
+        "diagnostics": {
+          "gravity_error": 0.11010949938187586,
+          "rotation_rms": 0.031830641672841546,
+          "velocity_rms": 0.7846353540559049,
+          "gyro_singular_ratio": 0.9999653311018537,
+          "max_gyro_bias_change": 0.047631722536076886,
+          "optimizer_success": true
+        }
+      },
+      "native": {
+        "accepted": false,
+        "error": "IMU initialization rejected: velocity_rms 7.846353541e-1 exceeds 2.000000000e-1"
+      },
+      "serial_parallel_outcomes_match": true,
+      "previous_raw_pose_bits_and_reports_match": true,
+      "termination_counts": {
+        "empty_map": 1,
+        "converged": 63
+      },
+      "registration_points": {
+        "min": 396,
+        "median": 1026.5,
+        "max": 1096
+      },
+      "poses_sha256": "3ade5f25d7e9e61488085f3745791f2561fafeb976f837fbf9aca0aa1c65bee1",
+      "outputs": {
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6581,
+          "sha256": "f69244e3cb5f9146d7dac9b198fa08d21161501062f20467c1c5835760c947fc"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21068,
+          "sha256": "9a1bcceb8c6b70e7f793c3a8c6bdd404a2a0658ede628a4129c5c08dbe3107cc"
+        },
+        "native.json": {
+          "name": "native.json",
+          "bytes": 118,
+          "sha256": "b8d2c019f9f1f8b686fec95ae34ab9af4425a59d32bffd5b0991be143fa19e47"
+        },
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6669,
+          "sha256": "4cca234d88b88c8f81bc8913fabaab84006fbeab0197d1650ee4320328edfa64"
+        }
+      }
+    }
+  ],
+  "no_state_adopted": true,
+  "no_reference_poses_used": true
+}

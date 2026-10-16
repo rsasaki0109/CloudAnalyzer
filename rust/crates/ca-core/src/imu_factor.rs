@@ -56,7 +56,7 @@ fn finite(values: impl Iterator<Item = f64>) -> Result<(), ImuError> {
     }
 }
 
-fn validate_rotation(r: &Mat3) -> Result<(), ImuError> {
+pub(crate) fn validate_rotation(r: &Mat3) -> Result<(), ImuError> {
     finite(r.iter().flatten().copied())?;
     let rrt = multiply(r, &transpose(r));
     let determinant = r[0][0] * (r[1][1] * r[2][2] - r[1][2] * r[2][1])

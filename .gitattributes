@@ -49,3 +49,5 @@ scripts/audit_flatwall_imu_initialization.py text eol=lf
 benchmarks/slam/flatwall-imu-initialization/** text eol=lf
 scripts/audit_flatwall_registration_sampling.py text eol=lf
 benchmarks/slam/flatwall-registration-sampling/** text eol=lf
+scripts/audit_flatwall_imu_rotation.py text eol=lf
+benchmarks/slam/flatwall-imu-rotation/** text eol=lf

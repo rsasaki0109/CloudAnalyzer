@@ -129,6 +129,26 @@ impl ImuSeries {
             .collect()
     }
 
+    /// Gyro-only fixed-origin point compensation; no acceleration or attitude required.
+    #[pyo3(signature=(start_ns, end_ns, *, gyro_bias, max_gap_s=0.05))]
+    fn rotation_trajectory(
+        &self,
+        py: Python<'_>,
+        start_ns: i64,
+        end_ns: i64,
+        gyro_bias: [f64; 3],
+        max_gap_s: f64,
+    ) -> PyResult<crate::imu_rotation::ImuRotationTrajectory> {
+        let params = ca_core::imu_rotation::RotationParams {
+            gyro_bias,
+            max_gap_s,
+        };
+        let trajectory = py
+            .detach(|| self.series.rotation_trajectory(start_ns, end_ns, &params))
+            .map_err(err)?;
+        Ok(crate::imu_rotation::ImuRotationTrajectory { trajectory })
+    }
+
     /// Metric startup alignment. Acceleration bias is fixed; gyro bias is fitted
     /// with exact reintegration. Rejected estimates are never returned as states.
     #[allow(clippy::too_many_arguments)]

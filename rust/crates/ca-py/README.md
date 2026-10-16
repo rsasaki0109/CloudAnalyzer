@@ -13,6 +13,10 @@ through `last_linearization()`. See [the API and numerical limits](../../../docs
 assembles an independent fixed-match GICP system with explicit shape frames and
 an optional CPU parallel path. See [GICP factor semantics](../../../docs/slam-gicp-linearization.md).
 
+`gicp_register` adds opt-in iterative global nearest-neighbor registration on
+prepared shapes; `gicp_frozen_cost` evaluates trial poses with baseline metrics.
+See [registration semantics and termination](../../../docs/slam-gicp-registration.md).
+
 ```python
 import cloudanalyzer_core as cc
 import numpy as np

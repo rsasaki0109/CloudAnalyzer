@@ -124,3 +124,210 @@ pub(crate) fn gicp_linearization<'py>(
     )?;
     Ok(out)
 }
+
+fn rigid(array: &PyReadonlyArray2<f64>) -> PyResult<ca_core::icp::Rigid> {
+    if array.shape() != [4, 4] {
+        return Err(PyValueError::new_err("pose needs shape (4, 4)"));
+    }
+    let v = array.as_array();
+    if !(0..4)
+        .all(|j| v[[3, j]].is_finite() && (v[[3, j]] - f64::from(u8::from(j == 3))).abs() <= 1e-12)
+    {
+        return Err(PyValueError::new_err(
+            "pose needs homogeneous last row [0,0,0,1]",
+        ));
+    }
+    Ok(ca_core::icp::Rigid {
+        rotation: std::array::from_fn(|i| std::array::from_fn(|j| v[[i, j]])),
+        translation: std::array::from_fn(|i| v[[i, 3]]),
+    })
+}
+
+fn pose_array<'py>(py: Python<'py>, pose: ca_core::icp::Rigid) -> Bound<'py, numpy::PyArray2<f64>> {
+    Array2::from_shape_vec((4, 4), pose.to_matrix().to_vec())
+        .expect("4 x 4 pose")
+        .into_pyarray(py)
+}
+
+fn shape_array<'py>(py: Python<'py>, shapes: Vec<Matrix3>) -> Bound<'py, numpy::PyArray3<f64>> {
+    Array3::from_shape_vec(
+        (shapes.len(), 3, 3),
+        shapes.into_iter().flatten().flatten().collect(),
+    )
+    .expect("N x 3 x 3 shapes")
+    .into_pyarray(py)
+}
+
+fn weights(array: Option<PyReadonlyArray1<f64>>, n: usize) -> PyResult<Vec<f64>> {
+    match array {
+        Some(array) if array.len() == n => Ok(array.as_array().iter().copied().collect()),
+        Some(_) => Err(PyValueError::new_err("weights needs one value per pair")),
+        None => Ok(vec![1.0; n]),
+    }
+}
+
+/// Evaluate candidate residuals using supplied baseline combined shapes.
+/// No candidate-pose shape transport or rematching is performed.
+#[pyfunction]
+#[pyo3(signature = (source, target, combined_shapes, pose, *, weights=None, parallel=false))]
+pub(crate) fn gicp_frozen_cost<'py>(
+    py: Python<'py>,
+    source: PyReadonlyArray2<f64>,
+    target: PyReadonlyArray2<f64>,
+    combined_shapes: PyReadonlyArray3<f64>,
+    pose: PyReadonlyArray2<f64>,
+    weights: Option<PyReadonlyArray1<f64>>,
+    parallel: bool,
+) -> PyResult<Bound<'py, PyDict>> {
+    let source = crate::points(&source)?;
+    let target = crate::points(&target)?;
+    let shapes = shapes(&combined_shapes, source.len(), "combined_shapes")?;
+    let pose = rigid(&pose)?;
+    let weights = self::weights(weights, source.len())?;
+    let result = py
+        .detach(|| {
+            ca_core::gicp_registration::FrozenMetric::new(&source, &target, &shapes, &weights)?
+                .evaluate(&pose, parallel)
+        })
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let out = PyDict::new(py);
+    out.set_item("cost", result.cost)?;
+    out.set_item(
+        "mahalanobis_squared",
+        result.mahalanobis_squared.into_pyarray(py),
+    )?;
+    Ok(out)
+}
+
+/// Iterative global nearest-neighbor GICP on explicit source/world SPD shapes.
+/// Returns the last accepted pose and an explicit termination reason.
+#[pyfunction]
+#[pyo3(signature = (source, target, source_shapes, target_shapes, initial_pose, center_world, *, max_correspondence_distance, max_iterations=30, translation_tolerance=1e-4, rotation_tolerance=1e-5, robust_scale=None, parallel=false, capture_history=false))]
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn gicp_register<'py>(
+    py: Python<'py>,
+    source: PyReadonlyArray2<f64>,
+    target: PyReadonlyArray2<f64>,
+    source_shapes: PyReadonlyArray3<f64>,
+    target_shapes: PyReadonlyArray3<f64>,
+    initial_pose: PyReadonlyArray2<f64>,
+    center_world: PyReadonlyArray1<f64>,
+    max_correspondence_distance: f64,
+    max_iterations: usize,
+    translation_tolerance: f64,
+    rotation_tolerance: f64,
+    robust_scale: Option<f64>,
+    parallel: bool,
+    capture_history: bool,
+) -> PyResult<Bound<'py, PyDict>> {
+    let source = crate::points(&source)?;
+    let target = crate::points(&target)?;
+    let source_shapes = shapes(&source_shapes, source.len(), "source_shapes")?;
+    let target_shapes = shapes(&target_shapes, target.len(), "target_shapes")?;
+    let pose = rigid(&initial_pose)?;
+    if center_world.shape() != [3] {
+        return Err(PyValueError::new_err("center_world needs shape (3,)"));
+    }
+    let c = center_world.as_array();
+    let center = [c[0], c[1], c[2]];
+    let params = ca_core::gicp_registration::RegistrationParams {
+        max_correspondence_distance,
+        max_iterations,
+        translation_tolerance,
+        rotation_tolerance,
+        robust_scale,
+        parallel,
+        capture_history,
+    };
+    let result = py
+        .detach(|| {
+            ca_core::gicp_registration::register(
+                &source,
+                &target,
+                &source_shapes,
+                &target_shapes,
+                pose,
+                center,
+                params,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let out = PyDict::new(py);
+    out.set_item("pose", pose_array(py, result.pose))?;
+    out.set_item("termination", result.termination.as_str())?;
+    out.set_item(
+        "converged",
+        result.termination == ca_core::gicp_registration::Termination::ConvergedStep,
+    )?;
+    out.set_item("iterations", result.iterations)?;
+    out.set_item("accepted_steps", result.accepted_steps)?;
+    out.set_item("final_cost", result.final_cost)?;
+    out.set_item(
+        "matched_source_indices",
+        result
+            .matched_source_indices
+            .into_iter()
+            .map(|i| i as u64)
+            .collect::<Vec<_>>()
+            .into_pyarray(py),
+    )?;
+    out.set_item(
+        "matched_target_indices",
+        result
+            .matched_target_indices
+            .into_iter()
+            .map(|i| i as u64)
+            .collect::<Vec<_>>()
+            .into_pyarray(py),
+    )?;
+    out.set_item(
+        "squared_distances",
+        result.squared_distances.into_pyarray(py),
+    )?;
+    out.set_item("weights", result.weights.into_pyarray(py))?;
+    out.set_item("failure_reason", result.failure_reason)?;
+    let history = pyo3::types::PyList::empty(py);
+    for item in result.history {
+        let row = PyDict::new(py);
+        row.set_item("pose_before", pose_array(py, item.pose_before))?;
+        row.set_item("pose_after", pose_array(py, item.pose_after))?;
+        row.set_item(
+            "source_indices",
+            item.source_indices
+                .into_iter()
+                .map(|i| i as u64)
+                .collect::<Vec<_>>()
+                .into_pyarray(py),
+        )?;
+        row.set_item(
+            "target_indices",
+            item.target_indices
+                .into_iter()
+                .map(|i| i as u64)
+                .collect::<Vec<_>>()
+                .into_pyarray(py),
+        )?;
+        row.set_item("squared_distances", item.squared_distances.into_pyarray(py))?;
+        row.set_item("weights", item.weights.into_pyarray(py))?;
+        row.set_item("combined_shapes", shape_array(py, item.combined_shapes))?;
+        row.set_item(
+            "normal_matrix",
+            Array2::from_shape_vec((6, 6), item.normal_matrix.into_iter().flatten().collect())
+                .expect("6 x 6 system")
+                .into_pyarray(py),
+        )?;
+        row.set_item(
+            "right_hand_side",
+            item.right_hand_side.to_vec().into_pyarray(py),
+        )?;
+        row.set_item("cost_before", item.cost_before)?;
+        row.set_item("cost_after", item.cost_after)?;
+        row.set_item("step", item.step.map(|v| v.to_vec().into_pyarray(py)))?;
+        row.set_item("trial_scales", item.trial_scales.into_pyarray(py))?;
+        row.set_item("trial_costs", item.trial_costs)?;
+        row.set_item("accepted_scale", item.accepted_scale)?;
+        history.append(row)?;
+    }
+    out.set_item("history", history)?;
+    Ok(out)
+}

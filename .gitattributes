@@ -57,3 +57,5 @@ scripts/audit_flatwall_odometry_linearization.py text eol=lf
 benchmarks/slam/flatwall-odometry-linearization/** text eol=lf
 scripts/audit_flatwall_gicp_linearization.py text eol=lf
 benchmarks/slam/flatwall-gicp-linearization/** text eol=lf
+scripts/audit_flatwall_gicp_registration.py text eol=lf
+benchmarks/slam/flatwall-gicp-registration/** text eol=lf

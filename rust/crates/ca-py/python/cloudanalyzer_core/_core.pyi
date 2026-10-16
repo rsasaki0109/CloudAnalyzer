@@ -498,6 +498,34 @@ class OdometryReport(TypedDict):
     threshold_m: float
     correspondences: OdometryCorrespondences | None
 
+class ImuLidarOdometry:
+    """IMU deskew then ICP, with poses/map points in the first reference LiDAR frame."""
+
+    def __init__(
+        self, trajectory: ImuTrajectory, imu_from_lidar: npt.NDArray[np.float64], *,
+        min_range: float = 1.5, max_range: float = 80.0,
+        map_voxel: float = 1.0, map_points: int = 20,
+        parallel: bool = False, diagnostics: bool = False,
+    ) -> None: ...
+    def register(
+        self, points: npt.NDArray[np.float64], point_times_ns: npt.NDArray[np.int64],
+        reference_ns: int,
+    ) -> npt.NDArray[np.float64]:
+        """Compensate/register at a strictly increasing explicit reference timestamp."""
+        ...
+    @property
+    def world_from_first_lidar(self) -> npt.NDArray[np.float64] | None:
+        """Copied local-to-nominal-world alignment; None before the first scan."""
+        ...
+    def reference_timestamps_ns(self) -> npt.NDArray[np.int64]: ...
+    def poses(self) -> npt.NDArray[np.float64]: ...
+    def placed(self) -> npt.NDArray[np.float64]:
+        """Copied last-scan map points after compensation, filtering and thinning."""
+        ...
+    def last_prediction(self) -> npt.NDArray[np.float64] | None: ...
+    def last_iterations(self) -> int: ...
+    def last_report(self) -> OdometryReport | None: ...
+
 class LidarOdometry:
     """LiDAR odometry: scans registered one after another onto a local map of the ones before."""
 

@@ -1,0 +1,72 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_odometry.v1",
+  "inputs": {
+    "recording": {
+      "name": "flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "controller": {
+      "name": "audit_flatwall_imu_odometry.py",
+      "bytes": 13301,
+      "sha256": "cfd7f1cf43fab67e79dee682011cb8fc79ee41b0ca7728048dc70b8d0020073b"
+    },
+    "helpers": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7470080,
+      "sha256": "b5066a21f7547acaa9eaa0405f23defa1e4b65c01fcb49a99ec3cc7432dbc307"
+    },
+    "component_protocol": {
+      "name": "protocol.json",
+      "bytes": 4116,
+      "sha256": "9ee8cc8b95192b0517a20f0a3ceb644d0e56af6f0be6f81ea1a688a33567d57c"
+    },
+    "component_receipt": {
+      "name": "receipt.json",
+      "bytes": 6054,
+      "sha256": "e754e7e03504821de7b03c62b3890be64115a937b8ce10fd7941bca8d59bb07e"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "rosbags_version": "0.11.3",
+    "rotation_backend": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    },
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "standard_types": {
+      "name": "ros1_noetic.py",
+      "bytes": 101472,
+      "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+    }
+  },
+  "settings": {
+    "min_range": 1.5,
+    "max_range": 80.0,
+    "map_voxel": 1.0,
+    "map_points": 20,
+    "diagnostics": true
+  },
+  "parallel_compensation": true,
+  "rayon_threads_requested": 4,
+  "declared_state": "first IMU header, identity pose, zero world velocity/bias, gravity [0,0,-9.80665], acceleration scale9.80665, identity IMU-from-LiDAR",
+  "reference_time": "maximum integer point timestamp; reject the entire first unbracketed scan; accept all other scans in source order",
+  "coordinate_frame": "first accepted reference LiDAR frame; world_from_first_lidar aligns it to the nominal IMU world",
+  "checks": {
+    "point_oracle_atol": 2e-08,
+    "relative_prediction_atol": 1e-08,
+    "placed_map_atol": 2e-08,
+    "insertion_selection": "Independent range filter and first-per-half-voxel selection on native-compensated coordinates, after their complete independent coordinate check; use final ICP pose for placement."
+  },
+  "scope": "Integration/numerical audit on real measurements with arbitrary declared initial state; no physical initialization/calibration fit, reference poses, accuracy, runtime or GPU result."
+}

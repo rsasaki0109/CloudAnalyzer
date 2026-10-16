@@ -15,7 +15,7 @@ use pyo3::types::PyDict;
 /// (see `ca_core::odometry`): the KISS-ICP recipe in the Rust core.
 #[pyclass]
 pub struct LidarOdometry {
-    inner: Odometry,
+    pub(crate) inner: Odometry,
 }
 
 fn matrix(m: [f64; 16]) -> Array2<f64> {
@@ -117,7 +117,7 @@ impl LidarOdometry {
     /// A copied report for the last finished scan, or None before the first.
     /// With diagnostics=True, residuals use the returned pose and the map before
     /// insertion. They use ICP's search/threshold and do not certify alignment.
-    fn last_report<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyDict>>> {
+    pub(crate) fn last_report<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyDict>>> {
         let Some(report) = self.inner.last_report() else {
             return Ok(None);
         };
@@ -141,7 +141,7 @@ impl LidarOdometry {
     }
 
     /// Every pose so far, (K, 4, 4).
-    fn poses<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray3<f64>> {
+    pub(crate) fn poses<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray3<f64>> {
         let poses = self.inner.poses();
         let flat: Vec<f64> = poses.iter().flat_map(|p| p.to_matrix()).collect();
         Array3::from_shape_vec((poses.len(), 4, 4), flat)

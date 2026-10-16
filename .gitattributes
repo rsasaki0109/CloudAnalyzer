@@ -43,3 +43,5 @@ benchmarks/slam/flatwall-point-times-ns/** text eol=lf
 scripts/audit_flatwall_imu_deskew.py text eol=lf
 scripts/measure_flatwall_imu_deskew.py text eol=lf
 benchmarks/slam/flatwall-imu-deskew/** text eol=lf
+scripts/audit_flatwall_imu_odometry.py text eol=lf
+benchmarks/slam/flatwall-imu-odometry/** text eol=lf

@@ -227,6 +227,43 @@ impl ImuTrajectory {
         Ok(state)
     }
 
+    /// Map LiDAR coordinates at `to_ns` into LiDAR coordinates at `from_ns`.
+    /// Subtracts trajectory displacements before adding any world origin.
+    pub fn relative_lidar_pose(
+        &self,
+        from_ns: i64,
+        to_ns: i64,
+        imu_from_lidar: &Rigid,
+    ) -> Result<Rigid, ImuError> {
+        let reference = self.prepare(&[], &[], from_ns, imu_from_lidar)?;
+        if !self.contains(to_ns) {
+            return Err(ImuError(
+                "IMU trajectory does not cover the destination timestamp".into(),
+            ));
+        }
+        if from_ns == to_ns {
+            return Ok(Rigid::IDENTITY);
+        }
+        let state = self.relative_state(to_ns);
+        let pose = Rigid {
+            rotation: multiply(
+                &reference.imu_to_lidar,
+                &multiply(
+                    &reference.world_to_imu,
+                    &multiply(&state.rotation, &imu_from_lidar.rotation),
+                ),
+            ),
+            translation: self.transform(&[0.0; 3], to_ns, &reference),
+        };
+        validate_state(&ImuState {
+            rotation: pose.rotation,
+            position: pose.translation,
+            velocity: [0.0; 3],
+        })
+        .map_err(|e| ImuError(format!("relative LiDAR pose: {}", e.0)))?;
+        Ok(pose)
+    }
+
     fn prepare(
         &self,
         points: &[[f64; 3]],
@@ -684,6 +721,95 @@ mod tests {
                     .unwrap()
             )
         );
+    }
+
+    #[test]
+    fn relative_lidar_pose_has_full_extrinsics_and_no_world_origin_loss() {
+        let mut raw = samples();
+        for sample in &mut raw {
+            sample.angular_velocity = [0.0, 0.0, 2.0];
+            sample.acceleration = [0.0; 3];
+        }
+        let series = ImuSeries::new(raw).unwrap();
+        let initial = ImuState {
+            rotation: exp_so3(&[0.2, -0.1, 0.3]),
+            velocity: [1.0, -0.5, 0.3],
+            position: [10.0, -20.0, 3.0],
+        };
+        let p = TrajectoryParams {
+            gravity: [0.0; 3],
+            ..params()
+        };
+        let a = series
+            .trajectory(EPOCH, EPOCH + 200_000_000, initial, &p)
+            .unwrap();
+        let b = series
+            .trajectory(
+                EPOCH,
+                EPOCH + 200_000_000,
+                ImuState {
+                    position: [1e12, -2e12, 3e12],
+                    ..initial
+                },
+                &p,
+            )
+            .unwrap();
+        let extrinsic = Rigid {
+            rotation: exp_so3(&[-0.2, 0.3, 0.1]),
+            translation: [0.5, -0.3, 0.2],
+        };
+        let absolute = |stamp| {
+            let dt = (stamp - EPOCH) as f64 * 1e-9;
+            Rigid {
+                rotation: multiply(&initial.rotation, &exp_so3(&[0.0, 0.0, 2.0 * dt])),
+                translation: std::array::from_fn(|k| {
+                    initial.position[k] + initial.velocity[k] * dt
+                }),
+            }
+            .compose(&extrinsic)
+        };
+        let x = EPOCH + 31_234_567;
+        let y = EPOCH + 170_456_789;
+        for (from, to) in [(x, y), (y, x), (x, x)] {
+            let expected = crate::pose_graph::inverse(&absolute(from)).compose(&absolute(to));
+            let actual = a.relative_lidar_pose(from, to, &extrinsic).unwrap();
+            for (actual, expected) in actual.to_matrix().iter().zip(expected.to_matrix()) {
+                assert!((actual - expected).abs() < 1e-12);
+            }
+            assert_eq!(
+                actual.to_matrix().map(f64::to_bits),
+                b.relative_lidar_pose(from, to, &extrinsic)
+                    .unwrap()
+                    .to_matrix()
+                    .map(f64::to_bits)
+            );
+        }
+        assert_eq!(
+            a.relative_lidar_pose(x, x, &extrinsic).unwrap(),
+            Rigid::IDENTITY
+        );
+    }
+
+    #[test]
+    fn relative_lidar_pose_rejects_uncovered_times_and_invalid_extrinsics() {
+        let t = ImuSeries::new(samples())
+            .unwrap()
+            .trajectory(EPOCH, EPOCH + 200_000_000, initial(), &params())
+            .unwrap();
+        assert!(
+            t.relative_lidar_pose(EPOCH - 1, EPOCH, &Rigid::IDENTITY)
+                .is_err()
+        );
+        assert!(
+            t.relative_lidar_pose(EPOCH, t.end_ns() + 1, &Rigid::IDENTITY)
+                .is_err()
+        );
+        let mut bad = Rigid::IDENTITY;
+        bad.rotation[0][0] = -1.0;
+        assert!(t.relative_lidar_pose(EPOCH, EPOCH, &bad).is_err());
+        bad = Rigid::IDENTITY;
+        bad.translation[1] = f64::NAN;
+        assert!(t.relative_lidar_pose(EPOCH, EPOCH, &bad).is_err());
     }
 
     #[cfg(feature = "parallel")]

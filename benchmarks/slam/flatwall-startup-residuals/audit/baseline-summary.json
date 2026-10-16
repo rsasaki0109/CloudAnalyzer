@@ -1,0 +1,280 @@
+[
+  {
+    "source": "raw-legacy",
+    "stride": 1,
+    "offset_ns": 0,
+    "reference_count": 64,
+    "accepted": false,
+    "failed_limits": [
+      "rotation_rms",
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.2139604100538719,
+      "rotation_rms": 0.05933967342107588,
+      "velocity_rms": 1.5761586341339282,
+      "gyro_singular_ratio": 0.9998931823364315,
+      "max_gyro_bias_change": 0.025748521520088396,
+      "optimizer_success": true
+    },
+    "native": {
+      "accepted": false,
+      "error": "IMU initialization rejected: rotation_rms 5.933967342e-2 exceeds 5.000000000e-2; velocity_rms 1.576158634e0 exceeds 2.000000000e-1"
+    },
+    "decomposition_energy": {
+      "total": 154.02511447720565,
+      "pose": 153.33332497152105,
+      "imu": 0.2657645045030026,
+      "cross": 0.42602500118160175
+    },
+    "decomposition_max_sum_error": 8.881784197001252e-16,
+    "pose_term_rms": 1.5726150656476467,
+    "imu_term_rms": 0.06547155310650161,
+    "rotation_distribution": {
+      "rms": 0.05933967342107588,
+      "norm_quantiles": {
+        "p50": 0.03679130499927591,
+        "p90": 0.07074025690990368,
+        "p99": 0.1983668310001007
+      },
+      "maximum": 0.21914424390351508,
+      "maximum_row": 52,
+      "top1_energy_share": 0.21648573407769398,
+      "top5_energy_share": 0.5802824338171232,
+      "top_rows": [
+        52,
+        50,
+        62,
+        61,
+        51
+      ]
+    },
+    "velocity_distribution": {
+      "rms": 1.5761586341339282,
+      "norm_quantiles": {
+        "p50": 1.1772477289142538,
+        "p90": 2.544993497251777,
+        "p99": 3.7542426285956365
+      },
+      "maximum": 4.098315447291632,
+      "maximum_row": 49,
+      "top1_energy_share": 0.10904838189875127,
+      "top5_energy_share": 0.3709641028705551,
+      "top_rows": [
+        49,
+        50,
+        6,
+        57,
+        46
+      ]
+    }
+  },
+  {
+    "source": "raw-fine",
+    "stride": 1,
+    "offset_ns": 0,
+    "reference_count": 64,
+    "accepted": false,
+    "failed_limits": [
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.018041964653304987,
+      "rotation_rms": 0.027449079879726595,
+      "velocity_rms": 0.6874995764020279,
+      "gyro_singular_ratio": 0.9999748497195045,
+      "max_gyro_bias_change": 0.039345090935078014,
+      "optimizer_success": true
+    },
+    "native": {
+      "accepted": false,
+      "error": "IMU initialization rejected: velocity_rms 6.874995764e-1 exceeds 2.000000000e-1"
+    },
+    "decomposition_energy": {
+      "total": 29.304651388284004,
+      "pose": 29.229294415627074,
+      "imu": 0.11525115622416704,
+      "cross": -0.03989418356722829
+    },
+    "decomposition_max_sum_error": 6.661338147750939e-16,
+    "pose_term_rms": 0.6866150540951705,
+    "imu_term_rms": 0.04311484218362423,
+    "rotation_distribution": {
+      "rms": 0.027449079879726595,
+      "norm_quantiles": {
+        "p50": 0.013555560762228533,
+        "p90": 0.03477407291414301,
+        "p99": 0.0907363348119001
+      },
+      "maximum": 0.14520770338451747,
+      "maximum_row": 60,
+      "top1_energy_share": 0.44420473309297376,
+      "top5_energy_share": 0.6702814515569389,
+      "top_rows": [
+        60,
+        62,
+        61,
+        53,
+        54
+      ]
+    },
+    "velocity_distribution": {
+      "rms": 0.6874995764020279,
+      "norm_quantiles": {
+        "p50": 0.5520939934504093,
+        "p90": 1.1105856531508704,
+        "p99": 1.534554988819374
+      },
+      "maximum": 1.9670580937289275,
+      "maximum_row": 60,
+      "top1_energy_share": 0.13203765821460803,
+      "top5_energy_share": 0.32792956524987665,
+      "top_rows": [
+        60,
+        55,
+        45,
+        25,
+        46
+      ]
+    }
+  },
+  {
+    "source": "rotation-legacy",
+    "stride": 1,
+    "offset_ns": 0,
+    "reference_count": 64,
+    "accepted": false,
+    "failed_limits": [
+      "rotation_rms",
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.0946873118232574,
+      "rotation_rms": 0.05160495180503244,
+      "velocity_rms": 1.545272795476693,
+      "gyro_singular_ratio": 0.9999417360491916,
+      "max_gyro_bias_change": 0.033498057335443594,
+      "optimizer_success": true
+    },
+    "native": {
+      "accepted": false,
+      "error": "IMU initialization rejected: rotation_rms 5.160495181e-2 exceeds 5.000000000e-2; velocity_rms 1.545272795e0 exceeds 2.000000000e-1"
+    },
+    "decomposition_energy": {
+      "total": 148.04781677130188,
+      "pose": 147.97272996405013,
+      "imu": 0.3351646115698939,
+      "cross": -0.2600778043180946
+    },
+    "decomposition_max_sum_error": 7.771561172376096e-16,
+    "pose_term_rms": 1.5448808804901542,
+    "imu_term_rms": 0.07352469538714515,
+    "rotation_distribution": {
+      "rms": 0.051604951805032453,
+      "norm_quantiles": {
+        "p50": 0.02865786645138577,
+        "p90": 0.07906318848729664,
+        "p99": 0.1534403152978997
+      },
+      "maximum": 0.17678641980837645,
+      "maximum_row": 61,
+      "top1_energy_share": 0.1862835469376313,
+      "top5_energy_share": 0.4917670320379355,
+      "top_rows": [
+        61,
+        52,
+        62,
+        47,
+        60
+      ]
+    },
+    "velocity_distribution": {
+      "rms": 1.5452727954766927,
+      "norm_quantiles": {
+        "p50": 1.3380504418900814,
+        "p90": 2.192916869116153,
+        "p99": 3.3764707324617538
+      },
+      "maximum": 3.550406014276179,
+      "maximum_row": 61,
+      "top1_energy_share": 0.08514399699443549,
+      "top5_energy_share": 0.30741188452618307,
+      "top_rows": [
+        61,
+        51,
+        15,
+        54,
+        6
+      ]
+    }
+  },
+  {
+    "source": "rotation-fine",
+    "stride": 1,
+    "offset_ns": 0,
+    "reference_count": 64,
+    "accepted": false,
+    "failed_limits": [
+      "velocity_rms"
+    ],
+    "diagnostics": {
+      "gravity_error": 0.11010949938187586,
+      "rotation_rms": 0.031830641672841546,
+      "velocity_rms": 0.7846353540559049,
+      "gyro_singular_ratio": 0.9999653311018537,
+      "max_gyro_bias_change": 0.047631722536076886,
+      "optimizer_success": true
+    },
+    "native": {
+      "accepted": false,
+      "error": "IMU initialization rejected: velocity_rms 7.846353541e-1 exceeds 2.000000000e-1"
+    },
+    "decomposition_energy": {
+      "total": 38.17046360773498,
+      "pose": 38.12955152481973,
+      "imu": 0.13711077796150545,
+      "cross": -0.0961986950462573
+    },
+    "decomposition_max_sum_error": 5.551115123125783e-16,
+    "pose_term_rms": 0.7842147451619044,
+    "imu_term_rms": 0.04702620716865696,
+    "rotation_distribution": {
+      "rms": 0.031830641672841546,
+      "norm_quantiles": {
+        "p50": 0.014331857314596907,
+        "p90": 0.03040040698536661,
+        "p99": 0.11221094133899015
+      },
+      "maximum": 0.19360981794380364,
+      "maximum_row": 60,
+      "top1_energy_share": 0.5872505286876795,
+      "top5_energy_share": 0.7605853270514134,
+      "top_rows": [
+        60,
+        62,
+        61,
+        53,
+        59
+      ]
+    },
+    "velocity_distribution": {
+      "rms": 0.7846353540559049,
+      "norm_quantiles": {
+        "p50": 0.5165956720051823,
+        "p90": 0.9915782857894107,
+        "p99": 2.439514687446661
+      },
+      "maximum": 2.4892370881420423,
+      "maximum_row": 60,
+      "top1_energy_share": 0.16233235584087158,
+      "top5_energy_share": 0.49844158936540994,
+      "top_rows": [
+        60,
+        59,
+        58,
+        48,
+        45
+      ]
+    }
+  }
+]

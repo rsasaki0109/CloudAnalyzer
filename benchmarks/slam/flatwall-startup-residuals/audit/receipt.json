@@ -1,0 +1,426 @@
+{
+  "schema": "cloudanalyzer.flatwall_startup_residuals.v1",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 6722,
+    "sha256": "bea387873b498667686c567e7d27f690c2499fa148fe4e54463c12c4c3f8dc3f"
+  },
+  "inputs": {
+    "recording": {
+      "name": "flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7573504,
+      "sha256": "66efeab7fbc86f0499511e6a0ba0db49e01f7ba745f935e66fba8bd1e5e81569"
+    },
+    "controller": {
+      "name": "audit_flatwall_startup_residuals.py",
+      "bytes": 21813,
+      "sha256": "59c1c4c64459bd1cb7ce8ea7424eda1a8abf6067277b1f3fb07439fcd90dbf30"
+    },
+    "helper": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "rosbags_version": "0.11.3",
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "optimizer_implementation": {
+      "name": "least_squares.py",
+      "bytes": 43856,
+      "sha256": "b6becbe3b248ea5edcbc40434f101f5d46e5304b66d3c97331bced459dc38765"
+    },
+    "rotation_implementation": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    },
+    "standard_types": {
+      "name": "ros1_noetic.py",
+      "bytes": 101472,
+      "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+    },
+    "previous": {
+      "raw-legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6673,
+          "sha256": "38eedcdabef3209607fadb53e77b02c41ca54e232f9989e6473c337b2d14cee2"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6517,
+          "sha256": "d85dba324ae0a7e35d7f9cde8650a27e195faf3e4559062824ea90ba01b43f6f"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1956,
+          "sha256": "cd13d484736119b6a7dd4064099d86914eb6a855c8f5dc70e1c3645fe3e7f510"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20908,
+          "sha256": "5455cc437a5c3fe46d0eb6244c4c872b0eeb8a85f3dd57c0569f534248c331f5"
+        }
+      },
+      "raw-fine": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6670,
+          "sha256": "1bf02c09d75236bead70fdfafe305fc57b9ce561e3a7030430f827523674dfee"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6592,
+          "sha256": "5c6b940c6a2a5fa5f4f7dbdb47bd625c3c615af335541d5e077fbc385313fe20"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1854,
+          "sha256": "a83d8c673dfb73f587be57e51441be4ecd5e95328b7d39ad989c7cc317913814"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21073,
+          "sha256": "578660362b76f9b2b528e3d1a7537e10b18a0ed0660c75f2bfbb697ab46bd78a"
+        }
+      },
+      "rotation-legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6680,
+          "sha256": "84abff0ec97b3596798f99200d6d8011544806627fdc2c58edcbacf16322c694"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6515,
+          "sha256": "49368ef4470d29bcb3222c1cba88315e9c20455b9d8b064f147eb0fadb117360"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 2127,
+          "sha256": "a3b552a1c4c61700fa3fd0f052ec241ef0516b04370a8804ac58392623b0b7dd"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20892,
+          "sha256": "909cc3934322df1f1b42474050dea8314b2d3a3d78e0e016f96077786eacbeb6"
+        }
+      },
+      "rotation-fine": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6669,
+          "sha256": "4cca234d88b88c8f81bc8913fabaab84006fbeab0197d1650ee4320328edfa64"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6581,
+          "sha256": "f69244e3cb5f9146d7dac9b198fa08d21161501062f20467c1c5835760c947fc"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 2054,
+          "sha256": "393c9600ced8763ec89072ea930bf038298af8177c40809d33e62852e1cba08c"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21068,
+          "sha256": "9a1bcceb8c6b70e7f793c3a8c6bdd404a2a0658ede628a4129c5c08dbe3107cc"
+        }
+      }
+    }
+  },
+  "cases": 52,
+  "baseline_values_match_previous": true,
+  "all_native_acceptance_matches": true,
+  "maximum_decomposition_sum_error": 2.6853519408120974e-15,
+  "no_state_adopted": true,
+  "no_reference_poses_used": true,
+  "outputs": {
+    "raw-legacy/stride-1-offset-0.json": {
+      "name": "stride-1-offset-0.json",
+      "bytes": 33771,
+      "sha256": "c083b4a94c132afd8081fa8f97dd2269179717dc6cf099928b7d36b6ad2b6adb"
+    },
+    "raw-legacy/stride-3-offset-0.json": {
+      "name": "stride-3-offset-0.json",
+      "bytes": 12630,
+      "sha256": "2b9c51f325cc4161bf08e2bc5df37955113388ae8adb10226c416bb3eeb84864"
+    },
+    "raw-legacy/stride-7-offset-0.json": {
+      "name": "stride-7-offset-0.json",
+      "bytes": 6586,
+      "sha256": "4d922f8fdd6543a19a15b1685302809ad34f565958a62c0cf56df56454538935"
+    },
+    "raw-legacy/stride-1-offset--50000000.json": {
+      "name": "stride-1-offset--50000000.json",
+      "bytes": 33800,
+      "sha256": "53a1ac8d0501c986ed74cdba1187e9dde46d09e8bbb306eca22e0a542d227c61"
+    },
+    "raw-legacy/stride-1-offset--45000000.json": {
+      "name": "stride-1-offset--45000000.json",
+      "bytes": 33800,
+      "sha256": "ada8e7da871a73c993426f06d8efa48d00893a522b72a4b15c4b8cefd8b42a3e"
+    },
+    "raw-legacy/stride-1-offset--40000000.json": {
+      "name": "stride-1-offset--40000000.json",
+      "bytes": 33777,
+      "sha256": "bd3f3040814979579c1523110522b060146bb40c4f6460879f9ce59e938a03ea"
+    },
+    "raw-legacy/stride-1-offset--35000000.json": {
+      "name": "stride-1-offset--35000000.json",
+      "bytes": 33784,
+      "sha256": "105e102feabdc606f4f1c1291322bf163de449c4ce36f377d28c7bf04ffe0684"
+    },
+    "raw-legacy/stride-1-offset--30000000.json": {
+      "name": "stride-1-offset--30000000.json",
+      "bytes": 33795,
+      "sha256": "c4d7826813abf55e30b10463da40b107cd9e5c456e66a01b86d6a920cfa13999"
+    },
+    "raw-legacy/stride-1-offset--25000000.json": {
+      "name": "stride-1-offset--25000000.json",
+      "bytes": 33786,
+      "sha256": "966d486970f54975a446e81d15b3e26472342f1485a997592b2a0979103506e4"
+    },
+    "raw-legacy/stride-1-offset--20000000.json": {
+      "name": "stride-1-offset--20000000.json",
+      "bytes": 33783,
+      "sha256": "485b4e10ee3f839a4f6f2e2fa76303d1694b2cefdaa8e603a59a3dfd389d4d46"
+    },
+    "raw-legacy/stride-1-offset--15000000.json": {
+      "name": "stride-1-offset--15000000.json",
+      "bytes": 33788,
+      "sha256": "6fb8d2fd34533630949eb36884baa0c0debe4e5b8dbb9acfd1bc11ed4271490d"
+    },
+    "raw-legacy/stride-1-offset--10000000.json": {
+      "name": "stride-1-offset--10000000.json",
+      "bytes": 33792,
+      "sha256": "2454aad0ef82d12e4283975991a12b1350bc0d9806a3437b72351198ddcef007"
+    },
+    "raw-legacy/stride-1-offset--5000000.json": {
+      "name": "stride-1-offset--5000000.json",
+      "bytes": 33783,
+      "sha256": "208803cc47bc8fc553a3b1e0876109081e8877bf714634cbc8dc7d93db99b1e4"
+    },
+    "raw-legacy/stride-1-offset-5000000.json": {
+      "name": "stride-1-offset-5000000.json",
+      "bytes": 33791,
+      "sha256": "eb8376d4870f370067f4f478e3482beabb6ddbe66643193153adcf8ccde9afbf"
+    },
+    "raw-legacy/stride-1-offset-10000000.json": {
+      "name": "stride-1-offset-10000000.json",
+      "bytes": 33780,
+      "sha256": "5c5c2814d6092e82dcce0557dd26d77e03bb85c5f69734eb16d3d0a95c4bd4ed"
+    },
+    "raw-legacy/stride-1-offset-15000000.json": {
+      "name": "stride-1-offset-15000000.json",
+      "bytes": 33783,
+      "sha256": "c5f67c6df8a084dd800c9923eafd9dd72dc38a9a6311a5bed88bb72c3a1576af"
+    },
+    "raw-legacy/stride-1-offset-20000000.json": {
+      "name": "stride-1-offset-20000000.json",
+      "bytes": 33783,
+      "sha256": "5501aff2a2f39cfd31b7728fc9e05349145e81f210a2db39d36ac06ac1a2bd95"
+    },
+    "raw-legacy/stride-1-offset-25000000.json": {
+      "name": "stride-1-offset-25000000.json",
+      "bytes": 33785,
+      "sha256": "4728c137009e53f75a6a31eb8a85bfd94922b496bc00f9dc35e3ae9d28a8773d"
+    },
+    "raw-legacy/stride-1-offset-30000000.json": {
+      "name": "stride-1-offset-30000000.json",
+      "bytes": 33756,
+      "sha256": "07a4087a1e21565112c20859ea77e53521d7bf82e0474101d6fc36b00a180a76"
+    },
+    "raw-legacy/stride-1-offset-35000000.json": {
+      "name": "stride-1-offset-35000000.json",
+      "bytes": 33804,
+      "sha256": "aaa38815d694c4e335f9d72a9b70936e507fe4caf948e9ecefbb253879f964e6"
+    },
+    "raw-legacy/stride-1-offset-40000000.json": {
+      "name": "stride-1-offset-40000000.json",
+      "bytes": 33768,
+      "sha256": "a24a3a3e8339d9c7a874e36fa61a88c8eb3760fed5e2e246afbbd1159678d962"
+    },
+    "raw-legacy/stride-1-offset-45000000.json": {
+      "name": "stride-1-offset-45000000.json",
+      "bytes": 33781,
+      "sha256": "c4e3738d8ff81d89266754509c494bf01d6b6cfd61ccc960fe0f1280363e6adb"
+    },
+    "raw-legacy/stride-1-offset-50000000.json": {
+      "name": "stride-1-offset-50000000.json",
+      "bytes": 33777,
+      "sha256": "5ce69c11a558acab7aa0f1f371245801d717e03798d96b6e64e10afbb46f814e"
+    },
+    "raw-fine/stride-1-offset-0.json": {
+      "name": "stride-1-offset-0.json",
+      "bytes": 34055,
+      "sha256": "13ccce7c2c22329f0c85ee7458db8faf5b0aff408312dea872e47c807aa63d4b"
+    },
+    "raw-fine/stride-3-offset-0.json": {
+      "name": "stride-3-offset-0.json",
+      "bytes": 12718,
+      "sha256": "1aeb74427a80870a305d0c01abf9f686f663d0d9715d0d3aab40323be6967766"
+    },
+    "raw-fine/stride-7-offset-0.json": {
+      "name": "stride-7-offset-0.json",
+      "bytes": 6639,
+      "sha256": "777b74cd47050763012ac00a58a32f4bd833cd74c811c0edfcea2a7d60535917"
+    },
+    "raw-fine/stride-1-offset--50000000.json": {
+      "name": "stride-1-offset--50000000.json",
+      "bytes": 34062,
+      "sha256": "1770db44f70659f84443b7df112759914f12b47e73e447dda44b81076c945afe"
+    },
+    "raw-fine/stride-1-offset--45000000.json": {
+      "name": "stride-1-offset--45000000.json",
+      "bytes": 34080,
+      "sha256": "ca8051a4f20805d4d32fe5e6dd1b87ecf8ac1e0d7b8d3ea851e07d287b9f6d44"
+    },
+    "raw-fine/stride-1-offset--40000000.json": {
+      "name": "stride-1-offset--40000000.json",
+      "bytes": 34085,
+      "sha256": "9f4d98293334c6230314c48a1b4386e55b7c66e1b2c11a3130b6f14a8c17902e"
+    },
+    "raw-fine/stride-1-offset--35000000.json": {
+      "name": "stride-1-offset--35000000.json",
+      "bytes": 34068,
+      "sha256": "11d262523a2b1c481f181026a548a759d0d611e6e9c58f3d7a25b0c0d1226d84"
+    },
+    "raw-fine/stride-1-offset--30000000.json": {
+      "name": "stride-1-offset--30000000.json",
+      "bytes": 34085,
+      "sha256": "7bd50c1755f7d5cb2ff1081c1f8d89133979251bdfbe3e6c5406d20baf45c0ec"
+    },
+    "raw-fine/stride-1-offset--25000000.json": {
+      "name": "stride-1-offset--25000000.json",
+      "bytes": 34086,
+      "sha256": "3e55260b411b240a4f575d634eaf0925ed62eefe69b414d36a0dd0a27144eb4c"
+    },
+    "raw-fine/stride-1-offset--20000000.json": {
+      "name": "stride-1-offset--20000000.json",
+      "bytes": 34067,
+      "sha256": "7e513ebd85ae2c4fd54d4e6df47702608702bca509a4f523fc3b10b67600f44e"
+    },
+    "raw-fine/stride-1-offset--15000000.json": {
+      "name": "stride-1-offset--15000000.json",
+      "bytes": 34085,
+      "sha256": "cbd18a5cf91c22487e2bc5ffc4fffbb3e32c2e0ba74ea7d3cb857cb19fccea9d"
+    },
+    "raw-fine/stride-1-offset--10000000.json": {
+      "name": "stride-1-offset--10000000.json",
+      "bytes": 34066,
+      "sha256": "3ce09cbb8c06f664c402589f3024ac8fc888275f18fb7e0a28d63ac26b065d2c"
+    },
+    "raw-fine/stride-1-offset--5000000.json": {
+      "name": "stride-1-offset--5000000.json",
+      "bytes": 34070,
+      "sha256": "1460c8d0abdf66d6e7972eb68a57a63e1014ffd9dc88f9456ae7ebffa03c5aa8"
+    },
+    "raw-fine/stride-1-offset-5000000.json": {
+      "name": "stride-1-offset-5000000.json",
+      "bytes": 34074,
+      "sha256": "04aac4cd57cd20417a3f19ce4110189b0ba714b6e29620c342b1b923e45ff62f"
+    },
+    "raw-fine/stride-1-offset-10000000.json": {
+      "name": "stride-1-offset-10000000.json",
+      "bytes": 34070,
+      "sha256": "e423e910d2e43922463c3475e2676e543db4fd85465e2277af29da303f3b601d"
+    },
+    "raw-fine/stride-1-offset-15000000.json": {
+      "name": "stride-1-offset-15000000.json",
+      "bytes": 34041,
+      "sha256": "25356c0be583d26f0bd22af23df2a99d9974ce7fcfd4b139ae287385199ec9a0"
+    },
+    "raw-fine/stride-1-offset-20000000.json": {
+      "name": "stride-1-offset-20000000.json",
+      "bytes": 34083,
+      "sha256": "059c327ea1a067f137bfe3bb00f271e71c3ec2178490697447b7bd789b235d9e"
+    },
+    "raw-fine/stride-1-offset-25000000.json": {
+      "name": "stride-1-offset-25000000.json",
+      "bytes": 34082,
+      "sha256": "6b66e60d43ccbf70de6b30fdc41fabee7f6a909424fedfa22c01dedba413fa37"
+    },
+    "raw-fine/stride-1-offset-30000000.json": {
+      "name": "stride-1-offset-30000000.json",
+      "bytes": 34083,
+      "sha256": "a411606821e02bc0222a464416903fc341f9ebbc933b83662e3efba31d0b3cb6"
+    },
+    "raw-fine/stride-1-offset-35000000.json": {
+      "name": "stride-1-offset-35000000.json",
+      "bytes": 34084,
+      "sha256": "0cc07c596b5eb34c3fabb5f4006038f059ad9be7406801a592cb23a9656c9464"
+    },
+    "raw-fine/stride-1-offset-40000000.json": {
+      "name": "stride-1-offset-40000000.json",
+      "bytes": 34065,
+      "sha256": "87240db0ba00f2ab1a9b2c5e8ec0cd90048f83306593c536ab7df21c5de9498c"
+    },
+    "raw-fine/stride-1-offset-45000000.json": {
+      "name": "stride-1-offset-45000000.json",
+      "bytes": 34060,
+      "sha256": "bea827f4982ccd2e8ff1413b99c8da8386c8e02b3db6503be9828f772617ab44"
+    },
+    "raw-fine/stride-1-offset-50000000.json": {
+      "name": "stride-1-offset-50000000.json",
+      "bytes": 34043,
+      "sha256": "ae27fd3038c62dcc4b4a7ae503eea697b5f1d2ac8e5f6de861daf73cfaf1e594"
+    },
+    "rotation-legacy/stride-1-offset-0.json": {
+      "name": "stride-1-offset-0.json",
+      "bytes": 33821,
+      "sha256": "9fda2e22170c0c824e5653b0a6e5fe952b33e9ef6ab338e55dbb29bcabd197ce"
+    },
+    "rotation-legacy/stride-3-offset-0.json": {
+      "name": "stride-3-offset-0.json",
+      "bytes": 12674,
+      "sha256": "4c9ee60544c0791b27f71bcb81b6ca62a66eb69ba153c386ea921c1a02f4312e"
+    },
+    "rotation-legacy/stride-7-offset-0.json": {
+      "name": "stride-7-offset-0.json",
+      "bytes": 6607,
+      "sha256": "47fd7ccea1dcc990f9d64e945c8a1e2fa2667ed5f8b1089d0ab1eda22ce08e2c"
+    },
+    "rotation-fine/stride-1-offset-0.json": {
+      "name": "stride-1-offset-0.json",
+      "bytes": 34095,
+      "sha256": "43713f7b68031d22d019b6648f165485c251d3d6b89842e0482df3a6c9c43ad6"
+    },
+    "rotation-fine/stride-3-offset-0.json": {
+      "name": "stride-3-offset-0.json",
+      "bytes": 12712,
+      "sha256": "90b877b1557cb4ff0b9128ceab1d75947150b855518b241f1966aa22172525e7"
+    },
+    "rotation-fine/stride-7-offset-0.json": {
+      "name": "stride-7-offset-0.json",
+      "bytes": 6624,
+      "sha256": "5c8522c2055696a62bf6f897989c4efb27b7ceeaac9de6c880f37fe890a39a1b"
+    },
+    "sensor.json": {
+      "name": "sensor.json",
+      "bytes": 604,
+      "sha256": "b3cbe28b2a3ffc33ca0c080a6a817c441c9e82d170872e4b49e2845d34b75e9f"
+    },
+    "baseline-summary.json": {
+      "name": "baseline-summary.json",
+      "bytes": 7495,
+      "sha256": "5b7149e73964ea428d528a651e727a5380cfc839dc35b0a1fb7b270b0334e28c"
+    },
+    "sensitivity.json": {
+      "name": "sensitivity.json",
+      "bytes": 97620,
+      "sha256": "98e29f35dea121d6a75ce517c7c48421d2d7312ec74b5532d3961ad64eddf0d2"
+    }
+  }
+}

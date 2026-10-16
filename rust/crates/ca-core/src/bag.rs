@@ -899,15 +899,36 @@ impl<'a> Reader<'a> {
         Ok(String::from_utf8_lossy(s).into_owned())
     }
 
-    /// std_msgs/Header's stamp (seconds).
-    fn header(&mut self) -> Result<f64> {
+    fn header_parts(&mut self) -> Result<(i64, u32, String)> {
         if !self.cdr {
             self.u32()?;
         }
         let sec = self.u32()?;
+        // ROS 2 builtin_interfaces/Time uses signed seconds; ROS 1 uses u32.
+        let sec = if self.cdr {
+            i64::from(sec as i32)
+        } else {
+            i64::from(sec)
+        };
         let nsec = self.u32()?;
-        self.string()?;
-        Ok(f64::from(sec) + f64::from(nsec) * 1e-9)
+        if nsec >= 1_000_000_000 {
+            return Err(BagError("a header has nanoseconds outside [0, 1e9)".into()));
+        }
+        Ok((sec, nsec, self.string()?))
+    }
+
+    /// std_msgs/Header's stamp (seconds).
+    fn header(&mut self) -> Result<f64> {
+        let (sec, nsec, _) = self.header_parts()?;
+        Ok(sec as f64 + f64::from(nsec) * 1e-9)
+    }
+
+    fn f64s<const N: usize>(&mut self) -> Result<[f64; N]> {
+        let mut values = [0.0; N];
+        for value in &mut values {
+            *value = self.f64()?;
+        }
+        Ok(values)
     }
 }
 
@@ -1038,16 +1059,122 @@ pub struct ImuMessage {
     pub acceleration: [f64; 3],
 }
 
-pub fn decode_imu(data: &[u8], encoding: Encoding) -> Result<ImuMessage> {
-    let mut m = Reader::new(data, encoding);
-    let stamp = m.header()?;
-    let (x, y, z, w) = (m.f64()?, m.f64()?, m.f64()?, m.f64()?);
-    let covariance = m.f64()?;
-    for _ in 0..8 + 3 + 9 {
-        m.f64()?;
+/// ROS measurement availability, distinct from a zero (unknown) covariance.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MeasurementStatus {
+    Missing,
+    Unknown,
+    Known,
+    Invalid,
+}
+
+impl MeasurementStatus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Missing => "missing",
+            Self::Unknown => "unknown",
+            Self::Known => "known",
+            Self::Invalid => "invalid",
+        }
     }
-    let acceleration = [m.f64()?, m.f64()?, m.f64()?];
-    let usable = covariance != -1.0 && (x * x + y * y + z * z + w * w - 1.0).abs() < 0.1;
+
+    pub fn is_usable(self) -> bool {
+        matches!(self, Self::Known | Self::Unknown)
+    }
+}
+
+/// Validates without modifying the original covariance or measurement.
+fn measurement_status(values: &[f64], covariance: &[f64; 9]) -> MeasurementStatus {
+    use MeasurementStatus::*;
+    if covariance[0] == -1.0 {
+        return Missing;
+    }
+    if !values.iter().chain(covariance).all(|x| x.is_finite()) {
+        return Invalid;
+    }
+    let scale = covariance.iter().fold(0.0_f64, |s, x| s.max(x.abs()));
+    if scale == 0.0 {
+        return Unknown;
+    }
+    let c = covariance.map(|x| x / scale);
+    let tolerance = 1e-12;
+    if [0, 4, 8].iter().any(|&i| c[i] < 0.0)
+        || [(1, 3), (2, 6), (5, 7)]
+            .iter()
+            .any(|&(i, j)| (c[i] - c[j]).abs() > tolerance)
+        || [(0, 4, 1), (0, 8, 2), (4, 8, 5)]
+            .iter()
+            .any(|&(i, j, k)| c[i] * c[j] - c[k] * c[k] < -tolerance)
+    {
+        return Invalid;
+    }
+    let determinant = c[0] * (c[4] * c[8] - c[5] * c[7]) - c[1] * (c[3] * c[8] - c[5] * c[6])
+        + c[2] * (c[3] * c[7] - c[4] * c[6]);
+    if determinant < -tolerance {
+        Invalid
+    } else {
+        Known
+    }
+}
+
+/// An unmodified sensor_msgs/Imu, including exact header time and validity metadata.
+#[derive(Debug, Clone)]
+pub struct RawImuMessage {
+    pub stamp_ns: i64,
+    pub stamp: f64,
+    pub frame_id: String,
+    /// Quaternion x, y, z, w; no normalization is applied.
+    pub orientation: [f64; 4],
+    pub orientation_covariance: [f64; 9],
+    pub angular_velocity: [f64; 3],
+    pub angular_velocity_covariance: [f64; 9],
+    pub acceleration: [f64; 3],
+    pub acceleration_covariance: [f64; 9],
+}
+
+impl RawImuMessage {
+    pub fn orientation_status(&self) -> MeasurementStatus {
+        let status = measurement_status(&self.orientation, &self.orientation_covariance);
+        if status.is_usable()
+            && (self.orientation.iter().map(|x| x * x).sum::<f64>() - 1.0).abs() > 1e-3
+        {
+            MeasurementStatus::Invalid
+        } else {
+            status
+        }
+    }
+
+    pub fn angular_velocity_status(&self) -> MeasurementStatus {
+        measurement_status(&self.angular_velocity, &self.angular_velocity_covariance)
+    }
+
+    pub fn acceleration_status(&self) -> MeasurementStatus {
+        measurement_status(&self.acceleration, &self.acceleration_covariance)
+    }
+}
+
+pub fn decode_imu_raw(data: &[u8], encoding: Encoding) -> Result<RawImuMessage> {
+    let mut m = Reader::new(data, encoding);
+    let (sec, nsec, frame_id) = m.header_parts()?;
+    Ok(RawImuMessage {
+        stamp_ns: sec * 1_000_000_000 + i64::from(nsec),
+        stamp: sec as f64 + f64::from(nsec) * 1e-9,
+        frame_id,
+        orientation: m.f64s()?,
+        orientation_covariance: m.f64s()?,
+        angular_velocity: m.f64s()?,
+        angular_velocity_covariance: m.f64s()?,
+        acceleration: m.f64s()?,
+        acceleration_covariance: m.f64s()?,
+    })
+}
+
+pub fn decode_imu(data: &[u8], encoding: Encoding) -> Result<ImuMessage> {
+    let raw = decode_imu_raw(data, encoding)?;
+    let [x, y, z, w] = raw.orientation;
+    // Preserve the established gravity-direction API's orientation predicate.
+    let usable =
+        raw.orientation_covariance[0] != -1.0 && (x * x + y * y + z * z + w * w - 1.0).abs() < 0.1;
     // The last row of the orientation's matrix: world z seen in the IMU's frame.
     let up = usable.then_some([
         2.0 * (x * z - w * y),
@@ -1055,9 +1182,9 @@ pub fn decode_imu(data: &[u8], encoding: Encoding) -> Result<ImuMessage> {
         1.0 - 2.0 * (x * x + y * y),
     ]);
     Ok(ImuMessage {
-        stamp,
+        stamp: raw.stamp,
         up,
-        acceleration,
+        acceleration: raw.acceleration,
     })
 }
 
@@ -1252,6 +1379,68 @@ mod tests {
             .f64s(&[0.0, 0.0, 9.8])
             .f64s(&[0.0; 9])
             .0
+    }
+
+    #[test]
+    fn raw_imu_retains_exact_time_and_all_fields() {
+        let data = Cdr::new()
+            .u32(1_700_000_000)
+            .u32(123)
+            .string("imu/data")
+            .f64s(&[0.0, 0.0, 0.0, 1.0])
+            .f64s(&[0.0; 9])
+            .f64s(&[0.1, -0.2, 0.3])
+            .f64s(&[0.01, 0.0, 0.0, 0.0, 0.02, 0.0, 0.0, 0.0, 0.03])
+            .f64s(&[1.0, 2.0, 9.81])
+            .f64s(&[-1.0; 9])
+            .0;
+        let raw = decode_imu_raw(&data, Encoding::Cdr).unwrap();
+        assert_eq!(raw.stamp_ns, 1_700_000_000_000_000_123);
+        assert_eq!(raw.frame_id, "imu/data");
+        assert_eq!(raw.angular_velocity, [0.1, -0.2, 0.3]);
+        assert_eq!(raw.angular_velocity_covariance[8], 0.03);
+        assert_eq!(raw.acceleration, [1.0, 2.0, 9.81]);
+        assert_eq!(raw.orientation_status(), MeasurementStatus::Unknown);
+        assert_eq!(raw.angular_velocity_status(), MeasurementStatus::Known);
+        assert_eq!(raw.acceleration_status(), MeasurementStatus::Missing);
+        assert!(decode_imu_raw(&data[..data.len() - 1], Encoding::Cdr).is_err());
+        assert_eq!(
+            decode_imu(&data, Encoding::Cdr).unwrap().up,
+            Some([0.0, 0.0, 1.0])
+        );
+    }
+
+    #[test]
+    fn raw_imu_handles_signed_ros2_seconds_and_rejects_bad_nanoseconds() {
+        let mut data = imu(0.0, 0.0);
+        data[4..8].copy_from_slice(&(-1_i32).to_le_bytes());
+        data[8..12].copy_from_slice(&999_999_999_u32.to_le_bytes());
+        let raw = decode_imu_raw(&data, Encoding::Cdr).unwrap();
+        assert_eq!(raw.stamp_ns, -1);
+        data[8..12].copy_from_slice(&1_000_000_000_u32.to_le_bytes());
+        assert!(decode_imu_raw(&data, Encoding::Cdr).is_err());
+    }
+
+    #[test]
+    fn imu_covariance_status_does_not_confuse_missing_unknown_or_invalid() {
+        use MeasurementStatus::*;
+        assert_eq!(measurement_status(&[1.0; 3], &[0.0; 9]), Unknown);
+        assert_eq!(measurement_status(&[f64::NAN; 3], &[-1.0; 9]), Missing);
+        assert_eq!(measurement_status(&[f64::NAN; 3], &[0.0; 9]), Invalid);
+        for covariance in [
+            [-2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+            [1.0, 2.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+            [1.0, -0.9, -0.9, -0.9, 1.0, -0.9, -0.9, -0.9, 1.0],
+        ] {
+            assert_eq!(measurement_status(&[1.0; 3], &covariance), Invalid);
+        }
+        assert_eq!(measurement_status(&[1.0; 3], &[1.0; 9]), Known);
+        let mut raw = decode_imu_raw(&imu(0.0, 1.0), Encoding::Cdr).unwrap();
+        raw.orientation = [0.0; 4];
+        assert_eq!(raw.orientation_status(), Invalid);
+        raw.orientation_covariance[0] = -1.0;
+        assert_eq!(raw.orientation_status(), Missing);
     }
 
     /// An MCAP (unchunked, without a summary) of `messages` on channels 0 (points) and 1 (imu).

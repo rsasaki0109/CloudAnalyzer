@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 import numpy as np
 import numpy.typing as npt
@@ -182,6 +182,32 @@ class BagMessages:
     def __next__(self) -> Scan | tuple[str, float, str, bytes]: ...
     def progress(self) -> float: ...
 
+MeasurementStatus = Literal["missing", "unknown", "known", "invalid"]
+
+class RawImuData(TypedDict):
+    timestamps_ns: npt.NDArray[np.int64]
+    timestamps_s: npt.NDArray[np.float64]
+    frame_ids: list[str]
+    orientation_xyzw: npt.NDArray[np.float64]
+    orientation_covariance: npt.NDArray[np.float64]
+    angular_velocity_rad_s: npt.NDArray[np.float64]
+    angular_velocity_covariance: npt.NDArray[np.float64]
+    linear_acceleration_m_s2: npt.NDArray[np.float64]
+    linear_acceleration_covariance: npt.NDArray[np.float64]
+    orientation_status: list[MeasurementStatus]
+    angular_velocity_status: list[MeasurementStatus]
+    linear_acceleration_status: list[MeasurementStatus]
+
+class PreintegratedImu(TypedDict):
+    delta_rotation: npt.NDArray[np.float64]
+    delta_velocity: npt.NDArray[np.float64]
+    delta_position: npt.NDArray[np.float64]
+    covariance: npt.NDArray[np.float64]
+    bias_jacobian: npt.NDArray[np.float64]
+    delta_time_s: float
+    integration_steps: int
+    frame_id: str
+
 class BagReader:
     """A ROS 1 bag (.bag), an MCAP file, a rosbag2 .db3 file or a rosbag2 folder, read without a
     ROS install (lz4, zstd and bz2 chunks)."""
@@ -202,6 +228,23 @@ class BagReader:
     ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Per Imu message: stamps (N,), up directions in the IMU's frame (N, 3; NaN without an
         orientation) and linear accelerations (N, 3)."""
+        ...
+    def imu_raw(self, topic: str | None = None) -> RawImuData:
+        """Raw fields and statuses in header time, with (N,3,3) covariances.
+        Zero covariance is unknown. timestamps_ns retains exact integer time.
+        """
+        ...
+    def preintegrate_imu(
+        self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
+        accel_noise_density: float, max_gap_s: float = 0.05,
+        bias: tuple[float, float, float, float, float, float] | None = None,
+        topic: str | None = None,
+    ) -> PreintegratedImu:
+        """Held-measurement preintegration in the initial IMU frame, excluding gravity.
+        Density units: rad/s/sqrt(Hz), m/s^2/sqrt(Hz). Bias order: gyro, accel.
+        Covariance/Jacobian rows: right-local rotation, additive velocity, position.
+        Missing/invalid measurements, time gaps and frame changes raise ValueError.
+        """
         ...
     def poses(
         self, topic: str | None = None, frame: str | None = None

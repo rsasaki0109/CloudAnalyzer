@@ -3,10 +3,11 @@
 
 use ca_core::bag::{self, Encoding};
 use ca_core::rosbag2::{Recording, RecordingCursor};
-use numpy::ndarray::Array2;
+use numpy::ndarray::{Array2, Array3};
 use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 /// Per IMU message: stamps (N,), up directions (N, 3) and accelerations (N, 3).
 type ImuArrays<'py> = (
@@ -80,6 +81,23 @@ impl Scan {
 }
 
 impl BagReader {
+    fn raw_imus(&self, py: Python<'_>, topic: Option<String>) -> PyResult<Vec<bag::RawImuMessage>> {
+        let Some(topic) = self.pick(bag::IMU, topic, "pick one")? else {
+            return Ok(Vec::new());
+        };
+        let mut recording = Recording::open(&self.path).map_err(err)?;
+        let mut cursor = recording.cursor(&[topic.as_str()]);
+        py.detach(|| -> Result<Vec<bag::RawImuMessage>, bag::BagError> {
+            let mut out = Vec::new();
+            while let Some(m) = cursor.next(&mut recording) {
+                let m = m?;
+                out.push(bag::decode_imu_raw(&m.data, m.encoding)?);
+            }
+            Ok(out)
+        })
+        .map_err(err)
+    }
+
     /// The one topic of `kind`, or `topic` when given (an error names the
     /// topics otherwise); None when the recording has no such topic and none was asked for.
     fn pick(&self, kind: &str, topic: Option<String>, hint: &str) -> PyResult<Option<String>> {
@@ -191,6 +209,161 @@ impl BagReader {
             rows(py, ups, 3),
             rows(py, accel, 3),
         ))
+    }
+
+    /// Unmodified IMU fields, exact header timestamps and measurement statuses.
+    /// Covariance arrays have shape (N, 3, 3); zeros mean unknown, not certainty.
+    #[pyo3(signature = (topic=None))]
+    fn imu_raw<'py>(&self, py: Python<'py>, topic: Option<String>) -> PyResult<Bound<'py, PyDict>> {
+        let samples = self.raw_imus(py, topic)?;
+        let result = PyDict::new(py);
+        result.set_item(
+            "timestamps_ns",
+            samples
+                .iter()
+                .map(|s| s.stamp_ns)
+                .collect::<Vec<_>>()
+                .into_pyarray(py),
+        )?;
+        result.set_item(
+            "timestamps_s",
+            samples
+                .iter()
+                .map(|s| s.stamp)
+                .collect::<Vec<_>>()
+                .into_pyarray(py),
+        )?;
+        result.set_item(
+            "frame_ids",
+            samples
+                .iter()
+                .map(|s| s.frame_id.as_str())
+                .collect::<Vec<_>>(),
+        )?;
+        result.set_item(
+            "orientation_xyzw",
+            rows(py, samples.iter().flat_map(|s| s.orientation).collect(), 4),
+        )?;
+        result.set_item(
+            "angular_velocity_rad_s",
+            rows(
+                py,
+                samples.iter().flat_map(|s| s.angular_velocity).collect(),
+                3,
+            ),
+        )?;
+        result.set_item(
+            "linear_acceleration_m_s2",
+            rows(py, samples.iter().flat_map(|s| s.acceleration).collect(), 3),
+        )?;
+        for (name, values) in [
+            (
+                "orientation_covariance",
+                samples
+                    .iter()
+                    .flat_map(|s| s.orientation_covariance)
+                    .collect::<Vec<_>>(),
+            ),
+            (
+                "angular_velocity_covariance",
+                samples
+                    .iter()
+                    .flat_map(|s| s.angular_velocity_covariance)
+                    .collect(),
+            ),
+            (
+                "linear_acceleration_covariance",
+                samples
+                    .iter()
+                    .flat_map(|s| s.acceleration_covariance)
+                    .collect(),
+            ),
+        ] {
+            result.set_item(
+                name,
+                Array3::from_shape_vec((samples.len(), 3, 3), values)
+                    .expect("3x3 covariances")
+                    .into_pyarray(py),
+            )?;
+        }
+        result.set_item(
+            "orientation_status",
+            samples
+                .iter()
+                .map(|s| s.orientation_status().as_str())
+                .collect::<Vec<_>>(),
+        )?;
+        result.set_item(
+            "angular_velocity_status",
+            samples
+                .iter()
+                .map(|s| s.angular_velocity_status().as_str())
+                .collect::<Vec<_>>(),
+        )?;
+        result.set_item(
+            "linear_acceleration_status",
+            samples
+                .iter()
+                .map(|s| s.acceleration_status().as_str())
+                .collect::<Vec<_>>(),
+        )?;
+        Ok(result)
+    }
+
+    /// Relative IMU motion on an integer header-time interval, with held measurements.
+    /// Requires explicit noise densities. Bias order: gyro then accelerometer.
+    /// Does not remove gravity or apply LiDAR extrinsics. Error order: right-local
+    /// rotation, additive velocity, additive position in the initial IMU frame.
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None, topic=None))]
+    fn preintegrate_imu<'py>(
+        &self,
+        py: Python<'py>,
+        start_ns: i64,
+        end_ns: i64,
+        gyro_noise_density: f64,
+        accel_noise_density: f64,
+        max_gap_s: f64,
+        bias: Option<[f64; 6]>,
+        topic: Option<String>,
+    ) -> PyResult<Bound<'py, PyDict>> {
+        let samples = self.raw_imus(py, topic)?;
+        let bias = bias.unwrap_or([0.0; 6]);
+        let params = ca_core::imu::PreintegrationParams {
+            gyro_noise_density,
+            accel_noise_density,
+            max_gap_s,
+            gyro_bias: [bias[0], bias[1], bias[2]],
+            accel_bias: [bias[3], bias[4], bias[5]],
+        };
+        let out = py
+            .detach(|| ca_core::imu::preintegrate(&samples, start_ns, end_ns, &params))
+            .map_err(|e| PyValueError::new_err(e.0))?;
+        let result = PyDict::new(py);
+        result.set_item(
+            "delta_rotation",
+            rows(py, out.delta_rotation.into_iter().flatten().collect(), 3),
+        )?;
+        result.set_item(
+            "delta_velocity",
+            out.delta_velocity.to_vec().into_pyarray(py),
+        )?;
+        result.set_item(
+            "delta_position",
+            out.delta_position.to_vec().into_pyarray(py),
+        )?;
+        result.set_item(
+            "covariance",
+            rows(py, out.covariance.into_iter().flatten().collect(), 9),
+        )?;
+        result.set_item(
+            "bias_jacobian",
+            rows(py, out.bias_jacobian.into_iter().flatten().collect(), 6),
+        )?;
+        result.set_item("delta_time_s", out.delta_time_s)?;
+        result.set_item("integration_steps", out.integration_steps)?;
+        result.set_item("frame_id", out.frame_id)?;
+        Ok(result)
     }
 
     /// The poses of a trajectory topic (`nav_msgs/Odometry`, `geometry_msgs/PoseStamped`,

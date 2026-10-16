@@ -13,6 +13,7 @@ pub mod filter;
 pub mod geotiff;
 pub mod ground;
 pub mod icp;
+pub mod imu;
 pub mod io;
 pub mod kdtree;
 pub mod loop_search;

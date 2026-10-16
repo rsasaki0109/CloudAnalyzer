@@ -123,7 +123,7 @@ jobs:
       - name: Install CloudAnalyzer with the core
         run: |
           pip install --upgrade pip
-          pip install -e ./cloudanalyzer pytest psutil "laspy[lazrs]"
+          pip install -e ./cloudanalyzer pytest psutil "laspy[lazrs]" "rosbags>=0.10"
           pip install dist/*.whl
       - name: Rust core agrees with Open3D and laspy
         working-directory: cloudanalyzer

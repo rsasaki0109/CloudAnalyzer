@@ -1,0 +1,101 @@
+{
+  "scope": "Mean first-order correction versus reintegrating selected largest gyro/accel-bias edges; no covariance/trajectory reoptimization, universal validity bound or calibration claim",
+  "selection": "Per session choose edge with largest gyro bias norm and largest accel bias norm, deduplicate; never selected using ground truth",
+  "controller_sha256": "c485fac5acdd42974264b31d2f4652625472d3052263cd8e2447cf3200c43228",
+  "cases": [
+    {
+      "session": "2012-04-29",
+      "estimation_receipt_sha256": "aef2737717d1c42889a38cdec12434980a4346523c09c2b003e9ce6103737743",
+      "available_edges": 166,
+      "audited_edges": [
+        {
+          "window": "window-018",
+          "edge": 2,
+          "start_ns": 1335706683042581000,
+          "end_ns": 1335706683842599000,
+          "selected_for": [
+            "largest_gyro_bias_norm"
+          ],
+          "bias": [
+            -0.007172739457735212,
+            0.005403343912624464,
+            -0.006996115431913404,
+            0.25083836763384965,
+            0.02529642287076077,
+            0.02343077177863998
+          ],
+          "rotation_difference_rad": 7.239344898905392e-07,
+          "delta_velocity_difference_m_s": 0.0006050224636101459,
+          "delta_position_difference_m": 0.00016581490436271383
+        },
+        {
+          "window": "window-019",
+          "edge": 3,
+          "start_ns": 1335706688642848000,
+          "end_ns": 1335706689442887000,
+          "selected_for": [
+            "largest_accel_bias_norm"
+          ],
+          "bias": [
+            -0.003922888794804761,
+            -0.0015931353747812773,
+            -0.000713912136196124,
+            0.3401765780454294,
+            0.07357134164361757,
+            0.013560332993173765
+          ],
+          "rotation_difference_rad": 5.045858757248304e-08,
+          "delta_velocity_difference_m_s": 0.00010922760670949404,
+          "delta_position_difference_m": 2.8422392163439705e-05
+        }
+      ]
+    },
+    {
+      "session": "2012-06-15",
+      "estimation_receipt_sha256": "82e9304ae28dc4ae50ec31bef687bfc7321c3e1aad302a9d2e033801250da42b",
+      "available_edges": 47,
+      "audited_edges": [
+        {
+          "window": "window-008",
+          "edge": 0,
+          "start_ns": 1339761525814951000,
+          "end_ns": 1339761526614935000,
+          "selected_for": [
+            "largest_gyro_bias_norm"
+          ],
+          "bias": [
+            -0.004457460385002543,
+            -0.009936382227487186,
+            -0.0004632617992041819,
+            -0.32555180237590214,
+            -0.020709366228534448,
+            0.08012458140806984
+          ],
+          "rotation_difference_rad": 1.092659024651888e-07,
+          "delta_velocity_difference_m_s": 0.0009267231364641875,
+          "delta_position_difference_m": 0.00024851642462667606
+        },
+        {
+          "window": "window-000",
+          "edge": 2,
+          "start_ns": 1339761420216949000,
+          "end_ns": 1339761421016917000,
+          "selected_for": [
+            "largest_accel_bias_norm"
+          ],
+          "bias": [
+            -0.003942740778654652,
+            0.0015664814818472019,
+            0.006780197273838054,
+            0.4781517914716336,
+            -0.00266298124401926,
+            -0.11580068719377941
+          ],
+          "rotation_difference_rad": 1.4573326953413632e-07,
+          "delta_velocity_difference_m_s": 0.0008718002668436,
+          "delta_position_difference_m": 0.00023086505796122154
+        }
+      ]
+    }
+  ]
+}

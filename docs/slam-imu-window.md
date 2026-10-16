@@ -66,6 +66,11 @@ factor construction still rejects unavailable channels, excessive sampling
 gaps and invalid measurements. Split the problem at missing intervals; the
 window never fills a gap implicitly.
 
+For LiDAR input, `Scan.stamp_ns` and `Scan.frame_id` preserve the sensor header
+without a floating-point round trip. See [sensor timing](slam-sensor-timing.md)
+for recording-order, clock, sweep-time and extrinsic conventions before
+constructing inertial intervals or pose observations from scans.
+
 ## Residuals and noise
 
 Each node has 15 increments:

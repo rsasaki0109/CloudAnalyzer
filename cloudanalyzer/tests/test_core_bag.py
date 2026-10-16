@@ -88,6 +88,8 @@ def _check(path: Path) -> None:
     start, end = reader.time_range()
     assert start <= 99.99 + 1e-6 and end >= 100.2 - 1e-6
     scans = list(reader.scans())
+    assert [s.stamp_ns for s in scans] == [100_000_000_000, 100_100_000_000, 100_200_000_000]
+    assert [s.frame_id for s in scans] == ["lidar"] * 3
     assert [s.stamp for s in scans] == pytest.approx([100.0, 100.1, 100.2])
     assert np.allclose(scans[1].positions(), [[1, 3, 3], [4, 6, 6]])
     assert np.allclose(scans[1].intensity(), [0.5, 0.25])

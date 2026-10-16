@@ -270,6 +270,11 @@ class ImuSeries:
     def __len__(self) -> int: ...
     def timestamps_ns(self) -> npt.NDArray[np.int64]: ...
     def frame_ids(self) -> list[str]: ...
+    def trajectory(
+        self, start_ns: int, end_ns: int, pose_i: npt.NDArray[np.float64],
+        velocity_i: npt.NDArray[np.float64], *, gravity: tuple[float, float, float],
+        bias: tuple[float, float, float, float, float, float], max_gap_s: float = 0.05,
+    ) -> ImuTrajectory: ...
     def preintegrate(
         self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
         accel_noise_density: float, max_gap_s: float = 0.05,
@@ -280,6 +285,35 @@ class ImuSeries:
         accel_noise_density: float, max_gap_s: float = 0.05,
         bias: tuple[float, float, float, float, float, float] | None = None,
     ) -> ImuFactor: ...
+
+class ImuTrajectory:
+    """Immutable fixed-anchor nominal motion, created by ImuSeries.trajectory().
+    Requires declared initial IMU-to-world state, world gravity and IMU biases.
+    Uses held measurements, exact integer timestamp differences and no covariance.
+    Source IMU frame_id is independent of the explicitly supplied LiDAR frame.
+    """
+    @property
+    def start_ns(self) -> int: ...
+    @property
+    def end_ns(self) -> int: ...
+    @property
+    def frame_id(self) -> str: ...
+    @property
+    def acceleration_scale(self) -> float: ...
+    def __len__(self) -> int: ...
+    def timestamps_ns(self) -> npt.NDArray[np.int64]: ...
+    def state(self, stamp_ns: int) -> ImuPrediction: ...
+    def deskew(
+        self, points: npt.NDArray[np.float64], point_times_ns: npt.NDArray[np.int64],
+        reference_ns: int, *, imu_from_lidar: npt.NDArray[np.float64], parallel: bool = False,
+    ) -> npt.NDArray[np.float64]:
+        """Copied points in LiDAR coordinates at reference_ns, with original order.
+        imu_from_lidar is a proper rigid (4,4) transform including the lever arm.
+        All times must be covered. No extrapolation, filtering or sorting.
+        parallel=True uses an indexed CPU map; inputs are copied before GIL release.
+        Disable ordinary odometry deskew when supplying these compensated points.
+        """
+        ...
 
 class ImuFactor:
     """Created by BagReader.imu_factor(); owns the measurement and covariance factorization.

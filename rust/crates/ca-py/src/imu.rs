@@ -3,7 +3,9 @@
 use ca_core::imu::{ImuError, PreintegratedImu, PreintegrationParams};
 use ca_core::imu_factor::{ImuEvaluation, ImuFactor as Factor, ImuState};
 use numpy::ndarray::Array2;
-use numpy::{IntoPyArray, PyArray1, PyArray2, PyReadonlyArray2, PyUntypedArrayMethods};
+use numpy::{
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyUntypedArrayMethods,
+};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -126,6 +128,33 @@ impl ImuSeries {
             .collect()
     }
 
+    /// Fixed-anchor nominal motion; state, gravity and bias must be declared.
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (start_ns, end_ns, pose_i, velocity_i, *, gravity, bias, max_gap_s=0.05))]
+    fn trajectory(
+        &self,
+        py: Python<'_>,
+        start_ns: i64,
+        end_ns: i64,
+        pose_i: PyReadonlyArray2<'_, f64>,
+        velocity_i: [f64; 3],
+        gravity: [f64; 3],
+        bias: [f64; 6],
+        max_gap_s: f64,
+    ) -> PyResult<ImuTrajectory> {
+        let initial = state(pose_i, velocity_i)?;
+        let params = ca_core::imu_trajectory::TrajectoryParams {
+            gravity,
+            gyro_bias: [bias[0], bias[1], bias[2]],
+            accel_bias: [bias[3], bias[4], bias[5]],
+            max_gap_s,
+        };
+        let trajectory = py
+            .detach(|| self.series.trajectory(start_ns, end_ns, initial, &params))
+            .map_err(err)?;
+        Ok(ImuTrajectory { trajectory })
+    }
+
     #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None))]
     fn preintegrate<'py>(
@@ -162,6 +191,121 @@ impl ImuSeries {
             .detach(|| self.series.preintegrate(start_ns, end_ns, &p))
             .map_err(err)?;
         ImuFactor::new(out)
+    }
+}
+
+/// Owns covered motion knots; no recording/series access and no fitted state.
+#[pyclass(frozen, module = "cloudanalyzer_core._core")]
+pub struct ImuTrajectory {
+    trajectory: ca_core::imu_trajectory::ImuTrajectory,
+}
+
+#[pymethods]
+impl ImuTrajectory {
+    #[getter]
+    fn start_ns(&self) -> i64 {
+        self.trajectory.start_ns()
+    }
+    #[getter]
+    fn end_ns(&self) -> i64 {
+        self.trajectory.end_ns()
+    }
+    #[getter]
+    fn frame_id(&self) -> String {
+        self.trajectory.frame_id().to_owned()
+    }
+    #[getter]
+    fn acceleration_scale(&self) -> f64 {
+        self.trajectory.acceleration_scale()
+    }
+    fn __len__(&self) -> usize {
+        self.trajectory.knot_count()
+    }
+    fn timestamps_ns<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray1<i64>> {
+        self.trajectory
+            .timestamps_ns()
+            .collect::<Vec<_>>()
+            .into_pyarray(py)
+    }
+
+    fn state<'py>(&self, py: Python<'py>, stamp_ns: i64) -> PyResult<Bound<'py, PyDict>> {
+        let state = self.trajectory.state(stamp_ns).map_err(err)?;
+        let pose: [[f64; 4]; 4] = std::array::from_fn(|i| {
+            std::array::from_fn(|j| {
+                if i == 3 {
+                    f64::from(u8::from(j == 3))
+                } else if j == 3 {
+                    state.position[i]
+                } else {
+                    state.rotation[i][j]
+                }
+            })
+        });
+        let result = PyDict::new(py);
+        result.set_item("pose", matrix(py, &pose))?;
+        result.set_item("velocity", state.velocity.to_vec().into_pyarray(py))?;
+        Ok(result)
+    }
+
+    /// LiDAR coordinates at the explicit reference time; preserves input order.
+    #[pyo3(signature = (points, point_times_ns, reference_ns, *, imu_from_lidar, parallel=false))]
+    fn deskew<'py>(
+        &self,
+        py: Python<'py>,
+        points: PyReadonlyArray2<'_, f64>,
+        point_times_ns: PyReadonlyArray1<'_, i64>,
+        reference_ns: i64,
+        imu_from_lidar: PyReadonlyArray2<'_, f64>,
+        parallel: bool,
+    ) -> PyResult<Bound<'py, PyArray2<f64>>> {
+        if points.shape()[1] != 3 {
+            return Err(PyValueError::new_err(
+                "deskew points must have shape (N, 3)",
+            ));
+        }
+        if imu_from_lidar.shape() != [4, 4] {
+            return Err(PyValueError::new_err(
+                "IMU-from-LiDAR transform must have shape (4, 4)",
+            ));
+        }
+        let transform = imu_from_lidar.as_array();
+        if !(0..4).all(|j| {
+            transform[[3, j]].is_finite()
+                && (transform[[3, j]] - f64::from(u8::from(j == 3))).abs() <= 1e-12
+        }) {
+            return Err(PyValueError::new_err(
+                "IMU-from-LiDAR transform must have homogeneous last row [0, 0, 0, 1]",
+            ));
+        }
+        let extrinsic = ca_core::icp::Rigid {
+            rotation: std::array::from_fn(|i| std::array::from_fn(|j| transform[[i, j]])),
+            translation: std::array::from_fn(|i| transform[[i, 3]]),
+        };
+        // Snapshot Python buffers before releasing the GIL; no caller-owned
+        // buffer is read while the core map runs on worker threads.
+        let points: Vec<[f64; 3]> = points
+            .as_array()
+            .outer_iter()
+            .map(|r| [r[0], r[1], r[2]])
+            .collect();
+        let times: Vec<i64> = point_times_ns.as_array().iter().copied().collect();
+        let output = py
+            .detach(|| {
+                if parallel {
+                    self.trajectory
+                        .deskew_parallel(&points, &times, reference_ns, &extrinsic)
+                } else {
+                    self.trajectory
+                        .deskew(&points, &times, reference_ns, &extrinsic)
+                }
+            })
+            .map_err(err)?;
+        let count = output.len();
+        Ok(
+            Array2::from_shape_vec((count, 3), output.into_iter().flatten().collect())
+                .expect("deskew point dimensions")
+                .into_pyarray(py),
+        )
     }
 }
 

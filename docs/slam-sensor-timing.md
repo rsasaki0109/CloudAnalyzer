@@ -152,6 +152,10 @@ The [flat-wall integer-time audit](../benchmarks/slam/flatwall-point-times-ns/RE
 compares every point with independent integer arithmetic and a previous native
 build under a declared ns-offset/header-origin policy.
 
+With an explicitly initialized state and calibrated sensor transform, the
+[nominal IMU trajectory](slam-imu-trajectory.md) consumes these timestamps for
+order-preserving serial or CPU-parallel point compensation.
+
 For the bundled NCLT lineage, see [synchronized body-frame conventions](slam-nclt-body-frames.md)
 before interpreting the historical `velodyne` frame label or preparing new
 reference trajectories.

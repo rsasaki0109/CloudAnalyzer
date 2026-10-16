@@ -30,6 +30,7 @@ mod normal_pair;
 pub mod normals;
 pub mod octree;
 pub mod odometry;
+pub mod odometry_linearization;
 pub mod point_time;
 pub mod pose_graph;
 pub mod profile;

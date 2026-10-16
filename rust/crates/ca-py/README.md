@@ -5,6 +5,10 @@ point cloud I/O (PLY, PCD, LAS, **LAZ**, XYZ), cloud-to-cloud and cloud-to-mesh
 distances, ICP registration and filters. Points are `(N, 3)` float64 NumPy
 arrays; heavy calls release the GIL and use all cores.
 
+For LiDAR registration inspection, `LidarOdometry(capture_linearization=True)`
+provides copied final-pose correspondences and the fixed-match normal matrix
+through `last_linearization()`. See [the API and numerical limits](../../../docs/slam-odometry-linearization.md).
+
 ```python
 import cloudanalyzer_core as cc
 import numpy as np

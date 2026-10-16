@@ -557,6 +557,28 @@ class OdometryReport(TypedDict):
     threshold_m: float
     correspondences: OdometryCorrespondences | None
 
+class OdometryLinearization(TypedDict):
+    pose: npt.NDArray[np.float64]
+    center_world: npt.NDArray[np.float64]
+    threshold_sq: float
+    kernel: float
+    map_voxel: float
+    map_points: int
+    max_range: float
+    alignment_eligible: bool
+    source_sensor: npt.NDArray[np.float64]
+    source_world: npt.NDArray[np.float64]
+    matched_source_indices: npt.NDArray[np.int64]
+    target_world: npt.NDArray[np.float64]
+    squared_distances: npt.NDArray[np.float64]
+    weights: npt.NDArray[np.float64]
+    normal_matrix: npt.NDArray[np.float64]
+    right_hand_side: npt.NDArray[np.float64]
+    weight_sum: float
+    weighted_rms_radius_m: float | None
+    inserted_world: npt.NDArray[np.float64]
+    finite: bool
+
 class ImuLidarOdometry:
     """IMU deskew then ICP, with poses/map points in the first reference LiDAR frame."""
 
@@ -601,6 +623,7 @@ class LidarOdometry:
         map_points: int = 20,
         deskew: bool = False,
         *, diagnostics: bool = False, registration_voxel: float | None = None,
+        capture_linearization: bool = False,
     ) -> None: ...
     @property
     def registration_voxel(self) -> float | None:
@@ -616,6 +639,14 @@ class LidarOdometry:
         ...
     def last_iterations(self) -> int:
         """Gauss-Newton steps of the last registration, zero without alignment."""
+        ...
+    @property
+    def capture_linearization(self) -> bool: ...
+    def last_linearization(self) -> OdometryLinearization | None:
+        """Copied final-pose fixed-match point-to-point system before map insertion.
+        Translation xyz then world rotation xyz about center_world. Uncalibrated
+        diagnostic; not covariance or a physical observability/pose-quality gate.
+        """
         ...
     def last_report(self) -> OdometryReport | None:
         """Termination/counts of the last scan, None before the first. With diagnostics=True,

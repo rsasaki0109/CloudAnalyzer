@@ -1,0 +1,218 @@
+{
+  "schema": "cloudanalyzer.flatwall_odometry_linearization.v1",
+  "inputs": {
+    "recording": {
+      "name": "flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "controller": {
+      "name": "audit_flatwall_odometry_linearization.py",
+      "bytes": 15113,
+      "sha256": "b743f3bcb4e1acac83cc212a246f4d56bba493c0e559d408203f0967f4631c48"
+    },
+    "helpers": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7596032,
+      "sha256": "7b23617b8f08fd4591c175c9037ddf693802d87c45fc0651e81b6cc08580533f"
+    },
+    "slice_protocol": {
+      "name": "protocol.json",
+      "bytes": 3890,
+      "sha256": "e7634925ddba22cc15fcab3390213bb933dce2ca0c947bb1782cb40eac07d08c"
+    },
+    "numpy_version": "2.3.4",
+    "previous": {
+      "raw-legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6673,
+          "sha256": "38eedcdabef3209607fadb53e77b02c41ca54e232f9989e6473c337b2d14cee2"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20908,
+          "sha256": "5455cc437a5c3fe46d0eb6244c4c872b0eeb8a85f3dd57c0569f534248c331f5"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1956,
+          "sha256": "cd13d484736119b6a7dd4064099d86914eb6a855c8f5dc70e1c3645fe3e7f510"
+        }
+      },
+      "raw-fine": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6670,
+          "sha256": "1bf02c09d75236bead70fdfafe305fc57b9ce561e3a7030430f827523674dfee"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21073,
+          "sha256": "578660362b76f9b2b528e3d1a7537e10b18a0ed0660c75f2bfbb697ab46bd78a"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1854,
+          "sha256": "a83d8c673dfb73f587be57e51441be4ecd5e95328b7d39ad989c7cc317913814"
+        }
+      },
+      "rotation-legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6680,
+          "sha256": "84abff0ec97b3596798f99200d6d8011544806627fdc2c58edcbacf16322c694"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20892,
+          "sha256": "909cc3934322df1f1b42474050dea8314b2d3a3d78e0e016f96077786eacbeb6"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 2127,
+          "sha256": "a3b552a1c4c61700fa3fd0f052ec241ef0516b04370a8804ac58392623b0b7dd"
+        }
+      },
+      "rotation-fine": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6669,
+          "sha256": "4cca234d88b88c8f81bc8913fabaab84006fbeab0197d1650ee4320328edfa64"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21068,
+          "sha256": "9a1bcceb8c6b70e7f793c3a8c6bdd404a2a0658ede628a4129c5c08dbe3107cc"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 2054,
+          "sha256": "393c9600ced8763ec89072ea930bf038298af8177c40809d33e62852e1cba08c"
+        }
+      }
+    }
+  },
+  "slice": {
+    "frozen_at_utc": "2026-10-16T19:52:14.153147+00:00",
+    "base": "655715eea34a8a9cf4f763bdb8ac4beda14b5e92",
+    "slice": "Separate opt-in owned final-pose point-to-point correspondence and normal-matrix capture in Rust/core and Python plain LidarOdometry. Existing solver, report schema, worker equation format and defaults remain unchanged.",
+    "api": "Core set_capture_linearization(bool), capture_linearization(), last_linearization(); setting captured at begin. Python keyword-only capture_linearization=False, read-only property, copied last_linearization() dict. No IMU-frontend or WASM API addition in this slice.",
+    "snapshot": "Returned orthonormalized pose, fixed prediction rotation center, all selected sensor/world source points, matched source indices, actual matched map targets, squared distances, fixed Geman-McClure weights, raw J.T W J and -J.T W residual, weight sum and weighted RMS radius about that center. Include canonical inserted_world points and map settings for independent pre-insertion map replay.",
+    "semantics": "Recompute at the returned pose against the map before insertion using the existing native 27-voxel matcher. This is not the last attempted solve matrix. Parameters are translation xyz then world rotation xyz around the prediction center. No alignment eligibility yields an owned empty-match/zero-matrix snapshot with insertion data; disabled capture yields None.",
+    "numerics": "Capture is serial in source order. Existing parallel solver reduction and all pose/map arithmetic are untouched. Nonfinite diagnostic values are flagged and never repaired or fed back. Zero support/radius supplies no usable spectrum.",
+    "real_cases": [
+      "raw-legacy",
+      "raw-fine",
+      "rotation-legacy",
+      "rotation-fine"
+    ],
+    "real_inputs": "Original flatwall bag and the same four saved 64-reference pose sequences/diagnostics from PR292/293. Declared zero gyro bias, identity extrinsic, acceleration scale 9.80665; compensated points use existing gyro-only API at the frozen maximum integer point references.",
+    "map_settings": {
+      "map_voxel": 1.0,
+      "map_points": 20,
+      "min_range": 1.5,
+      "max_range": 80.0,
+      "deskew": false
+    },
+    "execution": "One fresh process with RAYON_NUM_THREADS=4 and OPENBLAS_NUM_THREADS=1; cases run sequentially. Capture-disabled and capture-enabled poses/reports must reproduce all old 64 pose bits, reference times and reports per case.",
+    "independent_checks": "Scalar range/first-point thinning, independent complete 27-cell search (center first, strict distance ties), map capacity and first-point voxel pruning replay from canonical inserted points. Verify all selected points/matches and reconstruct fixed-weight J, normal matrix, right-hand side, weight sum and radius with NumPy.",
+    "tolerances": {
+      "source_world": 2e-08,
+      "normal_matrix_rhs_atol": 2e-08,
+      "normal_matrix_rhs_rtol": 2e-12,
+      "weights_atol": 2e-12,
+      "weights_rtol": 2e-12
+    },
+    "geometry_probe": "On finite supported systems, D=diag(1,1,1,1/r,1/r,1/r); report eigvalsh(sym(D H D)/sum_w), where parameters are [translation, r*rotation] in metres. Keep raw negative roundoff; only presentation may clip values within 1e-12. Predeclare weak ratios below 1e-3, without inversion, damping, quality gating or state adoption.",
+    "scope": "The fixed-match point-to-point normal matrix is an uncalibrated conditional surrogate and can be full-rank on a physically degenerate plane. It is not calibrated covariance, GICP/plane information, physical observability, cause of initialization failure, ground-truth accuracy, timing or GPU execution. No initialization gate/default change or fitted-state adoption.",
+    "regression": "Run unchanged full-motion component and frontend controllers on the new private native. Preserve all prior successful controllers, protocols, source/binary snapshots and receipts verbatim."
+  },
+  "cases": [
+    "raw-legacy",
+    "raw-fine",
+    "rotation-legacy",
+    "rotation-fine"
+  ],
+  "lidar": {
+    "min_range": 1.5,
+    "max_range": 80.0,
+    "map_voxel": 1.0,
+    "map_points": 20,
+    "deskew": false,
+    "diagnostics": true
+  },
+  "scan_indices": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "weak_ratio": 0.001,
+  "scope": "Conditional fixed-match uncalibrated point-to-point geometry only; no physical observability, covariance, GICP, accuracy, causal, timing or GPU claim."
+}

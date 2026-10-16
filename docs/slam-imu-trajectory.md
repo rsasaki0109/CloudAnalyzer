@@ -5,7 +5,8 @@ interval. It integrates once at the covered IMU boundaries, then queries each
 point independently. `ImuTrajectory.deskew()` returns points in the LiDAR frame
 at an explicit reference timestamp, including rotation, translation and the
 sensor lever arm. This component does not estimate its initial state or fuse
-LiDAR observations.
+LiDAR observations. To connect compensation to ICP and map insertion, see
+[IMU-compensated LiDAR registration](slam-imu-odometry.md).
 
 The application supplies the initial IMU-to-world pose, world velocity, world
 gravity and IMU-frame bias. Acceleration uses the scale configured when creating

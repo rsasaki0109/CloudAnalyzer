@@ -14,6 +14,7 @@ use pyo3::types::PyDict;
 mod bag;
 mod copc_spatial;
 mod imu;
+mod imu_odometry;
 mod imu_window;
 mod odometry;
 mod pose_graph;
@@ -734,6 +735,7 @@ fn volume<'py>(
 #[pymodule]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
+    m.add_class::<imu_odometry::ImuLidarOdometry>()?;
     m.add_function(wrap_pyfunction!(read, m)?)?;
     m.add_function(wrap_pyfunction!(read_mesh, m)?)?;
     m.add_function(wrap_pyfunction!(nearest_distances, m)?)?;

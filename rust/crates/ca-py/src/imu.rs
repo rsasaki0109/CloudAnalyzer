@@ -152,7 +152,9 @@ impl ImuSeries {
         let trajectory = py
             .detach(|| self.series.trajectory(start_ns, end_ns, initial, &params))
             .map_err(err)?;
-        Ok(ImuTrajectory { trajectory })
+        Ok(ImuTrajectory {
+            trajectory: std::sync::Arc::new(trajectory),
+        })
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -197,7 +199,7 @@ impl ImuSeries {
 /// Owns covered motion knots; no recording/series access and no fitted state.
 #[pyclass(frozen, module = "cloudanalyzer_core._core")]
 pub struct ImuTrajectory {
-    trajectory: ca_core::imu_trajectory::ImuTrajectory,
+    pub(crate) trajectory: std::sync::Arc<ca_core::imu_trajectory::ImuTrajectory>,
 }
 
 #[pymethods]
@@ -263,24 +265,7 @@ impl ImuTrajectory {
                 "deskew points must have shape (N, 3)",
             ));
         }
-        if imu_from_lidar.shape() != [4, 4] {
-            return Err(PyValueError::new_err(
-                "IMU-from-LiDAR transform must have shape (4, 4)",
-            ));
-        }
-        let transform = imu_from_lidar.as_array();
-        if !(0..4).all(|j| {
-            transform[[3, j]].is_finite()
-                && (transform[[3, j]] - f64::from(u8::from(j == 3))).abs() <= 1e-12
-        }) {
-            return Err(PyValueError::new_err(
-                "IMU-from-LiDAR transform must have homogeneous last row [0, 0, 0, 1]",
-            ));
-        }
-        let extrinsic = ca_core::icp::Rigid {
-            rotation: std::array::from_fn(|i| std::array::from_fn(|j| transform[[i, j]])),
-            translation: std::array::from_fn(|i| transform[[i, 3]]),
-        };
+        let extrinsic = lidar_transform(&imu_from_lidar)?;
         // Snapshot Python buffers before releasing the GIL; no caller-owned
         // buffer is read while the core map runs on worker threads.
         let points: Vec<[f64; 3]> = points
@@ -307,6 +292,27 @@ impl ImuTrajectory {
                 .into_pyarray(py),
         )
     }
+}
+
+pub(crate) fn lidar_transform(matrix: &PyReadonlyArray2<'_, f64>) -> PyResult<ca_core::icp::Rigid> {
+    if matrix.shape() != [4, 4] {
+        return Err(PyValueError::new_err(
+            "IMU-from-LiDAR transform must have shape (4, 4)",
+        ));
+    }
+    let transform = matrix.as_array();
+    if !(0..4).all(|j| {
+        transform[[3, j]].is_finite()
+            && (transform[[3, j]] - f64::from(u8::from(j == 3))).abs() <= 1e-12
+    }) {
+        return Err(PyValueError::new_err(
+            "IMU-from-LiDAR transform must have homogeneous last row [0, 0, 0, 1]",
+        ));
+    }
+    Ok(ca_core::icp::Rigid {
+        rotation: std::array::from_fn(|i| std::array::from_fn(|j| transform[[i, j]])),
+        translation: std::array::from_fn(|i| transform[[i, 3]]),
+    })
 }
 
 /// A preintegrated IMU factor, created by BagReader.imu_factor().

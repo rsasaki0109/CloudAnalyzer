@@ -8,6 +8,7 @@
 
 use crate::PointCloud;
 use crate::icp::Rigid;
+use crate::odometry_linearization::RegistrationLinearization;
 use std::collections::{HashMap, HashSet};
 use std::hash::{BuildHasherDefault, Hasher};
 
@@ -98,6 +99,7 @@ impl Default for OdometryParams {
 pub struct Odometry {
     params: OdometryParams,
     registration_voxel: Option<f64>,
+    capture_linearization: bool,
     map: LocalMap,
     poses: Vec<Rigid>,
     error_sum: f64,
@@ -105,6 +107,7 @@ pub struct Odometry {
     /// The world points the last scan added to the map (see [`Odometry::finish`]).
     placed: Vec<[f64; 3]>,
     last_report: Option<RegistrationReport>,
+    last_linearization: Option<RegistrationLinearization>,
 }
 
 /// Why ICP stopped. A small update alone does not certify a correct alignment.
@@ -207,6 +210,8 @@ pub struct Registration {
     termination: Option<RegistrationTermination>,
     /// Retained only for opt-in residuals at the exact, orthonormalized pose.
     diagnostic_source: Option<Vec<[f64; 3]>>,
+    /// Independent opt-in retention; never enables or changes the old report.
+    linearization_source: Option<Vec<[f64; 3]>>,
 }
 
 impl Registration {
@@ -484,6 +489,73 @@ impl LocalMap {
         }
     }
 
+    fn capture_linearization(
+        &self,
+        source: Vec<[f64; 3]>,
+        pose: Rigid,
+        registration: &Registration,
+        max_range: f64,
+    ) -> RegistrationLinearization {
+        let source_world: Vec<_> = source.iter().map(|p| pose.apply(p)).collect();
+        let mut snapshot = RegistrationLinearization {
+            pose,
+            center_world: registration.center,
+            threshold_sq: registration.threshold_sq,
+            kernel: registration.kernel,
+            map_voxel: self.voxel,
+            map_points: self.max_points,
+            max_range,
+            alignment_eligible: registration.needs_alignment(),
+            source_sensor: source,
+            source_world,
+            matched_source_indices: Vec::new(),
+            target_world: Vec::new(),
+            squared_distances: Vec::new(),
+            weights: Vec::new(),
+            normal_matrix: [[0.0; 6]; 6],
+            right_hand_side: [0.0; 6],
+            weight_sum: 0.0,
+            weighted_rms_radius_m: None,
+            inserted_world: Vec::new(),
+            finite: true,
+        };
+        snapshot.finite = snapshot
+            .source_world
+            .iter()
+            .flatten()
+            .chain(pose.rotation.iter().flatten())
+            .chain(&pose.translation)
+            .chain(&snapshot.center_world)
+            .all(|v| v.is_finite())
+            && [
+                snapshot.threshold_sq,
+                snapshot.kernel,
+                self.voxel,
+                max_range,
+            ]
+            .iter()
+            .all(|v| v.is_finite());
+        if snapshot.alignment_eligible {
+            for (index, q) in snapshot.source_world.iter().enumerate() {
+                // Diagnostic capture must not introduce a search on nonfinite coordinates.
+                if !q.iter().all(|v| v.is_finite()) {
+                    continue;
+                }
+                let Some((target, distance_sq)) = self.nearest(q) else {
+                    continue;
+                };
+                if distance_sq > snapshot.threshold_sq {
+                    continue;
+                }
+                snapshot.matched_source_indices.push(index);
+                snapshot.target_world.push(target);
+                snapshot.squared_distances.push(distance_sq);
+            }
+        }
+        snapshot.accumulate();
+        snapshot
+    }
+
     /// The normal equations of one Gauss-Newton step: each point of `source`
     /// moved by `total`, paired with the map point nearest it within the
     /// threshold, weighted by a Geman-McClure kernel of scale `kernel`;
@@ -558,12 +630,14 @@ impl Odometry {
         Odometry {
             params,
             registration_voxel: None,
+            capture_linearization: false,
             map: LocalMap::new(params.map_voxel, params.map_points),
             poses: Vec::new(),
             error_sum: 0.0,
             error_count: 0,
             placed: Vec::new(),
             last_report: None,
+            last_linearization: None,
         }
     }
 
@@ -598,6 +672,22 @@ impl Odometry {
     /// Enable final residuals for registrations begun after this call.
     pub fn set_diagnostics(&mut self, enabled: bool) {
         self.params.diagnostics = enabled;
+    }
+
+    /// Retain a separate final-pose snapshot for registrations begun afterward.
+    /// Existing pending registrations own their capture choice and source points.
+    pub fn set_capture_linearization(&mut self, enabled: bool) {
+        self.capture_linearization = enabled;
+    }
+
+    pub fn capture_linearization(&self) -> bool {
+        self.capture_linearization
+    }
+
+    /// Owned final-pose data captured before insertion; None before the first
+    /// finish or when capture was disabled at that registration's begin.
+    pub fn last_linearization(&self) -> Option<&RegistrationLinearization> {
+        self.last_linearization.as_ref()
     }
 
     /// Explicit source-sampling voxel in metres, or None for legacy two-stage thinning.
@@ -715,6 +805,7 @@ impl Odometry {
         } else {
             None
         };
+        let linearization_source = self.capture_linearization.then(|| thinned.clone());
         let diagnostic_source = (p.diagnostics && !source.is_empty()).then_some(thinned);
         let sigma = self.sigma();
         Registration {
@@ -731,6 +822,7 @@ impl Odometry {
             registration_points,
             termination,
             diagnostic_source,
+            linearization_source,
         }
     }
 
@@ -800,9 +892,13 @@ impl Odometry {
     /// threshold, and the scan joins the map (see [`Odometry::placed`]).
     pub fn finish(&mut self, registration: Registration) -> Rigid {
         let p = self.params;
-        let r = registration;
+        let mut r = registration;
         let mut pose = r.total.compose(&r.prediction);
         pose.rotation = orthonormal(&pose.rotation);
+        self.last_linearization = r.linearization_source.take().map(|source| {
+            self.map
+                .capture_linearization(source, pose, &r, p.max_range)
+        });
         self.last_report = Some(RegistrationReport {
             termination: r.termination.unwrap_or(RegistrationTermination::Unfinished),
             iterations: r.iterations,
@@ -827,6 +923,14 @@ impl Odometry {
         }
         // The scan joins the map; voxels out of the sensor's range leave it.
         self.placed = r.frame.iter().map(|q| pose.apply(q)).collect();
+        if let Some(snapshot) = &mut self.last_linearization {
+            snapshot.inserted_world = self.placed.clone();
+            snapshot.finite &= snapshot
+                .inserted_world
+                .iter()
+                .flatten()
+                .all(|v| v.is_finite());
+        }
         self.map.insert(&self.placed);
         self.map.retain_within(pose.translation, p.max_range);
         self.poses.push(pose);
@@ -1023,6 +1127,119 @@ mod tests {
                 .collect(),
             ..PointCloud::default()
         }
+    }
+
+    #[test]
+    fn linearization_capture_choice_belongs_to_begin_and_empty_results_are_owned() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            ..OdometryParams::default()
+        });
+        assert!(!odometry.capture_linearization());
+        let scan = diagnostic_scene();
+        let pending = odometry.begin(&scan);
+        odometry.set_capture_linearization(true);
+        odometry.finish(pending);
+        assert!(odometry.last_linearization().is_none());
+        let pending = odometry.begin(&PointCloud::default());
+        odometry.set_capture_linearization(false);
+        odometry.finish(pending);
+        let snapshot = odometry.last_linearization().unwrap().clone();
+        assert!(!snapshot.alignment_eligible);
+        assert!(snapshot.source_sensor.is_empty());
+        assert!(snapshot.matched_source_indices.is_empty());
+        assert_eq!(snapshot.normal_matrix, [[0.0; 6]; 6]);
+        assert_eq!(snapshot.right_hand_side, [0.0; 6]);
+        assert_eq!(snapshot.weighted_rms_radius_m, None);
+        assert!(snapshot.finite);
+        odometry.register(&scan);
+        assert!(odometry.last_linearization().is_none());
+        assert!(snapshot.inserted_world.is_empty());
+    }
+
+    #[test]
+    fn linearization_capture_preserves_solver_map_and_report_bits() {
+        let params = OdometryParams {
+            min_range: 0.0,
+            diagnostics: true,
+            ..OdometryParams::default()
+        };
+        let mut plain = Odometry::new(params);
+        let mut measured = Odometry::new(params);
+        measured.set_capture_linearization(true);
+        let mut scan = diagnostic_scene();
+        for _ in 0..5 {
+            let a = plain.register(&scan);
+            let b = measured.register(&scan);
+            assert_eq!(
+                a.to_matrix().map(f64::to_bits),
+                b.to_matrix().map(f64::to_bits)
+            );
+            assert_eq!(plain.last_report(), measured.last_report());
+            assert_eq!(plain.map.map, measured.map.map);
+            assert_eq!(plain.error_sum.to_bits(), measured.error_sum.to_bits());
+            assert_eq!(plain.error_count, measured.error_count);
+            let snapshot = measured.last_linearization().unwrap();
+            assert_eq!(snapshot.inserted_world, measured.placed());
+            assert_eq!(snapshot.pose, b);
+            for point in &mut scan.positions {
+                point[0] -= 0.1;
+            }
+        }
+    }
+
+    #[test]
+    fn linearization_flags_nonfinite_weights_without_repair_or_pose_feedback() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            ..OdometryParams::default()
+        });
+        odometry.set_capture_linearization(true);
+        let scan = diagnostic_scene();
+        odometry.register(&scan);
+        let mut pending = odometry.begin(&scan);
+        pending.kernel = 0.0; // Legacy formula has 0/0 on exact matches.
+        assert_eq!(odometry.finish(pending), Rigid::IDENTITY);
+        let snapshot = odometry.last_linearization().unwrap();
+        assert!(!snapshot.finite);
+        assert!(snapshot.weights.iter().all(|w| w.is_nan()));
+        assert_eq!(snapshot.weighted_rms_radius_m, None);
+        assert_eq!(snapshot.inserted_world, scan.positions);
+    }
+
+    #[test]
+    fn linearization_is_recomputed_after_the_last_step_at_returned_pose() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            diagnostics: true,
+            ..OdometryParams::default()
+        });
+        odometry.set_capture_linearization(true);
+        let scan = diagnostic_scene();
+        odometry.register(&scan);
+        let mut pending = odometry.begin(&scan);
+        let mut identity = [[0.0; 6]; 6];
+        for (i, row) in identity.iter_mut().enumerate() {
+            row[i] = 1.0;
+        }
+        odometry.step(
+            &mut pending,
+            (identity, [0.04, -0.02, 0.01, 0.01, 0.02, -0.01]),
+        );
+        let pose = odometry.finish(pending);
+        let snapshot = odometry.last_linearization().unwrap();
+        assert_eq!(
+            snapshot.source_world,
+            scan.positions
+                .iter()
+                .map(|p| pose.apply(p))
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(snapshot.matched_source_indices.len(), 12);
+        assert_ne!(snapshot.normal_matrix, identity);
+        assert!(snapshot.squared_distances.iter().any(|&d| d > 0.0));
+        assert_eq!(snapshot.target_world, scan.positions);
+        assert!(snapshot.finite);
     }
 
     #[test]

@@ -1,0 +1,35 @@
+{
+  "frozen_at_utc": "2026-10-16T19:52:14.153147+00:00",
+  "base": "655715eea34a8a9cf4f763bdb8ac4beda14b5e92",
+  "slice": "Separate opt-in owned final-pose point-to-point correspondence and normal-matrix capture in Rust/core and Python plain LidarOdometry. Existing solver, report schema, worker equation format and defaults remain unchanged.",
+  "api": "Core set_capture_linearization(bool), capture_linearization(), last_linearization(); setting captured at begin. Python keyword-only capture_linearization=False, read-only property, copied last_linearization() dict. No IMU-frontend or WASM API addition in this slice.",
+  "snapshot": "Returned orthonormalized pose, fixed prediction rotation center, all selected sensor/world source points, matched source indices, actual matched map targets, squared distances, fixed Geman-McClure weights, raw J.T W J and -J.T W residual, weight sum and weighted RMS radius about that center. Include canonical inserted_world points and map settings for independent pre-insertion map replay.",
+  "semantics": "Recompute at the returned pose against the map before insertion using the existing native 27-voxel matcher. This is not the last attempted solve matrix. Parameters are translation xyz then world rotation xyz around the prediction center. No alignment eligibility yields an owned empty-match/zero-matrix snapshot with insertion data; disabled capture yields None.",
+  "numerics": "Capture is serial in source order. Existing parallel solver reduction and all pose/map arithmetic are untouched. Nonfinite diagnostic values are flagged and never repaired or fed back. Zero support/radius supplies no usable spectrum.",
+  "real_cases": [
+    "raw-legacy",
+    "raw-fine",
+    "rotation-legacy",
+    "rotation-fine"
+  ],
+  "real_inputs": "Original flatwall bag and the same four saved 64-reference pose sequences/diagnostics from PR292/293. Declared zero gyro bias, identity extrinsic, acceleration scale 9.80665; compensated points use existing gyro-only API at the frozen maximum integer point references.",
+  "map_settings": {
+    "map_voxel": 1.0,
+    "map_points": 20,
+    "min_range": 1.5,
+    "max_range": 80.0,
+    "deskew": false
+  },
+  "execution": "One fresh process with RAYON_NUM_THREADS=4 and OPENBLAS_NUM_THREADS=1; cases run sequentially. Capture-disabled and capture-enabled poses/reports must reproduce all old 64 pose bits, reference times and reports per case.",
+  "independent_checks": "Scalar range/first-point thinning, independent complete 27-cell search (center first, strict distance ties), map capacity and first-point voxel pruning replay from canonical inserted points. Verify all selected points/matches and reconstruct fixed-weight J, normal matrix, right-hand side, weight sum and radius with NumPy.",
+  "tolerances": {
+    "source_world": 2e-08,
+    "normal_matrix_rhs_atol": 2e-08,
+    "normal_matrix_rhs_rtol": 2e-12,
+    "weights_atol": 2e-12,
+    "weights_rtol": 2e-12
+  },
+  "geometry_probe": "On finite supported systems, D=diag(1,1,1,1/r,1/r,1/r); report eigvalsh(sym(D H D)/sum_w), where parameters are [translation, r*rotation] in metres. Keep raw negative roundoff; only presentation may clip values within 1e-12. Predeclare weak ratios below 1e-3, without inversion, damping, quality gating or state adoption.",
+  "scope": "The fixed-match point-to-point normal matrix is an uncalibrated conditional surrogate and can be full-rank on a physically degenerate plane. It is not calibrated covariance, GICP/plane information, physical observability, cause of initialization failure, ground-truth accuracy, timing or GPU execution. No initialization gate/default change or fitted-state adoption.",
+  "regression": "Run unchanged full-motion component and frontend controllers on the new private native. Preserve all prior successful controllers, protocols, source/binary snapshots and receipts verbatim."
+}

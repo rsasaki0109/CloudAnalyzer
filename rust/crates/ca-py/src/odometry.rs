@@ -28,7 +28,8 @@ impl LidarOdometry {
     /// are left out; the local map keeps `map_points` per voxel of
     /// `map_voxel` metres; `deskew` undoes the motion during each scan.
     #[new]
-    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false, registration_voxel=None))]
+    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false, registration_voxel=None, capture_linearization=false))]
+    #[allow(clippy::too_many_arguments)]
     fn new(
         min_range: f64,
         max_range: f64,
@@ -37,6 +38,7 @@ impl LidarOdometry {
         deskew: bool,
         diagnostics: bool,
         registration_voxel: Option<f64>,
+        capture_linearization: bool,
     ) -> PyResult<Self> {
         let mut inner = Odometry::new(OdometryParams {
             min_range,
@@ -50,6 +52,7 @@ impl LidarOdometry {
         inner
             .set_registration_voxel(registration_voxel)
             .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        inner.set_capture_linearization(capture_linearization);
         Ok(LidarOdometry { inner })
     }
 
@@ -57,6 +60,21 @@ impl LidarOdometry {
     #[getter]
     pub(crate) fn registration_voxel(&self) -> Option<f64> {
         self.inner.registration_voxel()
+    }
+
+    /// Whether owned final-pose correspondence snapshots are enabled.
+    #[getter]
+    fn capture_linearization(&self) -> bool {
+        self.inner.capture_linearization()
+    }
+
+    /// A fresh copy of the final-pose fixed-match IRLS system, or None.
+    /// This uncalibrated point-to-point diagnostic never changes the solver.
+    fn last_linearization<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyDict>>> {
+        self.inner
+            .last_linearization()
+            .map(|snapshot| crate::odometry_linearization::to_dict(py, snapshot))
+            .transpose()
     }
 
     /// Register the next scan, `positions` (N, 3) in its sensor's frame,

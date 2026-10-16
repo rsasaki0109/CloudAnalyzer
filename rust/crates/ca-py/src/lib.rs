@@ -18,6 +18,7 @@ mod imu_odometry;
 mod imu_rotation;
 mod imu_window;
 mod odometry;
+mod odometry_linearization;
 mod pose_graph;
 mod vector_map;
 

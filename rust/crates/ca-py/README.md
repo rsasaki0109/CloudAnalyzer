@@ -17,6 +17,9 @@ an optional CPU parallel path. See [GICP factor semantics](../../../docs/slam-gi
 prepared shapes; `gicp_frozen_cost` evaluates trial poses with baseline metrics.
 See [registration semantics and termination](../../../docs/slam-gicp-registration.md).
 
+`gicp_shapes` prepares f64 normalized surface shapes with explicit unsupported
+rows and optional exact neighborhoods. See [shape preparation](../../../docs/slam-gicp-shapes.md).
+
 ```python
 import cloudanalyzer_core as cc
 import numpy as np

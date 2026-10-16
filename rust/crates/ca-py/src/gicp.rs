@@ -21,6 +21,72 @@ fn shapes(array: &PyReadonlyArray3<f64>, count: usize, name: &str) -> PyResult<V
         .collect())
 }
 
+/// Normalized f64 surface shapes and explicit support, with optional exact kNN.
+#[pyfunction]
+#[pyo3(signature = (points, *, neighbors=20, parallel=false, capture_neighbors=false))]
+pub(crate) fn gicp_shapes<'py>(
+    py: Python<'py>,
+    points: PyReadonlyArray2<f64>,
+    neighbors: usize,
+    parallel: bool,
+    capture_neighbors: bool,
+) -> PyResult<Bound<'py, PyDict>> {
+    let points = crate::points(&points)?;
+    let n = points.len();
+    let result = py
+        .detach(|| ca_core::gicp_shapes::estimate(&points, neighbors, parallel, capture_neighbors))
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let width = if capture_neighbors {
+        neighbors.min(n)
+    } else {
+        0
+    };
+    let out = PyDict::new(py);
+    out.set_item("shapes", shape_array(py, result.shapes))?;
+    out.set_item("supported", result.supported.into_pyarray(py))?;
+    out.set_item(
+        "scatter_eigenvalues",
+        crate::to_array2(py, result.scatter_eigenvalues),
+    )?;
+    out.set_item(
+        "neighbor_counts",
+        result
+            .neighbor_counts
+            .into_iter()
+            .map(|v| v as u64)
+            .collect::<Vec<_>>()
+            .into_pyarray(py),
+    )?;
+    out.set_item(
+        "neighbor_indices",
+        Array2::from_shape_vec(
+            (n, width),
+            result
+                .neighbor_indices
+                .into_iter()
+                .flatten()
+                .map(|v| v as u64)
+                .collect(),
+        )
+        .expect("N x K indices")
+        .into_pyarray(py),
+    )?;
+    out.set_item(
+        "neighbor_squared_distances",
+        Array2::from_shape_vec(
+            (n, width),
+            result
+                .neighbor_squared_distances
+                .into_iter()
+                .flatten()
+                .collect(),
+        )
+        .expect("N x K distances")
+        .into_pyarray(py),
+    )?;
+    Ok(out)
+}
+
 /// Fixed matches and metric: H=J.T W J, b=-J.T W residual, half-squared cost.
 /// Source points/shapes use sensor axes; targets/shapes use world axes. The
 /// transport C_target+R C_source R.T is held fixed while differentiating the

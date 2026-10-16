@@ -1,0 +1,118 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_odometry.v1",
+  "inputs": {
+    "recording": {
+      "name": "flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "controller": {
+      "name": "audit_flatwall_imu_odometry.py",
+      "bytes": 13301,
+      "sha256": "cfd7f1cf43fab67e79dee682011cb8fc79ee41b0ca7728048dc70b8d0020073b"
+    },
+    "helpers": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7784448,
+      "sha256": "a817a0513487e335c36036479ab44c54168dc00050a11ff991ba2cca48c62ace"
+    },
+    "component_protocol": {
+      "name": "protocol.json",
+      "bytes": 4116,
+      "sha256": "fcc6f7056e5931053cdb0c12cf740ff001366fe03762b247a72153182648038b"
+    },
+    "component_receipt": {
+      "name": "receipt.json",
+      "bytes": 6054,
+      "sha256": "a55013050380512cf21d5905626b205ee46e5da96a0715fa2f26aac68ee4a6a5"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "rosbags_version": "0.11.3",
+    "rotation_backend": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    },
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "standard_types": {
+      "name": "ros1_noetic.py",
+      "bytes": 101472,
+      "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+    }
+  },
+  "settings": {
+    "min_range": 1.5,
+    "max_range": 80.0,
+    "map_voxel": 1.0,
+    "map_points": 20,
+    "diagnostics": true
+  },
+  "parallel_compensation": true,
+  "rayon_threads_requested": 4,
+  "declared_state": "first IMU header, identity pose, zero world velocity/bias, gravity [0,0,-9.80665], acceleration scale9.80665, identity IMU-from-LiDAR",
+  "reference_time": "maximum integer point timestamp; reject the entire first unbracketed scan; accept all other scans in source order",
+  "coordinate_frame": "first accepted reference LiDAR frame; world_from_first_lidar aligns it to the nominal IMU world",
+  "checks": {
+    "point_oracle_atol": 2e-08,
+    "relative_prediction_atol": 1e-08,
+    "placed_map_atol": 2e-08,
+    "insertion_selection": "Independent range filter and first-per-half-voxel selection on native-compensated coordinates, after their complete independent coordinate check; use final ICP pose for placement."
+  },
+  "scope": "Integration/numerical audit on real measurements with arbitrary declared initial state; no physical initialization/calibration fit, reference poses, accuracy, runtime or GPU result.",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 2837,
+    "sha256": "e3f191099a3631e770da3b1e08f69b19486abc0507aaa4b7ea7d36f9cae1e6b3"
+  },
+  "results": {
+    "registered_scans": 185,
+    "registered_points": 4440000,
+    "skipped_scan_indices": [
+      0
+    ],
+    "placed_map_points": 50975,
+    "icp_iterations": 5475,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 184
+    },
+    "max_abs_errors": {
+      "deskew": 8.029132914089132e-13,
+      "relative_prediction": 3.304023721284466e-13,
+      "placed_map": 1.4210854715202004e-14,
+      "world_alignment": 1.3322676295501878e-15
+    },
+    "compensated_points_sha256": "a31223af0ab27fe527203ffa1887310d022295e01e717eff6f4eb65e16f9b53b",
+    "first_rejection_atomic": true,
+    "reference_timestamps_exact": true,
+    "caller_arrays_unchanged": true
+  },
+  "outputs": {
+    "per-scan.json": {
+      "name": "per-scan.json",
+      "bytes": 92156,
+      "sha256": "4c3144b2c059318d563e8a05584d9010b5655828ef88a50e68ea1c45fa65f0f7"
+    },
+    "trajectory.npz": {
+      "name": "trajectory.npz",
+      "bytes": 36107,
+      "sha256": "277f1974f93581f4900c23e6945896f4b62d74ae3a9756240fec378ce5afd7be"
+    },
+    "map_points.npy": {
+      "name": "map_points.npy",
+      "bytes": 1223528,
+      "sha256": "931cf73cab1214886ca4085a94f71330a4117e2265bababaa04137721ef772a6"
+    }
+  },
+  "no_reference_poses_used": true
+}

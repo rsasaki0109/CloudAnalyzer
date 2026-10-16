@@ -749,6 +749,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(gicp::gicp_linearization, m)?)?;
     m.add_function(wrap_pyfunction!(gicp::gicp_frozen_cost, m)?)?;
     m.add_function(wrap_pyfunction!(gicp::gicp_register, m)?)?;
+    m.add_function(wrap_pyfunction!(gicp::gicp_shapes, m)?)?;
     m.add_function(wrap_pyfunction!(voxel_subsample, m)?)?;
     m.add_function(wrap_pyfunction!(statistical_outliers, m)?)?;
     m.add_function(wrap_pyfunction!(volume, m)?)?;

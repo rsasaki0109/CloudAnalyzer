@@ -6,6 +6,9 @@ reference timestamp, seeds ICP with the IMU motion between references, and
 places those same compensated points using the final ICP pose. Ordinary
 constant-motion deskew is disabled inside this dedicated frontend.
 
+The optional [independent registration voxel](slam-registration-sampling.md)
+controls ICP source sampling while map insertion keeps its own existing thinning.
+
 ```python
 import numpy as np
 from cloudanalyzer_core import ImuLidarOdometry

@@ -28,7 +28,7 @@ impl LidarOdometry {
     /// are left out; the local map keeps `map_points` per voxel of
     /// `map_voxel` metres; `deskew` undoes the motion during each scan.
     #[new]
-    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false))]
+    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false, registration_voxel=None))]
     fn new(
         min_range: f64,
         max_range: f64,
@@ -36,18 +36,27 @@ impl LidarOdometry {
         map_points: usize,
         deskew: bool,
         diagnostics: bool,
-    ) -> Self {
-        LidarOdometry {
-            inner: Odometry::new(OdometryParams {
-                min_range,
-                max_range,
-                map_voxel,
-                map_points,
-                deskew,
-                diagnostics,
-                ..OdometryParams::default()
-            }),
-        }
+        registration_voxel: Option<f64>,
+    ) -> PyResult<Self> {
+        let mut inner = Odometry::new(OdometryParams {
+            min_range,
+            max_range,
+            map_voxel,
+            map_points,
+            deskew,
+            diagnostics,
+            ..OdometryParams::default()
+        });
+        inner
+            .set_registration_voxel(registration_voxel)
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        Ok(LidarOdometry { inner })
+    }
+
+    /// Explicit independent source voxel in metres; None keeps legacy sampling.
+    #[getter]
+    pub(crate) fn registration_voxel(&self) -> Option<f64> {
+        self.inner.registration_voxel()
     }
 
     /// Register the next scan, `positions` (N, 3) in its sensor's frame,

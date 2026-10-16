@@ -1,0 +1,1412 @@
+{
+  "schema": "cloudanalyzer.nclt_imu_fixed_lag_packet.v1",
+  "source_commit_before_experiment": "88aa78952d5c70faf3ce56ffbcaae7c529e1100c",
+  "max_states": 4,
+  "scope": "Ordered real LiDAR-pose/raw-IMU replay with explicit oldest-state marginalization and LiDAR fallback across rejected IMU edges; no frontend feedback, calibrated covariance, GPU or real-time speed claim",
+  "files_sha256": {
+    "benchmarks/slam/nclt-imu-pilot/verify.py": "e0c26573e7cab2097deff5eb09e86d249353855d6972b9461214f252d1e75716",
+    "benchmarks/slam/nclt-imu-fixed-lag/protocol.json": "51645192a90a3fae41f3e34c89c6e88cfd6fd690b2e3d9dd291dd3cb9b438365",
+    "benchmarks/slam/nclt-imu-fixed-lag/april-poses.csv": "c2b627a47c0b05c0242d07717025f824f7a6d8349ec246b2fef580ccaae5f230",
+    "benchmarks/vector-map/nclt-reference-accuracy/april/reference-raw-rows.csv": "c93d583a8740f57979a3aab9dd9d3ff889c9d057d672e3b085d513ff99cd971b",
+    "benchmarks/slam/nclt-imu-fixed-lag/june-poses.csv": "02021eee80ccd1edf4f563c667ca9921d55bb8d8197f3f83ffa755caa7eae5bb",
+    "benchmarks/vector-map/nclt-reference-accuracy/june/reference-raw-rows.csv": "a998ad2efabc854cfeaaa70a529d725e6402538cb79d17c15bfab8f16e81cd70"
+  },
+  "cases": [
+    {
+      "session": "2012-04-29",
+      "poses": "april-poses.csv",
+      "reference_rows": "benchmarks/vector-map/nclt-reference-accuracy/april/reference-raw-rows.csv",
+      "metrics": {
+        "lidar": {
+          "all": {
+            "ate_m": {
+              "count": 236,
+              "rmse": 0.16544994082922074,
+              "mean": 0.14676460687980603,
+              "max": 0.5224899873694205
+            },
+            "rpe_translation_m": {
+              "count": 235,
+              "rmse": 0.16794437991751404,
+              "mean": 0.14391327789974737,
+              "max": 0.6156230123596667
+            },
+            "rpe_rotation_deg": {
+              "count": 235,
+              "rmse": 2.0380929449942133,
+              "mean": 1.745518643446439,
+              "max": 5.873833505974216
+            },
+            "endpoint_translation_m": {
+              "count": 1,
+              "rmse": 0.34326805346493233,
+              "mean": 0.34326805346493233,
+              "max": 0.34326805346493233
+            }
+          },
+          "valid_imu_edges": {
+            "rpe_translation_m": {
+              "count": 193,
+              "rmse": 0.16655043282718718,
+              "mean": 0.14131205596508917,
+              "max": 0.6156230123596667
+            },
+            "rpe_rotation_deg": {
+              "count": 193,
+              "rmse": 2.05649003354544,
+              "mean": 1.751480057235964,
+              "max": 5.873833505974216
+            }
+          },
+          "gap_edges": {
+            "rpe_translation_m": {
+              "count": 42,
+              "rmse": 0.1742065657434399,
+              "mean": 0.15586651202805749,
+              "max": 0.39825848875315534
+            },
+            "rpe_rotation_deg": {
+              "count": 42,
+              "rmse": 1.9513254196060228,
+              "mean": 1.718124527699336,
+              "max": 3.7615117922887333
+            }
+          }
+        },
+        "replay": {
+          "all": {
+            "ate_m": {
+              "count": 236,
+              "rmse": 0.16027818582478076,
+              "mean": 0.14164320409158046,
+              "max": 0.520350459272542
+            },
+            "rpe_translation_m": {
+              "count": 235,
+              "rmse": 0.14308401032225343,
+              "mean": 0.12208623842910758,
+              "max": 0.5921470891304209
+            },
+            "rpe_rotation_deg": {
+              "count": 235,
+              "rmse": 1.353639003728291,
+              "mean": 1.1631935421471113,
+              "max": 3.867889206416601
+            },
+            "endpoint_translation_m": {
+              "count": 1,
+              "rmse": 0.3308389635296865,
+              "mean": 0.3308389635296865,
+              "max": 0.3308389635296865
+            }
+          },
+          "valid_imu_edges": {
+            "rpe_translation_m": {
+              "count": 193,
+              "rmse": 0.13669553789931482,
+              "mean": 0.11616878553582778,
+              "max": 0.5921470891304209
+            },
+            "rpe_rotation_deg": {
+              "count": 193,
+              "rmse": 1.2719354017074063,
+              "mean": 1.0939885167952226,
+              "max": 3.867889206416601
+            }
+          },
+          "gap_edges": {
+            "rpe_translation_m": {
+              "count": 42,
+              "rmse": 0.16937059019602402,
+              "mean": 0.14927834339108376,
+              "max": 0.39935512021868513
+            },
+            "rpe_rotation_deg": {
+              "count": 42,
+              "rmse": 1.6787209151252207,
+              "mean": 1.4812071110260276,
+              "max": 3.32405538549063
+            }
+          }
+        }
+      },
+      "coverage": {
+        "scans": 236,
+        "all_edges": 235,
+        "fused_updates": 193,
+        "gap_fallbacks": 42,
+        "startup_fallbacks": 1,
+        "marginalizations": 112,
+        "max_active_states": 4,
+        "nonconverged_updates": 0,
+        "output_policy": "All scans, latest output once per scan; fallback velocities/biases are placeholders, not IMU estimates"
+      },
+      "marginalizations": [
+        {
+          "scan_index": 4,
+          "dropped_timestamp_ns": 1335706505033587000,
+          "retained_timestamp_ns": 1335706505833577000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -3.469446951953614e-16
+        },
+        {
+          "scan_index": 5,
+          "dropped_timestamp_ns": 1335706505833577000,
+          "retained_timestamp_ns": 1335706506633609000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.09810355133298605
+        },
+        {
+          "scan_index": 6,
+          "dropped_timestamp_ns": 1335706506633609000,
+          "retained_timestamp_ns": 1335706507433678000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.03718519934441036
+        },
+        {
+          "scan_index": 7,
+          "dropped_timestamp_ns": 1335706507433678000,
+          "retained_timestamp_ns": 1335706508233700000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.15635064999571183
+        },
+        {
+          "scan_index": 8,
+          "dropped_timestamp_ns": 1335706508233700000,
+          "retained_timestamp_ns": 1335706509033741000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.122293643421861
+        },
+        {
+          "scan_index": 17,
+          "dropped_timestamp_ns": 1335706515434059000,
+          "retained_timestamp_ns": 1335706516234105000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 9.992007221626409e-16
+        },
+        {
+          "scan_index": 18,
+          "dropped_timestamp_ns": 1335706516234105000,
+          "retained_timestamp_ns": 1335706517034146000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.7520118114594289
+        },
+        {
+          "scan_index": 19,
+          "dropped_timestamp_ns": 1335706517034146000,
+          "retained_timestamp_ns": 1335706517834187000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.5509051229111719
+        },
+        {
+          "scan_index": 20,
+          "dropped_timestamp_ns": 1335706517834187000,
+          "retained_timestamp_ns": 1335706518634223000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.417660954698834
+        },
+        {
+          "scan_index": 21,
+          "dropped_timestamp_ns": 1335706518634223000,
+          "retained_timestamp_ns": 1335706519434259000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.6001471991978746
+        },
+        {
+          "scan_index": 22,
+          "dropped_timestamp_ns": 1335706519434259000,
+          "retained_timestamp_ns": 1335706520434319000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.626908901978093
+        },
+        {
+          "scan_index": 32,
+          "dropped_timestamp_ns": 1335706527634685000,
+          "retained_timestamp_ns": 1335706528434725000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 4.274358644806853e-15
+        },
+        {
+          "scan_index": 33,
+          "dropped_timestamp_ns": 1335706528434725000,
+          "retained_timestamp_ns": 1335706529234758000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.10876104948585302
+        },
+        {
+          "scan_index": 34,
+          "dropped_timestamp_ns": 1335706529234758000,
+          "retained_timestamp_ns": 1335706530034806000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.24367278213791452
+        },
+        {
+          "scan_index": 35,
+          "dropped_timestamp_ns": 1335706530034806000,
+          "retained_timestamp_ns": 1335706530834847000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.06353372573862326
+        },
+        {
+          "scan_index": 36,
+          "dropped_timestamp_ns": 1335706530834847000,
+          "retained_timestamp_ns": 1335706531634883000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.3346194289558736
+        },
+        {
+          "scan_index": 37,
+          "dropped_timestamp_ns": 1335706531634883000,
+          "retained_timestamp_ns": 1335706532434929000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.06700980710444904
+        },
+        {
+          "scan_index": 38,
+          "dropped_timestamp_ns": 1335706532434929000,
+          "retained_timestamp_ns": 1335706533234967000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.15392057454591704
+        },
+        {
+          "scan_index": 39,
+          "dropped_timestamp_ns": 1335706533234967000,
+          "retained_timestamp_ns": 1335706534035010000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.07774086164129353
+        },
+        {
+          "scan_index": 51,
+          "dropped_timestamp_ns": 1335706542835459000,
+          "retained_timestamp_ns": 1335706543635498000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -1.4155343563970746e-15
+        },
+        {
+          "scan_index": 56,
+          "dropped_timestamp_ns": 1335706546835664000,
+          "retained_timestamp_ns": 1335706547635693000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -2.3314683517128287e-15
+        },
+        {
+          "scan_index": 57,
+          "dropped_timestamp_ns": 1335706547635693000,
+          "retained_timestamp_ns": 1335706548435744000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.0544061132289938
+        },
+        {
+          "scan_index": 58,
+          "dropped_timestamp_ns": 1335706548435744000,
+          "retained_timestamp_ns": 1335706549235785000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.21817388242195568
+        },
+        {
+          "scan_index": 71,
+          "dropped_timestamp_ns": 1335706558836266000,
+          "retained_timestamp_ns": 1335706559636315000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 2.3314683517128287e-15
+        },
+        {
+          "scan_index": 80,
+          "dropped_timestamp_ns": 1335706566036631000,
+          "retained_timestamp_ns": 1335706566836706000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -5.551115123125783e-15
+        },
+        {
+          "scan_index": 81,
+          "dropped_timestamp_ns": 1335706566836706000,
+          "retained_timestamp_ns": 1335706567636721000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.8244299403161046
+        },
+        {
+          "scan_index": 82,
+          "dropped_timestamp_ns": 1335706567636721000,
+          "retained_timestamp_ns": 1335706568436756000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.912007036674215
+        },
+        {
+          "scan_index": 83,
+          "dropped_timestamp_ns": 1335706568436756000,
+          "retained_timestamp_ns": 1335706569236800000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.701463122191348
+        },
+        {
+          "scan_index": 84,
+          "dropped_timestamp_ns": 1335706569236800000,
+          "retained_timestamp_ns": 1335706570036831000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.3470244092340038
+        },
+        {
+          "scan_index": 85,
+          "dropped_timestamp_ns": 1335706570036831000,
+          "retained_timestamp_ns": 1335706570837239000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.0771150498482838
+        },
+        {
+          "scan_index": 86,
+          "dropped_timestamp_ns": 1335706570837239000,
+          "retained_timestamp_ns": 1335706571636909000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.4189925048230148
+        },
+        {
+          "scan_index": 87,
+          "dropped_timestamp_ns": 1335706571636909000,
+          "retained_timestamp_ns": 1335706572436969000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.921918461382726
+        },
+        {
+          "scan_index": 88,
+          "dropped_timestamp_ns": 1335706572436969000,
+          "retained_timestamp_ns": 1335706573237032000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.42356013959915684
+        },
+        {
+          "scan_index": 89,
+          "dropped_timestamp_ns": 1335706573237032000,
+          "retained_timestamp_ns": 1335706574037039000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.581736136237432
+        },
+        {
+          "scan_index": 90,
+          "dropped_timestamp_ns": 1335706574037039000,
+          "retained_timestamp_ns": 1335706574837077000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.4399063661656788
+        },
+        {
+          "scan_index": 91,
+          "dropped_timestamp_ns": 1335706574837077000,
+          "retained_timestamp_ns": 1335706575637125000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.2223073762082173
+        },
+        {
+          "scan_index": 92,
+          "dropped_timestamp_ns": 1335706575637125000,
+          "retained_timestamp_ns": 1335706576437161000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.1807307275353636
+        },
+        {
+          "scan_index": 93,
+          "dropped_timestamp_ns": 1335706576437161000,
+          "retained_timestamp_ns": 1335706577237204000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.3714798975094884
+        },
+        {
+          "scan_index": 94,
+          "dropped_timestamp_ns": 1335706577237204000,
+          "retained_timestamp_ns": 1335706578037240000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.1873591028920725
+        },
+        {
+          "scan_index": 95,
+          "dropped_timestamp_ns": 1335706578037240000,
+          "retained_timestamp_ns": 1335706578837282000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.1530123359969873
+        },
+        {
+          "scan_index": 96,
+          "dropped_timestamp_ns": 1335706578837282000,
+          "retained_timestamp_ns": 1335706579637318000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.44782295933038985
+        },
+        {
+          "scan_index": 97,
+          "dropped_timestamp_ns": 1335706579637318000,
+          "retained_timestamp_ns": 1335706580437377000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.6309027294049504
+        },
+        {
+          "scan_index": 98,
+          "dropped_timestamp_ns": 1335706580437377000,
+          "retained_timestamp_ns": 1335706581237429000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.27352221727086773
+        },
+        {
+          "scan_index": 99,
+          "dropped_timestamp_ns": 1335706581237429000,
+          "retained_timestamp_ns": 1335706582037447000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.2637486162736648
+        },
+        {
+          "scan_index": 113,
+          "dropped_timestamp_ns": 1335706592437970000,
+          "retained_timestamp_ns": 1335706593238015000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 2.248201624865942e-15
+        },
+        {
+          "scan_index": 114,
+          "dropped_timestamp_ns": 1335706593238015000,
+          "retained_timestamp_ns": 1335706594038060000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.07872319193745941
+        },
+        {
+          "scan_index": 115,
+          "dropped_timestamp_ns": 1335706594038060000,
+          "retained_timestamp_ns": 1335706594838090000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.27203620791286154
+        },
+        {
+          "scan_index": 116,
+          "dropped_timestamp_ns": 1335706594838090000,
+          "retained_timestamp_ns": 1335706595638140000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.02156837129822836
+        },
+        {
+          "scan_index": 117,
+          "dropped_timestamp_ns": 1335706595638140000,
+          "retained_timestamp_ns": 1335706596438170000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.5228623170162685
+        },
+        {
+          "scan_index": 118,
+          "dropped_timestamp_ns": 1335706596438170000,
+          "retained_timestamp_ns": 1335706597238212000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.27884886230393735
+        },
+        {
+          "scan_index": 119,
+          "dropped_timestamp_ns": 1335706597238212000,
+          "retained_timestamp_ns": 1335706598038254000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.17159335284659533
+        },
+        {
+          "scan_index": 136,
+          "dropped_timestamp_ns": 1335706610838902000,
+          "retained_timestamp_ns": 1335706611639132000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 1.942890293094024e-16
+        },
+        {
+          "scan_index": 137,
+          "dropped_timestamp_ns": 1335706611639132000,
+          "retained_timestamp_ns": 1335706612438982000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.2176725516276644
+        },
+        {
+          "scan_index": 138,
+          "dropped_timestamp_ns": 1335706612438982000,
+          "retained_timestamp_ns": 1335706613239026000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.7077897642117765
+        },
+        {
+          "scan_index": 139,
+          "dropped_timestamp_ns": 1335706613239026000,
+          "retained_timestamp_ns": 1335706614039066000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.3101862623714575
+        },
+        {
+          "scan_index": 140,
+          "dropped_timestamp_ns": 1335706614039066000,
+          "retained_timestamp_ns": 1335706614839107000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.8436149286835537
+        },
+        {
+          "scan_index": 145,
+          "dropped_timestamp_ns": 1335706618039267000,
+          "retained_timestamp_ns": 1335706618839416000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 5.967448757360216e-16
+        },
+        {
+          "scan_index": 146,
+          "dropped_timestamp_ns": 1335706618839416000,
+          "retained_timestamp_ns": 1335706619639343000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.03345035811035482
+        },
+        {
+          "scan_index": 147,
+          "dropped_timestamp_ns": 1335706619639343000,
+          "retained_timestamp_ns": 1335706620439392000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.14150395942141936
+        },
+        {
+          "scan_index": 148,
+          "dropped_timestamp_ns": 1335706620439392000,
+          "retained_timestamp_ns": 1335706621239436000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.044072336489386243
+        },
+        {
+          "scan_index": 149,
+          "dropped_timestamp_ns": 1335706621239436000,
+          "retained_timestamp_ns": 1335706622239483000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.25768229885447247
+        },
+        {
+          "scan_index": 150,
+          "dropped_timestamp_ns": 1335706622239483000,
+          "retained_timestamp_ns": 1335706623039523000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.2789178864900639
+        },
+        {
+          "scan_index": 151,
+          "dropped_timestamp_ns": 1335706623039523000,
+          "retained_timestamp_ns": 1335706623839561000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.0312874952212039
+        },
+        {
+          "scan_index": 152,
+          "dropped_timestamp_ns": 1335706623839561000,
+          "retained_timestamp_ns": 1335706624639615000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.18720676519856427
+        },
+        {
+          "scan_index": 153,
+          "dropped_timestamp_ns": 1335706624639615000,
+          "retained_timestamp_ns": 1335706625439709000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.9241069640263816
+        },
+        {
+          "scan_index": 154,
+          "dropped_timestamp_ns": 1335706625439709000,
+          "retained_timestamp_ns": 1335706626239683000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.40935165123481654
+        },
+        {
+          "scan_index": 155,
+          "dropped_timestamp_ns": 1335706626239683000,
+          "retained_timestamp_ns": 1335706627039729000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.0968734917644631
+        },
+        {
+          "scan_index": 164,
+          "dropped_timestamp_ns": 1335706633440046000,
+          "retained_timestamp_ns": 1335706634240166000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 1.942890293094024e-15
+        },
+        {
+          "scan_index": 165,
+          "dropped_timestamp_ns": 1335706634240166000,
+          "retained_timestamp_ns": 1335706635040129000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.8308603987624914
+        },
+        {
+          "scan_index": 166,
+          "dropped_timestamp_ns": 1335706635040129000,
+          "retained_timestamp_ns": 1335706635840201000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.7467997691094151
+        },
+        {
+          "scan_index": 167,
+          "dropped_timestamp_ns": 1335706635840201000,
+          "retained_timestamp_ns": 1335706636640204000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.4550326941860612
+        },
+        {
+          "scan_index": 168,
+          "dropped_timestamp_ns": 1335706636640204000,
+          "retained_timestamp_ns": 1335706637440252000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.6763143196135846
+        },
+        {
+          "scan_index": 169,
+          "dropped_timestamp_ns": 1335706637440252000,
+          "retained_timestamp_ns": 1335706638240291000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.49325748545985504
+        },
+        {
+          "scan_index": 170,
+          "dropped_timestamp_ns": 1335706638240291000,
+          "retained_timestamp_ns": 1335706639040336000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.5248292774600241
+        },
+        {
+          "scan_index": 171,
+          "dropped_timestamp_ns": 1335706639040336000,
+          "retained_timestamp_ns": 1335706639840373000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.985404072146604
+        },
+        {
+          "scan_index": 172,
+          "dropped_timestamp_ns": 1335706639840373000,
+          "retained_timestamp_ns": 1335706640640413000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.452258106558597
+        },
+        {
+          "scan_index": 177,
+          "dropped_timestamp_ns": 1335706643840639000,
+          "retained_timestamp_ns": 1335706644640615000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -3.552713678800501e-15
+        },
+        {
+          "scan_index": 178,
+          "dropped_timestamp_ns": 1335706644640615000,
+          "retained_timestamp_ns": 1335706645440653000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.2723319729880007
+        },
+        {
+          "scan_index": 179,
+          "dropped_timestamp_ns": 1335706645440653000,
+          "retained_timestamp_ns": 1335706646240748000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.5306779006231492
+        },
+        {
+          "scan_index": 180,
+          "dropped_timestamp_ns": 1335706646240748000,
+          "retained_timestamp_ns": 1335706647040770000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.6950929523449498
+        },
+        {
+          "scan_index": 181,
+          "dropped_timestamp_ns": 1335706647040770000,
+          "retained_timestamp_ns": 1335706647840783000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.231365947994291
+        },
+        {
+          "scan_index": 182,
+          "dropped_timestamp_ns": 1335706647840783000,
+          "retained_timestamp_ns": 1335706648640818000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.9588598871430558
+        },
+        {
+          "scan_index": 183,
+          "dropped_timestamp_ns": 1335706648640818000,
+          "retained_timestamp_ns": 1335706649440860000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.9937442556215283
+        },
+        {
+          "scan_index": 184,
+          "dropped_timestamp_ns": 1335706649440860000,
+          "retained_timestamp_ns": 1335706650240899000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.2720656643730508
+        },
+        {
+          "scan_index": 185,
+          "dropped_timestamp_ns": 1335706650240899000,
+          "retained_timestamp_ns": 1335706651040940000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.1887216520691903
+        },
+        {
+          "scan_index": 186,
+          "dropped_timestamp_ns": 1335706651040940000,
+          "retained_timestamp_ns": 1335706651840979000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.4660847924948874
+        },
+        {
+          "scan_index": 187,
+          "dropped_timestamp_ns": 1335706651840979000,
+          "retained_timestamp_ns": 1335706652641010000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.495805351335747
+        },
+        {
+          "scan_index": 192,
+          "dropped_timestamp_ns": 1335706655841415000,
+          "retained_timestamp_ns": 1335706656641213000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 1.3766765505351941e-14
+        },
+        {
+          "scan_index": 193,
+          "dropped_timestamp_ns": 1335706656641213000,
+          "retained_timestamp_ns": 1335706657441262000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 5.346281840136664
+        },
+        {
+          "scan_index": 194,
+          "dropped_timestamp_ns": 1335706657441262000,
+          "retained_timestamp_ns": 1335706658241600000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.1099815347935262
+        },
+        {
+          "scan_index": 195,
+          "dropped_timestamp_ns": 1335706658241600000,
+          "retained_timestamp_ns": 1335706659041344000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.3493614710302952
+        },
+        {
+          "scan_index": 196,
+          "dropped_timestamp_ns": 1335706659041344000,
+          "retained_timestamp_ns": 1335706659841384000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.5013148598371697
+        },
+        {
+          "scan_index": 197,
+          "dropped_timestamp_ns": 1335706659841384000,
+          "retained_timestamp_ns": 1335706660641450000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.1110336965735853
+        },
+        {
+          "scan_index": 198,
+          "dropped_timestamp_ns": 1335706660641450000,
+          "retained_timestamp_ns": 1335706661441465000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.9058098008741728
+        },
+        {
+          "scan_index": 199,
+          "dropped_timestamp_ns": 1335706661441465000,
+          "retained_timestamp_ns": 1335706662241508000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.0506625548665836
+        },
+        {
+          "scan_index": 200,
+          "dropped_timestamp_ns": 1335706662241508000,
+          "retained_timestamp_ns": 1335706663041549000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.500625811259773
+        },
+        {
+          "scan_index": 201,
+          "dropped_timestamp_ns": 1335706663041549000,
+          "retained_timestamp_ns": 1335706663841622000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.589085412618487
+        },
+        {
+          "scan_index": 202,
+          "dropped_timestamp_ns": 1335706663841622000,
+          "retained_timestamp_ns": 1335706664641630000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.2390329949665092
+        },
+        {
+          "scan_index": 203,
+          "dropped_timestamp_ns": 1335706664641630000,
+          "retained_timestamp_ns": 1335706665441685000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.25643233017743294
+        },
+        {
+          "scan_index": 204,
+          "dropped_timestamp_ns": 1335706665441685000,
+          "retained_timestamp_ns": 1335706666241707000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.8769297267874259
+        },
+        {
+          "scan_index": 205,
+          "dropped_timestamp_ns": 1335706666241707000,
+          "retained_timestamp_ns": 1335706667041754000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 3.577906778886482
+        },
+        {
+          "scan_index": 210,
+          "dropped_timestamp_ns": 1335706670241913000,
+          "retained_timestamp_ns": 1335706671041953000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 7.771561172376096e-16
+        },
+        {
+          "scan_index": 211,
+          "dropped_timestamp_ns": 1335706671041953000,
+          "retained_timestamp_ns": 1335706671842026000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.99916813128085
+        },
+        {
+          "scan_index": 212,
+          "dropped_timestamp_ns": 1335706671842026000,
+          "retained_timestamp_ns": 1335706672642038000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.5419220370686348
+        },
+        {
+          "scan_index": 213,
+          "dropped_timestamp_ns": 1335706672642038000,
+          "retained_timestamp_ns": 1335706673447895000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.39783897104477184
+        },
+        {
+          "scan_index": 214,
+          "dropped_timestamp_ns": 1335706673447895000,
+          "retained_timestamp_ns": 1335706674242115000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 2.3520837584923955
+        },
+        {
+          "scan_index": 215,
+          "dropped_timestamp_ns": 1335706674242115000,
+          "retained_timestamp_ns": 1335706675042206000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.045318960174005
+        },
+        {
+          "scan_index": 216,
+          "dropped_timestamp_ns": 1335706675042206000,
+          "retained_timestamp_ns": 1335706675842194000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.0884256053248225
+        },
+        {
+          "scan_index": 217,
+          "dropped_timestamp_ns": 1335706675842194000,
+          "retained_timestamp_ns": 1335706676642227000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.133476601480012
+        },
+        {
+          "scan_index": 218,
+          "dropped_timestamp_ns": 1335706676642227000,
+          "retained_timestamp_ns": 1335706677442277000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.39379555447217385
+        },
+        {
+          "scan_index": 219,
+          "dropped_timestamp_ns": 1335706677442277000,
+          "retained_timestamp_ns": 1335706678242316000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 1.2133676514296652
+        },
+        {
+          "scan_index": 230,
+          "dropped_timestamp_ns": 1335706686242724000,
+          "retained_timestamp_ns": 1335706687042754000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -6.827871601444713e-15
+        }
+      ],
+      "max_abs_bias_correction": [
+        0.013484922428483447,
+        0.02647835636631277,
+        0.017930373344023337,
+        0.5166522063242265,
+        0.5254029525033717,
+        0.41195700522436457
+      ],
+      "input_artifacts": {
+        "baseline_receipt": {
+          "name": "receipt.json",
+          "bytes": 21878,
+          "sha256": "aef2737717d1c42889a38cdec12434980a4346523c09c2b003e9ce6103737743"
+        },
+        "lidar_poses": {
+          "name": "lidar.npz",
+          "bytes": 51625,
+          "sha256": "c01aa996d7e6dcf0fd5b5e267e77c775bdf6b4c24ad7cdf3a992b832e5f11d4a"
+        },
+        "imu": {
+          "2012-04-29.mcap": {
+            "name": "2012-04-29.mcap",
+            "bytes": 3430860,
+            "sha256": "edb228d025a57fed7efa58e752e100bee10caed76f7b638b8f70b3f40490103e"
+          },
+          "metadata.yaml": {
+            "name": "metadata.yaml",
+            "bytes": 827,
+            "sha256": "9458acda582068cbcb3c94e54ece6184f5850023f3797eb8a463d7e11ebf6eda"
+          }
+        },
+        "euler": {
+          "name": "ms25_euler.csv",
+          "bytes": 9184412,
+          "sha256": "df1f0db150395208d13f158228459c873c5a11673a79746e797e633972ad539b"
+        },
+        "controller": {
+          "name": "replay_nclt_imu_window.py",
+          "bytes": 9484,
+          "sha256": "543f37e2a470f9fcfcf85ceca1c027fee2db588b7fce1b13a1a9e5a1af2cbbe7"
+        },
+        "frame_module": {
+          "name": "nclt_body_frames.py",
+          "bytes": 2255,
+          "sha256": "575f04405119010e42aabbee75f1684cd7d859d17e2d4e816a558454236f6cea"
+        },
+        "pilot_module": {
+          "name": "pilot_nclt_imu_window.py",
+          "bytes": 13836,
+          "sha256": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43"
+        },
+        "native_extension": {
+          "name": "_core.pyd",
+          "bytes": 7335424,
+          "sha256": "feedffd2c4af12b13b82481ce618286c4e629d020700186523fc079db1229669"
+        }
+      },
+      "original_estimation_receipt_sha256": "1c5f3345207eb37b994931dccd0ff5953d1e4a6632039c81df0e9e46079999c1",
+      "original_evaluation_receipt_sha256": "a7f0b585e24a30161e119810c0717a447e0c6fe9f519997dc82b4f979eeea354"
+    },
+    {
+      "session": "2012-06-15",
+      "poses": "june-poses.csv",
+      "reference_rows": "benchmarks/vector-map/nclt-reference-accuracy/june/reference-raw-rows.csv",
+      "metrics": {
+        "lidar": {
+          "all": {
+            "ate_m": {
+              "count": 238,
+              "rmse": 0.15414176371107377,
+              "mean": 0.13712707839740873,
+              "max": 0.3391166530732754
+            },
+            "rpe_translation_m": {
+              "count": 237,
+              "rmse": 0.14109964829389413,
+              "mean": 0.12365100845718979,
+              "max": 0.3826783260857607
+            },
+            "rpe_rotation_deg": {
+              "count": 237,
+              "rmse": 1.7308909017395153,
+              "mean": 1.5636152306389768,
+              "max": 3.499981391053243
+            },
+            "endpoint_translation_m": {
+              "count": 1,
+              "rmse": 0.3666427218164599,
+              "mean": 0.3666427218164599,
+              "max": 0.3666427218164599
+            }
+          },
+          "valid_imu_edges": {
+            "rpe_translation_m": {
+              "count": 102,
+              "rmse": 0.13565925863579964,
+              "mean": 0.12076942212309953,
+              "max": 0.33544454899365916
+            },
+            "rpe_rotation_deg": {
+              "count": 102,
+              "rmse": 1.6682493129085985,
+              "mean": 1.5020941837607948,
+              "max": 3.499981391053243
+            }
+          },
+          "gap_edges": {
+            "rpe_translation_m": {
+              "count": 135,
+              "rmse": 0.14507492146560275,
+              "mean": 0.12582820702072464,
+              "max": 0.3826783260857607
+            },
+            "rpe_rotation_deg": {
+              "count": 135,
+              "rmse": 1.7767560052808202,
+              "mean": 1.610097799391381,
+              "max": 3.403286602958044
+            }
+          }
+        },
+        "replay": {
+          "all": {
+            "ate_m": {
+              "count": 238,
+              "rmse": 0.1535791370809925,
+              "mean": 0.1365836730886854,
+              "max": 0.3446141216186067
+            },
+            "rpe_translation_m": {
+              "count": 237,
+              "rmse": 0.13842138977686372,
+              "mean": 0.12132464117161887,
+              "max": 0.3617801899326823
+            },
+            "rpe_rotation_deg": {
+              "count": 237,
+              "rmse": 1.4863853635772835,
+              "mean": 1.3245213279613492,
+              "max": 3.5478571141072663
+            },
+            "endpoint_translation_m": {
+              "count": 1,
+              "rmse": 0.3666427218164599,
+              "mean": 0.3666427218164599,
+              "max": 0.3666427218164599
+            }
+          },
+          "valid_imu_edges": {
+            "rpe_translation_m": {
+              "count": 102,
+              "rmse": 0.1300299249915976,
+              "mean": 0.11553899235331191,
+              "max": 0.32195486046507865
+            },
+            "rpe_rotation_deg": {
+              "count": 102,
+              "rmse": 1.1870963085070383,
+              "mean": 1.0669547600247142,
+              "max": 2.610944985784779
+            }
+          },
+          "gap_edges": {
+            "rpe_translation_m": {
+              "count": 135,
+              "rmse": 0.1444386408210166,
+              "mean": 0.12569602027878418,
+              "max": 0.3617801899326823
+            },
+            "rpe_rotation_deg": {
+              "count": 135,
+              "rmse": 1.6774667045721705,
+              "mean": 1.5191271792912513,
+              "max": 3.5478571141072663
+            }
+          }
+        }
+      },
+      "coverage": {
+        "scans": 238,
+        "all_edges": 237,
+        "fused_updates": 102,
+        "gap_fallbacks": 135,
+        "startup_fallbacks": 1,
+        "marginalizations": 11,
+        "max_active_states": 4,
+        "nonconverged_updates": 0,
+        "output_policy": "All scans, latest output once per scan; fallback velocities/biases are placeholders, not IMU estimates"
+      },
+      "marginalizations": [
+        {
+          "scan_index": 38,
+          "dropped_timestamp_ns": 1339761426616813000,
+          "retained_timestamp_ns": 1339761427416794000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -2.0539125955565396e-15
+        },
+        {
+          "scan_index": 39,
+          "dropped_timestamp_ns": 1339761427416794000,
+          "retained_timestamp_ns": 1339761428216781000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.2567707231290461
+        },
+        {
+          "scan_index": 40,
+          "dropped_timestamp_ns": 1339761428216781000,
+          "retained_timestamp_ns": 1339761429016755000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.48228538432953266
+        },
+        {
+          "scan_index": 46,
+          "dropped_timestamp_ns": 1339761433016695000,
+          "retained_timestamp_ns": 1339761433816677000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 1.5543122344752192e-15
+        },
+        {
+          "scan_index": 77,
+          "dropped_timestamp_ns": 1339761457816225000,
+          "retained_timestamp_ns": 1339761458616212000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 1.1657341758564144e-15
+        },
+        {
+          "scan_index": 84,
+          "dropped_timestamp_ns": 1339761463416118000,
+          "retained_timestamp_ns": 1339761464216104000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 1.1934897514720433e-15
+        },
+        {
+          "scan_index": 104,
+          "dropped_timestamp_ns": 1339761479415821000,
+          "retained_timestamp_ns": 1339761480215806000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 8.215650382226158e-15
+        },
+        {
+          "scan_index": 105,
+          "dropped_timestamp_ns": 1339761480215806000,
+          "retained_timestamp_ns": 1339761481015789000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.06912783286032254
+        },
+        {
+          "scan_index": 162,
+          "dropped_timestamp_ns": 1339761525814951000,
+          "retained_timestamp_ns": 1339761526614935000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": 2.220446049250313e-16
+        },
+        {
+          "scan_index": 207,
+          "dropped_timestamp_ns": 1339761561814274000,
+          "retained_timestamp_ns": 1339761562614263000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": false,
+          "dropped_linearized_constant": -1.0547118733938987e-15
+        },
+        {
+          "scan_index": 208,
+          "dropped_timestamp_ns": 1339761562614263000,
+          "retained_timestamp_ns": 1339761563414246000,
+          "removed_priors": 1,
+          "replaced_marginal_prior": true,
+          "dropped_linearized_constant": 0.06154993407544984
+        }
+      ],
+      "max_abs_bias_correction": [
+        0.010261467730777801,
+        0.018922696766944518,
+        0.014544757042306242,
+        0.4984532264553715,
+        0.40005296299136456,
+        0.15202202988848604
+      ],
+      "input_artifacts": {
+        "baseline_receipt": {
+          "name": "receipt.json",
+          "bytes": 15848,
+          "sha256": "82e9304ae28dc4ae50ec31bef687bfc7321c3e1aad302a9d2e033801250da42b"
+        },
+        "lidar_poses": {
+          "name": "lidar.npz",
+          "bytes": 52039,
+          "sha256": "4e32298d1515610e0e62059baff65f9dcfa0fcafc4bf811876f882a3b89749c6"
+        },
+        "imu": {
+          "2012-06-15.mcap": {
+            "name": "2012-06-15.mcap",
+            "bytes": 3353544,
+            "sha256": "40062dbf96e5291b5aa0401b9020c9bbf4f091f7b4eb4f659038ec53c9fbf218"
+          },
+          "metadata.yaml": {
+            "name": "metadata.yaml",
+            "bytes": 827,
+            "sha256": "3d7d420492f0b104e673d59ed0f0bf00bbeccbdef687bbb0f83b0b6906f10be7"
+          }
+        },
+        "euler": {
+          "name": "ms25_euler.csv",
+          "bytes": 11557453,
+          "sha256": "eea3ad5f37053dc4dafcac1e9e1037de8254e1099ce81b7111b3aad9afb34ac6"
+        },
+        "controller": {
+          "name": "replay_nclt_imu_window.py",
+          "bytes": 9484,
+          "sha256": "543f37e2a470f9fcfcf85ceca1c027fee2db588b7fce1b13a1a9e5a1af2cbbe7"
+        },
+        "frame_module": {
+          "name": "nclt_body_frames.py",
+          "bytes": 2255,
+          "sha256": "575f04405119010e42aabbee75f1684cd7d859d17e2d4e816a558454236f6cea"
+        },
+        "pilot_module": {
+          "name": "pilot_nclt_imu_window.py",
+          "bytes": 13836,
+          "sha256": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43"
+        },
+        "native_extension": {
+          "name": "_core.pyd",
+          "bytes": 7335424,
+          "sha256": "feedffd2c4af12b13b82481ce618286c4e629d020700186523fc079db1229669"
+        }
+      },
+      "original_estimation_receipt_sha256": "5afd2e3de8addabe6b26f012a7123db864f079e3e95c9f062c9e60ffeee37e93",
+      "original_evaluation_receipt_sha256": "6e28a6278aea3896d761f41bd9a544dcea190d4c52fd1d9e537b586f834868f4"
+    }
+  ],
+  "captured_source_sha256": {
+    "scripts/replay_nclt_imu_window.py": "543f37e2a470f9fcfcf85ceca1c027fee2db588b7fce1b13a1a9e5a1af2cbbe7",
+    "scripts/evaluate_nclt_imu_replay.py": "eb86f5f2dd95fe72c858ad8025182c5595ae8e0bfc7ef8e250c79afe0163c6c4",
+    "scripts/pilot_nclt_imu_window.py": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43",
+    "scripts/evaluate_nclt_imu_pilot.py": "1f6e9c7dcb73d0f4de69b7cd3540d74c3f081c98b7c0fc79ee1fe45c0b1ffd72",
+    "scripts/nclt_body_frames.py": "575f04405119010e42aabbee75f1684cd7d859d17e2d4e816a558454236f6cea"
+  },
+  "native_build_inputs": {
+    "frozen_at_utc": "2026-10-16T04:59:23.186498+00:00",
+    "parent_commit": "88aa78952d5c70faf3ce56ffbcaae7c529e1100c",
+    "command": "cargo build --release --offline",
+    "sources_sha256": {
+      "rust/crates/ca-core/src/imu.rs": "38b4199d5a9482d20704562ad56177f67b554211f23b95943ea2f1e9e0e72579",
+      "rust/crates/ca-core/src/imu_factor.rs": "46ef245bcedc5358fc7d0c95b438515eccd49518c564da25b4b03d0131ca22c3",
+      "rust/crates/ca-core/src/imu_window.rs": "87dc928057bc59185793ba9da2c62ad0bfd00c04a050b69c7e97d9230e0741e9",
+      "rust/crates/ca-py/src/imu_window.rs": "6aff40c51f7143d39c9e76a2ab8b900413610178a3cd145ce272baa6c61d27eb",
+      "rust/crates/ca-py/src/imu.rs": "1fe0852a2b98952914abc8a7384893157c3307525fe41f62828f75476f8e90a5",
+      "rust/crates/ca-py/src/bag.rs": "69f4c3b978f36f1eaf7ca1024a2fb07024486a609a586780b1adebe4393f4cab",
+      "rust/crates/ca-py/Cargo.lock": "47b5a2a1afe85975ac43106b78eec0c463499e19023215feba1ed23511e82500",
+      "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "6f37524ad26e18e36c09dadc7672cfe2b1b5e6b539df784c299b7a89bbdf0f7c"
+    },
+    "rust_unit_tests_passed": 426,
+    "core_and_python_clippy": "passed",
+    "wasm_check": "passed"
+  },
+  "native_binary_sha256": "feedffd2c4af12b13b82481ce618286c4e629d020700186523fc079db1229669",
+  "source_freeze_sha256": "f3f52f613ae45157cc0dd1ef755af66482f8cda48ccd5f98a2afe83971d8a028",
+  "adopted_as_default": false,
+  "data_source": "https://robots.engin.umich.edu/nclt/",
+  "data_license": "NCLT ODbL 1.0 / DBCL 1.0"
+}

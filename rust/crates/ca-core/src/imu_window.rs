@@ -2,8 +2,9 @@
 //!
 //! Each node has 15 increments: right-local rotation, world velocity, world
 //! position, gyro bias, accelerometer bias. A scaled block Cholesky LM solve
-//! uses O(N) memory and work for fixed block size. No marginalization, automatic
-//! initialization, extrinsics or bias reintegration policy is implied.
+//! uses O(N) memory and work for fixed block size. Oldest-state marginalization
+//! preserves a frozen linear Gaussian prior; initialization, gap handling,
+//! extrinsics and bias reintegration remain caller policies.
 
 use crate::imu::{ImuError, multiply, transpose};
 use crate::imu_factor::{ImuFactor, ImuState, right_jacobian_inverse, validate_state};
@@ -139,6 +140,73 @@ pub struct OptimizeReport {
     pub max_abs_bias_correction: [f64; 6],
 }
 
+/// A frozen linearized Gaussian at the first retained state. Its residual is
+/// square_root * Local(reference, current) + residual_offset. This preserves
+/// all 15D correlations, without relinearizing discarded nonlinear factors.
+#[derive(Debug, Clone)]
+pub struct MarginalPrior {
+    pub reference: NavigationState,
+    pub square_root: Matrix,
+    pub residual_offset: Vector,
+}
+
+impl MarginalPrior {
+    fn residual(&self, state: &NavigationState) -> Result<Vector, ImuError> {
+        let rotation = log_so3(&multiply(
+            &transpose(&self.reference.motion.rotation),
+            &state.motion.rotation,
+        ));
+        let local: Vector = std::array::from_fn(|i| match i {
+            0..3 => rotation[i],
+            3..6 => state.motion.velocity[i - 3] - self.reference.motion.velocity[i - 3],
+            6..9 => state.motion.position[i - 6] - self.reference.motion.position[i - 6],
+            _ => state.bias[i - 9] - self.reference.bias[i - 9],
+        });
+        let residual = std::array::from_fn(|r| {
+            self.residual_offset[r]
+                + (0..DIM)
+                    .map(|c| self.square_root[r][c] * local[c])
+                    .sum::<f64>()
+        });
+        finite(residual.into_iter())?;
+        Ok(residual)
+    }
+
+    fn jacobian(&self, state: &NavigationState) -> Result<Matrix, ImuError> {
+        let rotation = log_so3(&multiply(
+            &transpose(&self.reference.motion.rotation),
+            &state.motion.rotation,
+        ));
+        if std::f64::consts::PI - rotation.iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-6 {
+            return Err(ImuError(
+                "IMU marginal prior rotation is at the SO(3) logarithm branch cut".into(),
+            ));
+        }
+        let jr = right_jacobian_inverse(rotation);
+        Ok(std::array::from_fn(|r| {
+            std::array::from_fn(|c| {
+                if c < 3 {
+                    (0..3).map(|k| self.square_root[r][k] * jr[k][c]).sum()
+                } else {
+                    self.square_root[r][c]
+                }
+            })
+        }))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MarginalizeReport {
+    pub dropped_timestamp_ns: i64,
+    pub retained_timestamp_ns: i64,
+    pub removed_priors: usize,
+    pub replaced_marginal_prior: bool,
+    /// Add this to the new prior cost to recover the reduced linearized cost.
+    /// The optimizer drops this state-independent constant (possibly tiny
+    /// negative roundoff); costs across different windows are not comparable.
+    pub dropped_linearized_constant: f64,
+}
+
 #[derive(Debug, Clone)]
 pub struct ImuWindow {
     timestamps_ns: Vec<i64>,
@@ -147,6 +215,7 @@ pub struct ImuWindow {
     edges: Vec<Option<Edge>>,
     priors: Vec<Prior>,
     has_state_prior: bool,
+    marginal_prior: Option<MarginalPrior>,
 }
 
 fn finite(values: impl Iterator<Item = f64>) -> Result<(), ImuError> {
@@ -200,6 +269,7 @@ impl ImuWindow {
             edges,
             priors: Vec::new(),
             has_state_prior: false,
+            marginal_prior: None,
         })
     }
 
@@ -218,14 +288,32 @@ impl ImuWindow {
         gyro_bias_random_walk: f64,
         accel_bias_random_walk: f64,
     ) -> Result<(), ImuError> {
-        let m = factor.measurement();
         if index >= self.edges.len() {
             return Err(ImuError("IMU edge index is outside the window".into()));
         }
         if self.edges[index].is_some() {
             return Err(ImuError("IMU window already has this adjacent edge".into()));
         }
-        if m.start_ns != self.timestamps_ns[index] || m.end_ns != self.timestamps_ns[index + 1] {
+        self.edges[index] = Some(self.make_edge(
+            factor,
+            self.timestamps_ns[index],
+            self.timestamps_ns[index + 1],
+            gyro_bias_random_walk,
+            accel_bias_random_walk,
+        )?);
+        Ok(())
+    }
+
+    fn make_edge(
+        &self,
+        factor: ImuFactor,
+        start_ns: i64,
+        end_ns: i64,
+        gyro_bias_random_walk: f64,
+        accel_bias_random_walk: f64,
+    ) -> Result<Edge, ImuError> {
+        let m = factor.measurement();
+        if m.start_ns != start_ns || m.end_ns != end_ns {
             return Err(ImuError(
                 "IMU factor exact timestamps must match adjacent window states".into(),
             ));
@@ -247,11 +335,105 @@ impl ImuWindow {
         inverse_sigma(accel_bias_random_walk)?;
         let gyro = inverse_sigma(gyro_bias_random_walk * dt_sqrt)?;
         let accel = inverse_sigma(accel_bias_random_walk * dt_sqrt)?;
-        self.edges[index] = Some(Edge {
+        Ok(Edge {
             factor,
             inverse_bias_sigma: [gyro, gyro, gyro, accel, accel, accel],
-        });
+        })
+    }
+
+    /// Atomically append one state and its adjacent IMU edge to a complete
+    /// window. Marginalize first when the bounded window is full.
+    pub fn append_state(
+        &mut self,
+        timestamp_ns: i64,
+        state: NavigationState,
+        factor: ImuFactor,
+        gyro_bias_random_walk: f64,
+        accel_bias_random_walk: f64,
+    ) -> Result<(), ImuError> {
+        self.check_complete()?;
+        if self.states.len() == MAX_STATES {
+            return Err(ImuError(
+                "IMU window is full; marginalize before appending".into(),
+            ));
+        }
+        state.validate()?;
+        let start = *self.timestamps_ns.last().expect("nonempty window");
+        if timestamp_ns.checked_sub(start).is_none_or(|dt| dt <= 0) {
+            return Err(ImuError(
+                "IMU window timestamps must increase without integer overflow".into(),
+            ));
+        }
+        let edge = self.make_edge(
+            factor,
+            start,
+            timestamp_ns,
+            gyro_bias_random_walk,
+            accel_bias_random_walk,
+        )?;
+        self.timestamps_ns.push(timestamp_ns);
+        self.states.push(state);
+        self.edges.push(Some(edge));
         Ok(())
+    }
+
+    pub fn marginal_prior(&self) -> Option<&MarginalPrior> {
+        self.marginal_prior.as_ref()
+    }
+
+    /// Eliminate only factors touching the oldest state. Retained pose/state
+    /// priors and later IMU edges stay exactly once, without being folded into
+    /// the new prior. The Schur complement is undamped and computed with scaled
+    /// Cholesky solves; nonpositive pivots fail without jitter or mutation.
+    pub fn marginalize_oldest(&mut self) -> Result<MarginalizeReport, ImuError> {
+        self.check_complete()?;
+        if self.states.len() < 3 {
+            return Err(ImuError(
+                "marginalization must retain at least two states".into(),
+            ));
+        }
+        if self.marginal_prior.is_none()
+            && !self
+                .priors
+                .iter()
+                .any(|p| p.index == 0 && p.inverse_sigma.iter().all(|w| *w > 0.0))
+        {
+            return Err(ImuError("marginalization requires a full state prior at the oldest state or an existing marginal prior".into()));
+        }
+        let local = Self {
+            timestamps_ns: self.timestamps_ns[..2].to_vec(),
+            states: self.states[..2].to_vec(),
+            gravity: self.gravity,
+            edges: vec![self.edges[0].clone()],
+            priors: self
+                .priors
+                .iter()
+                .filter(|p| p.index == 0)
+                .cloned()
+                .collect(),
+            has_state_prior: true,
+            marginal_prior: self.marginal_prior.clone(),
+        };
+        let normal = local.linearize(&local.states)?;
+        let (prior, constant) =
+            normal.eliminate_first(local.states[1], local.cost(&local.states)?)?;
+        let report = MarginalizeReport {
+            dropped_timestamp_ns: self.timestamps_ns[0],
+            retained_timestamp_ns: self.timestamps_ns[1],
+            removed_priors: local.priors.len(),
+            replaced_marginal_prior: self.marginal_prior.is_some(),
+            dropped_linearized_constant: constant,
+        };
+        // Every fallible operation is complete before committing changes.
+        self.timestamps_ns.remove(0);
+        self.states.remove(0);
+        self.edges.remove(0);
+        self.priors.retain(|p| p.index > 0);
+        for prior in &mut self.priors {
+            prior.index -= 1;
+        }
+        self.marginal_prior = Some(prior);
+        Ok(report)
     }
 
     pub fn add_state_prior(
@@ -344,6 +526,9 @@ impl ImuWindow {
         for prior in &self.priors {
             cost += half_squared(&prior.residual(&states[prior.index])?);
         }
+        if let Some(prior) = &self.marginal_prior {
+            cost += half_squared(&prior.residual(&states[0])?);
+        }
         finite(std::iter::once(cost))?;
         Ok(cost)
     }
@@ -397,6 +582,13 @@ impl ImuWindow {
                 prior.index,
                 &prior.jacobian(state)?,
                 &prior.residual(state)?,
+            );
+        }
+        if let Some(prior) = &self.marginal_prior {
+            normal.add_node(
+                0,
+                &prior.jacobian(&states[0])?,
+                &prior.residual(&states[0])?,
             );
         }
         finite(
@@ -556,6 +748,70 @@ impl Normal {
                 *value += (0..M).map(|k| jj[k][a] * ji[k][b]).sum::<f64>();
             }
         }
+    }
+
+    fn eliminate_first(
+        &self,
+        reference: NavigationState,
+        cost: f64,
+    ) -> Result<(MarginalPrior, f64), ImuError> {
+        let failure = || {
+            ImuError("IMU marginalization requires finite positive-definite scaled blocks".into())
+        };
+        let scales: [Vector; 2] =
+            std::array::from_fn(|i| std::array::from_fn(|k| self.diagonal[i][k][k].sqrt().recip()));
+        if scales.iter().flatten().any(|s| !s.is_finite() || *s <= 0.0) {
+            return Err(failure());
+        }
+        let first = std::array::from_fn(|r| {
+            std::array::from_fn(|c| self.diagonal[0][r][c] * scales[0][r] * scales[0][c])
+        });
+        let lower = cholesky(&first).ok_or_else(failure)?;
+        let cross: Matrix = std::array::from_fn(|r| {
+            forward(
+                &lower,
+                std::array::from_fn(|c| self.below[0][r][c] * scales[1][r] * scales[0][c]),
+            )
+        });
+        let first_rhs = forward(
+            &lower,
+            std::array::from_fn(|r| self.gradient[0][r] * scales[0][r]),
+        );
+        let mut schur = [[0.0; DIM]; DIM];
+        // Fill one triangle and mirror it, avoiding asymmetric rounding.
+        for r in 0..DIM {
+            for c in 0..=r {
+                let value = self.diagonal[1][r][c] * scales[1][r] * scales[1][c]
+                    - (0..DIM).map(|k| cross[r][k] * cross[c][k]).sum::<f64>();
+                schur[r][c] = value;
+                schur[c][r] = value;
+            }
+        }
+        let lower_schur = cholesky(&schur).ok_or_else(failure)?;
+        let gradient = std::array::from_fn(|r| {
+            self.gradient[1][r] * scales[1][r]
+                - (0..DIM).map(|k| cross[r][k] * first_rhs[k]).sum::<f64>()
+        });
+        let residual_offset = forward(&lower_schur, gradient);
+        let square_root: Matrix =
+            std::array::from_fn(|r| std::array::from_fn(|c| lower_schur[c][r] / scales[1][c]));
+        let constant = cost - half_squared(&first_rhs) - half_squared(&residual_offset);
+        finite(
+            square_root
+                .iter()
+                .flatten()
+                .copied()
+                .chain(residual_offset)
+                .chain([constant]),
+        )?;
+        Ok((
+            MarginalPrior {
+                reference,
+                square_root,
+                residual_offset,
+            },
+            constant,
+        ))
     }
 
     fn solve(&self, damping: f64) -> Option<Vec<Vector>> {
@@ -811,6 +1067,227 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn marginalization_matches_dense_schur_without_double_counting_retained_priors() {
+        let s = state();
+        let states = (0..3)
+            .map(|i| {
+                s.retract(&std::array::from_fn(|k| {
+                    ((i * DIM + k + 1) as f64).sin() * 0.02
+                }))
+                .unwrap()
+            })
+            .collect();
+        let mut window =
+            ImuWindow::new(vec![0, 200_000_000, 400_000_000], states, [0.0, 0.0, -9.81]).unwrap();
+        window
+            .add_imu_factor(0, factor(0, 200_000_000), 0.01, 0.1)
+            .unwrap();
+        window
+            .add_imu_factor(1, factor(200_000_000, 400_000_000), 0.01, 0.1)
+            .unwrap();
+        window.add_state_prior(0, s, [0.1; DIM]).unwrap();
+        for i in 0..3 {
+            window.add_pose_prior(i, s.motion, 0.03, 0.2).unwrap();
+        }
+        let before = window.linearize(window.states()).unwrap();
+        let before_cost = window.cost(window.states()).unwrap();
+        let a: Vec<Vec<f64>> = before.diagonal[0].iter().map(|r| r.to_vec()).collect();
+        let ag = dense_solve(a.clone(), before.gradient[0].to_vec());
+        let columns: Vec<_> = (0..DIM)
+            .map(|c| dense_solve(a.clone(), (0..DIM).map(|r| before.below[0][c][r]).collect()))
+            .collect();
+        let retained_states = window.states()[1..].to_vec();
+        let report = window.marginalize_oldest().unwrap();
+        let after = window.linearize(window.states()).unwrap();
+        assert_eq!(report.dropped_timestamp_ns, 0);
+        assert_eq!(report.retained_timestamp_ns, 200_000_000);
+        assert_eq!(report.removed_priors, 2);
+        assert!(!report.replaced_marginal_prior);
+        for r in 0..DIM {
+            let expected_g = before.gradient[1][r]
+                - (0..DIM).map(|k| before.below[0][r][k] * ag[k]).sum::<f64>();
+            assert!((after.gradient[0][r] - expected_g).abs() < 1e-8 * (1.0 + expected_g.abs()));
+            for (c, column) in columns.iter().enumerate() {
+                let expected = before.diagonal[1][r][c]
+                    - (0..DIM)
+                        .map(|k| before.below[0][r][k] * column[k])
+                        .sum::<f64>();
+                assert!((after.diagonal[0][r][c] - expected).abs() < 1e-8 * (1.0 + expected.abs()));
+            }
+        }
+        assert_eq!(after.diagonal[1], before.diagonal[2]);
+        assert_eq!(after.below[0], before.below[1]);
+        assert_eq!(after.gradient[1], before.gradient[2]);
+        let reduced_cost =
+            before_cost - 0.5 * (0..DIM).map(|k| before.gradient[0][k] * ag[k]).sum::<f64>();
+        let actual_cost =
+            window.cost(window.states()).unwrap() + report.dropped_linearized_constant;
+        assert!((actual_cost - reduced_cost).abs() < 1e-8 * (1.0 + reduced_cost.abs()));
+        assert_eq!(
+            format!("{:?}", window.states()),
+            format!("{retained_states:?}")
+        );
+        let root = &window.marginal_prior().unwrap().square_root;
+        assert!((0..DIM).any(|r| (r + 1..DIM).any(|c| root[r][c].abs() > 1e-6)));
+    }
+
+    #[test]
+    fn dense_marginal_prior_jacobian_matches_right_retraction_and_rejects_branch_cut() {
+        let reference = state();
+        let prior = MarginalPrior {
+            reference,
+            square_root: std::array::from_fn(|r| {
+                std::array::from_fn(|c| {
+                    if r == c {
+                        1.0 + r as f64 * 0.1
+                    } else {
+                        ((r + c + 1) as f64).sin() * 0.03
+                    }
+                })
+            }),
+            residual_offset: std::array::from_fn(|r| (r as f64).cos() * 0.1),
+        };
+        let current = reference
+            .retract(&std::array::from_fn(|k| ((k + 1) as f64).sin() * 0.2))
+            .unwrap();
+        let j = prior.jacobian(&current).unwrap();
+        for c in 0..DIM {
+            let mut d = [0.0; DIM];
+            d[c] = 1e-6;
+            let plus = prior.residual(&current.retract(&d).unwrap()).unwrap();
+            d[c] = -1e-6;
+            let minus = prior.residual(&current.retract(&d).unwrap()).unwrap();
+            for r in 0..DIM {
+                assert!(((plus[r] - minus[r]) / 2e-6 - j[r][c]).abs() < 2e-8);
+            }
+        }
+        let at_cut = reference
+            .retract(&std::array::from_fn(|k| {
+                if k == 0 { std::f64::consts::PI } else { 0.0 }
+            }))
+            .unwrap();
+        assert!(prior.jacobian(&at_cut).is_err());
+    }
+
+    #[test]
+    fn append_and_marginalization_errors_are_atomic_and_window_stays_bounded() {
+        let s = state();
+        let mut window = ImuWindow::new(vec![0, 200_000_000], vec![s; 2], [0.0; 3]).unwrap();
+        window
+            .add_imu_factor(0, factor(0, 200_000_000), 0.01, 0.1)
+            .unwrap();
+        window.add_state_prior(0, s, [0.1; DIM]).unwrap();
+        let snapshot = format!("{window:?}");
+        assert!(window.marginalize_oldest().is_err());
+        assert!(
+            window
+                .append_state(400_000_000, s, factor(0, 200_000_000), 0.01, 0.1)
+                .is_err()
+        );
+        assert_eq!(snapshot, format!("{window:?}"));
+        for i in 2..MAX_STATES {
+            let mut m = factor(0, 200_000_000).measurement().clone();
+            m.start_ns = (i as i64 - 1) * 200_000_000;
+            m.end_ns = i as i64 * 200_000_000;
+            window
+                .append_state(m.end_ns, s, ImuFactor::new(m).unwrap(), 0.01, 0.1)
+                .unwrap();
+        }
+        let mut next = factor(0, 200_000_000).measurement().clone();
+        next.start_ns = (MAX_STATES as i64 - 1) * 200_000_000;
+        next.end_ns = MAX_STATES as i64 * 200_000_000;
+        let snapshot = format!("{window:?}");
+        assert!(
+            window
+                .append_state(
+                    next.end_ns,
+                    s,
+                    ImuFactor::new(next.clone()).unwrap(),
+                    0.01,
+                    0.1
+                )
+                .is_err()
+        );
+        assert_eq!(snapshot, format!("{window:?}"));
+        window.marginalize_oldest().unwrap();
+        assert_eq!(window.states().len(), MAX_STATES - 1);
+        window
+            .append_state(next.end_ns, s, ImuFactor::new(next).unwrap(), 0.01, 0.1)
+            .unwrap();
+        assert_eq!(window.states().len(), MAX_STATES);
+        let report = window.marginalize_oldest().unwrap();
+        assert!(report.replaced_marginal_prior);
+    }
+
+    #[test]
+    fn marginalization_rejects_unsupported_anchor_without_mutation() {
+        let s = state();
+        let mut window =
+            ImuWindow::new(vec![0, 200_000_000, 400_000_000], vec![s; 3], [0.0; 3]).unwrap();
+        window
+            .add_imu_factor(0, factor(0, 200_000_000), 0.01, 0.1)
+            .unwrap();
+        window
+            .add_imu_factor(1, factor(200_000_000, 400_000_000), 0.01, 0.1)
+            .unwrap();
+        window.add_state_prior(1, s, [0.1; DIM]).unwrap();
+        let before = format!("{window:?}");
+        assert!(
+            window
+                .marginalize_oldest()
+                .unwrap_err()
+                .0
+                .contains("oldest state")
+        );
+        assert_eq!(before, format!("{window:?}"));
+    }
+
+    #[test]
+    fn marginalization_scaling_preserves_mixed_units_and_rejects_singular_schur() {
+        let mut normal = Normal::new(2);
+        let l: Matrix = std::array::from_fn(|r| {
+            std::array::from_fn(|c| {
+                if r == c {
+                    1.0 + r as f64 * 0.1
+                } else if r > c {
+                    ((r + c + 1) as f64).sin() * 0.02
+                } else {
+                    0.0
+                }
+            })
+        });
+        let cross: Matrix =
+            std::array::from_fn(|r| std::array::from_fn(|c| ((2 * r + c + 1) as f64).cos() * 0.02));
+        let a = multiply(&l, &transpose(&l));
+        let b = multiply(&cross, &transpose(&l));
+        let cc = multiply(&cross, &transpose(&cross));
+        let units: [Vector; 2] = std::array::from_fn(|i| {
+            std::array::from_fn(|k| 10.0_f64.powi(((i + k) % 9) as i32 - 4))
+        });
+        for r in 0..DIM {
+            for c in 0..DIM {
+                normal.diagonal[0][r][c] = a[r][c] * units[0][r] * units[0][c];
+                normal.diagonal[1][r][c] = (a[r][c] + cc[r][c]) * units[1][r] * units[1][c];
+                normal.below[0][r][c] = b[r][c] * units[1][r] * units[0][c];
+            }
+        }
+        let (prior, _) = normal.eliminate_first(state(), 0.0).unwrap();
+        let information = multiply(&transpose(&prior.square_root), &prior.square_root);
+        for r in 0..DIM {
+            for c in 0..DIM {
+                let expected = a[r][c] * units[1][r] * units[1][c];
+                assert!((information[r][c] - expected).abs() < 1e-10 * (1.0 + expected.abs()));
+            }
+        }
+        for i in 0..2 {
+            normal.diagonal[i] =
+                std::array::from_fn(|r| std::array::from_fn(|c| f64::from(r == c)));
+        }
+        normal.below[0] = normal.diagonal[0];
+        assert!(normal.eliminate_first(state(), 0.0).is_err());
     }
 
     #[test]

@@ -1,0 +1,66 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_scale.v1",
+  "inputs": {
+    "recordings": {
+      "flatwall": {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6",
+        "topic": "/livox/imu"
+      },
+      "nclt-april": {
+        "name": "2012-04-29.mcap",
+        "bytes": 3430860,
+        "sha256": "edb228d025a57fed7efa58e752e100bee10caed76f7b638b8f70b3f40490103e",
+        "topic": "/ms25/raw"
+      },
+      "nclt-june": {
+        "name": "2012-06-15.mcap",
+        "bytes": 3353544,
+        "sha256": "40062dbf96e5291b5aa0401b9020c9bbf4f091f7b4eb4f659038ec53c9fbf218",
+        "topic": "/ms25/raw"
+      }
+    },
+    "controller": {
+      "name": "audit_flatwall_imu_scale.py",
+      "bytes": 10374,
+      "sha256": "4ed48b3c54a778b63c1d113a295b25aad971b074f1f429c0cbf802854170b4c9"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7369728,
+      "sha256": "bf0ba44457413701fe974b7c30b800573c0042210be40bfbc0d2750e505cf72b"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "scipy_rotation_binary": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    }
+  },
+  "baseline": true,
+  "acceleration_scale": 9.80665,
+  "params": {
+    "gyro_noise_density": 0.02,
+    "accel_noise_density": 0.15,
+    "max_gap_s": 0.05
+  },
+  "bias": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "intervals": "Whole topic, first/middle/last 100 ms windows; integer-ns clipping; no fitting",
+  "oracle_tolerance": {
+    "rotation_atol": 1e-11,
+    "velocity_rtol": 1e-10,
+    "velocity_atol": 1e-11,
+    "position_rtol": 1e-10,
+    "position_atol": 1e-10
+  },
+  "scope": "Raw-field/default-result parity and scaled nominal preintegration only. No reference archive access, trajectory, deskew, calibrated noise model or speed claim."
+}

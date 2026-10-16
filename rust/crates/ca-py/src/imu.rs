@@ -98,6 +98,12 @@ pub struct ImuSeries {
 
 #[pymethods]
 impl ImuSeries {
+    /// Configured raw-acceleration multiplier; bias/noise remain in SI units.
+    #[getter]
+    fn acceleration_scale(&self) -> f64 {
+        self.series.acceleration_scale()
+    }
+
     fn __len__(&self) -> usize {
         self.series.samples().len()
     }

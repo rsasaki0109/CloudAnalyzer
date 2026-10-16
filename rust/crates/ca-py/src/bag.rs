@@ -92,10 +92,19 @@ impl BagReader {
         end_ns: i64,
         params: ca_core::imu::PreintegrationParams,
         topic: Option<String>,
+        acceleration_scale: f64,
     ) -> PyResult<ca_core::imu::PreintegratedImu> {
         let samples = self.raw_imus(py, topic)?;
-        py.detach(|| ca_core::imu::preintegrate(&samples, start_ns, end_ns, &params))
-            .map_err(|e| PyValueError::new_err(e.0))
+        py.detach(|| {
+            ca_core::imu::preintegrate_with_acceleration_scale(
+                &samples,
+                start_ns,
+                end_ns,
+                &params,
+                acceleration_scale,
+            )
+        })
+        .map_err(|e| PyValueError::new_err(e.0))
     }
 
     fn raw_imus(&self, py: Python<'_>, topic: Option<String>) -> PyResult<Vec<bag::RawImuMessage>> {
@@ -332,8 +341,9 @@ impl BagReader {
     /// Requires explicit noise densities. Bias order: gyro then accelerometer.
     /// Does not remove gravity or apply LiDAR extrinsics. Error order: right-local
     /// rotation, additive velocity, additive position in the initial IMU frame.
+    /// acceleration_scale converts vendor acceleration to m/s^2 before SI bias.
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None, topic=None))]
+    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None, topic=None, acceleration_scale=1.0))]
     fn preintegrate_imu<'py>(
         &self,
         py: Python<'py>,
@@ -344,15 +354,16 @@ impl BagReader {
         max_gap_s: f64,
         bias: Option<[f64; 6]>,
         topic: Option<String>,
+        acceleration_scale: f64,
     ) -> PyResult<Bound<'py, PyDict>> {
         let params = crate::imu::params(gyro_noise_density, accel_noise_density, max_gap_s, bias);
-        let out = self.integrated_imu(py, start_ns, end_ns, params, topic)?;
+        let out = self.integrated_imu(py, start_ns, end_ns, params, topic, acceleration_scale)?;
         crate::imu::measurement_dict(py, &out)
     }
 
     /// Construct a reusable, covariance-weighted IMU factor for this interval.
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None, topic=None))]
+    #[pyo3(signature = (start_ns, end_ns, *, gyro_noise_density, accel_noise_density, max_gap_s=0.05, bias=None, topic=None, acceleration_scale=1.0))]
     fn imu_factor(
         &self,
         py: Python<'_>,
@@ -363,18 +374,35 @@ impl BagReader {
         max_gap_s: f64,
         bias: Option<[f64; 6]>,
         topic: Option<String>,
+        acceleration_scale: f64,
     ) -> PyResult<crate::imu::ImuFactor> {
         let params = crate::imu::params(gyro_noise_density, accel_noise_density, max_gap_s, bias);
-        crate::imu::ImuFactor::new(self.integrated_imu(py, start_ns, end_ns, params, topic)?)
+        crate::imu::ImuFactor::new(self.integrated_imu(
+            py,
+            start_ns,
+            end_ns,
+            params,
+            topic,
+            acceleration_scale,
+        )?)
     }
 
     /// Decode a whole IMU topic once into an immutable in-memory snapshot.
     /// Header times must strictly increase; no sorting or interpolation occurs.
-    #[pyo3(signature = (topic=None))]
-    fn imu_series(&self, py: Python<'_>, topic: Option<String>) -> PyResult<crate::imu::ImuSeries> {
+    /// The positive finite acceleration_scale is applied during integration;
+    /// bias and noise arguments use SI units after conversion. Raw fields remain.
+    #[pyo3(signature = (topic=None, *, acceleration_scale=1.0))]
+    fn imu_series(
+        &self,
+        py: Python<'_>,
+        topic: Option<String>,
+        acceleration_scale: f64,
+    ) -> PyResult<crate::imu::ImuSeries> {
         let samples = self.raw_imus(py, topic)?;
         let series = py
-            .detach(|| ca_core::imu::ImuSeries::new(samples))
+            .detach(|| {
+                ca_core::imu::ImuSeries::new_with_acceleration_scale(samples, acceleration_scale)
+            })
             .map_err(crate::imu::err)?;
         Ok(crate::imu::ImuSeries { series })
     }

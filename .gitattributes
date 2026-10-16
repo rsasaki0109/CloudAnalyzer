@@ -34,3 +34,5 @@ benchmarks/slam/flatwall-message-order/** text eol=lf
 # Preserve the exact receipt/protocol bytes referenced by their artifact hashes.
 benchmarks/slam/flatwall-message-order/before/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 benchmarks/slam/flatwall-message-order/after/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/audit_flatwall_imu_scale.py text eol=lf
+benchmarks/slam/flatwall-imu-scale/** text eol=lf

@@ -1,0 +1,107 @@
+{
+  "schema": "cloudanalyzer.flatwall_point_times_ns.v1",
+  "inputs": {
+    "recordings": {
+      "flatwall": {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6",
+        "topic": "/livox/points"
+      },
+      "nclt-april": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 10054898,
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+        "topic": "/velodyne_points"
+      },
+      "nclt-june": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 9387931,
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+        "topic": "/velodyne_points"
+      }
+    },
+    "controller": {
+      "name": "audit_flatwall_point_times_ns.py",
+      "bytes": 11896,
+      "sha256": "bb3d5ea1777871fdd65a23ddd7b6d5b68eea7dd186c0bd8b27a751624dddcc30"
+    },
+    "field_audit_helpers": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7380480,
+      "sha256": "865f1b9f8d4bd3b38d03b08c607c2cc50655b6e29f7f60656f5aaeff02c3d271"
+    },
+    "numpy_version": "2.3.4",
+    "rosbags_version": "0.11.3",
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "standard_type_sources": [
+      {
+        "name": "ros1_noetic.py",
+        "bytes": 101472,
+        "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+      },
+      {
+        "name": "ros2_humble.py",
+        "bytes": 29920,
+        "sha256": "ce5198b485e21d2c8bce1d1d8faff33ded1585b493f1195d2e322ec97d0888ff"
+      }
+    ]
+  },
+  "baseline": true,
+  "declared_policy": {
+    "field": "t",
+    "datatype": 6,
+    "unit": "ns",
+    "origin": "PointCloud2 integer Header",
+    "rounding": "nearest integer ns, ties to even, before integer origin addition"
+  },
+  "baseline_method": "old raw_time() checked UINT32 to int64, then integer Header addition",
+  "new_method": "point_times_ns(unit=ns, origin=header); no manual fallback",
+  "independent_method": "standard ROS1_NOETIC UINT32 t plus Python integer Header; standard ROS2_HUMBLE control fields",
+  "controls": "Separately count float64-before-header-rounding errors; NCLT has no time field",
+  "scope": "Declared conversion and IMU coverage only. No unit/origin inference, clock calibration, reference archive access, deskew, trajectory or runtime claim.",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 2655,
+    "sha256": "cf6039af849ba69b232bcc34af940c663bb302596c4e93fb6c84f1f485aee328"
+  },
+  "results": {
+    "flatwall": {
+      "scans": 186,
+      "finite_points": 4464000,
+      "legacy_fields_sha256": "298953c04207fbb1a98e57818b253b6d78bf61bda9dfb18e4cfa768e30764baa",
+      "raw_time_values_sha256": "d2c2679cb633f8e855821c29f23945db9dd530d72b2c3ebd5105e13f40638aa2",
+      "point_times_ns_sha256": "2433bc10419c9cb0be6a1c1fb67ae486ee672b291863c892dcdfb9583a895199",
+      "decreasing_point_time_steps": 11,
+      "points_before_imu": 632,
+      "points_after_imu": 0,
+      "fully_bracketed_scans": 185,
+      "float_addition_mismatches": 4446578,
+      "float_min_error_ns": -246,
+      "float_max_error_ns": 247
+    },
+    "nclt-april": {
+      "scans": 236,
+      "finite_points": 1400497,
+      "legacy_fields_sha256": "cd7d09e6afbdfe9bfb5fd6982737a6d9f17d6ed85f3ddca41be3e6b6bc811192"
+    },
+    "nclt-june": {
+      "scans": 238,
+      "finite_points": 1311375,
+      "legacy_fields_sha256": "cac98049c81cc4d251a49d63c58f58d3cf676fbc38f67ca78d80231383504952"
+    }
+  },
+  "integer_timestamps_match_independent": true,
+  "legacy_fields_match_independent": true,
+  "legacy_fields_match_old_native": false,
+  "ground_truth_archive_read": false
+}

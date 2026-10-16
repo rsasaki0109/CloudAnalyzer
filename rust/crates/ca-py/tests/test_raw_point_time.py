@@ -15,7 +15,7 @@ EPOCH = 1_700_000_000_000_000_123
 TYPES = {1: "i1", 2: "u1", 3: "i2", 4: "u2", 5: "i4", 6: "u4", 7: "f4", 8: "f8"}
 
 
-def write_cloud(tmp_path, format, datatype, values, *, field="sensor_clock", empty=False, problem=None):
+def write_cloud(tmp_path, format, datatype, values, *, field="sensor_clock", empty=False, problem=None, stamp_ns=EPOCH):
     ros1 = format == "ros1"
     types = get_typestore(Stores.ROS1_NOETIC if ros1 else Stores.ROS2_HUMBLE)
     cls = lambda name: types.get_msgdef(name).cls  # noqa: E731
@@ -47,7 +47,7 @@ def write_cloud(tmp_path, format, datatype, values, *, field="sensor_clock", emp
             name=selected.name, offset=selected.offset, datatype=selected.datatype, count=selected.count))
     elif problem == "truncated":
         data = data[:-13]  # Remove final row padding plus one byte of its last point.
-    sec, ns = divmod(EPOCH, 10**9)
+    sec, ns = divmod(stamp_ns, 10**9)
     header = cls("std_msgs/msg/Header")(
         stamp=cls("builtin_interfaces/msg/Time")(sec=sec, nanosec=ns),
         frame_id="sensor/frame", **({"seq": 0} if ros1 else {}))

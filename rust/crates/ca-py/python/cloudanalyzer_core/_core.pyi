@@ -33,6 +33,29 @@ class IcpResult(TypedDict):
     iterations: int
     converged: bool
 
+class GicpLinearization(TypedDict):
+    normal_matrix: npt.NDArray[np.float64]
+    right_hand_side: npt.NDArray[np.float64]
+    cost: float
+    weight_sum: float
+    positive_weight_points: int
+    source_world: npt.NDArray[np.float64]
+    combined_shapes: npt.NDArray[np.float64]
+    mahalanobis_squared: npt.NDArray[np.float64]
+
+def gicp_linearization(
+    source: npt.NDArray[np.float64], target: npt.NDArray[np.float64],
+    source_shapes: npt.NDArray[np.float64], target_shapes: npt.NDArray[np.float64],
+    pose: npt.NDArray[np.float64], center_world: npt.NDArray[np.float64], *,
+    weights: npt.NDArray[np.float64] | None = None, parallel: bool = False,
+) -> GicpLinearization:
+    """Declared pairs with source-frame and world-frame SPD shapes, (N,3,3).
+    Copy inputs/results. Freeze transported shapes, matches and weights for
+    the translation-then-world-rotation residual Jacobian about center_world.
+    No matching, solver, damping, covariance calibration or estimator feedback.
+    """
+    ...
+
 def read(path: str, keep_every: int = 1) -> PointData: ...
 def discover_vector_map_features(cloud: str, vector_map: str | None = None, options: str = "{}", confirmations: str | None = None) -> str: ...
 def measure_vector_map_crosswalk(

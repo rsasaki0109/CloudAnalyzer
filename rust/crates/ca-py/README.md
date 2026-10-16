@@ -9,6 +9,10 @@ For LiDAR registration inspection, `LidarOdometry(capture_linearization=True)`
 provides copied final-pose correspondences and the fixed-match normal matrix
 through `last_linearization()`. See [the API and numerical limits](../../../docs/slam-odometry-linearization.md).
 
+`gicp_linearization(source, target, source_shapes, target_shapes, pose, center_world)`
+assembles an independent fixed-match GICP system with explicit shape frames and
+an optional CPU parallel path. See [GICP factor semantics](../../../docs/slam-gicp-linearization.md).
+
 ```python
 import cloudanalyzer_core as cc
 import numpy as np

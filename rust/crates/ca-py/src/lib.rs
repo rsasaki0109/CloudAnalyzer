@@ -13,6 +13,7 @@ use pyo3::types::PyDict;
 
 mod bag;
 mod copc_spatial;
+mod gicp;
 mod imu;
 mod imu_odometry;
 mod imu_rotation;
@@ -745,6 +746,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(cloud_to_mesh, m)?)?;
     m.add_class::<PreparedMesh>()?;
     m.add_function(wrap_pyfunction!(icp, m)?)?;
+    m.add_function(wrap_pyfunction!(gicp::gicp_linearization, m)?)?;
     m.add_function(wrap_pyfunction!(voxel_subsample, m)?)?;
     m.add_function(wrap_pyfunction!(statistical_outliers, m)?)?;
     m.add_function(wrap_pyfunction!(volume, m)?)?;

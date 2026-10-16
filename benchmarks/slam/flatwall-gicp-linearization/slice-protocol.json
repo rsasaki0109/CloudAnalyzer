@@ -1,0 +1,41 @@
+{
+  "at_utc": "2026-10-16T21:06:24.583790+00:00",
+  "base": "d1049c043c3067ebcec7c376756b54ea02d61412",
+  "slice": "Standalone validated fixed-correspondence GICP 3D-residual linearization in Rust core and Python, with indexed row parallelism and serial ordered accumulation. No odometry/ICP solver or matching/default change.",
+  "api": "core gicp::linearize(correspondences, pose, center_world, parallel); Python gicp_linearization(source,target,source_shapes,target_shapes,pose,center_world,*,weights=None,parallel=False). All arrays are copied/owned. No neighbor inference, hidden fallback, damping, eigenvalue repair, state update or covariance/quality gate in this API.",
+  "frames": "Source point and source shape are in source sensor frame; target point and target shape are in world frame. C = C_target + R C_source R.T, q = pose(source), r=q-target. Parameters are translation xyz then world rotation xyz about explicit fixed center_world; J=[I,-[q-center]x].",
+  "system": "Hold correspondences, external nonnegative weights and transported C fixed during linearization. Cholesky whitening L^-1r and L^-1J forms H=sum(w J.T C^-1 J), b=-sum(w J.T C^-1 r), cost=.5 sum(w r.T C^-1 r). This is a fixed-metric surrogate, not the Hessian/gradient of an objective differentiating C(R), matches or robust weights.",
+  "validation": "Finite proper rigid pose (orthogonality/determinant tolerance 1e-10), finite center/points and finite nonnegative scalar weights. Each shape finite, symmetric within 1e-12 times max absolute entry, canonicalize by symmetric average, and require strict positive Cholesky pivots without a floor. Validate even zero-weight rows. Reject indexed nonfinite arithmetic/overflow rather than repair. Empty batch gives owned empty arrays and zero system. Serial/parallel failures identify the same first source row.",
+  "numerics": "Independent per-row work may run in indexed Rayon; reduce in original input order. Serial and parallel results must match all output bits and first-error indices. Source/target shape validation and combined whitening use no explicit inverse.",
+  "tests": "Independent NumPy/SciPy SPD systems and Cholesky, central differences of residuals with frozen baseline metric, off-axis rotations, translated world origin, rotated world basis and source reparameterization including a lever arm. Identity combined metric agrees with P2P. Invalid/asymmetric/indefinite/singular/nonfinite matrices, overflow, zero weights, input/output ownership and parallel-first-error checks.",
+  "real_inputs": "Reuse the frozen PR295 four 64-scan actual final-pose correspondences, sources and canonical insertion points. Replay the original map. Do not rerun/adopt new poses or parse reference trajectories.",
+  "real_shape_model": {
+    "neighbors": 20,
+    "minimum_neighbors": 5,
+    "radius": null,
+    "scatter": "Centered arithmetic-mean local PCA using exact cKDTree nearest neighbors, workers=1; source neighbors from all selected source_sensor points, target neighbors from the full replayed pre-insertion map.",
+    "support": "Require second eigenvalue > 1e-12 times largest eigenvalue; drop unsupported pairs explicitly in both compared systems. No normal planarity selection or identity fallback.",
+    "normalized_eigenvalues": [
+      0.001,
+      1.0,
+      1.0
+    ],
+    "matrix": "I + (.001-1) n n.T using smallest-eigenvalue unit normal. Normalized surface shape, not calibrated measurement uncertainty.",
+    "weights": "Reuse native captured Euclidean GMC weights on retained actual correspondences without change. Do not compare numerical cost magnitudes between different residual metrics as accuracy."
+  },
+  "real_comparison": "Compare GICP and P2P on exactly the same retained pairs/weights; identity control C_source=C_target=.5I must agree with independent P2P system. NumPy rebuilds C, H, b and cost independently. Native serial/parallel all bits equal. No solve, inversion for state updates, state adoption, new trajectory, default/gate change, timing, GPU or physical accuracy claim.",
+  "geometry": "Use same retained-weight RMS radius r about the captured prediction center and D=diag(1,1,1,1/r,1/r,1/r). Compare signed eigvalsh(sym(D H D)/sum_w), weak ratio <1e-3, no spectrum without positive support and radius. Shape anisotropy scale is arbitrary; these are uncalibrated conditional diagnostics.",
+  "tolerances": {
+    "source_world_atol": 2e-08,
+    "combined_shapes_atol": 2e-12,
+    "system_atol": 2e-06,
+    "system_rtol": 1e-10,
+    "mahalanobis_atol": 2e-09,
+    "mahalanobis_rtol": 1e-10
+  },
+  "regression": "Private full native package frozen before build. Existing native Python suite, unchanged full-motion 660-scan component and 185-scan frontend controllers. Preserve prior protocols, receipts and snapshots byte for byte. Baseline frontend files remain identical.",
+  "references": [
+    "https://github.com/koide3/small_gicp/blob/master/include/small_gicp/factors/gicp_factor.hpp",
+    "https://github.com/koide3/small_gicp/blob/master/include/small_gicp/util/normal_estimation.hpp"
+  ]
+}

@@ -174,6 +174,7 @@ impl BagReader {
     }
 
     /// The messages of `topics`, oldest first (see `BagMessages`).
+    /// Tied recording times within ROS 1/MCAP chunks retain physical record order.
     fn messages(&self, topics: Vec<String>) -> PyResult<BagMessages> {
         let names: Vec<&str> = topics.iter().map(|t| t.as_str()).collect();
         let recording = Recording::open(&self.path).map_err(err)?;

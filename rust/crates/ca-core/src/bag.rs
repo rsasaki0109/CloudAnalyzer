@@ -800,7 +800,10 @@ impl Cursor {
                     }
                 }
             }
-            found.sort_by(|a, b| b.time.total_cmp(&a.time));
+            // Pop in ascending recording time, retaining physical record order
+            // for ties (batched sensor messages often share a recording time).
+            found.sort_by(|a, b| a.time.total_cmp(&b.time));
+            found.reverse();
             self.queue = found;
             return Ok(true);
         }
@@ -1716,6 +1719,36 @@ mod tests {
                 .collect();
             assert_eq!(found.len(), 3, "{compression}");
             assert_eq!(found[1].positions[0], [0.0, 1.0, 1.0]);
+        }
+    }
+
+    #[test]
+    fn equal_recording_times_preserve_physical_order_and_topic_filtering() {
+        // Physical order differs from timestamp order. The four records at
+        // time 1 must keep their order, including across requested topics.
+        let messages = vec![
+            (1, 2.0, vec![4]),
+            (0, 1.0, vec![90]),
+            (1, 1.0, vec![0]),
+            (0, 1.0, vec![91]),
+            (1, 1.0, vec![1]),
+            (1, 3.0, vec![5]),
+        ];
+        for compression in ["none", "lz4", "bz2"] {
+            let mut bag = Bag::from_reader(Cursor::new(ros1_bag(&messages, compression))).unwrap();
+            for (topics, expected) in [
+                (vec!["/points", "/imu"], vec![90, 0, 91, 1, 4, 5]),
+                (vec!["/imu"], vec![0, 1, 4, 5]),
+                (vec!["/points"], vec![90, 91]),
+            ] {
+                let found: Vec<_> = bag.messages(&topics).map(|m| m.unwrap()).collect();
+                assert!(found.windows(2).all(|w| w[0].time <= w[1].time));
+                assert_eq!(
+                    found.iter().map(|m| m.data[0]).collect::<Vec<_>>(),
+                    expected,
+                    "{compression}, {topics:?}"
+                );
+            }
         }
     }
 

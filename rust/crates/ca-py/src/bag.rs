@@ -367,6 +367,17 @@ impl BagReader {
         crate::imu::ImuFactor::new(self.integrated_imu(py, start_ns, end_ns, params, topic)?)
     }
 
+    /// Decode a whole IMU topic once into an immutable in-memory snapshot.
+    /// Header times must strictly increase; no sorting or interpolation occurs.
+    #[pyo3(signature = (topic=None))]
+    fn imu_series(&self, py: Python<'_>, topic: Option<String>) -> PyResult<crate::imu::ImuSeries> {
+        let samples = self.raw_imus(py, topic)?;
+        let series = py
+            .detach(|| ca_core::imu::ImuSeries::new(samples))
+            .map_err(crate::imu::err)?;
+        Ok(crate::imu::ImuSeries { series })
+    }
+
     /// The poses of a trajectory topic (`nav_msgs/Odometry`, `geometry_msgs/PoseStamped`,
     /// or `tf2_msgs/TFMessage` with the child `frame`): the one such topic when
     /// `topic` is None. Per pose its stamp, position and orientation (x, y, z, w),

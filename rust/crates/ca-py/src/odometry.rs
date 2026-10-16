@@ -50,12 +50,15 @@ impl LidarOdometry {
     /// Register the next scan, `positions` (N, 3) in its sensor's frame,
     /// with `times` (N,) saying when in the sweep each point was taken (any
     /// unit; only for deskewing): its pose as a 4x4 matrix.
-    #[pyo3(signature = (positions, times=None))]
+    /// `relative_prediction`, when supplied, maps the new scan into the previous
+    /// scan frame. It changes the ICP initial pose, not the deskew motion model.
+    #[pyo3(signature = (positions, times=None, *, relative_prediction=None))]
     fn register<'py>(
         &mut self,
         py: Python<'py>,
         positions: PyReadonlyArray2<f64>,
         times: Option<PyReadonlyArray1<f32>>,
+        relative_prediction: Option<PyReadonlyArray2<f64>>,
     ) -> PyResult<Bound<'py, PyArray2<f64>>> {
         let positions = crate::points(&positions)?;
         let mut scan = PointCloud {
@@ -71,8 +74,41 @@ impl LidarOdometry {
                 values: AttributeValues::F32(times.as_slice()?.to_vec()),
             });
         }
-        let pose = py.detach(|| self.inner.register(&scan));
+        let prediction = relative_prediction
+            .map(|pose| {
+                if pose.shape() != [4, 4] {
+                    return Err(PyValueError::new_err(
+                        "relative_prediction needs a (4, 4) pose",
+                    ));
+                }
+                let view = pose.as_array();
+                if !(0..4).all(|j| {
+                    view[[3, j]].is_finite()
+                        && (view[[3, j]] - f64::from(u8::from(j == 3))).abs() <= 1e-12
+                }) {
+                    return Err(PyValueError::new_err(
+                        "relative_prediction needs homogeneous last row [0, 0, 0, 1]",
+                    ));
+                }
+                Ok::<_, PyErr>(ca_core::icp::Rigid {
+                    rotation: std::array::from_fn(|i| std::array::from_fn(|j| view[[i, j]])),
+                    translation: std::array::from_fn(|i| view[[i, 3]]),
+                })
+            })
+            .transpose()?;
+        let pose = py.detach(|| match prediction {
+            Some(prediction) => self
+                .inner
+                .register_with_prediction(&scan, &prediction)
+                .map_err(|e| PyValueError::new_err(e.to_string())),
+            None => Ok(self.inner.register(&scan)),
+        })?;
         Ok(matrix(pose.to_matrix()).into_pyarray(py))
+    }
+
+    /// Gauss-Newton steps of the last registration; zero without alignment.
+    fn last_iterations(&self) -> usize {
+        self.inner.last_iterations()
     }
 
     /// Every pose so far, (K, 4, 4).

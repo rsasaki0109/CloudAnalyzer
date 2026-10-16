@@ -1,0 +1,187 @@
+{
+  "protocol": {
+    "frozen_at_utc": "2026-10-16T06:17:22.069208+00:00",
+    "purpose": "Warm-filesystem real IMU factor construction, including one snapshot decode per block; no end-to-end or GPU claim",
+    "inputs": {
+      "controller": {
+        "name": "measure-slam-imu-series-20261016.py",
+        "bytes": 4376,
+        "sha256": "71bff79ad621f311d45bbedec14fc941af053f7e92c3904e46381a39ec2e5d10"
+      },
+      "native_extension": {
+        "name": "_core.pyd",
+        "bytes": 7359488,
+        "sha256": "801356324ef1cba5f365bfd0448066bbdf93d838b0af54b2965446c8f4c01a9c"
+      },
+      "native_build_inputs": {
+        "name": "native-build-inputs.json",
+        "bytes": 9819,
+        "sha256": "4c1c7ce3bda50b240d45ddfcda64a51d068047b0f6734498086dae72f4d9bfa2"
+      },
+      "2012-04-29": {
+        "recording": {
+          "2012-04-29.mcap": {
+            "name": "2012-04-29.mcap",
+            "bytes": 3430860,
+            "sha256": "edb228d025a57fed7efa58e752e100bee10caed76f7b638b8f70b3f40490103e"
+          },
+          "metadata.yaml": {
+            "name": "metadata.yaml",
+            "bytes": 827,
+            "sha256": "9458acda582068cbcb3c94e54ece6184f5850023f3797eb8a463d7e11ebf6eda"
+          }
+        },
+        "times_source": {
+          "name": "lidar.npz",
+          "bytes": 51625,
+          "sha256": "c01aa996d7e6dcf0fd5b5e267e77c775bdf6b4c24ad7cdf3a992b832e5f11d4a"
+        }
+      },
+      "2012-06-15": {
+        "recording": {
+          "2012-06-15.mcap": {
+            "name": "2012-06-15.mcap",
+            "bytes": 3353544,
+            "sha256": "40062dbf96e5291b5aa0401b9020c9bbf4f091f7b4eb4f659038ec53c9fbf218"
+          },
+          "metadata.yaml": {
+            "name": "metadata.yaml",
+            "bytes": 827,
+            "sha256": "3d7d420492f0b104e673d59ed0f0bf00bbeccbdef687bbb0f83b0b6906f10be7"
+          }
+        },
+        "times_source": {
+          "name": "lidar.npz",
+          "bytes": 52039,
+          "sha256": "4e32298d1515610e0e62059baff65f9dcfa0fcafc4bf811876f882a3b89749c6"
+        }
+      }
+    },
+    "repeats": 3,
+    "order": [
+      [
+        "reader",
+        "series"
+      ],
+      [
+        "series",
+        "reader"
+      ],
+      [
+        "reader",
+        "series"
+      ]
+    ],
+    "bias": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "noise": {
+      "gyro_noise_density": 0.02,
+      "accel_noise_density": 0.15,
+      "max_gap_s": 0.05
+    },
+    "intervals": "All valid adjacent scan intervals of the frozen April and June LiDAR baselines; no trajectory scoring or tuning"
+  },
+  "results": {
+    "protocol_sha256": "c79b16330b8d9cb9a34c7a89ba01ca66f569d05f3d14738aed4215bd3f49ba6b",
+    "cases": [
+      {
+        "session": "2012-04-29",
+        "factors_per_block": 193,
+        "samples": 9043,
+        "repeats": [
+          {
+            "order": [
+              "reader",
+              "series"
+            ],
+            "seconds": {
+              "reader": 1.7890391,
+              "series": 0.014570900000000001
+            },
+            "identical_factors": 193
+          },
+          {
+            "order": [
+              "series",
+              "reader"
+            ],
+            "seconds": {
+              "series": 0.0167594,
+              "reader": 1.9342164000000002
+            },
+            "identical_factors": 193
+          },
+          {
+            "order": [
+              "reader",
+              "series"
+            ],
+            "seconds": {
+              "reader": 1.8182771000000002,
+              "series": 0.0163336
+            },
+            "identical_factors": 193
+          }
+        ],
+        "median_seconds": {
+          "reader": 1.8182771000000002,
+          "series": 0.0163336
+        },
+        "median_speedup": 111.32127026497528
+      },
+      {
+        "session": "2012-06-15",
+        "factors_per_block": 102,
+        "samples": 8839,
+        "repeats": [
+          {
+            "order": [
+              "reader",
+              "series"
+            ],
+            "seconds": {
+              "reader": 0.8754518,
+              "series": 0.0112765
+            },
+            "identical_factors": 102
+          },
+          {
+            "order": [
+              "series",
+              "reader"
+            ],
+            "seconds": {
+              "series": 0.010668400000000001,
+              "reader": 0.8388491
+            },
+            "identical_factors": 102
+          },
+          {
+            "order": [
+              "reader",
+              "series"
+            ],
+            "seconds": {
+              "reader": 0.8372163,
+              "series": 0.012711
+            },
+            "identical_factors": 102
+          }
+        ],
+        "median_seconds": {
+          "reader": 0.8388491,
+          "series": 0.0112765
+        },
+        "median_speedup": 74.38913670021726
+      }
+    ],
+    "scope": "Warm-filesystem real IMU factor construction, including one snapshot decode per block; no end-to-end or GPU claim",
+    "all_measurement_fields_bit_identical": true
+  }
+}

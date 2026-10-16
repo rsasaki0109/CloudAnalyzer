@@ -1,0 +1,205 @@
+{
+  "purpose": "Full causal frontend diagnostic on the existing NCLT cohort, no held-out claim or default adoption",
+  "settings": {
+    "lidar": {
+      "min_range": 1.5,
+      "max_range": 80.0,
+      "map_voxel": 1.0,
+      "map_points": 20,
+      "deskew": false
+    },
+    "min_states": 4,
+    "max_states": 16,
+    "max_gap_s": 0.05,
+    "gyro_noise_density": 0.02,
+    "accel_noise_density": 0.15,
+    "gyro_bias_random_walk": 0.005,
+    "accel_bias_random_walk": 0.05,
+    "pose_rotation_sigma": 0.02,
+    "pose_position_sigma": 0.1,
+    "state_sigmas": [
+      0.02,
+      0.02,
+      0.02,
+      0.5,
+      0.5,
+      0.5,
+      0.05,
+      0.05,
+      0.05,
+      0.02,
+      0.02,
+      0.02,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "optimizer": {
+      "max_iterations": 80,
+      "initial_damping": 0.001,
+      "gradient_tolerance": 1e-08,
+      "step_tolerance": 1e-09,
+      "cost_tolerance": 1e-10
+    }
+  },
+  "max_states": 4,
+  "arms": {
+    "baseline": "Constant-motion ICP initialization with diagnostic inertial window",
+    "assisted": "Same window, prior-state relative body prediction initializes ICP"
+  },
+  "primary": "All ICP frontend poses and edges, including startup, gap and bootstrap fallbacks",
+  "fallback": "No bridging IMU gaps; no IMU prediction on first valid interval of each run",
+  "map": "ICP frontend poses only; no absolute backend pose replacement",
+  "tuning": "All previous fixed noise and initialization settings; no reference read until both sessions are frozen",
+  "baseline_regression_tolerance": 1e-08,
+  "inputs": {
+    "2012-04-29": {
+      "lidar": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 10054898,
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6"
+      },
+      "imu": {
+        "2012-04-29.mcap": {
+          "name": "2012-04-29.mcap",
+          "bytes": 3430860,
+          "sha256": "edb228d025a57fed7efa58e752e100bee10caed76f7b638b8f70b3f40490103e"
+        },
+        "metadata.yaml": {
+          "name": "metadata.yaml",
+          "bytes": 827,
+          "sha256": "9458acda582068cbcb3c94e54ece6184f5850023f3797eb8a463d7e11ebf6eda"
+        }
+      },
+      "euler": {
+        "name": "ms25_euler.csv",
+        "bytes": 9184412,
+        "sha256": "df1f0db150395208d13f158228459c873c5a11673a79746e797e633972ad539b"
+      }
+    },
+    "2012-06-15": {
+      "lidar": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 9387931,
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4"
+      },
+      "imu": {
+        "2012-06-15.mcap": {
+          "name": "2012-06-15.mcap",
+          "bytes": 3353544,
+          "sha256": "40062dbf96e5291b5aa0401b9020c9bbf4f091f7b4eb4f659038ec53c9fbf218"
+        },
+        "metadata.yaml": {
+          "name": "metadata.yaml",
+          "bytes": 827,
+          "sha256": "3d7d420492f0b104e673d59ed0f0bf00bbeccbdef687bbb0f83b0b6906f10be7"
+        }
+      },
+      "euler": {
+        "name": "ms25_euler.csv",
+        "bytes": 11557453,
+        "sha256": "eea3ad5f37053dc4dafcac1e9e1037de8254e1099ce81b7111b3aad9afb34ac6"
+      }
+    }
+  },
+  "schema": "cloudanalyzer.nclt_imu_frontend_protocol.v1",
+  "estimation_source_freeze": {
+    "frozen_at_utc": "2026-10-16T06:17:51.880458+00:00",
+    "protocol_sha256": "1c5e922e4b8a18e6d97ad4d09b196e3a3d8d42ee9f655793a65c9d6529b4ed71",
+    "sources_sha256": {
+      "scripts/replay_nclt_imu_frontend.py": "9d1477957bfed55f51c5bc24594a0ef0f7eb3094858de7f06d072922763fe678",
+      "scripts/evaluate_nclt_imu_frontend.py": "d93cb05336ed3cca62fa812fa15eaaad5af3d0fbe99f515216e315583abd6f00",
+      "scripts/replay_nclt_imu_window.py": "543f37e2a470f9fcfcf85ceca1c027fee2db588b7fce1b13a1a9e5a1af2cbbe7",
+      "scripts/pilot_nclt_imu_window.py": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43",
+      "scripts/evaluate_nclt_imu_pilot.py": "1f6e9c7dcb73d0f4de69b7cd3540d74c3f081c98b7c0fc79ee1fe45c0b1ffd72",
+      "scripts/nclt_body_frames.py": "575f04405119010e42aabbee75f1684cd7d859d17e2d4e816a558454236f6cea",
+      "notes/run-slam-imu-frontend-20261016.py": "542da51b3e61c870353e680d3b956f2991e0808fec4add955d231a0bc5171bb9"
+    },
+    "native_build_inputs_sha256": "4c1c7ce3bda50b240d45ddfcda64a51d068047b0f6734498086dae72f4d9bfa2",
+    "native_binary_sha256": "801356324ef1cba5f365bfd0448066bbdf93d838b0af54b2965446c8f4c01a9c"
+  },
+  "native_source_hashes": {
+    "rust/crates/ca-core/src/bag.rs": "05bf3a75c8a0df26ca83a14dabb5713db6d42255ec9f707c1c4c3b43309d81dc",
+    "rust/crates/ca-core/src/cluster.rs": "1eb48ac7f5831c2db32306c8f3d78e3f51958e589c8f98744e5a19186ed6ab2b",
+    "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+    "rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+    "rust/crates/ca-core/src/dynamic.rs": "5872d51f2e566774d45aee94b971d6e8ffbd5b31b4461dba5b2d9bb0013fec27",
+    "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+    "rust/crates/ca-core/src/geotiff.rs": "36785efa8d8864e8e40d9ca068c592e225e7b7d49c98cf6fee187aae12bb6ac9",
+    "rust/crates/ca-core/src/ground.rs": "3f0db870f9ebc017573561ca5328bdda1b6fc885c786619349333708175c9665",
+    "rust/crates/ca-core/src/icp.rs": "8c0e8b13718719468492e6e4f5e0dc2c00cdbcb7a0164f3406ec714002dceb7e",
+    "rust/crates/ca-core/src/imu.rs": "8b2b0854660ec6a1264d10adca6ee4de72fda597a07b8850272961d94ed12b52",
+    "rust/crates/ca-core/src/imu_factor.rs": "46ef245bcedc5358fc7d0c95b438515eccd49518c564da25b4b03d0131ca22c3",
+    "rust/crates/ca-core/src/imu_window.rs": "53ee0a293706bbf6d7d0531af21ea069f6cf1869d68bec921108a3faf2e07e1c",
+    "rust/crates/ca-core/src/io/copc.rs": "ee83822f3d0843d033f63fda4036400e5ae2ab356f9c63b0d6a3bdcadd41a597",
+    "rust/crates/ca-core/src/io/copc_query.rs": "6f365ca5f7370e59c066b5202500755fb5c1f09213571abdbc9b29f15b9b1820",
+    "rust/crates/ca-core/src/io/e57.rs": "22c5a8dc7b942944f03ae976e357bd7c693c7e78a83bc72a4d684fc746568993",
+    "rust/crates/ca-core/src/io/kitti.rs": "e4fddf18e105cd617ee0c8660dc1bda77cd9c61ea1b506cc299dfb4419249f86",
+    "rust/crates/ca-core/src/io/las.rs": "97ee86bc57ab5924e1c37c277f7d7c10d96f41c8052487dfa22e63cb0830fc2e",
+    "rust/crates/ca-core/src/io/las_chunks.rs": "6f7e26401e17b781cb9728228d3113f456ddc59833215c676f152c935f29503c",
+    "rust/crates/ca-core/src/io/las_write.rs": "7104b0ef630e845251dd2bb9f275c4f3166a591c3edf92dcec8d99eb312135b4",
+    "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+    "rust/crates/ca-core/src/io/obj.rs": "b19e1f672498b26a3abbf76d327b206af9989c4d2dcd803165f671a30d18769c",
+    "rust/crates/ca-core/src/io/pcd.rs": "3d60a5fcebb829a67df3a6f5864141da7ce053e04bc848281bd75391e0e5c74b",
+    "rust/crates/ca-core/src/io/ply.rs": "2c8698ea790484c1db0c1d0c9678427b25c573c55774db52b8654d657bb3067e",
+    "rust/crates/ca-core/src/io/scalar.rs": "04e1bb7994af83fb59d7fa7f12ab9ee23586ec674d286b57eaeef72e0c8887f2",
+    "rust/crates/ca-core/src/io/splat.rs": "53acdec7392c65a66e2069c2935d3fa61e3f962ad79cba7b767cf85e0733d9a8",
+    "rust/crates/ca-core/src/io/stl.rs": "95bbedf1b3608a38d7aff62f117f6c005aa0a279b4e7d16eebb0cbd412999c30",
+    "rust/crates/ca-core/src/io/stream.rs": "ac65258ad1d96de66f0ee6c3fdcc2d641797461273cd10bb1acb497cf0d1db85",
+    "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+    "rust/crates/ca-core/src/io/xyz.rs": "49286f55ddfb0faaa6a9e36726109782bb4046e9e99204e8f37a1f0284247b77",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/src/lib.rs": "0b9e741828b7703e52c9cd4ee8702c3381d3b7a7b4191c924fbcde198e1b018c",
+    "rust/crates/ca-core/src/loop_search.rs": "30e3772b49765c6f1c716513694dd1ec5e18e66e1dc730755dee7e9cff6701bf",
+    "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+    "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+    "rust/crates/ca-core/src/merge.rs": "61c3fb9548c15efc35ab57dc80798147a40bfff2be1909a8748f11396420d4c9",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+    "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+    "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+    "rust/crates/ca-core/src/odometry.rs": "2c6ef55ff466e2b9c4f00e2e9568bd78c2f337bebfb62131ec65b5fac5b7bcfe",
+    "rust/crates/ca-core/src/pose_graph.rs": "22169e673aed0c829261cb4e76f8cd968c03dad68d7f8a5554eabe9391b241a4",
+    "rust/crates/ca-core/src/profile.rs": "ce48f96d92b747f9225222dcaf1370b49b8d029c1fae4e82d77a89bb68daaa3a",
+    "rust/crates/ca-core/src/raster.rs": "92d88d8fb601f1baea5d75a0fd69716bf77436ae8a1b15f55f691bbf698ca5fd",
+    "rust/crates/ca-core/src/rosbag2.rs": "5c0ea9f979843bfef084f4a9c691bcdb219b5a588e9b42b8524c3a8ea5c66c44",
+    "rust/crates/ca-core/src/segment.rs": "15f816f744ce2edd33940c067e34a18c21d6b3292c9d106c910625a5f8d7bfd1",
+    "rust/crates/ca-core/src/shapes.rs": "e5932e31c68774383f4f7333e9aac2c75e7a930251a46b0cc7b766a46a530da1",
+    "rust/crates/ca-core/src/trajectory.rs": "8fecd20a9260be103603efa5858221c56450332a49ea7ebf48163036d82a1310",
+    "rust/crates/ca-core/src/vector_map/corridors.rs": "2343a077c3b09a67ffa1477c94bba21774d20d0cc4e6f2b5ffb5823b0fcc9dc1",
+    "rust/crates/ca-core/src/vector_map/crosswalks.rs": "71c70574450653a2e078424a7f5c839faf98c7802fe7f5b3a4baa65c4e114aba",
+    "rust/crates/ca-core/src/vector_map/discovery.rs": "23b3db8aa9d758850efb5b5e644315b03c74a919a245085f066f089e4c1585e2",
+    "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "cbea4ddfb6a1afc3e18a073d6683203815a83169f1ff75a099c2f9c0e670bc6e",
+    "rust/crates/ca-core/src/vector_map/evidence.rs": "cd1189bb39b42ecc3eb3c8356069adb8e0779b4d317dd2b6b3e69a5b22c236fc",
+    "rust/crates/ca-core/src/vector_map/feature_editing.rs": "725cff8a25e095a4a24ed146ef4c807ee7f00146fd6e3a17b9f5ad5e9497f6b4",
+    "rust/crates/ca-core/src/vector_map/fitting.rs": "b2d3a1e2f130a5d296e8c5954a70de8617d1e72e6194efe0c84fdddb33bcecf4",
+    "rust/crates/ca-core/src/vector_map/integration.rs": "662970db0abd31ee42f5faff24162c7544f171891cc416bcaf0f9de241400c3f",
+    "rust/crates/ca-core/src/vector_map/junctions.rs": "85da61860390a38c2470a4e00270a6227707ea059b1a8842c7b0ca70d259516c",
+    "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "37db6fa0394d90e067b1486782ed779faebd08ff5b65ccb0707ac977191e509d",
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "e09c1a1aba04fb5e6abb3a607821b8ffb3aa7b78f1532eb2a493db3bf27fcfb7",
+    "rust/crates/ca-core/src/vector_map/paint_divider.rs": "d145c696082084e6c8c8eb56c81c112890879d8f2f9261543002f31ac9dbf9da",
+    "rust/crates/ca-core/src/vector_map/quality.rs": "58b15c3fa53dc22bb1bb71c36aa95badecb47c6ef0d62f0e2b928390517095c2",
+    "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "db316733520608c28fbced25503fc83cb3e33ef9f7b9c6cece5d30a83d5dc176",
+    "rust/crates/ca-core/src/vector_map/relations.rs": "1fa302063cb4958915ea8311d24027ab98544886422ce0955b230c97f466d38f",
+    "rust/crates/ca-core/src/vector_map/segmentation.rs": "5cdc6641848bcc40c759d4b07e5033cb78ca73bf55b27e4a92796051439ab092",
+    "rust/crates/ca-core/src/vector_map/signals.rs": "48f4c5926203aadb1c8de504fb489f760ab9679af91a087345c06221450d38fd",
+    "rust/crates/ca-core/src/vector_map/surface.rs": "c20bd0ccbf7a3e59d34d9d8522655a0cb4ec4629f40f650f341f999007825c8d",
+    "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "2c58685ce97e4b6a2ae44bbf80aafb3927d203d414c72eb0f4e5782e64cf6415",
+    "rust/crates/ca-core/src/vector_map.rs": "b03e6c83ba296a4f45346c99dd8c7c828bf76722e562c80c02025b65713f09ed",
+    "rust/crates/ca-core/src/volume.rs": "6842e46cefa1145d750515430a6e4c472996fea20c0bacd4a348b9b432a8990e",
+    "rust/crates/ca-py/src/bag.rs": "af643f2529f958cd5b120ec2b41b9e1f227f2c3cdef188481331a23f7f4940ca",
+    "rust/crates/ca-py/src/copc_spatial.rs": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+    "rust/crates/ca-py/src/imu.rs": "f2c47c58fe653fed5d5f91e21444f9e8021a28c6ee39496a790b376d93eb6b60",
+    "rust/crates/ca-py/src/imu_window.rs": "d82292228622a9e81f3ce77aa5fd3e3311550ef07c093c1ba8567c2fbd53fa15",
+    "rust/crates/ca-py/src/lib.rs": "2513ba438b074da8d32e2937ffa4a79002108efe3e63bfeb029265ad200036da",
+    "rust/crates/ca-py/src/odometry.rs": "9e299a7a7166a7a2e57cd3377f8c51e4602d32db0877e64e7d2638ce551fdb93",
+    "rust/crates/ca-py/src/pose_graph.rs": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+    "rust/crates/ca-py/src/vector_map/corridor_lanes.rs": "c72de64e984be2ecfde9f84f7d20c5881645a20deca981c46caebb4b3ec0d72f",
+    "rust/crates/ca-py/src/vector_map.rs": "e9c06155aa46555e4a2c63b5b9e9cbcb9bf3135bc25d6eb732f31c3f9c0c4b4f",
+    "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+    "rust/crates/ca-py/Cargo.toml": "feca0ceb6f21f22ea88da4eaf42bb359a1a8336ef48aa3fa50b3b07da205ab3c",
+    "rust/crates/ca-py/Cargo.lock": "47b5a2a1afe85975ac43106b78eec0c463499e19023215feba1ed23511e82500",
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "3190ce41e16a8f005897bb410309b91bae39bc2ba32bae3013e17574d9af160d",
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "c01be68cafd0337b82d47758d9138535d36fb252ac90cf9c6b66ddffd78cf599"
+  }
+}

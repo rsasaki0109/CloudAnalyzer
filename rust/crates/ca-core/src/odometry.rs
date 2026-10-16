@@ -99,6 +99,15 @@ pub struct Odometry {
     error_count: usize,
     /// The world points the last scan added to the map (see [`Odometry::finish`]).
     placed: Vec<[f64; 3]>,
+    last_iterations: usize,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum PredictionError {
+    #[error("relative prediction requires a previously registered scan")]
+    NoPreviousScan,
+    #[error("relative prediction must be a finite proper rigid transform")]
+    InvalidTransform,
 }
 
 /// The local map: a voxel grid keeping at most so many points per voxel,
@@ -436,6 +445,7 @@ impl Odometry {
             error_sum: 0.0,
             error_count: 0,
             placed: Vec::new(),
+            last_iterations: 0,
         }
     }
 
@@ -456,6 +466,11 @@ impl Odometry {
         &self.placed
     }
 
+    /// Gauss-Newton steps of the last registration; zero without alignment.
+    pub fn last_iterations(&self) -> usize {
+        self.last_iterations
+    }
+
     fn sigma(&self) -> f64 {
         if self.error_count == 0 {
             self.params.initial_sigma
@@ -467,6 +482,45 @@ impl Odometry {
     /// Start registering the next scan (in its sensor's frame): filtered,
     /// deskewed, thinned and put where a constant velocity predicts it.
     pub fn begin(&self, scan: &PointCloud) -> Registration {
+        self.begin_scan(scan, None)
+    }
+
+    /// Start with a relative pose mapping the new scan into the previous scan's
+    /// frame: `prediction = last_pose * relative_prediction`. Only the ICP
+    /// initial pose changes; deskew still uses the ordinary motion model.
+    /// Invalid predictions leave all odometry state untouched.
+    pub fn begin_with_prediction(
+        &self,
+        scan: &PointCloud,
+        relative_prediction: &Rigid,
+    ) -> Result<Registration, PredictionError> {
+        if self.poses.is_empty() {
+            return Err(PredictionError::NoPreviousScan);
+        }
+        let r = &relative_prediction.rotation;
+        let determinant = r[0][0] * (r[1][1] * r[2][2] - r[1][2] * r[2][1])
+            - r[0][1] * (r[1][0] * r[2][2] - r[1][2] * r[2][0])
+            + r[0][2] * (r[1][0] * r[2][1] - r[1][1] * r[2][0]);
+        if !r
+            .iter()
+            .flatten()
+            .chain(&relative_prediction.translation)
+            .all(|v| v.is_finite())
+            || (determinant - 1.0).abs() > 1e-6
+            || !determinant.is_finite()
+            || (0..3).any(|i| {
+                (0..3).any(|j| {
+                    let dot: f64 = (0..3).map(|k| r[i][k] * r[j][k]).sum();
+                    (dot - f64::from(u8::from(i == j))).abs() > 1e-6
+                })
+            })
+        {
+            return Err(PredictionError::InvalidTransform);
+        }
+        Ok(self.begin_scan(scan, Some(relative_prediction)))
+    }
+
+    fn begin_scan(&self, scan: &PointCloud, relative_prediction: Option<&Rigid>) -> Registration {
         let p = self.params;
         // Constant velocity: the last motion again.
         let n = self.poses.len();
@@ -495,7 +549,7 @@ impl Odometry {
         let thinned = thin(&frame, 1.5 * p.map_voxel);
         let prediction = match n {
             0 => Rigid::IDENTITY,
-            _ => self.poses[n - 1].compose(&motion),
+            _ => self.poses[n - 1].compose(relative_prediction.unwrap_or(&motion)),
         };
         let source = if self.map.is_empty() || thinned.len() < 10 {
             Vec::new()
@@ -559,6 +613,7 @@ impl Odometry {
     pub fn finish(&mut self, registration: Registration) -> Rigid {
         let p = self.params;
         let r = registration;
+        self.last_iterations = r.iterations;
         let mut pose = r.total.compose(&r.prediction);
         pose.rotation = orthonormal(&pose.rotation);
         // How far the motion model was off, as the most a point in range moved.
@@ -582,7 +637,22 @@ impl Odometry {
 
     /// Register the next scan (in its sensor's frame) and return its pose.
     pub fn register(&mut self, scan: &PointCloud) -> Rigid {
-        let mut registration = self.begin(scan);
+        let registration = self.begin(scan);
+        self.complete(registration)
+    }
+
+    /// Register with an externally supplied relative initial pose. See
+    /// [`Odometry::begin_with_prediction`] for its frame and deskew conventions.
+    pub fn register_with_prediction(
+        &mut self,
+        scan: &PointCloud,
+        relative_prediction: &Rigid,
+    ) -> Result<Rigid, PredictionError> {
+        let registration = self.begin_with_prediction(scan, relative_prediction)?;
+        Ok(self.complete(registration))
+    }
+
+    fn complete(&mut self, mut registration: Registration) -> Rigid {
         if registration.needs_alignment() {
             loop {
                 let equations = self.equations(&registration);
@@ -598,6 +668,74 @@ impl Odometry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn relative_prediction_composes_on_the_right_without_changing_deskew() {
+        let mut odometry = Odometry::new(OdometryParams {
+            deskew: true,
+            ..OdometryParams::default()
+        });
+        let empty = PointCloud::default();
+        odometry.register(&empty);
+        let last = Rigid {
+            rotation: crate::pose_graph::exp_so3(&[0.0, 0.0, 0.4]),
+            translation: [4.0, -2.0, 1.0],
+        };
+        odometry.register_with_prediction(&empty, &last).unwrap();
+        let motion = Rigid {
+            rotation: crate::pose_graph::exp_so3(&[0.1, -0.2, 0.3]),
+            translation: [0.5, -0.3, 0.2],
+        };
+        let mut scan = PointCloud {
+            positions: (0..20).map(|k| [2.0, k as f64, 1.0]).collect(),
+            ..PointCloud::default()
+        };
+        scan.attributes.push(crate::Attribute {
+            name: TIME.into(),
+            values: crate::AttributeValues::F32((0..20).map(|k| k as f32).collect()),
+        });
+        let original = odometry.begin(&scan);
+        let predicted = odometry.begin_with_prediction(&scan, &motion).unwrap();
+        assert_eq!(original.frame, predicted.frame);
+        assert_eq!(predicted.prediction, last.compose(&motion));
+        assert_ne!(predicted.prediction, motion.compose(&last));
+        let found = odometry.register_with_prediction(&empty, &motion).unwrap();
+        for (a, b) in found
+            .to_matrix()
+            .iter()
+            .zip(last.compose(&motion).to_matrix())
+        {
+            assert!((a - b).abs() < 1e-14);
+        }
+        assert_eq!(odometry.last_iterations(), 0);
+    }
+
+    #[test]
+    fn invalid_predictions_cannot_change_poses_map_or_threshold_history() {
+        let mut odometry = Odometry::new(OdometryParams::default());
+        let empty = PointCloud::default();
+        assert!(
+            odometry
+                .register_with_prediction(&empty, &Rigid::IDENTITY)
+                .is_err()
+        );
+        assert!(odometry.poses().is_empty());
+        odometry.register(&empty);
+        for case in 0..4 {
+            let mut bad = Rigid::IDENTITY;
+            match case {
+                0 => bad.rotation[0][0] = 2.0,
+                1 => bad.rotation[0][0] = -1.0,
+                2 => bad.translation[1] = f64::NAN,
+                _ => bad.rotation[2][1] = f64::INFINITY,
+            }
+            assert!(odometry.register_with_prediction(&empty, &bad).is_err());
+            assert_eq!(odometry.poses(), &[Rigid::IDENTITY]);
+            assert!(odometry.map().is_empty());
+            assert_eq!(odometry.error_count, 0);
+            assert_eq!(odometry.last_iterations(), 0);
+        }
+    }
 
     /// Ground and boxes scattered about, in world coordinates.
     fn town() -> Vec<[f64; 3]> {

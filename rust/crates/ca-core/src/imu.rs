@@ -46,6 +46,46 @@ pub struct PreintegratedImu {
     pub linearization_bias: [f64; 6],
 }
 
+/// An immutable recording snapshot, with header-time ordering checked once.
+/// Each integration searches for its endpoints, then visits only overlapping
+/// held-measurement intervals. The complete topic remains resident in memory.
+pub struct ImuSeries {
+    samples: Vec<RawImuMessage>,
+}
+
+impl ImuSeries {
+    pub fn new(samples: Vec<RawImuMessage>) -> Result<Self, ImuError> {
+        if samples.len() < 2 {
+            return Err(ImuError("IMU series needs at least two samples".into()));
+        }
+        for pair in samples.windows(2) {
+            elapsed(pair[0].stamp_ns, pair[1].stamp_ns)?;
+        }
+        Ok(Self { samples })
+    }
+
+    pub fn samples(&self) -> &[RawImuMessage] {
+        &self.samples
+    }
+
+    pub fn preintegrate(
+        &self,
+        start_ns: i64,
+        end_ns: i64,
+        params: &PreintegrationParams,
+    ) -> Result<PreintegratedImu, ImuError> {
+        elapsed(start_ns, end_ns)?;
+        if start_ns < self.samples[0].stamp_ns || end_ns > self.samples.last().unwrap().stamp_ns {
+            return Err(ImuError(
+                "IMU samples do not bracket the requested interval".into(),
+            ));
+        }
+        let left = self.samples.partition_point(|s| s.stamp_ns <= start_ns) - 1;
+        let right = self.samples.partition_point(|s| s.stamp_ns < end_ns);
+        preintegrate(&self.samples[left..=right], start_ns, end_ns, params)
+    }
+}
+
 pub(crate) fn skew([x, y, z]: [f64; 3]) -> Mat3 {
     [[0.0, -z, y], [z, 0.0, -x], [-y, x, 0.0]]
 }
@@ -411,5 +451,81 @@ mod tests {
                     < 1e-18
             );
         }
+    }
+
+    #[test]
+    fn indexed_series_preserves_all_preintegration_bits_on_clipped_intervals() {
+        let epoch = 1_700_000_000_000_000_123;
+        let data: Vec<_> = (0..100).map(|i| sample(epoch + i * 10_000_000)).collect();
+        let series = ImuSeries::new(data.clone()).unwrap();
+        for (a, b) in [
+            (0, 10_000_000),
+            (5_000_001, 159_999_999),
+            (970_000_000, 990_000_000),
+        ] {
+            let expected = preintegrate(&data, epoch + a, epoch + b, &params()).unwrap();
+            let actual = series
+                .preintegrate(epoch + a, epoch + b, &params())
+                .unwrap();
+            assert_eq!(actual.delta_rotation, expected.delta_rotation);
+            assert_eq!(actual.delta_velocity, expected.delta_velocity);
+            assert_eq!(actual.delta_position, expected.delta_position);
+            assert_eq!(actual.covariance, expected.covariance);
+            assert_eq!(actual.bias_jacobian, expected.bias_jacobian);
+            assert_eq!(actual.linearization_bias, expected.linearization_bias);
+            assert_eq!(actual.integration_steps, expected.integration_steps);
+            assert_eq!(actual.delta_time_s, expected.delta_time_s);
+            assert_eq!(actual.frame_id, expected.frame_id);
+        }
+    }
+
+    #[test]
+    fn indexed_series_rejects_bad_order_and_preserves_original_gap_and_frame_checks() {
+        for data in [
+            vec![],
+            vec![sample(0)],
+            vec![sample(1), sample(1)],
+            vec![sample(2), sample(1)],
+            vec![sample(i64::MIN), sample(i64::MAX)],
+        ] {
+            assert!(ImuSeries::new(data).is_err());
+        }
+        let mut data = vec![
+            sample(0),
+            sample(100_000_000),
+            sample(110_000_000),
+            sample(120_000_000),
+        ];
+        data[0].frame_id = "other".into();
+        data[0].angular_velocity_covariance[0] = -1.0;
+        let series = ImuSeries::new(data).unwrap();
+        assert!(
+            series
+                .preintegrate(100_000_000, 120_000_000, &params())
+                .is_ok()
+        );
+        // Clipping a long held interval to 1 ns must not hide the original gap.
+        assert!(
+            series
+                .preintegrate(99_999_999, 100_000_000, &params())
+                .is_err()
+        );
+        for (a, b) in [
+            (-1, 1),
+            (120_000_000, 120_000_001),
+            (1, 1),
+            (2, 1),
+            (i64::MIN, i64::MAX),
+        ] {
+            assert!(series.preintegrate(a, b, &params()).is_err());
+        }
+        let mut data = vec![sample(0), sample(10_000_000), sample(20_000_000)];
+        data[1].frame_id = "different".into();
+        assert!(
+            ImuSeries::new(data)
+                .unwrap()
+                .preintegrate(0, 1, &params())
+                .is_err()
+        );
     }
 }

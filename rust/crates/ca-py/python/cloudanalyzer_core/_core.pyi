@@ -237,6 +237,23 @@ class ImuLinearization(ImuEvaluation):
     whitened_jacobian_bias: npt.NDArray[np.float64]
     whitened_jacobian_gravity: npt.NDArray[np.float64]
 
+class ImuSeries:
+    """Immutable whole-topic snapshot from BagReader.imu_series(); no file access after creation."""
+
+    def __len__(self) -> int: ...
+    def timestamps_ns(self) -> npt.NDArray[np.int64]: ...
+    def frame_ids(self) -> list[str]: ...
+    def preintegrate(
+        self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
+        accel_noise_density: float, max_gap_s: float = 0.05,
+        bias: tuple[float, float, float, float, float, float] | None = None,
+    ) -> PreintegratedImu: ...
+    def factor(
+        self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
+        accel_noise_density: float, max_gap_s: float = 0.05,
+        bias: tuple[float, float, float, float, float, float] | None = None,
+    ) -> ImuFactor: ...
+
 class ImuFactor:
     """Created by BagReader.imu_factor(); owns the measurement and covariance factorization.
     Poses are IMU-to-world (4,4); velocity and gravity use world axes.
@@ -358,6 +375,9 @@ class BagReader:
         Zero covariance is unknown. timestamps_ns retains exact integer time.
         """
         ...
+    def imu_series(self, topic: str | None = None) -> ImuSeries:
+        """Decode and validate header ordering once; keep the entire topic in memory."""
+        ...
     def preintegrate_imu(
         self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
         accel_noise_density: float, max_gap_s: float = 0.05,
@@ -400,9 +420,15 @@ class LidarOdometry:
         deskew: bool = False,
     ) -> None: ...
     def register(
-        self, positions: npt.NDArray[np.float64], times: npt.NDArray[np.float32] | None = None
+        self, positions: npt.NDArray[np.float64], times: npt.NDArray[np.float32] | None = None,
+        *, relative_prediction: npt.NDArray[np.float64] | None = None,
     ) -> npt.NDArray[np.float64]:
-        """Register the next scan (N, 3), in its sensor's frame: its pose, 4x4."""
+        """Register a scan (N,3); optional 4x4 prediction maps it into the previous scan frame.
+        The first scan anchors identity. Predictions affect ICP initialization, not deskew.
+        """
+        ...
+    def last_iterations(self) -> int:
+        """Gauss-Newton steps of the last registration, zero without alignment."""
         ...
     def poses(self) -> npt.NDArray[np.float64]:
         """Every pose so far, (K, 4, 4)."""

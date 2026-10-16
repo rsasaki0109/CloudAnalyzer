@@ -240,6 +240,10 @@ class ImuLinearization(ImuEvaluation):
 class ImuSeries:
     """Immutable whole-topic snapshot from BagReader.imu_series(); no file access after creation."""
 
+    @property
+    def acceleration_scale(self) -> float:
+        """Raw-acceleration multiplier applied before SI-unit bias; read-only."""
+        ...
     def __len__(self) -> int: ...
     def timestamps_ns(self) -> npt.NDArray[np.int64]: ...
     def frame_ids(self) -> list[str]: ...
@@ -379,19 +383,26 @@ class BagReader:
         Zero covariance is unknown. timestamps_ns retains exact integer time.
         """
         ...
-    def imu_series(self, topic: str | None = None) -> ImuSeries:
-        """Decode and validate header ordering once; keep the entire topic in memory."""
+    def imu_series(self, topic: str | None = None, *, acceleration_scale: float = 1.0) -> ImuSeries:
+        """Decode and validate ordering once; retain raw fields and the configured scale.
+        Positive finite acceleration_scale converts acceleration to m/s^2 during
+        integration, before SI bias subtraction. Noise densities also use SI units.
+        The complete topic stays in memory. No unit inference or frame conversion.
+        """
         ...
     def preintegrate_imu(
         self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
         accel_noise_density: float, max_gap_s: float = 0.05,
         bias: tuple[float, float, float, float, float, float] | None = None,
         topic: str | None = None,
+        acceleration_scale: float = 1.0,
     ) -> PreintegratedImu:
         """Held-measurement preintegration in the initial IMU frame, excluding gravity.
         Density units: rad/s/sqrt(Hz), m/s^2/sqrt(Hz). Bias order: gyro, accel.
         Covariance/Jacobian rows: right-local rotation, additive velocity, position.
         Missing/invalid measurements, time gaps and frame changes raise ValueError.
+        Positive finite acceleration_scale is applied before SI-unit bias subtraction.
+        Raw reported covariances determine availability; explicit SI densities define noise.
         """
         ...
     def imu_factor(
@@ -399,6 +410,7 @@ class BagReader:
         accel_noise_density: float, max_gap_s: float = 0.05,
         bias: tuple[float, float, float, float, float, float] | None = None,
         topic: str | None = None,
+        acceleration_scale: float = 1.0,
     ) -> ImuFactor:
         """A reusable inertial factor; requires numerically positive definite covariance."""
         ...

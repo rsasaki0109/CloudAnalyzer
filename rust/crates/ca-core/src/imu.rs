@@ -51,21 +51,41 @@ pub struct PreintegratedImu {
 /// held-measurement intervals. The complete topic remains resident in memory.
 pub struct ImuSeries {
     samples: Vec<RawImuMessage>,
+    acceleration_scale: f64,
 }
 
 impl ImuSeries {
     pub fn new(samples: Vec<RawImuMessage>) -> Result<Self, ImuError> {
+        Self::new_with_acceleration_scale(samples, 1.0)
+    }
+
+    /// Retains raw samples; converts acceleration before subtracting SI-unit bias.
+    /// Noise densities and biases remain in SI units. Reported covariances are
+    /// unmodified and determine availability only, as in `preintegrate`.
+    pub fn new_with_acceleration_scale(
+        samples: Vec<RawImuMessage>,
+        acceleration_scale: f64,
+    ) -> Result<Self, ImuError> {
+        validate_acceleration_scale(acceleration_scale)?;
         if samples.len() < 2 {
             return Err(ImuError("IMU series needs at least two samples".into()));
         }
         for pair in samples.windows(2) {
             elapsed(pair[0].stamp_ns, pair[1].stamp_ns)?;
         }
-        Ok(Self { samples })
+        Ok(Self {
+            samples,
+            acceleration_scale,
+        })
     }
 
+    /// Original measurements and covariances, before the configured conversion.
     pub fn samples(&self) -> &[RawImuMessage] {
         &self.samples
+    }
+
+    pub fn acceleration_scale(&self) -> f64 {
+        self.acceleration_scale
     }
 
     pub fn preintegrate(
@@ -82,8 +102,23 @@ impl ImuSeries {
         }
         let left = self.samples.partition_point(|s| s.stamp_ns <= start_ns) - 1;
         let right = self.samples.partition_point(|s| s.stamp_ns < end_ns);
-        preintegrate(&self.samples[left..=right], start_ns, end_ns, params)
+        preintegrate_with_acceleration_scale(
+            &self.samples[left..=right],
+            start_ns,
+            end_ns,
+            params,
+            self.acceleration_scale,
+        )
     }
+}
+
+fn validate_acceleration_scale(scale: f64) -> Result<(), ImuError> {
+    if !scale.is_finite() || scale <= 0.0 {
+        return Err(ImuError(
+            "IMU acceleration_scale must be finite and positive".into(),
+        ));
+    }
+    Ok(())
 }
 
 pub(crate) fn skew([x, y, z]: [f64; 3]) -> Mat3 {
@@ -133,6 +168,22 @@ pub fn preintegrate(
     end_ns: i64,
     params: &PreintegrationParams,
 ) -> Result<PreintegratedImu, ImuError> {
+    preintegrate_with_acceleration_scale(samples, start_ns, end_ns, params, 1.0)
+}
+
+/// Explicitly converts raw acceleration to m/s^2 before subtracting bias.
+/// Raw fields/statuses and covariance availability checks remain unmodified.
+/// Bias and noise density arguments use SI units after conversion; the reported
+/// sensor covariance is not the integration noise model. Scale 1 retains the
+/// original arithmetic. No sorting, extrapolation or sensor-unit inference occurs.
+pub fn preintegrate_with_acceleration_scale(
+    samples: &[RawImuMessage],
+    start_ns: i64,
+    end_ns: i64,
+    params: &PreintegrationParams,
+    acceleration_scale: f64,
+) -> Result<PreintegratedImu, ImuError> {
+    validate_acceleration_scale(acceleration_scale)?;
     let total = elapsed(start_ns, end_ns)?;
     if !params.gyro_noise_density.is_finite()
         || params.gyro_noise_density < 0.0
@@ -208,7 +259,14 @@ pub fn preintegrate(
             ));
         }
         let dt = elapsed(left, right)?;
-        let acceleration = std::array::from_fn(|i| sample.acceleration[i] - params.accel_bias[i]);
+        let acceleration = std::array::from_fn(|i| {
+            let measured = if acceleration_scale == 1.0 {
+                sample.acceleration[i]
+            } else {
+                sample.acceleration[i] * acceleration_scale
+            };
+            measured - params.accel_bias[i]
+        });
         let theta =
             std::array::from_fn(|i| (sample.angular_velocity[i] - params.gyro_bias[i]) * dt);
         let rotation = out.delta_rotation;
@@ -325,6 +383,82 @@ mod tests {
         assert!((out.delta_position[2] - 4.905).abs() < 1e-12);
         assert_eq!(out.integration_steps, 100);
     }
+
+    #[test]
+    fn acceleration_units_convert_before_si_bias_without_rescaling_si_noise() {
+        let scale = 9.80665;
+        let dt = 0.02;
+        let mut data = vec![sample(0), sample(20_000_000)];
+        for s in &mut data {
+            s.angular_velocity = [0.0; 3];
+            s.acceleration = [0.25, -0.5, 1.0];
+            s.acceleration_covariance = [0.1, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.3];
+        }
+        let p = PreintegrationParams {
+            gyro_noise_density: 0.0,
+            accel_noise_density: 0.2,
+            gyro_bias: [0.0; 3],
+            accel_bias: [0.3, -0.2, 0.1],
+            ..params()
+        };
+        let series = ImuSeries::new_with_acceleration_scale(data.clone(), scale).unwrap();
+        assert_eq!(series.acceleration_scale(), scale);
+        assert_eq!(series.samples()[0].acceleration, data[0].acceleration);
+        assert_eq!(
+            series.samples()[0].acceleration_covariance,
+            data[0].acceleration_covariance
+        );
+        let out = series.preintegrate(0, 20_000_000, &p).unwrap();
+        assert_eq!(out.delta_rotation, IDENTITY);
+        for i in 0..3 {
+            let force = data[0].acceleration[i] * scale - p.accel_bias[i];
+            assert!((out.delta_velocity[i] - force * dt).abs() < 1e-15);
+            assert!((out.delta_position[i] - force * dt * dt * 0.5).abs() < 1e-17);
+            // One held interval with SI density sigma: Var(v)=sigma^2 dt,
+            // Cov(v,p)=sigma^2 dt^2/2, Var(p)=sigma^2 dt^3/4.
+            let sigma2 = p.accel_noise_density.powi(2);
+            assert!((out.covariance[i + 3][i + 3] - sigma2 * dt).abs() < 1e-18);
+            assert!((out.covariance[i + 3][i + 6] - sigma2 * dt * dt * 0.5).abs() < 1e-20);
+            assert!((out.covariance[i + 6][i + 6] - sigma2 * dt.powi(3) * 0.25).abs() < 1e-22);
+            assert_eq!(out.linearization_bias[i + 3], p.accel_bias[i]);
+        }
+    }
+
+    #[test]
+    fn acceleration_scale_retains_unusable_samples_and_endpoint_rules() {
+        let p = params();
+        for sentinel in [-1.0, -2.0] {
+            let mut data = vec![sample(0), sample(10_000_000), sample(20_000_000)];
+            data[0].acceleration_covariance[0] = sentinel;
+            let series = ImuSeries::new_with_acceleration_scale(data, 0.001).unwrap();
+            assert_eq!(series.samples()[0].acceleration_covariance[0], sentinel);
+            assert!(!series.samples()[0].acceleration_status().is_usable());
+            assert!(series.preintegrate(0, 10_000_000, &p).is_err());
+            // An unavailable sample outside the requested interval is not used.
+            assert!(series.preintegrate(10_000_000, 20_000_000, &p).is_ok());
+        }
+        let mut data = vec![sample(0), sample(10_000_000), sample(20_000_000)];
+        data[2].acceleration_covariance[0] = -1.0;
+        let series = ImuSeries::new_with_acceleration_scale(data, 9.80665).unwrap();
+        assert!(series.preintegrate(0, 20_000_000, &p).is_ok());
+        assert!(series.preintegrate(-1, 20_000_000, &p).is_err());
+        assert!(series.preintegrate(0, 20_000_001, &p).is_err());
+    }
+
+    #[test]
+    fn acceleration_scale_rejects_invalid_values_and_nonfinite_integration() {
+        let data = vec![sample(0), sample(10_000_000)];
+        for scale in [0.0, -1.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert!(ImuSeries::new_with_acceleration_scale(data.clone(), scale).is_err());
+            assert!(
+                preintegrate_with_acceleration_scale(&data, 0, 10_000_000, &params(), scale)
+                    .is_err()
+            );
+        }
+        let series = ImuSeries::new_with_acceleration_scale(data, 1e308).unwrap();
+        assert!(series.preintegrate(0, 10_000_000, &params()).is_err());
+    }
+
     #[test]
     fn bias_jacobian_matches_independent_central_differences() {
         let data: Vec<_> = (0..=25)

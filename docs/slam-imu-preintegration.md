@@ -56,7 +56,7 @@ estimates are not required. Multiple IMU topics require explicit selection.
 The mean follows the discrete manifold preintegration equations:
 
 ```text
-a = measured_acceleration - accelerometer_bias
+a = acceleration_scale * measured_acceleration - accelerometer_bias
 w = measured_angular_velocity - gyro_bias
 delta_position += delta_velocity * dt + 0.5 * delta_rotation * a * dt^2
 delta_velocity += delta_rotation * a * dt
@@ -78,6 +78,45 @@ their analytical Jacobians use the same held-measurement discretization.
 Reported ROS covariance values determine availability; they do not replace the
 explicit density model. Biases remain fixed at the supplied linearization point;
 bias random walk and calibration uncertainty are not modeled.
+
+### Explicit acceleration units
+
+`preintegrate_imu()`, `imu_factor()` and `imu_series()` accept the keyword
+`acceleration_scale=1.0`. Supply a positive finite multiplier when the recording
+uses vendor acceleration units. The multiplier converts acceleration to m/s^2
+**before** subtracting the accelerometer bias. Biases and noise densities are
+always supplied in the SI units listed above; they are not multiplied by this
+setting. The default 1.0 preserves existing results and arithmetic.
+
+For the flat-wall Livox recording, the published sensor configuration specifies
+an acceleration scale of 9.80665:
+
+```python
+series = reader.imu_series("/livox/imu", acceleration_scale=9.80665)
+print(series.acceleration_scale)  # read-only configuration
+delta = series.preintegrate(
+    start_ns, end_ns,
+    gyro_noise_density=gyro_density,
+    accel_noise_density=accel_density,
+    bias=(bg_x, bg_y, bg_z, ba_x, ba_y, ba_z),
+)
+```
+
+The snapshot retains the original measurements and reported covariances.
+Conversion occurs during integration without allocating another sample array.
+`imu_raw()` remains unmodified, including ROS missing/invalid covariance
+sentinels. Reported covariance still controls availability only; explicit SI
+noise densities define the integrated covariance. The method does not infer
+units from measurement magnitudes, fit a scale, remove gravity, change frames,
+or extrapolate uncovered intervals. Nonfinite integration results are rejected.
+Raw accelerometer biases or noise densities in vendor units must be converted
+by the caller before use.
+
+The [flat-wall input packet](../benchmarks/slam/flatwall-message-order/README.md)
+records the source dataset and the separate input-order validation. This unit
+conversion is not a calibrated sensor model or a trajectory accuracy result.
+The [unit-conversion audit](../benchmarks/slam/flatwall-imu-scale/README.md)
+contains frozen old/new receipts and independent nominal-dynamics checks.
 
 This is an estimator building block based on
 [manifold IMU preintegration](https://www.roboticsproceedings.org/rss11/p06.pdf),

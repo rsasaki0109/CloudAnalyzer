@@ -1,0 +1,190 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_scale.v1",
+  "inputs": {
+    "recordings": {
+      "flatwall": {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6",
+        "topic": "/livox/imu"
+      },
+      "nclt-april": {
+        "name": "2012-04-29.mcap",
+        "bytes": 3430860,
+        "sha256": "edb228d025a57fed7efa58e752e100bee10caed76f7b638b8f70b3f40490103e",
+        "topic": "/ms25/raw"
+      },
+      "nclt-june": {
+        "name": "2012-06-15.mcap",
+        "bytes": 3353544,
+        "sha256": "40062dbf96e5291b5aa0401b9020c9bbf4f091f7b4eb4f659038ec53c9fbf218",
+        "topic": "/ms25/raw"
+      }
+    },
+    "controller": {
+      "name": "audit_flatwall_imu_scale.py",
+      "bytes": 10374,
+      "sha256": "4ed48b3c54a778b63c1d113a295b25aad971b074f1f429c0cbf802854170b4c9"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7369728,
+      "sha256": "bf0ba44457413701fe974b7c30b800573c0042210be40bfbc0d2750e505cf72b"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "scipy_rotation_binary": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    }
+  },
+  "baseline": true,
+  "acceleration_scale": 9.80665,
+  "params": {
+    "gyro_noise_density": 0.02,
+    "accel_noise_density": 0.15,
+    "max_gap_s": 0.05
+  },
+  "bias": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "intervals": "Whole topic, first/middle/last 100 ms windows; integer-ns clipping; no fitting",
+  "oracle_tolerance": {
+    "rotation_atol": 1e-11,
+    "velocity_rtol": 1e-10,
+    "velocity_atol": 1e-11,
+    "position_rtol": 1e-10,
+    "position_atol": 1e-10
+  },
+  "scope": "Raw-field/default-result parity and scaled nominal preintegration only. No reference archive access, trajectory, deskew, calibrated noise model or speed claim.",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 1956,
+    "sha256": "2c7f95b0fe2a64bcde5228e342323a0d61ff7692f132aeb29a0a0df29cf869da"
+  },
+  "results": {
+    "flatwall": {
+      "samples": 3755,
+      "raw_fields_sha256": "b9f056d17bb3e009b1cee502bd25f982b023bb72c45b48b8e83623fd63ee88ec",
+      "intervals": [
+        {
+          "start_ns": 1656505431202246666,
+          "end_ns": 1656505449799885511,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "f8cd4fe678399796aa00914e3568102c2262cbdedace5f257214dec87c0c0827"
+          }
+        },
+        {
+          "start_ns": 1656505431202246683,
+          "end_ns": 1656505431302246683,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "3ce337c1308fc3eddf2c57f83dc29e0b78b528e22a08e54229dddd1213bfa7c8"
+          }
+        },
+        {
+          "start_ns": 1656505440501066105,
+          "end_ns": 1656505440601066105,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "8e49b830ea3c8c768ded42b6f84b6e8f1e4a52a670e3013ec39816e025cc164a"
+          }
+        },
+        {
+          "start_ns": 1656505449699885452,
+          "end_ns": 1656505449799885452,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "522d3fb62ce762eddf9b1f89371a9dabddd560c4d67b705fb2384e83d9fb926d"
+          }
+        }
+      ]
+    },
+    "nclt-april": {
+      "samples": 9043,
+      "raw_fields_sha256": "8182930ab9f66c4c13066b3356c67c45537c3a4462744f03222a9d20a258b3b9",
+      "intervals": [
+        {
+          "start_ns": 1335706505020338000,
+          "end_ns": 1335706693450174000,
+          "legacy": {
+            "accepted": false,
+            "error": "IMU sample gap exceeds max_gap_s at 1335706511650353000"
+          }
+        },
+        {
+          "start_ns": 1335706505020338017,
+          "end_ns": 1335706505120338017,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "02dd84781b22a60fb246b0eecac16579e47ecd61449bbf01bf2b272f04431a4e"
+          }
+        },
+        {
+          "start_ns": 1335706599235256017,
+          "end_ns": 1335706599335256017,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "59af0aacdf6de7d4681ab4e68bbd8df3fcb9ed77821f1af0ce3e562b5d65ed25"
+          }
+        },
+        {
+          "start_ns": 1335706693350173941,
+          "end_ns": 1335706693450173941,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "3f42ff8eebb4a19499c7d268044b3a1fd3af7700bb67e4b80b292230060221b1"
+          }
+        }
+      ]
+    },
+    "nclt-june": {
+      "samples": 8839,
+      "raw_fields_sha256": "68ba44737ae9bdb6e16c607aa827e2f3404d694a018efd246e9718f109899166",
+      "intervals": [
+        {
+          "start_ns": 1339761399400149000,
+          "end_ns": 1339761589021731000,
+          "legacy": {
+            "accepted": false,
+            "error": "IMU sample gap exceeds max_gap_s at 1339761399640059000"
+          }
+        },
+        {
+          "start_ns": 1339761399400149017,
+          "end_ns": 1339761399500149017,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "cf47c56334955028f0ceee93ab277c5154189ed2f70579481749c3a1d3a52b9c"
+          }
+        },
+        {
+          "start_ns": 1339761494210940017,
+          "end_ns": 1339761494310940017,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "397012a97205bc09c94027c87ea7439b2d2382c2c4cdbd4933bb4706622d8bb6"
+          }
+        },
+        {
+          "start_ns": 1339761588921730941,
+          "end_ns": 1339761589021730941,
+          "legacy": {
+            "accepted": true,
+            "fields_sha256": "3736815091e8fa4e279f208d5ef9ca8e2c5f3cb14cc04229e00c2777855cd857"
+          }
+        }
+      ]
+    }
+  },
+  "raw_fields_preserved": true,
+  "default_results_match_baseline": false,
+  "ground_truth_archive_read": false
+}

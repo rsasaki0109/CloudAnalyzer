@@ -1,0 +1,42 @@
+{
+  "schema": "cloudanalyzer.flatwall_gicp_shapes.v1",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 14516,
+    "sha256": "c18432d25c6022a3cc3f07cb5246f72437b6e962a0ec8e4a0d5d222fbea16981"
+  },
+  "controller": {
+    "name": "audit_flatwall_gicp_shapes.py",
+    "bytes": 13141,
+    "sha256": "6fee93af62896bfaf210bcd490f84e665403fb70633118e2db46fa4273966be3"
+  },
+  "native": {
+    "name": "_core.pyd",
+    "bytes": 7784448,
+    "sha256": "a817a0513487e335c36036479ab44c54168dc00050a11ff991ba2cca48c62ace"
+  },
+  "verified_registrations": 36,
+  "verified_point_sets": 72,
+  "verified_shape_points": 47889,
+  "serial_parallel_bit_equal": true,
+  "old_caller_shape_results_bit_equal": true,
+  "frozen_input_artifacts_unchanged": 44,
+  "no_trajectory_or_frontend_adoption": true,
+  "outputs": {
+    "frames.json": {
+      "name": "frames.json",
+      "bytes": 49837,
+      "sha256": "57334c060873fee664d7f9b3b5213f62e3682ac3661518e6db768df8259ce660"
+    },
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 14516,
+      "sha256": "c18432d25c6022a3cc3f07cb5246f72437b6e962a0ec8e4a0d5d222fbea16981"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 16656,
+      "sha256": "1b7c208bfc2acc0dad1ec6f3b1b3347318748e0e8ab72dbbb6785e6c882f90ee"
+    }
+  }
+}

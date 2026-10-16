@@ -43,6 +43,28 @@ class GicpLinearization(TypedDict):
     combined_shapes: npt.NDArray[np.float64]
     mahalanobis_squared: npt.NDArray[np.float64]
 
+class GicpSurfaceShapes(TypedDict):
+    shapes: npt.NDArray[np.float64]
+    supported: npt.NDArray[np.bool_]
+    scatter_eigenvalues: npt.NDArray[np.float64]
+    neighbor_counts: npt.NDArray[np.uint64]
+    neighbor_indices: npt.NDArray[np.uint64]
+    neighbor_squared_distances: npt.NDArray[np.float64]
+
+def gicp_shapes(
+    points: npt.NDArray[np.float64], *, neighbors: int = 20,
+    parallel: bool = False, capture_neighbors: bool = False,
+) -> GicpSurfaceShapes:
+    """f64 normalized [.001,1,1] surface shapes from exact k-neighbor PCA.
+    Copy inputs/results. Unsupported rows have zero shapes and supported=False;
+    filter them explicitly before registration. Requires neighbors>=5. Signed
+    scatter eigenvalues are ascending (zero for fewer than five neighbors).
+    Optional neighbor arrays have shape (N,min(neighbors,N)), or (N,0) without
+    capture. Equal distances retain native tree traversal ties. Shapes are
+    uncalibrated surface geometry; repeated minimum eigenspaces are ambiguous.
+    """
+    ...
+
 def gicp_linearization(
     source: npt.NDArray[np.float64], target: npt.NDArray[np.float64],
     source_shapes: npt.NDArray[np.float64], target_shapes: npt.NDArray[np.float64],

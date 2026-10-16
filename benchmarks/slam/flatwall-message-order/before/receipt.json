@@ -1,0 +1,101 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_order.v1",
+  "inputs": {
+    "recordings": [
+      {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+      },
+      {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 10054898,
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6"
+      },
+      {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 9387931,
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4"
+      }
+    ],
+    "controller": {
+      "name": "audit_flatwall_imu_order.py",
+      "bytes": 7985,
+      "sha256": "5cac751238d6d43a0a0aee1502fb0a2473a33daad65f475acae7072143f3b0fc"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7369728,
+      "sha256": "62df4b515557f72616265b45cca217db1887b07eaa60ebcd8129bafd9f4224df"
+    },
+    "rosbags_version": "0.11.3",
+    "independent_reader": {
+      "name": "reader.py",
+      "bytes": 21871,
+      "sha256": "8cea0843f143ea1109aecdfddf55b935b758db5d2151344f4a2172a79a29b15f"
+    }
+  },
+  "expected_order": "mismatched",
+  "topic": "/livox/imu",
+  "reference_policy": "Single-connection independent ROS 1 index order, checked against exact header times; GT archive not read",
+  "scope": "All IMU payload bytes and sensor-header order, plus decoded scan-field parity. No SLAM, scaling, deskew, score or timing.",
+  "results": {
+    "native_matches_reference": false,
+    "all_payload_bytes_preserved": true,
+    "positions_differing_from_reference": 3700,
+    "reference": {
+      "messages": 3755,
+      "first_ns": 1656505431202246666,
+      "last_ns": 1656505449799885511,
+      "non_increasing": 0,
+      "median_delta_ns": 4998684.0,
+      "max_delta_ns": 5128860,
+      "gaps_over_50ms": 0
+    },
+    "native": {
+      "messages": 3755,
+      "first_ns": 1656505431297237873,
+      "last_ns": 1656505449704873323,
+      "non_increasing": 3553,
+      "median_delta_ns": -4994392.0,
+      "max_delta_ns": 200036288,
+      "gaps_over_50ms": 201
+    },
+    "imu_series": {
+      "accepted": false,
+      "error": "IMU times must increase without integer overflow"
+    },
+    "reference_payload_order_sha256": "42493cf660563e79db9337751cef3fe95d14e91c86dd1859b3f0bb4695295b5a",
+    "native_payload_order_sha256": "b775a057f56c660c206e78e1b5954c094f81779a5200eb761068c09a384d3c87",
+    "payload_multiset_sha256": "f31cde53f9d26470a8dbcc20dea61d5c48aea0df3f35f021e8b8e399c91a4b2d",
+    "scans": {
+      "flatwall_01.bag": {
+        "scans": 186,
+        "finite_points": 4464000,
+        "first_header_ns": 1656505431199620008,
+        "last_header_ns": 1656505449699620962,
+        "decoded_sensor_fields_sha256": "65298360222ca94dbcaa77d9f406c487e4c73c32b30b08876ca52401d00fe1f6"
+      },
+      "nclt-2012-04-29.mcap": {
+        "scans": 236,
+        "finite_points": 1400497,
+        "first_header_ns": 1335706505033587000,
+        "last_header_ns": 1335706693443099000,
+        "decoded_sensor_fields_sha256": "ddce0f129d9ad15fe91e4ff26786a758f5c296507229677d9e2407046271d3a4"
+      },
+      "nclt-2012-06-15.mcap": {
+        "scans": 238,
+        "finite_points": 1311375,
+        "first_header_ns": 1339761399417320000,
+        "last_header_ns": 1339761589013801000,
+        "decoded_sensor_fields_sha256": "d410538a2c4a938b129dc8546bcac9cfa8e6af1a865273e2ff7f8c4c6148c137"
+      }
+    },
+    "ground_truth_archive_read": false
+  },
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 1500,
+    "sha256": "29332d49189acc18ee9b0d98933212824f0b0fc0a5702c0be2a3bfc81f3965fd"
+  }
+}

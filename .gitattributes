@@ -29,3 +29,8 @@ scripts/evaluate_nclt_imu_frontend.py text eol=lf
 benchmarks/slam/nclt-imu-frontend/** text eol=lf
 scripts/audit_nclt_registration.py text eol=lf
 benchmarks/slam/nclt-registration-diagnostics/** text eol=lf
+scripts/audit_flatwall_imu_order.py text eol=lf
+benchmarks/slam/flatwall-message-order/** text eol=lf
+# Preserve the exact receipt/protocol bytes referenced by their artifact hashes.
+benchmarks/slam/flatwall-message-order/before/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+benchmarks/slam/flatwall-message-order/after/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

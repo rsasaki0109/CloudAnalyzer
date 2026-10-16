@@ -1,0 +1,47 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_order.v1",
+  "inputs": {
+    "recordings": [
+      {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+      },
+      {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 10054898,
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6"
+      },
+      {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 9387931,
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4"
+      }
+    ],
+    "controller": {
+      "name": "audit_flatwall_imu_order.py",
+      "bytes": 7985,
+      "sha256": "5cac751238d6d43a0a0aee1502fb0a2473a33daad65f475acae7072143f3b0fc"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7369728,
+      "sha256": "bf0ba44457413701fe974b7c30b800573c0042210be40bfbc0d2750e505cf72b"
+    },
+    "rosbags_version": "0.11.3",
+    "independent_reader": {
+      "name": "reader.py",
+      "bytes": 21871,
+      "sha256": "8cea0843f143ea1109aecdfddf55b935b758db5d2151344f4a2172a79a29b15f"
+    },
+    "comparison": {
+      "name": "receipt.json",
+      "bytes": 3734,
+      "sha256": "49799bcdc11533bba56e0d4e8e804ebf0bc2794688e6c8f596a5ff907c1afd29"
+    }
+  },
+  "expected_order": "matched",
+  "topic": "/livox/imu",
+  "reference_policy": "Single-connection independent ROS 1 index order, checked against exact header times; GT archive not read",
+  "scope": "All IMU payload bytes and sensor-header order, plus decoded scan-field parity. No SLAM, scaling, deskew, score or timing."
+}

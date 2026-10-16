@@ -1,0 +1,829 @@
+[
+  {
+    "termination": "empty_map",
+    "iterations": 0,
+    "input_points": 24000,
+    "registration_points": 29,
+    "threshold_m": 6.0,
+    "correspondences": null
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 6.0,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.19972924304289255,
+      "max_residual_m": 0.5653544599479363
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 10,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 10.03045561916592,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10754210669615986,
+      "max_residual_m": 0.22094859924702315
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.22102386356725,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09862686850176611,
+      "max_residual_m": 0.24033257709264977
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 15.91415682905031,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10545919754249414,
+      "max_residual_m": 0.28204246247328296
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 10,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 14.186433699696456,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.08335455690375976,
+      "max_residual_m": 0.17664805460651115
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 14,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 14.934696708559292,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.07205110789724449,
+      "max_residual_m": 0.19433684987743918
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 10,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 14.19875741768383,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.08901329545746647,
+      "max_residual_m": 0.17102045749598324
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 9,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.321422467881147,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.08575877469459013,
+      "max_residual_m": 0.19598224593785724
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 33,
+    "threshold_m": 14.017401761409527,
+    "correspondences": {
+      "matched_points": 33,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.11164234811998788,
+      "max_residual_m": 0.30293331370215215
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.34857627965102,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.0964373340244301,
+      "max_residual_m": 0.2655221213919966
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 12.846005964493939,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.13197766265065275,
+      "max_residual_m": 0.5625169297911353
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 13,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 12.265900516695528,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09899948940388723,
+      "max_residual_m": 0.37515205379635047
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 12.89309461408563,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.07472244305380926,
+      "max_residual_m": 0.17940021325629282
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 12.791693721033763,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.05599096722336069,
+      "max_residual_m": 0.109575828775352
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 12.612844487662812,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.07037490052787233,
+      "max_residual_m": 0.16548990404323882
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 12.255534210390897,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09254835100949386,
+      "max_residual_m": 0.23904249184108162
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 29,
+    "threshold_m": 12.103473365331478,
+    "correspondences": {
+      "matched_points": 29,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.08301609307450121,
+      "max_residual_m": 0.18571798071061169
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 13,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 12.527855577322772,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09304256123493651,
+      "max_residual_m": 0.3187894737322878
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 12.43780909740993,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10520553825333229,
+      "max_residual_m": 0.3667457098358775
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 12.325528013732239,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.08436276242372712,
+      "max_residual_m": 0.16504341177807294
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 12.109826512326563,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10347972099130903,
+      "max_residual_m": 0.2669522799505227
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 29,
+    "threshold_m": 11.951192260942467,
+    "correspondences": {
+      "matched_points": 29,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1368373141490436,
+      "max_residual_m": 0.48647703933104824
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 11,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 11.691990038267578,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.12114068688487925,
+      "max_residual_m": 0.3387852748513399
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 11.532400407293974,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09934564029272007,
+      "max_residual_m": 0.1831476065043403
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 9,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 11.37959283677363,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10169231214658837,
+      "max_residual_m": 0.23957543824999616
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 11.539802678763731,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10837196384712174,
+      "max_residual_m": 0.3494113658729102
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 29,
+    "threshold_m": 11.454643035117527,
+    "correspondences": {
+      "matched_points": 29,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09047796466160803,
+      "max_residual_m": 0.16585796757731638
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 11.660582315206335,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10602719552649467,
+      "max_residual_m": 0.22445491021603658
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 11.558822703651124,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1178694655074322,
+      "max_residual_m": 0.23969392368325276
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 11.9406735694173,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.0979360024905443,
+      "max_residual_m": 0.2558498200540554
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 12.938916116227222,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.12018268653724658,
+      "max_residual_m": 0.3605163276895332
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 29,
+    "threshold_m": 13.35777367770038,
+    "correspondences": {
+      "matched_points": 29,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09155629329298534,
+      "max_residual_m": 0.21169280472201019
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 13.575115664577321,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.12633094806276246,
+      "max_residual_m": 0.42395404116611135
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.762795603815345,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09073886109872441,
+      "max_residual_m": 0.19820700031915264
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 13.893833280713865,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.07760530434807653,
+      "max_residual_m": 0.19027104819270102
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 29,
+    "threshold_m": 13.772519080713735,
+    "correspondences": {
+      "matched_points": 29,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.08812237532775632,
+      "max_residual_m": 0.20805098311501516
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.665971457211104,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.0851073855799588,
+      "max_residual_m": 0.21928961709027248
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.559473675494257,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09456991692262681,
+      "max_residual_m": 0.21879525088948154
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 31,
+    "threshold_m": 13.424077998403561,
+    "correspondences": {
+      "matched_points": 31,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.09619006190429528,
+      "max_residual_m": 0.22763567824051137
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 33,
+    "threshold_m": 13.286166138183626,
+    "correspondences": {
+      "matched_points": 33,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.12609976268851894,
+      "max_residual_m": 0.2580148253239691
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 13.207568367389083,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.12898971603366644,
+      "max_residual_m": 0.4058685603757393
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.110488221564644,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.10330554495354273,
+      "max_residual_m": 0.285105748244893
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.344064945616134,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.14029062000855466,
+      "max_residual_m": 0.3024476538490381
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 7,
+    "input_points": 24000,
+    "registration_points": 30,
+    "threshold_m": 13.636048302216382,
+    "correspondences": {
+      "matched_points": 30,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.11330560738250697,
+      "max_residual_m": 0.22171620511089052
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 9,
+    "input_points": 24000,
+    "registration_points": 32,
+    "threshold_m": 13.679353996296202,
+    "correspondences": {
+      "matched_points": 32,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.12231286201113341,
+      "max_residual_m": 0.287840470044521
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 4,
+    "input_points": 24000,
+    "registration_points": 28,
+    "threshold_m": 13.579354893445775,
+    "correspondences": {
+      "matched_points": 28,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.14993880301336904,
+      "max_residual_m": 0.43561472915861293
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 12,
+    "input_points": 24000,
+    "registration_points": 23,
+    "threshold_m": 13.433369226530306,
+    "correspondences": {
+      "matched_points": 23,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1327116582174019,
+      "max_residual_m": 0.23916814880676907
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 25,
+    "threshold_m": 13.646212085330447,
+    "correspondences": {
+      "matched_points": 25,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.13271216509235906,
+      "max_residual_m": 0.2275604428947845
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 10,
+    "input_points": 24000,
+    "registration_points": 22,
+    "threshold_m": 13.655099301492653,
+    "correspondences": {
+      "matched_points": 22,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1381833014478873,
+      "max_residual_m": 0.31797873722181136
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 19,
+    "threshold_m": 13.707149008615684,
+    "correspondences": {
+      "matched_points": 19,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.2144955697863346,
+      "max_residual_m": 0.5084108909571355
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 10,
+    "input_points": 24000,
+    "registration_points": 18,
+    "threshold_m": 13.600484934752908,
+    "correspondences": {
+      "matched_points": 18,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.15858406207215617,
+      "max_residual_m": 0.38883948133394564
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 17,
+    "threshold_m": 14.490768384979493,
+    "correspondences": {
+      "matched_points": 17,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.18813269543619035,
+      "max_residual_m": 0.42523603245216884
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 11,
+    "input_points": 24000,
+    "registration_points": 16,
+    "threshold_m": 14.959159318445462,
+    "correspondences": {
+      "matched_points": 16,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.16382938977984252,
+      "max_residual_m": 0.3019452691845211
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 9,
+    "input_points": 24000,
+    "registration_points": 17,
+    "threshold_m": 17.919483054175096,
+    "correspondences": {
+      "matched_points": 17,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1652079348376279,
+      "max_residual_m": 0.3743035250618846
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 16,
+    "threshold_m": 18.610126791687495,
+    "correspondences": {
+      "matched_points": 16,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1872034742286295,
+      "max_residual_m": 0.3571831753399756
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 16,
+    "threshold_m": 18.791673874665513,
+    "correspondences": {
+      "matched_points": 16,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.19808135964715237,
+      "max_residual_m": 0.3366210894072219
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 17,
+    "threshold_m": 18.676908544112237,
+    "correspondences": {
+      "matched_points": 17,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.1644327863602453,
+      "max_residual_m": 0.34185171566208666
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 17,
+    "threshold_m": 18.532321527612464,
+    "correspondences": {
+      "matched_points": 17,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.14828890617933663,
+      "max_residual_m": 0.2765295177283701
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 15,
+    "threshold_m": 18.54461092246383,
+    "correspondences": {
+      "matched_points": 15,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.17112073746430176,
+      "max_residual_m": 0.3785550045513321
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 5,
+    "input_points": 24000,
+    "registration_points": 13,
+    "threshold_m": 18.554059580119887,
+    "correspondences": {
+      "matched_points": 13,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.19940065782895006,
+      "max_residual_m": 0.4030657802605273
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 9,
+    "input_points": 24000,
+    "registration_points": 13,
+    "threshold_m": 18.425613615234468,
+    "correspondences": {
+      "matched_points": 13,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.16567951015073437,
+      "max_residual_m": 0.30591011696701237
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 6,
+    "input_points": 24000,
+    "registration_points": 13,
+    "threshold_m": 18.646116865234916,
+    "correspondences": {
+      "matched_points": 13,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.21278651024040093,
+      "max_residual_m": 0.3705456702723023
+    }
+  },
+  {
+    "termination": "converged",
+    "iterations": 8,
+    "input_points": 24000,
+    "registration_points": 12,
+    "threshold_m": 18.504006096364066,
+    "correspondences": {
+      "matched_points": 12,
+      "matched_fraction": 1.0,
+      "rmse_m": 0.16641666508147898,
+      "max_residual_m": 0.38092849399511297
+    }
+  }
+]

@@ -2,9 +2,10 @@
 
 use ca_core::imu::{ImuError, PreintegratedImu, PreintegrationParams};
 use ca_core::imu_factor::{ImuEvaluation, ImuFactor as Factor, ImuState};
-use numpy::ndarray::Array2;
+use numpy::ndarray::{Array2, Array3};
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyUntypedArrayMethods,
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3,
+    PyUntypedArrayMethods,
 };
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -126,6 +127,92 @@ impl ImuSeries {
             .iter()
             .map(|s| s.frame_id.clone())
             .collect()
+    }
+
+    /// Metric startup alignment. Acceleration bias is fixed; gyro bias is fitted
+    /// with exact reintegration. Rejected estimates are never returned as states.
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (timestamps_ns, lidar_poses, *, imu_from_lidar, gyro_bias, accel_bias, gravity_magnitude, max_gravity_error, max_rotation_rms, max_velocity_rms, max_gyro_bias_change, max_iterations=15, max_gap_s=0.05, min_singular_ratio=1e-6, parallel=false))]
+    fn initialize_lidar<'py>(
+        &self,
+        py: Python<'py>,
+        timestamps_ns: PyReadonlyArray1<'_, i64>,
+        lidar_poses: PyReadonlyArray3<'_, f64>,
+        imu_from_lidar: PyReadonlyArray2<'_, f64>,
+        gyro_bias: [f64; 3],
+        accel_bias: [f64; 3],
+        gravity_magnitude: f64,
+        max_gravity_error: f64,
+        max_rotation_rms: f64,
+        max_velocity_rms: f64,
+        max_gyro_bias_change: f64,
+        max_iterations: usize,
+        max_gap_s: f64,
+        min_singular_ratio: f64,
+        parallel: bool,
+    ) -> PyResult<Bound<'py, PyDict>> {
+        let shape = lidar_poses.shape();
+        if shape[1..] != [4, 4] {
+            return Err(PyValueError::new_err("lidar_poses needs shape (N, 4, 4)"));
+        }
+        let view = lidar_poses.as_array();
+        let mut poses = Vec::with_capacity(shape[0]);
+        for k in 0..shape[0] {
+            if !(0..4).all(|j| {
+                view[[k, 3, j]].is_finite()
+                    && (view[[k, 3, j]] - f64::from(u8::from(j == 3))).abs() <= 1e-12
+            }) {
+                return Err(PyValueError::new_err(
+                    "lidar_poses needs homogeneous last rows [0, 0, 0, 1]",
+                ));
+            }
+            poses.push(ca_core::icp::Rigid {
+                rotation: std::array::from_fn(|i| std::array::from_fn(|j| view[[k, i, j]])),
+                translation: std::array::from_fn(|i| view[[k, i, 3]]),
+            });
+        }
+        let times: Vec<i64> = timestamps_ns.as_array().iter().copied().collect();
+        let extrinsic = lidar_transform(&imu_from_lidar)?;
+        let params = ca_core::imu_initialization::InitializationParams {
+            gyro_bias,
+            accel_bias,
+            gravity_magnitude,
+            max_gravity_error,
+            max_rotation_rms,
+            max_velocity_rms,
+            max_gyro_bias_change,
+            max_iterations,
+            max_gap_s,
+            min_singular_ratio,
+            parallel,
+        };
+        let out = py
+            .detach(|| {
+                self.series
+                    .initialize_lidar(&times, &poses, &extrinsic, &params)
+            })
+            .map_err(err)?;
+        let result = PyDict::new(py);
+        result.set_item("timestamps_ns", out.timestamps_ns.into_pyarray(py))?;
+        let flat: Vec<f64> = out.imu_poses.iter().flat_map(|p| p.to_matrix()).collect();
+        result.set_item(
+            "imu_poses",
+            Array3::from_shape_vec((out.imu_poses.len(), 4, 4), flat)
+                .expect("pose dimensions")
+                .into_pyarray(py),
+        )?;
+        result.set_item("velocities", crate::to_array2(py, out.velocities))?;
+        result.set_item("gravity", out.gravity.to_vec().into_pyarray(py))?;
+        result.set_item("bias", out.bias.to_vec().into_pyarray(py))?;
+        result.set_item("gyro_iterations", out.gyro_iterations)?;
+        result.set_item("gyro_singular_ratio", out.gyro_singular_ratio)?;
+        result.set_item("gravity_error", out.gravity_error)?;
+        result.set_item("rotation_rms", out.rotation_rms)?;
+        result.set_item("velocity_rms", out.velocity_rms)?;
+        result.set_item("frame_id", out.frame_id)?;
+        result.set_item("acceleration_scale", out.acceleration_scale)?;
+        result.set_item("accel_bias_fixed", true)?;
+        Ok(result)
     }
 
     /// Fixed-anchor nominal motion; state, gravity and bias must be declared.

@@ -15,6 +15,7 @@ pub mod ground;
 pub mod icp;
 pub mod imu;
 pub mod imu_factor;
+pub mod imu_initialization;
 pub mod imu_trajectory;
 pub mod imu_window;
 pub mod io;

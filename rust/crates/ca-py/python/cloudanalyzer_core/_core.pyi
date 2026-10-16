@@ -260,6 +260,21 @@ class ImuLinearization(ImuEvaluation):
     whitened_jacobian_bias: npt.NDArray[np.float64]
     whitened_jacobian_gravity: npt.NDArray[np.float64]
 
+class ImuInitialization(TypedDict):
+    timestamps_ns: npt.NDArray[np.int64]
+    imu_poses: npt.NDArray[np.float64]
+    velocities: npt.NDArray[np.float64]
+    gravity: npt.NDArray[np.float64]
+    bias: npt.NDArray[np.float64]
+    gyro_iterations: int
+    gyro_singular_ratio: float
+    gravity_error: float
+    rotation_rms: float
+    velocity_rms: float
+    frame_id: str
+    acceleration_scale: float
+    accel_bias_fixed: bool
+
 class ImuSeries:
     """Immutable whole-topic snapshot from BagReader.imu_series(); no file access after creation."""
 
@@ -270,6 +285,19 @@ class ImuSeries:
     def __len__(self) -> int: ...
     def timestamps_ns(self) -> npt.NDArray[np.int64]: ...
     def frame_ids(self) -> list[str]: ...
+    def initialize_lidar(
+        self, timestamps_ns: npt.NDArray[np.int64], lidar_poses: npt.NDArray[np.float64], *,
+        imu_from_lidar: npt.NDArray[np.float64], gyro_bias: tuple[float, float, float],
+        accel_bias: tuple[float, float, float], gravity_magnitude: float,
+        max_gravity_error: float, max_rotation_rms: float, max_velocity_rms: float,
+        max_gyro_bias_change: float, max_iterations: int = 15,
+        max_gap_s: float = 0.05, min_singular_ratio: float = 1e-6, parallel: bool = False,
+    ) -> ImuInitialization:
+        """Batch metric startup: exact gyro-bias reintegration, fixed acceleration bias,
+        gravity/velocities from displacement triples. Raises on failed acceptance limits.
+        State is available after the final reference; arrays are independent copies.
+        """
+        ...
     def trajectory(
         self, start_ns: int, end_ns: int, pose_i: npt.NDArray[np.float64],
         velocity_i: npt.NDArray[np.float64], *, gravity: tuple[float, float, float],

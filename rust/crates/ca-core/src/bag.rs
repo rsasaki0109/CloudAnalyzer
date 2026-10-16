@@ -935,6 +935,16 @@ impl<'a> Reader<'a> {
     }
 }
 
+/// Original scalar point-time values, aligned with the finite decoded points.
+/// All standard PointField integer types fit exactly in f64. Units and time
+/// origin are deliberately unspecified; floating/nonfinite values are retained.
+#[derive(Debug, Clone)]
+pub struct RawPointTime {
+    pub field: String,
+    pub datatype: u8,
+    pub values: Vec<f64>,
+}
+
 /// A PointCloud2 decoded.
 #[derive(Debug, Clone, Default)]
 pub struct PointsMessage {
@@ -950,6 +960,8 @@ pub struct PointsMessage {
     pub intensity: Option<Vec<f32>>,
     /// How far through the scan each point was taken, 0 to 1, when the cloud has a per-point time field.
     pub time: Option<Vec<f32>>,
+    /// Explicitly requested source field; absent from the default decoder.
+    pub raw_time: Option<RawPointTime>,
 }
 
 /// Names LiDAR drivers give a per-point time field.
@@ -966,7 +978,7 @@ const TIME_FIELDS: [&str; 7] = [
 const INTENSITY_FIELDS: [&str; 3] = ["intensity", "reflectivity", "i"];
 
 fn field_value(bytes: &[u8], at: usize, datatype: u8, big: bool) -> Option<f64> {
-    let v = &bytes[at..];
+    let v = bytes.get(at..)?;
     macro_rules! num {
         ($t:ty, $n:expr) => {{
             let b: [u8; $n] = v.get(..$n)?.try_into().ok()?;
@@ -991,16 +1003,79 @@ fn field_value(bytes: &[u8], at: usize, datatype: u8, big: bool) -> Option<f64> 
 }
 
 pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMessage> {
+    decode_point_cloud2_inner(data, encoding, None)
+}
+
+/// Retains an explicitly named scalar field, without normalization or unit/origin
+/// inference. Invalid/missing fields and incomplete point records are errors.
+/// Legacy normalized time remains independent of the requested source field.
+pub fn decode_point_cloud2_with_raw_time(
+    data: &[u8],
+    encoding: Encoding,
+    field: &str,
+) -> Result<PointsMessage> {
+    decode_point_cloud2_inner(data, encoding, Some(field))
+}
+
+fn validate_raw_time_layout(
+    (offset, datatype, count): (usize, u8, u32),
+    step: usize,
+    row_step: usize,
+    width: usize,
+    height: usize,
+    bytes: usize,
+) -> Result<()> {
+    let size = match datatype {
+        1 | 2 => 1,
+        3 | 4 => 2,
+        5..=7 => 4,
+        8 => 8,
+        _ => return Err(BagError("unsupported raw time field datatype".into())),
+    };
+    if count != 1 || offset.checked_add(size).is_none_or(|end| end > step) {
+        return Err(BagError(
+            "raw time field must be scalar and fit within point_step".into(),
+        ));
+    }
+    let row_width = width
+        .checked_mul(step)
+        .ok_or_else(|| BagError("raw time field row size overflow".into()))?;
+    let extent = if width == 0 || height == 0 {
+        Some(0)
+    } else {
+        (height - 1)
+            .checked_mul(row_step)
+            .and_then(|at| at.checked_add(row_width))
+    };
+    if row_step < row_width || extent.is_none_or(|end| end > bytes) {
+        return Err(BagError(
+            "raw time field needs complete, nonoverlapping point rows".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn decode_point_cloud2_inner(
+    data: &[u8],
+    encoding: Encoding,
+    requested_time: Option<&str>,
+) -> Result<PointsMessage> {
     let mut m = Reader::new(data, encoding);
     let (sec, nsec, frame_id) = m.header_parts()?;
     let height = m.u32()? as usize;
     let width = m.u32()? as usize;
     let mut layout: HashMap<String, (usize, u8)> = HashMap::new();
+    let mut raw_field = None;
     for _ in 0..m.u32()? {
         let name = m.string()?;
         let offset = m.u32()? as usize;
         let datatype = m.u8()?;
-        m.u32()?;
+        let count = m.u32()?;
+        if requested_time == Some(name.as_str())
+            && raw_field.replace((offset, datatype, count)).is_some()
+        {
+            return Err(BagError("duplicate raw time field name".into()));
+        }
         layout.insert(name, (offset, datatype));
     }
     let big = m.u8()? != 0;
@@ -1008,13 +1083,22 @@ pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMess
     let row_step = m.u32()? as usize;
     let n = m.u32()? as usize;
     let bytes = m.take(n)?;
+    let raw_layout = if let Some(name) = requested_time {
+        let raw = raw_field.ok_or_else(|| BagError(format!("raw time field not found: {name}")))?;
+        validate_raw_time_layout(raw, step, row_step, width, height, bytes.len())?;
+        Some((raw.0, raw.1))
+    } else {
+        None
+    };
     let field = |name: &str| layout.get(name).copied();
     let (Some(x), Some(y), Some(z)) = (field("x"), field("y"), field("z")) else {
         return Err(BagError("a PointCloud2 without x, y and z fields".into()));
     };
     let intensity = INTENSITY_FIELDS.iter().find_map(|f| field(f));
     let time = TIME_FIELDS.iter().find_map(|f| field(f));
-    let count = width * height;
+    let count = width
+        .checked_mul(height)
+        .ok_or_else(|| BagError("PointCloud2 point count overflow".into()))?;
     let mut out = PointsMessage {
         stamp_ns: sec * 1_000_000_000 + i64::from(nsec),
         stamp: sec as f64 + f64::from(nsec) * 1e-9,
@@ -1022,16 +1106,24 @@ pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMess
         positions: Vec::with_capacity(count),
         intensity: intensity.map(|_| Vec::with_capacity(count)),
         time: time.map(|_| Vec::with_capacity(count)),
+        raw_time: None,
     };
     let mut times: Vec<f64> = Vec::new();
+    let shared_time = raw_layout.is_some() && raw_layout == time;
+    let mut raw_values = Vec::new();
     for row in 0..height {
         for col in 0..width {
-            let at = row * row_step + col * step;
-            if at + step > bytes.len() {
+            let at = row
+                .checked_mul(row_step)
+                .and_then(|row| col.checked_mul(step).and_then(|col| row.checked_add(col)))
+                .ok_or_else(|| BagError("PointCloud2 point offset overflow".into()))?;
+            if at.checked_add(step).is_none_or(|end| end > bytes.len()) {
                 break;
             }
-            let get =
-                |(offset, datatype): (usize, u8)| field_value(bytes, at + offset, datatype, big);
+            let get = |(offset, datatype): (usize, u8)| {
+                at.checked_add(offset)
+                    .and_then(|at| field_value(bytes, at, datatype, big))
+            };
             let (Some(px), Some(py), Some(pz)) = (get(x), get(y), get(z)) else {
                 continue;
             };
@@ -1043,7 +1135,17 @@ pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMess
                 values.push(get(f).unwrap_or(0.0) as f32);
             }
             if let Some(f) = time {
-                times.push(get(f).unwrap_or(0.0));
+                let value = get(f);
+                times.push(if shared_time {
+                    value.ok_or_else(|| BagError("incomplete raw time field value".into()))?
+                } else {
+                    value.unwrap_or(0.0)
+                });
+            }
+            if let Some(f) = raw_layout.filter(|_| !shared_time) {
+                raw_values.push(
+                    get(f).ok_or_else(|| BagError("incomplete raw time field value".into()))?,
+                );
             }
         }
     }
@@ -1056,6 +1158,13 @@ pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMess
         } else {
             out.time = None;
         }
+    }
+    if let (Some(name), Some((_, datatype))) = (requested_time, raw_layout) {
+        out.raw_time = Some(RawPointTime {
+            field: name.to_owned(),
+            datatype,
+            values: if shared_time { times } else { raw_values },
+        });
     }
     Ok(out)
 }
@@ -1793,6 +1902,79 @@ mod tests {
         assert_eq!(cloud.positions, [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
         assert_eq!(cloud.time.as_deref(), Some(&[0.0f32, 1.0][..]));
         assert!(cloud.intensity.is_none());
+        assert!(cloud.raw_time.is_none());
+        let retained = decode_point_cloud2_with_raw_time(&b, Encoding::Ros1, "t").unwrap();
+        assert_eq!(retained.positions, cloud.positions);
+        assert_eq!(retained.time, cloud.time);
+        let raw = retained.raw_time.unwrap();
+        assert_eq!(raw.field, "t");
+        assert_eq!(raw.datatype, 6);
+        assert_eq!(raw.values, [0.0, 100.0]);
+    }
+
+    #[test]
+    fn explicit_point_time_retains_custom_nonfinite_constant_and_empty_values() {
+        let values = [0.5f32, -0.0, f32::NAN, f32::INFINITY];
+        let points: Vec<_> = values.iter().map(|&v| [1.0, 2.0, 3.0, v]).collect();
+        let data = point_cloud(&points, 0.0);
+        let cloud = decode_point_cloud2_with_raw_time(&data, Encoding::Cdr, "intensity").unwrap();
+        assert!(cloud.time.is_none());
+        let raw = cloud.raw_time.unwrap();
+        assert_eq!(raw.field, "intensity");
+        assert_eq!(raw.datatype, 7);
+        assert_eq!(
+            raw.values.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+            values.map(|v| f64::from(v).to_bits())
+        );
+        for points in [
+            vec![[1.0, 2.0, 3.0, 7.5], [4.0, 5.0, 6.0, 7.5]],
+            vec![[f32::NAN, 2.0, 3.0, 7.5]],
+        ] {
+            let data = point_cloud(&points, 0.0);
+            let cloud =
+                decode_point_cloud2_with_raw_time(&data, Encoding::Cdr, "intensity").unwrap();
+            assert!(cloud.time.is_none());
+            assert_eq!(
+                cloud.raw_time.unwrap().values,
+                vec![7.5; cloud.positions.len()]
+            );
+        }
+    }
+
+    #[test]
+    fn explicit_point_time_rejects_ambiguous_or_incomplete_layouts() {
+        let make = |datatype, count, offset, row_step, bytes, duplicate| {
+            let mut m = Cdr::new()
+                .header(0.0)
+                .u32(1)
+                .u32(1)
+                .u32(4 + u32::from(duplicate));
+            for (k, name) in ["x", "y", "z"].iter().enumerate() {
+                m = m.string(name).u32(k as u32 * 4).u8(7).u32(1);
+            }
+            m = m.string("t").u32(offset).u8(datatype).u32(count);
+            if duplicate {
+                m = m.string("t").u32(offset).u8(datatype).u32(count);
+            }
+            m.u8(0).u32(16).u32(row_step).raw(&vec![0; bytes]).u8(1).0
+        };
+        for (datatype, count, offset, row_step, bytes, duplicate) in [
+            (0, 1, 12, 16, 16, false),
+            (9, 1, 12, 16, 16, false),
+            (6, 0, 12, 16, 16, false),
+            (6, 2, 12, 16, 16, false),
+            (6, 1, 13, 16, 16, false),
+            (6, 1, u32::MAX, 16, 16, false),
+            (6, 1, 12, 15, 16, false),
+            (6, 1, 12, 16, 15, false),
+            (6, 1, 12, 16, 16, true),
+        ] {
+            let data = make(datatype, count, offset, row_step, bytes, duplicate);
+            assert!(decode_point_cloud2_with_raw_time(&data, Encoding::Cdr, "t").is_err());
+        }
+        let data = make(6, 1, 12, 16, 16, false);
+        assert!(decode_point_cloud2_with_raw_time(&data, Encoding::Cdr, "absent").is_err());
+        assert!(field_value(&[0; 4], usize::MAX, 6, false).is_none());
     }
 
     #[test]

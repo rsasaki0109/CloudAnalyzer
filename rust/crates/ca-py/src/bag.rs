@@ -48,6 +48,7 @@ pub struct BagReader {
 pub struct BagMessages {
     recording: Recording,
     cursor: RecordingCursor,
+    raw_time_field: Option<String>,
 }
 
 /// A PointCloud2 decoded: exact header time/frame, points (N, 3), optional
@@ -63,6 +64,7 @@ pub struct Scan {
     positions: Vec<[f64; 3]>,
     intensity: Option<Vec<f32>>,
     time: Option<Vec<f32>>,
+    raw_time: Option<bag::RawPointTime>,
 }
 
 #[pymethods]
@@ -77,6 +79,23 @@ impl Scan {
 
     fn time<'py>(&self, py: Python<'py>) -> Option<Bound<'py, PyArray1<f32>>> {
         self.time.as_ref().map(|v| v.clone().into_pyarray(py))
+    }
+
+    /// Original scalar source values aligned with positions; no units/origin inferred.
+    fn raw_time<'py>(&self, py: Python<'py>) -> Option<Bound<'py, PyArray1<f64>>> {
+        self.raw_time
+            .as_ref()
+            .map(|raw| raw.values.clone().into_pyarray(py))
+    }
+
+    #[getter]
+    fn raw_time_field(&self) -> Option<String> {
+        self.raw_time.as_ref().map(|raw| raw.field.clone())
+    }
+
+    #[getter]
+    fn raw_time_datatype(&self) -> Option<u8> {
+        self.raw_time.as_ref().map(|raw| raw.datatype)
     }
 
     fn __len__(&self) -> usize {
@@ -184,24 +203,38 @@ impl BagReader {
 
     /// The messages of `topics`, oldest first (see `BagMessages`).
     /// Tied recording times within ROS 1/MCAP chunks retain physical record order.
-    fn messages(&self, topics: Vec<String>) -> PyResult<BagMessages> {
+    /// raw_time_field explicitly retains a scalar PointCloud2 field; no unit conversion.
+    #[pyo3(signature = (topics, *, raw_time_field=None))]
+    fn messages(
+        &self,
+        topics: Vec<String>,
+        raw_time_field: Option<String>,
+    ) -> PyResult<BagMessages> {
         let names: Vec<&str> = topics.iter().map(|t| t.as_str()).collect();
         let recording = Recording::open(&self.path).map_err(err)?;
         let cursor = recording.cursor(&names);
-        Ok(BagMessages { recording, cursor })
+        Ok(BagMessages {
+            recording,
+            cursor,
+            raw_time_field,
+        })
     }
 
     /// The PointCloud2 messages of `topic` (the one PointCloud2 topic when
     /// None; an error names them when there are several), oldest first,
     /// decoded as `Scan`s.
-    #[pyo3(signature = (topic=None))]
-    fn scans(&self, topic: Option<String>) -> PyResult<BagMessages> {
+    #[pyo3(signature = (topic=None, *, raw_time_field=None))]
+    fn scans(
+        &self,
+        topic: Option<String>,
+        raw_time_field: Option<String>,
+    ) -> PyResult<BagMessages> {
         let Some(topic) = self.pick(bag::POINT_CLOUD, topic, "use --pointcloud-topic")? else {
             return Err(PyValueError::new_err(
                 "No sensor_msgs/msg/PointCloud2 topic found in bag. Use --pointcloud-topic to select a topic.",
             ));
         };
-        self.messages(vec![topic])
+        self.messages(vec![topic], raw_time_field)
     }
 
     /// The Imu messages of `topic` (the one Imu topic when None): per message its
@@ -534,7 +567,11 @@ impl BagMessages {
             .map(|t| t.kind.clone())
             .unwrap_or_default();
         if kind == bag::POINT_CLOUD {
-            let cloud = bag::decode_point_cloud2(&m.data, m.encoding).map_err(err)?;
+            let cloud = match &self.raw_time_field {
+                Some(field) => bag::decode_point_cloud2_with_raw_time(&m.data, m.encoding, field),
+                None => bag::decode_point_cloud2(&m.data, m.encoding),
+            }
+            .map_err(err)?;
             let scan = Scan {
                 stamp_ns: cloud.stamp_ns,
                 stamp: cloud.stamp,
@@ -542,6 +579,7 @@ impl BagMessages {
                 positions: cloud.positions,
                 intensity: cloud.intensity,
                 time: cloud.time,
+                raw_time: cloud.raw_time,
             };
             return Ok(Some(Py::new(py, scan)?.into_any()));
         }

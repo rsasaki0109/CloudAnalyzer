@@ -1,0 +1,684 @@
+{
+  "schema": "cloudanalyzer.nclt_registration_diagnostics_packet.v1",
+  "scope": {
+    "purpose": "Observe final registration support and termination; no policy or parameter tuning",
+    "cohort": "Both existing NCLT sessions, every baseline and assisted scan",
+    "required_parity": "All previous pose bits and ICP iteration counts",
+    "runtime": "Not measured",
+    "ground_truth": "Not read",
+    "diagnostics": "Opt-in final-pose pre-insertion map query",
+    "rayon_num_threads": 1
+  },
+  "parent_commit": "33180c88eb89ffcdebb4080e2fbe0888fb1a2e21",
+  "source_freeze_sha256": "6d8ae8242fda1366d6931cf6eea472f05f4ca4b0b53d36fe8a34d5e04ec16d65",
+  "native_extension": {
+    "sha256": "62df4b515557f72616265b45cca217db1887b07eaa60ebcd8129bafd9f4224df",
+    "bytes": 7369728
+  },
+  "native_build_inputs_sha256": "516cf94eedcb80f85c0d7ac93be708165e169b3fd06ac5734b29c7cdeb048615",
+  "controller_sha256": "120f548e1b783920222488a94d259892c480e060bd119789fde74fa5914b630e",
+  "sessions": [
+    {
+      "session": "2012-04-29",
+      "csv": "april-registrations.csv",
+      "csv_sha256": "2e1e3f4b69d548580b11219ac5a488b35de74005bb3b2ab8f0f1168bb35107c5",
+      "frontend_csv_sha256": "890fb0ea8b605aeec1797b1139d6aaac503d9f9302cd5e6505fe1a4251d58ca7",
+      "audit_receipt_sha256": "7065ac2e62a17de4cf952697a424f0162fa13d8e0cc5ff031180e8d618233791",
+      "inputs": {
+        "lidar": {
+          "name": "nclt-2012-04-29.mcap",
+          "bytes": 10054898,
+          "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6"
+        },
+        "frontend_receipt": {
+          "name": "receipt.json",
+          "bytes": 277693,
+          "sha256": "d4eacfb21d71570663848c6eac66e9e6280182b626eb127b57724d6eda518e66"
+        },
+        "frontend_outputs": {
+          "assisted.tum": {
+            "name": "assisted.tum",
+            "bytes": 38596,
+            "sha256": "9b2fd161256d91056921c34032cb57390898f478fcfc0f1c8317a4bf0815f932"
+          },
+          "baseline.tum": {
+            "name": "baseline.tum",
+            "bytes": 38612,
+            "sha256": "77ee8a3b1eddd300448751bfe0279d6352ad4c218d189539a2c073839371776d"
+          },
+          "protocol.json": {
+            "name": "protocol.json",
+            "bytes": 3146,
+            "sha256": "a9f3f2a90dfac843a99a20cd7ca483930cb4cdacd5e395286db1124526e593f1"
+          },
+          "trajectory.npz": {
+            "name": "trajectory.npz",
+            "bytes": 151491,
+            "sha256": "49fc925a0c84d7e7e1423bc80f5e94e399db81638e6177c84317f18274857a44"
+          }
+        },
+        "native_extension": {
+          "name": "_core.pyd",
+          "bytes": 7369728,
+          "sha256": "62df4b515557f72616265b45cca217db1887b07eaa60ebcd8129bafd9f4224df"
+        },
+        "controller": {
+          "name": "audit_nclt_registration.py",
+          "bytes": 8209,
+          "sha256": "120f548e1b783920222488a94d259892c480e060bd119789fde74fa5914b630e"
+        },
+        "pilot_module": {
+          "name": "pilot_nclt_imu_window.py",
+          "bytes": 13836,
+          "sha256": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43"
+        },
+        "frontend_module": {
+          "name": "replay_nclt_imu_frontend.py",
+          "bytes": 9737,
+          "sha256": "9d1477957bfed55f51c5bc24594a0ef0f7eb3094858de7f06d072922763fe678"
+        }
+      },
+      "arms": {
+        "baseline": {
+          "all": {
+            "scans": 236,
+            "terminations": {
+              "converged": 235,
+              "empty_map": 1
+            },
+            "iterations": 12998,
+            "residual_reports": 235,
+            "matched_fraction": {
+              "count": 235,
+              "min": 0.9380296610169492,
+              "median": 0.9962009286618827,
+              "p95": 0.9991690508811802,
+              "max": 1.0
+            },
+            "rmse_m": {
+              "count": 235,
+              "min": 0.1885235910690104,
+              "median": 0.2894940933720997,
+              "p95": 0.37516192675210547,
+              "max": 0.6443504426863025
+            },
+            "max_residual_m": {
+              "count": 235,
+              "min": 1.170769471446727,
+              "median": 2.0530070785672083,
+              "p95": 2.5337543290712583,
+              "max": 2.782457892821532
+            }
+          },
+          "by_frontend_status": {
+            "imu_prediction": {
+              "scans": 158,
+              "terminations": {
+                "converged": 158
+              },
+              "iterations": 8856,
+              "residual_reports": 158,
+              "matched_fraction": {
+                "count": 158,
+                "min": 0.9406649616368287,
+                "median": 0.9965601390241197,
+                "p95": 0.9992052585897419,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 158,
+                "min": 0.1885235910690104,
+                "median": 0.2842095397018577,
+                "p95": 0.3805108196278378,
+                "max": 0.5204279322182406
+              },
+              "max_residual_m": {
+                "count": 158,
+                "min": 1.170769471446727,
+                "median": 2.052984432806017,
+                "p95": 2.526508204115188,
+                "max": 2.782457892821532
+              }
+            },
+            "lidar_bootstrap": {
+              "scans": 35,
+              "terminations": {
+                "converged": 35
+              },
+              "iterations": 1846,
+              "residual_reports": 35,
+              "matched_fraction": {
+                "count": 35,
+                "min": 0.9380296610169492,
+                "median": 0.9953216374269006,
+                "p95": 0.9991229681669295,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 35,
+                "min": 0.19162845958315058,
+                "median": 0.2986923991607927,
+                "p95": 0.3623687559452988,
+                "max": 0.6443504426863025
+              },
+              "max_residual_m": {
+                "count": 35,
+                "min": 1.339535098492829,
+                "median": 2.11646080354652,
+                "p95": 2.622057704302658,
+                "max": 2.7729921899643286
+              }
+            },
+            "lidar_gap": {
+              "scans": 42,
+              "terminations": {
+                "converged": 42
+              },
+              "iterations": 2296,
+              "residual_reports": 42,
+              "matched_fraction": {
+                "count": 42,
+                "min": 0.9869178440607012,
+                "median": 0.9949917119071241,
+                "p95": 0.9991207999184402,
+                "max": 0.9995563442768411
+              },
+              "rmse_m": {
+                "count": 42,
+                "min": 0.19844894713862607,
+                "median": 0.3047622992760805,
+                "p95": 0.373841672266249,
+                "max": 0.39937031064763107
+              },
+              "max_residual_m": {
+                "count": 42,
+                "min": 1.1836188028891963,
+                "median": 2.0432802557510192,
+                "p95": 2.488588990318103,
+                "max": 2.7547286440358434
+              }
+            },
+            "lidar_start": {
+              "scans": 1,
+              "terminations": {
+                "empty_map": 1
+              },
+              "iterations": 0,
+              "residual_reports": 0,
+              "matched_fraction": null,
+              "rmse_m": null,
+              "max_residual_m": null
+            }
+          },
+          "pose_bits_unchanged": 236,
+          "iteration_counts_unchanged": 236
+        },
+        "assisted": {
+          "all": {
+            "scans": 236,
+            "terminations": {
+              "converged": 235,
+              "empty_map": 1
+            },
+            "iterations": 10009,
+            "residual_reports": 235,
+            "matched_fraction": {
+              "count": 235,
+              "min": 0.9380296610169492,
+              "median": 0.9961928934010152,
+              "p95": 0.9991730320401874,
+              "max": 1.0
+            },
+            "rmse_m": {
+              "count": 235,
+              "min": 0.18863047501377098,
+              "median": 0.2891746947095737,
+              "p95": 0.37466904272495627,
+              "max": 0.6443504426863025
+            },
+            "max_residual_m": {
+              "count": 235,
+              "min": 1.192650321910431,
+              "median": 2.0523300467789927,
+              "p95": 2.539883598959998,
+              "max": 2.9723398633448714
+            }
+          },
+          "by_frontend_status": {
+            "imu_prediction": {
+              "scans": 158,
+              "terminations": {
+                "converged": 158
+              },
+              "iterations": 5639,
+              "residual_reports": 158,
+              "matched_fraction": {
+                "count": 158,
+                "min": 0.9406649616368287,
+                "median": 0.9965601390241197,
+                "p95": 0.9991647530508824,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 158,
+                "min": 0.18863047501377098,
+                "median": 0.28396118524404207,
+                "p95": 0.38288257588110636,
+                "max": 0.5204445235199427
+              },
+              "max_residual_m": {
+                "count": 158,
+                "min": 1.2029795911926189,
+                "median": 2.049704352519532,
+                "p95": 2.538840504980649,
+                "max": 2.9723398633448714
+              }
+            },
+            "lidar_bootstrap": {
+              "scans": 35,
+              "terminations": {
+                "converged": 35
+              },
+              "iterations": 2026,
+              "residual_reports": 35,
+              "matched_fraction": {
+                "count": 35,
+                "min": 0.9380296610169492,
+                "median": 0.9955465587044534,
+                "p95": 0.9991229681669295,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 35,
+                "min": 0.1914811961234803,
+                "median": 0.29869790609794705,
+                "p95": 0.36039842162746705,
+                "max": 0.6443504426863025
+              },
+              "max_residual_m": {
+                "count": 35,
+                "min": 1.339108412928112,
+                "median": 2.0438442107494295,
+                "p95": 2.6273203458776875,
+                "max": 2.7793097730054317
+              }
+            },
+            "lidar_gap": {
+              "scans": 42,
+              "terminations": {
+                "converged": 42
+              },
+              "iterations": 2344,
+              "residual_reports": 42,
+              "matched_fraction": {
+                "count": 42,
+                "min": 0.9869178440607012,
+                "median": 0.99509421185456,
+                "p95": 0.9995254541187201,
+                "max": 0.9995615957913196
+              },
+              "rmse_m": {
+                "count": 42,
+                "min": 0.19734851129820627,
+                "median": 0.30453128315393285,
+                "p95": 0.37275456698955983,
+                "max": 0.39916980397632357
+              },
+              "max_residual_m": {
+                "count": 42,
+                "min": 1.192650321910431,
+                "median": 2.0926092373973546,
+                "p95": 2.4921200529142156,
+                "max": 2.7687640961902686
+              }
+            },
+            "lidar_start": {
+              "scans": 1,
+              "terminations": {
+                "empty_map": 1
+              },
+              "iterations": 0,
+              "residual_reports": 0,
+              "matched_fraction": null,
+              "rmse_m": null,
+              "max_residual_m": null
+            }
+          },
+          "pose_bits_unchanged": 236,
+          "iteration_counts_unchanged": 236
+        }
+      }
+    },
+    {
+      "session": "2012-06-15",
+      "csv": "june-registrations.csv",
+      "csv_sha256": "bbf6a8521a0a8650669d44c0fc8dc6226fd5d3c9e2cff7b9e5106210bcca1bb2",
+      "frontend_csv_sha256": "bf634f73de30f351c70c27b15c7cc9446ff2b826bc533a84b9825f38b0e4f7e1",
+      "audit_receipt_sha256": "a5f57a14ec95695d0fe8d8b5b4137338123354ba914dacbe0fb479e3ebffcb55",
+      "inputs": {
+        "lidar": {
+          "name": "nclt-2012-06-15.mcap",
+          "bytes": 9387931,
+          "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4"
+        },
+        "frontend_receipt": {
+          "name": "receipt.json",
+          "bytes": 123198,
+          "sha256": "2277399c39f6abdc764e3b06759d1bfbcf1d8f83b2d952a9ae35749569278c1f"
+        },
+        "frontend_outputs": {
+          "assisted.tum": {
+            "name": "assisted.tum",
+            "bytes": 38836,
+            "sha256": "b0eae4e977337708174c25428472dbdf185bd24d0917509f94703082115eebb2"
+          },
+          "baseline.tum": {
+            "name": "baseline.tum",
+            "bytes": 38823,
+            "sha256": "d0421c2195589e8d55a68b2cd2e745c479baf4f5584f4e5632ddd519d98fc9d7"
+          },
+          "protocol.json": {
+            "name": "protocol.json",
+            "bytes": 3132,
+            "sha256": "845e1e1acd4eeb9a2d4018989d198b1206e7d3a42de6caf391cbaaaf9b8d1243"
+          },
+          "trajectory.npz": {
+            "name": "trajectory.npz",
+            "bytes": 119486,
+            "sha256": "6cb91fa301a1449ee77e5d1343465dc008d79fadc36a092dd2dd098284084838"
+          }
+        },
+        "native_extension": {
+          "name": "_core.pyd",
+          "bytes": 7369728,
+          "sha256": "62df4b515557f72616265b45cca217db1887b07eaa60ebcd8129bafd9f4224df"
+        },
+        "controller": {
+          "name": "audit_nclt_registration.py",
+          "bytes": 8209,
+          "sha256": "120f548e1b783920222488a94d259892c480e060bd119789fde74fa5914b630e"
+        },
+        "pilot_module": {
+          "name": "pilot_nclt_imu_window.py",
+          "bytes": 13836,
+          "sha256": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43"
+        },
+        "frontend_module": {
+          "name": "replay_nclt_imu_frontend.py",
+          "bytes": 9737,
+          "sha256": "9d1477957bfed55f51c5bc24594a0ef0f7eb3094858de7f06d072922763fe678"
+        }
+      },
+      "arms": {
+        "baseline": {
+          "all": {
+            "scans": 238,
+            "terminations": {
+              "converged": 237,
+              "empty_map": 1
+            },
+            "iterations": 14788,
+            "residual_reports": 237,
+            "matched_fraction": {
+              "count": 237,
+              "min": 0.9368365180467091,
+              "median": 0.9960352422907489,
+              "p95": 0.9995390467220916,
+              "max": 1.0
+            },
+            "rmse_m": {
+              "count": 237,
+              "min": 0.19830593877074904,
+              "median": 0.292370464337174,
+              "p95": 0.3782897797098699,
+              "max": 0.5941939501518744
+            },
+            "max_residual_m": {
+              "count": 237,
+              "min": 1.1215932436152976,
+              "median": 2.0558018067262545,
+              "p95": 2.5474260329994474,
+              "max": 2.796673920155574
+            }
+          },
+          "by_frontend_status": {
+            "imu_prediction": {
+              "scans": 45,
+              "terminations": {
+                "converged": 45
+              },
+              "iterations": 2344,
+              "residual_reports": 45,
+              "matched_fraction": {
+                "count": 45,
+                "min": 0.9867330016583747,
+                "median": 0.9941662615459407,
+                "p95": 0.9980938554886694,
+                "max": 0.9987255734919286
+              },
+              "rmse_m": {
+                "count": 45,
+                "min": 0.20877408714580178,
+                "median": 0.30384974922826546,
+                "p95": 0.3594397849928252,
+                "max": 0.4499468709953214
+              },
+              "max_residual_m": {
+                "count": 45,
+                "min": 1.4637996102435604,
+                "median": 2.117002954839741,
+                "p95": 2.5139079237714417,
+                "max": 2.6297339274118525
+              }
+            },
+            "lidar_bootstrap": {
+              "scans": 57,
+              "terminations": {
+                "converged": 57
+              },
+              "iterations": 3590,
+              "residual_reports": 57,
+              "matched_fraction": {
+                "count": 57,
+                "min": 0.9737241030823648,
+                "median": 0.9967061923583662,
+                "p95": 0.9994657363811568,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 57,
+                "min": 0.1994990254486602,
+                "median": 0.2794093754766095,
+                "p95": 0.3553026468306963,
+                "max": 0.4494525472634235
+              },
+              "max_residual_m": {
+                "count": 57,
+                "min": 1.1215932436152976,
+                "median": 2.023692728877793,
+                "p95": 2.500896507665248,
+                "max": 2.7531460446063583
+              }
+            },
+            "lidar_gap": {
+              "scans": 135,
+              "terminations": {
+                "converged": 135
+              },
+              "iterations": 8854,
+              "residual_reports": 135,
+              "matched_fraction": {
+                "count": 135,
+                "min": 0.9368365180467091,
+                "median": 0.9960352422907489,
+                "p95": 0.9995651195625882,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 135,
+                "min": 0.19830593877074904,
+                "median": 0.29276002822161745,
+                "p95": 0.3912814914497302,
+                "max": 0.5941939501518744
+              },
+              "max_residual_m": {
+                "count": 135,
+                "min": 1.2525681486902573,
+                "median": 2.0558018067262545,
+                "p95": 2.5824360374109046,
+                "max": 2.796673920155574
+              }
+            },
+            "lidar_start": {
+              "scans": 1,
+              "terminations": {
+                "empty_map": 1
+              },
+              "iterations": 0,
+              "residual_reports": 0,
+              "matched_fraction": null,
+              "rmse_m": null,
+              "max_residual_m": null
+            }
+          },
+          "pose_bits_unchanged": 238,
+          "iteration_counts_unchanged": 238
+        },
+        "assisted": {
+          "all": {
+            "scans": 238,
+            "terminations": {
+              "converged": 237,
+              "empty_map": 1
+            },
+            "iterations": 14009,
+            "residual_reports": 237,
+            "matched_fraction": {
+              "count": 237,
+              "min": 0.9368365180467091,
+              "median": 0.9960845732184808,
+              "p95": 0.9995390467220916,
+              "max": 1.0
+            },
+            "rmse_m": {
+              "count": 237,
+              "min": 0.1984753732921121,
+              "median": 0.29218941537785786,
+              "p95": 0.3782124166306252,
+              "max": 0.5941939501518744
+            },
+            "max_residual_m": {
+              "count": 237,
+              "min": 1.1235256551886497,
+              "median": 2.0505869426176737,
+              "p95": 2.5211766867084164,
+              "max": 2.796673920155574
+            }
+          },
+          "by_frontend_status": {
+            "imu_prediction": {
+              "scans": 45,
+              "terminations": {
+                "converged": 45
+              },
+              "iterations": 1403,
+              "residual_reports": 45,
+              "matched_fraction": {
+                "count": 45,
+                "min": 0.9867330016583747,
+                "median": 0.9946178686759957,
+                "p95": 0.9981230143348438,
+                "max": 0.9987255734919286
+              },
+              "rmse_m": {
+                "count": 45,
+                "min": 0.2088206738936402,
+                "median": 0.3043586614070514,
+                "p95": 0.36012596764771676,
+                "max": 0.44989176798856895
+              },
+              "max_residual_m": {
+                "count": 45,
+                "min": 1.4641577695742471,
+                "median": 2.1008724798193286,
+                "p95": 2.5129601653679297,
+                "max": 2.6230329453605563
+              }
+            },
+            "lidar_bootstrap": {
+              "scans": 57,
+              "terminations": {
+                "converged": 57
+              },
+              "iterations": 3646,
+              "residual_reports": 57,
+              "matched_fraction": {
+                "count": 57,
+                "min": 0.9737241030823648,
+                "median": 0.9967061923583662,
+                "p95": 0.9994657363811568,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 57,
+                "min": 0.19910095896534538,
+                "median": 0.27980460197663665,
+                "p95": 0.35515055842900056,
+                "max": 0.4494525472634235
+              },
+              "max_residual_m": {
+                "count": 57,
+                "min": 1.1235256551886497,
+                "median": 2.0013576067909744,
+                "p95": 2.4976041500170196,
+                "max": 2.7531460446063583
+              }
+            },
+            "lidar_gap": {
+              "scans": 135,
+              "terminations": {
+                "converged": 135
+              },
+              "iterations": 8960,
+              "residual_reports": 135,
+              "matched_fraction": {
+                "count": 135,
+                "min": 0.9368365180467091,
+                "median": 0.996130458817026,
+                "p95": 0.9995651195625882,
+                "max": 1.0
+              },
+              "rmse_m": {
+                "count": 135,
+                "min": 0.1984753732921121,
+                "median": 0.29294361818399467,
+                "p95": 0.39249614658835746,
+                "max": 0.5941939501518744
+              },
+              "max_residual_m": {
+                "count": 135,
+                "min": 1.2374938812088676,
+                "median": 2.062641036067532,
+                "p95": 2.53764708564816,
+                "max": 2.796673920155574
+              }
+            },
+            "lidar_start": {
+              "scans": 1,
+              "terminations": {
+                "empty_map": 1
+              },
+              "iterations": 0,
+              "residual_reports": 0,
+              "matched_fraction": null,
+              "rmse_m": null,
+              "max_residual_m": null
+            }
+          },
+          "pose_bits_unchanged": 238,
+          "iteration_counts_unchanged": 238
+        }
+      }
+    }
+  ]
+}

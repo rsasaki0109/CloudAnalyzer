@@ -86,6 +86,24 @@ impl LidarOdometry {
         self.inner.register(&cloud.inner).to_matrix().to_vec()
     }
 
+    /// Opt in to a final correspondence query before map insertion. Applies to
+    /// registrations begun after this call; disabled by default.
+    #[wasm_bindgen(js_name = setDiagnostics)]
+    pub fn set_diagnostics(&mut self, enabled: bool) {
+        self.inner.set_diagnostics(enabled);
+    }
+
+    /// JSON report of the last finished scan (including worker-based steps),
+    /// or undefined before the first scan. Residuals require setDiagnostics(true).
+    #[wasm_bindgen(js_name = lastReport)]
+    pub fn last_report(&self) -> Result<Option<String>, JsError> {
+        self.inner
+            .last_report()
+            .map(serde_json::to_string)
+            .transpose()
+            .map_err(|e| JsError::new(&e.to_string()))
+    }
+
     /// The local map's voxel size and points per voxel, for copies of it.
     #[wasm_bindgen(getter, js_name = mapVoxel)]
     pub fn map_voxel(&self) -> f64 {
@@ -219,5 +237,54 @@ impl OdometryMap {
     #[wasm_bindgen(js_name = isEmpty)]
     pub fn is_empty(&self) -> bool {
         self.inner.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn worker_equations_keep_their_wire_format_and_report_the_finished_scan() {
+        let cloud = Cloud::unindexed(ca_core::PointCloud {
+            positions: (0..18)
+                .map(|i| {
+                    [
+                        2.0 + 3.0 * (i % 3) as f64,
+                        3.0 * (i / 3) as f64,
+                        (i % 4) as f64,
+                    ]
+                })
+                .collect(),
+            ..ca_core::PointCloud::default()
+        });
+        let mut odometry = LidarOdometry::new(0.0, 80.0, false);
+        assert!(odometry.last_report().unwrap().is_none());
+        odometry.set_diagnostics(true);
+        odometry.register(&cloud);
+        let mut worker = OdometryMap::new(odometry.map_voxel(), odometry.map_points());
+        worker.update(&odometry.placed(), &[0.0; 3], 80.0).unwrap();
+        let mut registration = odometry.begin(&cloud);
+        let source = registration.source();
+        let terms = registration.terms();
+        // The worker's two source partitions still return exactly 42 numbers.
+        let mid = source.len() / 6 * 3;
+        let a = worker
+            .equations(&source[..mid], &registration.total(), &terms)
+            .unwrap();
+        let b = worker
+            .equations(&source[mid..], &registration.total(), &terms)
+            .unwrap();
+        assert_eq!(a.len(), 42);
+        assert_eq!(b.len(), 42);
+        let sum: Vec<_> = a.iter().zip(b).map(|(x, y)| x + y).collect();
+        assert!(odometry.step(&mut registration, &sum).unwrap());
+        odometry.finish(registration);
+        let report: serde_json::Value =
+            serde_json::from_str(&odometry.last_report().unwrap().unwrap()).unwrap();
+        assert_eq!(report["termination"], "converged");
+        assert_eq!(report["iterations"], 1);
+        assert_eq!(report["correspondences"]["matched_points"], 18);
+        assert_eq!(report["correspondences"]["rmse_m"], 0.0);
     }
 }

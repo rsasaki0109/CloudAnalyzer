@@ -7,6 +7,7 @@ and use all cores.
 from ._core import (
     BagMessages,
     BagReader,
+    ImuFactor,
     LidarOdometry,
     PoseGraph,
     PreparedMesh,
@@ -47,6 +48,7 @@ from ._spatial import CopcBatch, CopcCancelled, CopcLimits, CopcNode, CopcStream
 __all__ = [
     "BagMessages",
     "BagReader",
+    "ImuFactor",
     "CopcBatch",
     "CopcCancelled",
     "CopcLimits",

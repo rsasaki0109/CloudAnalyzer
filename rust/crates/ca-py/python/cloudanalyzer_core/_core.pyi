@@ -204,9 +204,55 @@ class PreintegratedImu(TypedDict):
     delta_position: npt.NDArray[np.float64]
     covariance: npt.NDArray[np.float64]
     bias_jacobian: npt.NDArray[np.float64]
+    linearization_bias: npt.NDArray[np.float64]
     delta_time_s: float
     integration_steps: int
     frame_id: str
+
+class ImuPrediction(TypedDict):
+    pose: npt.NDArray[np.float64]
+    velocity: npt.NDArray[np.float64]
+
+class ImuEvaluation(TypedDict):
+    residual: npt.NDArray[np.float64]
+    whitened_residual: npt.NDArray[np.float64]
+    cost: float
+
+class ImuLinearization(ImuEvaluation):
+    jacobian_i: npt.NDArray[np.float64]
+    jacobian_j: npt.NDArray[np.float64]
+    jacobian_bias: npt.NDArray[np.float64]
+    jacobian_gravity: npt.NDArray[np.float64]
+    whitened_jacobian_i: npt.NDArray[np.float64]
+    whitened_jacobian_j: npt.NDArray[np.float64]
+    whitened_jacobian_bias: npt.NDArray[np.float64]
+    whitened_jacobian_gravity: npt.NDArray[np.float64]
+
+class ImuFactor:
+    """Created by BagReader.imu_factor(); owns the measurement and covariance factorization.
+    Poses are IMU-to-world (4,4); velocity and gravity use world axes.
+    State Jacobian columns: right-local rotation, world velocity, world position.
+    Bias order: gyro, accelerometer; None uses the saved linearization point.
+    """
+
+    def measurement(self) -> PreintegratedImu: ...
+    def predict(
+        self, pose_i: npt.NDArray[np.float64], velocity_i: npt.NDArray[np.float64], *,
+        gravity: tuple[float, float, float],
+        bias: tuple[float, float, float, float, float, float] | None = None,
+    ) -> ImuPrediction: ...
+    def evaluate(
+        self, pose_i: npt.NDArray[np.float64], velocity_i: npt.NDArray[np.float64],
+        pose_j: npt.NDArray[np.float64], velocity_j: npt.NDArray[np.float64], *,
+        gravity: tuple[float, float, float],
+        bias: tuple[float, float, float, float, float, float] | None = None,
+    ) -> ImuEvaluation: ...
+    def linearize(
+        self, pose_i: npt.NDArray[np.float64], velocity_i: npt.NDArray[np.float64],
+        pose_j: npt.NDArray[np.float64], velocity_j: npt.NDArray[np.float64], *,
+        gravity: tuple[float, float, float],
+        bias: tuple[float, float, float, float, float, float] | None = None,
+    ) -> ImuLinearization: ...
 
 class BagReader:
     """A ROS 1 bag (.bag), an MCAP file, a rosbag2 .db3 file or a rosbag2 folder, read without a
@@ -245,6 +291,14 @@ class BagReader:
         Covariance/Jacobian rows: right-local rotation, additive velocity, position.
         Missing/invalid measurements, time gaps and frame changes raise ValueError.
         """
+        ...
+    def imu_factor(
+        self, start_ns: int, end_ns: int, *, gyro_noise_density: float,
+        accel_noise_density: float, max_gap_s: float = 0.05,
+        bias: tuple[float, float, float, float, float, float] | None = None,
+        topic: str | None = None,
+    ) -> ImuFactor:
+        """A reusable inertial factor; requires numerically positive definite covariance."""
         ...
     def poses(
         self, topic: str | None = None, frame: str | None = None

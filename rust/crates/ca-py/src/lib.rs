@@ -13,6 +13,7 @@ use pyo3::types::PyDict;
 
 mod bag;
 mod copc_spatial;
+mod imu;
 mod odometry;
 mod pose_graph;
 mod vector_map;
@@ -787,6 +788,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pose_graph::PoseGraph>()?;
     m.add_class::<odometry::LidarOdometry>()?;
     m.add_class::<bag::BagReader>()?;
+    m.add_class::<imu::ImuFactor>()?;
     m.add_class::<bag::BagMessages>()?;
     m.add_class::<bag::Scan>()?;
     Ok(())

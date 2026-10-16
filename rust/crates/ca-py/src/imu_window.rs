@@ -1,8 +1,8 @@
-//! Owned, bounded inertial windows. Solving releases the Python GIL.
+//! Owned, bounded inertial windows with explicit oldest-state marginalization.
 
 use ca_core::imu_factor::ImuState;
 use ca_core::imu_window::{ImuWindow as Window, MAX_STATES, NavigationState, OptimizeParams};
-use numpy::ndarray::Array3;
+use numpy::ndarray::{Array2, Array3};
 use numpy::{IntoPyArray, PyReadonlyArray2, PyReadonlyArray3, PyUntypedArrayMethods};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -11,7 +11,7 @@ use pyo3::types::PyDict;
 use crate::imu::{ImuFactor, err, state};
 
 /// Adjacent IMU factors, explicit priors and a bias random walk per interval.
-/// This is a bounded batch problem; it does not marginalize old states.
+/// The caller may append states and marginalize the oldest state explicitly.
 #[pyclass(module = "cloudanalyzer_core._core")]
 pub struct ImuWindow {
     window: Window,
@@ -129,6 +129,86 @@ impl ImuWindow {
                 accel_bias_random_walk,
             )
             .map_err(err)
+    }
+
+    /// Append one state and exact adjacent factor; all validation is atomic.
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (timestamp_ns, pose, velocity, bias, factor, *, gyro_bias_random_walk, accel_bias_random_walk))]
+    fn append_state(
+        &mut self,
+        timestamp_ns: i64,
+        pose: PyReadonlyArray2<f64>,
+        velocity: [f64; 3],
+        bias: [f64; 6],
+        factor: &ImuFactor,
+        gyro_bias_random_walk: f64,
+        accel_bias_random_walk: f64,
+    ) -> PyResult<()> {
+        self.window
+            .append_state(
+                timestamp_ns,
+                NavigationState {
+                    motion: state(pose, velocity)?,
+                    bias,
+                },
+                factor.factor.clone(),
+                gyro_bias_random_walk,
+                accel_bias_random_walk,
+            )
+            .map_err(err)
+    }
+
+    /// Freeze and eliminate only the oldest state's incident factors. Requires
+    /// three states and a full prior at the oldest state (or a previous marginal).
+    fn marginalize_oldest<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+        let report = py
+            .detach(|| self.window.marginalize_oldest())
+            .map_err(err)?;
+        let result = PyDict::new(py);
+        result.set_item("dropped_timestamp_ns", report.dropped_timestamp_ns)?;
+        result.set_item("retained_timestamp_ns", report.retained_timestamp_ns)?;
+        result.set_item("removed_priors", report.removed_priors)?;
+        result.set_item("replaced_marginal_prior", report.replaced_marginal_prior)?;
+        result.set_item(
+            "dropped_linearized_constant",
+            report.dropped_linearized_constant,
+        )?;
+        Ok(result)
+    }
+
+    /// Independent copies of the frozen linearization point, root and offset.
+    fn marginal_prior<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyDict>>> {
+        let Some(prior) = self.window.marginal_prior() else {
+            return Ok(None);
+        };
+        let result = PyDict::new(py);
+        let motion = &prior.reference.motion;
+        let pose = Array2::from_shape_fn((4, 4), |(r, c)| {
+            if r == 3 {
+                f64::from(c == 3)
+            } else if c == 3 {
+                motion.position[r]
+            } else {
+                motion.rotation[r][c]
+            }
+        });
+        result.set_item("timestamp_ns", self.window.timestamps_ns()[0])?;
+        result.set_item("reference_pose", pose.into_pyarray(py))?;
+        result.set_item(
+            "reference_velocity",
+            motion.velocity.to_vec().into_pyarray(py),
+        )?;
+        result.set_item(
+            "reference_bias",
+            prior.reference.bias.to_vec().into_pyarray(py),
+        )?;
+        let root = Array2::from_shape_fn((15, 15), |(r, c)| prior.square_root[r][c]);
+        result.set_item("sqrt_information", root.into_pyarray(py))?;
+        result.set_item(
+            "residual_offset",
+            prior.residual_offset.to_vec().into_pyarray(py),
+        )?;
+        Ok(Some(result))
     }
 
     /// Diagonal standard deviations: rotation, velocity, position, gyro/accel bias.

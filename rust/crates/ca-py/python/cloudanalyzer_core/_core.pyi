@@ -280,8 +280,23 @@ class ImuWindowResult(ImuWindowStates):
     cost_history: npt.NDArray[np.float64]
     max_abs_bias_correction: npt.NDArray[np.float64]
 
+class ImuMarginalPrior(TypedDict):
+    timestamp_ns: int
+    reference_pose: npt.NDArray[np.float64]
+    reference_velocity: npt.NDArray[np.float64]
+    reference_bias: npt.NDArray[np.float64]
+    sqrt_information: npt.NDArray[np.float64]
+    residual_offset: npt.NDArray[np.float64]
+
+class ImuMarginalizeResult(TypedDict):
+    dropped_timestamp_ns: int
+    retained_timestamp_ns: int
+    removed_priors: int
+    replaced_marginal_prior: bool
+    dropped_linearized_constant: float
+
 class ImuWindow:
-    """Bounded batch IMU chain (2..32 states), without marginalization.
+    """Bounded IMU chain (2..32 states) with explicit oldest-state marginalization.
     All poses refer to the IMU origin. Biases are gyro then accelerometer.
     Every adjacent edge and at least one full state prior are required.
     """
@@ -295,6 +310,13 @@ class ImuWindow:
         self, index: int, factor: ImuFactor, *,
         gyro_bias_random_walk: float, accel_bias_random_walk: float,
     ) -> None: ...
+    def append_state(
+        self, timestamp_ns: int, pose: npt.NDArray[np.float64],
+        velocity: npt.NDArray[np.float64], bias: npt.NDArray[np.float64], factor: ImuFactor, *,
+        gyro_bias_random_walk: float, accel_bias_random_walk: float,
+    ) -> None: ...
+    def marginalize_oldest(self) -> ImuMarginalizeResult: ...
+    def marginal_prior(self) -> ImuMarginalPrior | None: ...
     def add_state_prior(
         self, index: int, pose: npt.NDArray[np.float64], velocity: npt.NDArray[np.float64],
         bias: npt.NDArray[np.float64], *, sigmas: npt.NDArray[np.float64],

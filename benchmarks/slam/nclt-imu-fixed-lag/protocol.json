@@ -1,0 +1,20 @@
+{
+  "schema": "cloudanalyzer.nclt_fixed_lag_protocol.v1",
+  "frozen_at_utc": "2026-10-16T04:55:54.817240+00:00",
+  "source_commit": "88aa78952d5c70faf3ce56ffbcaae7c529e1100c",
+  "purpose": "Ordered real LiDAR-pose/raw-IMU replay with explicit oldest-state marginalization and LiDAR fallback across rejected IMU edges; no frontend feedback, calibrated covariance, GPU or real-time speed claim",
+  "max_states": 4,
+  "initialization": "Gravity from same causal first raw Euler sample as pilot. Segment starts from first two available LiDAR-derived IMU-origin positions, using backward difference for both initial velocities. Zero bias at each segment start. Later initial velocity uses current/previous LiDAR IMU-origin positions; bias is previous estimated latest bias. No later LiDAR pose or ground truth used in an update.",
+  "measurement_model": "Same fixed diagnostic IMU, random-walk, full-state and pose-prior weights as original pilot settings(). New edges integrated at previous latest estimated bias. No automatic reintegration of old edges.",
+  "window_policy": "Startup at 2 states. Append state/one new edge/one new pose prior. When full, marginalize only oldest-state incident factors, preserving dense frozen 15D prior. No repeated full-state reset inside a valid run.",
+  "gap_policy": "Original raw gap >.05 s rejects edge. Clear all inertial window information and emit current LiDAR observation; next valid edge starts a new independent segment. Never integrate or carry inertial certainty through missing readings.",
+  "output_policy": "Emit latest body pose once per scan; do not retroactively replace published poses when past states are smoothed. First scan and each rejected-gap edge endpoint are explicitly LiDAR-only fallback.",
+  "evaluation": {
+    "primary": "Consecutive SE3 RPE translation and rotation RMSE over ALL 472 input scan edges including gap/startup transitions, compared to identical frozen actual LiDAR baseline.",
+    "secondary": "Global per-session SE3 position-aligned ATE, no scale; report RPE separately for valid-IMU and gap edges, all 474 poses covered.",
+    "reference": "Original body raw CSV rows, body-z-up conversion only, xyz interpolation + SO3 SLERP, both reference brackets <=.05 s; no extrapolation.",
+    "frozen": "Estimation for both sessions completed/frozen before separate evaluator reads ground truth.",
+    "adoption": "Do not enable production default. Assess full-trajectory metrics in both sessions, nonconvergence, boundary errors, and independent validation; never replace unsuccessful data with retuned scores."
+  },
+  "original_preregistration_sha256": "a4415b331bdc1a75625f01b5612d5f7f0cf626c30aec4cfa6abffad57e181879"
+}

@@ -5,9 +5,10 @@ bias at 2 to 32 explicitly initialized timestamps. Adjacent
 [preintegrated IMU factors](slam-imu-preintegration.md), bias random walks,
 full state priors and optional pose priors form a small batch problem.
 
-This is an estimator building block. It has no old-state marginalization,
-sliding-window lifecycle, automatic initialization, LiDAR frontend, clock or
-extrinsic calibration. Numerical agreement with independent solvers does not
+This is an estimator building block. It supports explicit
+[oldest-state marginalization and state appending](slam-imu-marginalization.md),
+with no automatic sliding-window lifecycle, initialization, LiDAR frontend,
+clock or extrinsic calibration. Numerical agreement with independent solvers does not
 establish fused SLAM trajectory accuracy. Existing LiDAR odometry does not
 automatically use this class.
 
@@ -124,6 +125,10 @@ with representable positive squared inverse weights. At least one complete
 15D prior is required to explicitly constrain initial pose, velocity and bias.
 Pose-only priors do not satisfy that requirement. Prior and IMU rotation
 linearizations reject residuals within `1e-6` radians of the SO(3) branch cut.
+
+After explicit oldest-state marginalization, the generated full Gaussian prior
+preserves the initial anchor. A replacement independent state prior is not
+required to keep optimizing the retained window.
 
 ## Solver and diagnostics
 

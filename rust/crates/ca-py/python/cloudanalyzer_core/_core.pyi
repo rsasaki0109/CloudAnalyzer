@@ -199,6 +199,8 @@ class RawImuData(TypedDict):
     linear_acceleration_status: list[MeasurementStatus]
 
 class PreintegratedImu(TypedDict):
+    start_ns: int
+    end_ns: int
     delta_rotation: npt.NDArray[np.float64]
     delta_velocity: npt.NDArray[np.float64]
     delta_position: npt.NDArray[np.float64]
@@ -253,6 +255,53 @@ class ImuFactor:
         gravity: tuple[float, float, float],
         bias: tuple[float, float, float, float, float, float] | None = None,
     ) -> ImuLinearization: ...
+
+class ImuWindowStates(TypedDict):
+    timestamps_ns: npt.NDArray[np.int64]
+    poses: npt.NDArray[np.float64]
+    velocities: npt.NDArray[np.float64]
+    biases: npt.NDArray[np.float64]
+
+class ImuWindowResult(ImuWindowStates):
+    initial_cost: float
+    final_cost: float
+    iterations: int
+    accepted_steps: int
+    rejected_steps: int
+    converged: bool
+    termination: Literal["gradient", "step", "cost", "max_iterations", "no_descent"]
+    cost_history: npt.NDArray[np.float64]
+    max_abs_bias_correction: npt.NDArray[np.float64]
+
+class ImuWindow:
+    """Bounded batch IMU chain (2..32 states), without marginalization.
+    All poses refer to the IMU origin. Biases are gyro then accelerometer.
+    Every adjacent edge and at least one full state prior are required.
+    """
+
+    def __init__(
+        self, timestamps_ns: list[int] | npt.NDArray[np.int64],
+        poses: npt.NDArray[np.float64], velocities: npt.NDArray[np.float64],
+        biases: npt.NDArray[np.float64], *, gravity: tuple[float, float, float],
+    ) -> None: ...
+    def add_imu_factor(
+        self, index: int, factor: ImuFactor, *,
+        gyro_bias_random_walk: float, accel_bias_random_walk: float,
+    ) -> None: ...
+    def add_state_prior(
+        self, index: int, pose: npt.NDArray[np.float64], velocity: npt.NDArray[np.float64],
+        bias: npt.NDArray[np.float64], *, sigmas: npt.NDArray[np.float64],
+    ) -> None: ...
+    def add_pose_prior(
+        self, index: int, pose: npt.NDArray[np.float64], *,
+        rotation_sigma: float, position_sigma: float,
+    ) -> None: ...
+    def states(self) -> ImuWindowStates: ...
+    def optimize(
+        self, *, max_iterations: int = 20, initial_damping: float = 1e-3,
+        gradient_tolerance: float = 1e-8, step_tolerance: float = 1e-9,
+        cost_tolerance: float = 1e-10,
+    ) -> ImuWindowResult: ...
 
 class BagReader:
     """A ROS 1 bag (.bag), an MCAP file, a rosbag2 .db3 file or a rosbag2 folder, read without a

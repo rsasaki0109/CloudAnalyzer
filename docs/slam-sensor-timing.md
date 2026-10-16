@@ -108,6 +108,50 @@ Calling `raw_time()` copies the retained values into a NumPy array.
 The [flat-wall raw-time audit](../benchmarks/slam/flatwall-raw-point-time/README.md)
 contains frozen old/new native receipts and independent field comparisons.
 
+## Declared integer point timestamps
+
+After establishing the source field's units and clock origin, request a new
+int64 array with both conventions explicitly supplied:
+
+```python
+scan = next(reader.scans("/livox/points", raw_time_field="t"))
+# Only when the recording's convention is ns offsets from this integer Header:
+point_times = scan.point_times_ns(unit="ns", origin="header")
+```
+
+`unit` must be `"s"`, `"ms"`, `"us"` or `"ns"`. `origin="header"` adds
+`scan.stamp_ns`; `origin="absolute"` adds zero for values already expressed
+from the intended clock origin. Both arguments are required keywords. Neither
+the field name, datatype nor header establishes the correct convention.
+
+Each exact represented binary source value is scaled to nanoseconds using
+integer arithmetic, rounded to the nearest integer with ties to even, then
+added to the integer origin. Rounding occurs before origin addition: for
+example, a source offset of 0.5 ns rounds to zero even when the header is odd.
+No intermediate float64 unit multiplication or epoch addition adds another
+rounding. All standard PointField integers therefore convert exactly at these
+unit scales. Float values retain the precision of their represented binary
+value; this cannot recover precision lost by the publisher. A decimal value
+near half a nanosecond can lie just above or below that boundary in binary.
+
+`ValueError` identifies the finite-point index of a nonfinite source value or
+a final timestamp outside signed int64. The range check follows integer origin
+addition, so an offset outside int64 can still be accepted when its final
+timestamp fits. A scan whose raw field was not explicitly retained also raises
+`ValueError`; no timestamps are synthesized from normalized `time()` values.
+An empty retained source returns an empty int64 array.
+
+The array is newly allocated. Conversion preserves point order, including
+repeated or decreasing times, and leaves the raw field, normalized fractions,
+XYZ and header unchanged. No converted array is cached. Consumers must check
+IMU coverage using the minimum and maximum point timestamps rather than
+assuming that point times are sorted. This conversion does not calibrate
+clocks, choose a scan pose timestamp or perform deskew.
+
+The [flat-wall integer-time audit](../benchmarks/slam/flatwall-point-times-ns/README.md)
+compares every point with independent integer arithmetic and a previous native
+build under a declared ns-offset/header-origin policy.
+
 For the bundled NCLT lineage, see [synchronized body-frame conventions](slam-nclt-body-frames.md)
 before interpreting the historical `velodyne` frame label or preparing new
 reference trajectories.

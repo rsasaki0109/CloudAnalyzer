@@ -88,6 +88,44 @@ impl Scan {
             .map(|raw| raw.values.clone().into_pyarray(py))
     }
 
+    /// Explicit units/origin; nearest ns with ties to even before integer origin addition.
+    #[pyo3(signature = (*, unit, origin))]
+    fn point_times_ns<'py>(
+        &self,
+        py: Python<'py>,
+        unit: &str,
+        origin: &str,
+    ) -> PyResult<Bound<'py, PyArray1<i64>>> {
+        use ca_core::point_time::{TimeUnit, timestamps_ns};
+        let unit = match unit {
+            "s" => TimeUnit::Seconds,
+            "ms" => TimeUnit::Milliseconds,
+            "us" => TimeUnit::Microseconds,
+            "ns" => TimeUnit::Nanoseconds,
+            _ => {
+                return Err(PyValueError::new_err(
+                    "point time unit must be s, ms, us or ns",
+                ));
+            }
+        };
+        let origin_ns = match origin {
+            "header" => self.stamp_ns,
+            "absolute" => 0,
+            _ => {
+                return Err(PyValueError::new_err(
+                    "point time origin must be header or absolute",
+                ));
+            }
+        };
+        let raw = self.raw_time.as_ref().ok_or_else(|| {
+            PyValueError::new_err("point times require an explicitly retained raw_time_field")
+        })?;
+        let values = py
+            .detach(|| timestamps_ns(&raw.values, unit, origin_ns))
+            .map_err(|error| PyValueError::new_err(error.to_string()))?;
+        Ok(values.into_pyarray(py))
+    }
+
     #[getter]
     fn raw_time_field(&self) -> Option<String> {
         self.raw_time.as_ref().map(|raw| raw.field.clone())

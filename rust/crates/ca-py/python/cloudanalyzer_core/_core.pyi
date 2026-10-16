@@ -191,6 +191,17 @@ class Scan:
         None unless raw_time_field was explicitly requested on the iterator.
         """
         ...
+    def point_times_ns(
+        self, *, unit: Literal["s", "ms", "us", "ns"],
+        origin: Literal["header", "absolute"],
+    ) -> npt.NDArray[np.int64]:
+        """Convert explicitly retained raw time to copied int64 nanoseconds.
+        Round the exact binary value times the unit scale to nearest ns, ties to
+        even, then add the integer header (header) or zero (absolute).
+        Missing raw time, nonfinite values and final int64 overflow are errors.
+        Point order is preserved; no clock calibration or unit/origin inference.
+        """
+        ...
     def __len__(self) -> int: ...
 
 class BagMessages:

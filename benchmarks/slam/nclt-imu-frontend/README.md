@@ -65,3 +65,12 @@ The input cohort was already examined during development. Fixed gravity,
 shared-map pose-prior correlations, marginal linearization and sensor noise
 remain diagnostic approximations. Longer unseen sequences and calibration are
 needed before default adoption or a comparison with a complete LIO system.
+
+Source: [University of Michigan North Campus Long-Term dataset](https://robots.engin.umich.edu/nclt/),
+Carlevaris-Bianco, Ushani and Eustice, *University of Michigan North Campus
+Long-Term Vision and LIDAR Dataset*, IJRR 2016. NCLT data and derived trajectory
+contents retain [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/) /
+[DBCL 1.0](https://opendatacommons.org/licenses/dbcl/1-0/) terms. Software remains
+under the repository's software license. Reference poses combine SLAM/RTK and
+odometry interpolation and are not statistically independent sensor truth.
+The documented body-z-up conversion is applied to original reference rows.

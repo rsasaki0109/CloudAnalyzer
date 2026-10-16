@@ -935,7 +935,12 @@ impl<'a> Reader<'a> {
 /// A PointCloud2 decoded.
 #[derive(Debug, Clone, Default)]
 pub struct PointsMessage {
+    /// Exact sensor header timestamp, independent of the bag recording time.
+    pub stamp_ns: i64,
+    /// Floating-point header seconds, retained for existing consumers.
     pub stamp: f64,
+    /// The PointCloud2 header frame, without coordinate conversion.
+    pub frame_id: String,
     /// The finite points only.
     pub positions: Vec<[f64; 3]>,
     /// One per point, when the cloud has an intensity field.
@@ -984,7 +989,7 @@ fn field_value(bytes: &[u8], at: usize, datatype: u8, big: bool) -> Option<f64> 
 
 pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMessage> {
     let mut m = Reader::new(data, encoding);
-    let stamp = m.header()?;
+    let (sec, nsec, frame_id) = m.header_parts()?;
     let height = m.u32()? as usize;
     let width = m.u32()? as usize;
     let mut layout: HashMap<String, (usize, u8)> = HashMap::new();
@@ -1008,7 +1013,9 @@ pub fn decode_point_cloud2(data: &[u8], encoding: Encoding) -> Result<PointsMess
     let time = TIME_FIELDS.iter().find_map(|f| field(f));
     let count = width * height;
     let mut out = PointsMessage {
-        stamp,
+        stamp_ns: sec * 1_000_000_000 + i64::from(nsec),
+        stamp: sec as f64 + f64::from(nsec) * 1e-9,
+        frame_id,
         positions: Vec::with_capacity(count),
         intensity: intensity.map(|_| Vec::with_capacity(count)),
         time: time.map(|_| Vec::with_capacity(count)),
@@ -1747,9 +1754,42 @@ mod tests {
         }
         b.push(0);
         let cloud = decode_point_cloud2(&b, Encoding::Ros1).unwrap();
+        assert_eq!(cloud.stamp_ns, 12_500_000_000);
+        assert_eq!(cloud.frame_id, "os1");
         assert!((cloud.stamp - 12.5).abs() < 1e-9);
         assert_eq!(cloud.positions, [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
         assert_eq!(cloud.time.as_deref(), Some(&[0.0f32, 1.0][..]));
         assert!(cloud.intensity.is_none());
+    }
+
+    #[test]
+    fn point_cloud_header_retains_integer_nanoseconds_and_signed_cdr_seconds() {
+        for (sec, nsec) in [
+            (i32::MIN, 0u32),
+            (-1, 999_999_999),
+            (0, 0),
+            (1_700_000_000, 123),
+            (i32::MAX, 999_999_999),
+        ] {
+            let mut data = point_cloud(&[[1.0, 2.0, 3.0, 0.5]], 0.0);
+            data[4..8].copy_from_slice(&sec.to_le_bytes());
+            data[8..12].copy_from_slice(&nsec.to_le_bytes());
+            let cloud = decode_point_cloud2(&data, Encoding::Cdr).unwrap();
+            assert_eq!(
+                cloud.stamp_ns,
+                i64::from(sec) * 1_000_000_000 + i64::from(nsec)
+            );
+            assert_eq!(cloud.stamp, f64::from(sec) + f64::from(nsec) * 1e-9);
+            assert_eq!(cloud.frame_id, "lidar");
+            assert_eq!(cloud.positions, [[1.0, 2.0, 3.0]]);
+        }
+        let mut data = point_cloud(&[], 0.0);
+        data[8..12].copy_from_slice(&1_000_000_000u32.to_le_bytes());
+        assert!(
+            decode_point_cloud2(&data, Encoding::Cdr)
+                .unwrap_err()
+                .0
+                .contains("nanoseconds")
+        );
     }
 }

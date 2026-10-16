@@ -162,9 +162,16 @@ class CopcReader:
     def decode(self, chunks: list[bytes], counts: list[int]) -> PointData: ...
 
 class Scan:
-    """A PointCloud2 decoded: its stamp, points, intensity and per-point time within the scan."""
+    """A PointCloud2 decoded, retaining its sensor header time and frame.
+    stamp_ns is exact integer nanoseconds; stamp retains floating header seconds.
+    These are distinct from the bag recording time. No frame transform is applied.
+    """
 
     stamp: float
+    @property
+    def stamp_ns(self) -> int: ...
+    @property
+    def frame_id(self) -> str: ...
     def positions(self) -> npt.NDArray[np.float64]:
         """The finite points, (N, 3)."""
         ...

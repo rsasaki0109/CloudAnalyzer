@@ -50,12 +50,16 @@ pub struct BagMessages {
     cursor: RecordingCursor,
 }
 
-/// A PointCloud2 decoded: its stamp (seconds), points (N, 3), intensity (N,)
-/// when it has one and the time of each point within the scan, 0 to 1, when it has that.
+/// A PointCloud2 decoded: exact header time/frame, points (N, 3), optional
+/// intensity and normalized per-point time. `stamp` retains floating seconds.
 #[pyclass]
 pub struct Scan {
     #[pyo3(get)]
+    pub stamp_ns: i64,
+    #[pyo3(get)]
     pub stamp: f64,
+    #[pyo3(get)]
+    pub frame_id: String,
     positions: Vec<[f64; 3]>,
     intensity: Option<Vec<f32>>,
     time: Option<Vec<f32>>,
@@ -492,7 +496,9 @@ impl BagMessages {
         if kind == bag::POINT_CLOUD {
             let cloud = bag::decode_point_cloud2(&m.data, m.encoding).map_err(err)?;
             let scan = Scan {
+                stamp_ns: cloud.stamp_ns,
                 stamp: cloud.stamp,
+                frame_id: cloud.frame_id,
                 positions: cloud.positions,
                 intensity: cloud.intensity,
                 time: cloud.time,

@@ -9,6 +9,7 @@ use numpy::{
 };
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 /// Registers scans one after another onto a local map of the ones before
 /// (see `ca_core::odometry`): the KISS-ICP recipe in the Rust core.
@@ -27,13 +28,14 @@ impl LidarOdometry {
     /// are left out; the local map keeps `map_points` per voxel of
     /// `map_voxel` metres; `deskew` undoes the motion during each scan.
     #[new]
-    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false))]
+    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false))]
     fn new(
         min_range: f64,
         max_range: f64,
         map_voxel: f64,
         map_points: usize,
         deskew: bool,
+        diagnostics: bool,
     ) -> Self {
         LidarOdometry {
             inner: Odometry::new(OdometryParams {
@@ -42,6 +44,7 @@ impl LidarOdometry {
                 map_voxel,
                 map_points,
                 deskew,
+                diagnostics,
                 ..OdometryParams::default()
             }),
         }
@@ -109,6 +112,32 @@ impl LidarOdometry {
     /// Gauss-Newton steps of the last registration; zero without alignment.
     fn last_iterations(&self) -> usize {
         self.inner.last_iterations()
+    }
+
+    /// A copied report for the last finished scan, or None before the first.
+    /// With diagnostics=True, residuals use the returned pose and the map before
+    /// insertion. They use ICP's search/threshold and do not certify alignment.
+    fn last_report<'py>(&self, py: Python<'py>) -> PyResult<Option<Bound<'py, PyDict>>> {
+        let Some(report) = self.inner.last_report() else {
+            return Ok(None);
+        };
+        let result = PyDict::new(py);
+        result.set_item("termination", report.termination.as_str())?;
+        result.set_item("iterations", report.iterations)?;
+        result.set_item("input_points", report.input_points)?;
+        result.set_item("registration_points", report.registration_points)?;
+        result.set_item("threshold_m", report.threshold_m)?;
+        if let Some(stats) = &report.correspondences {
+            let correspondences = PyDict::new(py);
+            correspondences.set_item("matched_points", stats.matched_points)?;
+            correspondences.set_item("matched_fraction", stats.matched_fraction)?;
+            correspondences.set_item("rmse_m", stats.rmse_m)?;
+            correspondences.set_item("max_residual_m", stats.max_residual_m)?;
+            result.set_item("correspondences", correspondences)?;
+        } else {
+            result.set_item("correspondences", py.None())?;
+        }
+        Ok(Some(result))
     }
 
     /// Every pose so far, (K, 4, 4).

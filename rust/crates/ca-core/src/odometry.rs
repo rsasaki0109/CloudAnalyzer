@@ -66,6 +66,9 @@ pub struct OdometryParams {
     /// the visibility check then took 11 % of the points for dynamic, not 5 %.
     pub tolerance_t: f64,
     pub tolerance_r: f64,
+    /// Measure final correspondence support and residuals before inserting the
+    /// scan. Off by default: this keeps sensor points and adds one map query pass.
+    pub diagnostics: bool,
     /// How much of the motion between scans a sweep takes when the scan's
     /// [`TIME`] attribute does not say: 1 for a spinning sensor recorded at
     /// its full rate, less when frames were skipped.
@@ -86,6 +89,7 @@ impl Default for OdometryParams {
             sweep: 1.0,
             tolerance_t: 1e-4,
             tolerance_r: 1e-5,
+            diagnostics: false,
         }
     }
 }
@@ -99,7 +103,64 @@ pub struct Odometry {
     error_count: usize,
     /// The world points the last scan added to the map (see [`Odometry::finish`]).
     placed: Vec<[f64; 3]>,
-    last_iterations: usize,
+    last_report: Option<RegistrationReport>,
+}
+
+/// Why ICP stopped. A small update alone does not certify a correct alignment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RegistrationTermination {
+    EmptyMap,
+    InsufficientPoints,
+    Converged,
+    IterationLimit,
+    SingularSystem,
+    NonFiniteSystem,
+    NonFiniteUpdate,
+    /// The caller finished a registration before `step` reported completion.
+    Unfinished,
+}
+
+impl RegistrationTermination {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::EmptyMap => "empty_map",
+            Self::InsufficientPoints => "insufficient_points",
+            Self::Converged => "converged",
+            Self::IterationLimit => "iteration_limit",
+            Self::SingularSystem => "singular_system",
+            Self::NonFiniteSystem => "non_finite_system",
+            Self::NonFiniteUpdate => "non_finite_update",
+            Self::Unfinished => "unfinished",
+        }
+    }
+}
+
+/// Unweighted Euclidean distances at the returned pose, against the local map
+/// before insertion. Uses ICP's own 27-voxel search and distance threshold;
+/// these are diagnostics, not calibrated uncertainty or a quality gate.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct CorrespondenceStats {
+    pub matched_points: usize,
+    /// Matched points / registration points (including unmatched points).
+    pub matched_fraction: f64,
+    /// None when no correspondence passed the search and threshold.
+    pub rmse_m: Option<f64>,
+    pub max_residual_m: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct RegistrationReport {
+    pub termination: RegistrationTermination,
+    /// Successfully applied Gauss-Newton updates, excluding failed solves.
+    pub iterations: usize,
+    pub input_points: usize,
+    /// Points after range filtering, deskew and registration thinning, even if
+    /// the empty map or fewer than ten points prevented alignment.
+    pub registration_points: usize,
+    pub threshold_m: f64,
+    /// None when diagnostics are disabled or alignment was not attempted.
+    pub correspondences: Option<CorrespondenceStats>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -136,6 +197,11 @@ pub struct Registration {
     threshold_sq: f64,
     kernel: f64,
     iterations: usize,
+    input_points: usize,
+    registration_points: usize,
+    termination: Option<RegistrationTermination>,
+    /// Retained only for opt-in residuals at the exact, orthonormalized pose.
+    diagnostic_source: Option<Vec<[f64; 3]>>,
 }
 
 impl Registration {
@@ -168,17 +234,31 @@ impl Registration {
     pub fn kernel(&self) -> f64 {
         self.kernel
     }
+
+    /// None while steps are still required. A finish before completion is
+    /// recorded as `unfinished` in the final report.
+    pub fn termination(&self) -> Option<RegistrationTermination> {
+        self.termination
+    }
 }
 
 type Vec6 = [f64; 6];
 type Mat6 = [[f64; 6]; 6];
 
 /// `a x = b` by elimination with partial pivoting.
-fn solve6(mut a: Mat6, mut b: Vec6) -> Option<Vec6> {
+fn solve6(mut a: Mat6, mut b: Vec6) -> Result<Vec6, RegistrationTermination> {
+    if !a.iter().flatten().chain(&b).all(|v| v.is_finite()) {
+        return Err(RegistrationTermination::NonFiniteSystem);
+    }
     for col in 0..6 {
-        let pivot = (col..6).max_by(|&i, &j| a[i][col].abs().total_cmp(&a[j][col].abs()))?;
+        let pivot = (col..6)
+            .max_by(|&i, &j| a[i][col].abs().total_cmp(&a[j][col].abs()))
+            .expect("nonempty pivot column");
+        if !a[pivot][col].is_finite() {
+            return Err(RegistrationTermination::NonFiniteSystem);
+        }
         if a[pivot][col].abs() < 1e-12 {
-            return None;
+            return Err(RegistrationTermination::SingularSystem);
         }
         a.swap(col, pivot);
         b.swap(col, pivot);
@@ -196,7 +276,11 @@ fn solve6(mut a: Mat6, mut b: Vec6) -> Option<Vec6> {
         let s: f64 = (row + 1..6).map(|k| a[row][k] * x[k]).sum();
         x[row] = (b[row] - s) / a[row][row];
     }
-    Some(x)
+    if x.iter().all(|v| v.is_finite()) {
+        Ok(x)
+    } else {
+        Err(RegistrationTermination::NonFiniteSystem)
+    }
 }
 
 /// One point per voxel (the first in each).
@@ -367,6 +451,34 @@ impl LocalMap {
         best.1.is_finite().then_some(best)
     }
 
+    fn correspondence_stats(
+        &self,
+        source: &[[f64; 3]],
+        pose: &Rigid,
+        threshold_sq: f64,
+    ) -> CorrespondenceStats {
+        let mut matched_points = 0;
+        let mut sum_sq = 0.0;
+        let mut max_sq: f64 = 0.0;
+        for p in source {
+            let Some((_, distance_sq)) = self.nearest(&pose.apply(p)) else {
+                continue;
+            };
+            if distance_sq > threshold_sq {
+                continue;
+            }
+            matched_points += 1;
+            sum_sq += distance_sq;
+            max_sq = max_sq.max(distance_sq);
+        }
+        CorrespondenceStats {
+            matched_points,
+            matched_fraction: matched_points as f64 / source.len() as f64,
+            rmse_m: (matched_points != 0).then(|| (sum_sq / matched_points as f64).sqrt()),
+            max_residual_m: (matched_points != 0).then(|| max_sq.sqrt()),
+        }
+    }
+
     /// The normal equations of one Gauss-Newton step: each point of `source`
     /// moved by `total`, paired with the map point nearest it within the
     /// threshold, weighted by a Geman-McClure kernel of scale `kernel`;
@@ -445,7 +557,7 @@ impl Odometry {
             error_sum: 0.0,
             error_count: 0,
             placed: Vec::new(),
-            last_iterations: 0,
+            last_report: None,
         }
     }
 
@@ -468,7 +580,18 @@ impl Odometry {
 
     /// Gauss-Newton steps of the last registration; zero without alignment.
     pub fn last_iterations(&self) -> usize {
-        self.last_iterations
+        self.last_report.as_ref().map_or(0, |r| r.iterations)
+    }
+
+    /// The last finished scan, or None before the first scan. Residuals are
+    /// opt-in; termination and counts are always recorded.
+    pub fn last_report(&self) -> Option<&RegistrationReport> {
+        self.last_report.as_ref()
+    }
+
+    /// Enable final residuals for registrations begun after this call.
+    pub fn set_diagnostics(&mut self, enabled: bool) {
+        self.params.diagnostics = enabled;
     }
 
     fn sigma(&self) -> f64 {
@@ -556,6 +679,15 @@ impl Odometry {
         } else {
             thinned.iter().map(|q| prediction.apply(q)).collect()
         };
+        let registration_points = thinned.len();
+        let termination = if self.map.is_empty() {
+            Some(RegistrationTermination::EmptyMap)
+        } else if thinned.len() < 10 {
+            Some(RegistrationTermination::InsufficientPoints)
+        } else {
+            None
+        };
+        let diagnostic_source = (p.diagnostics && !source.is_empty()).then_some(thinned);
         let sigma = self.sigma();
         Registration {
             frame,
@@ -567,6 +699,10 @@ impl Odometry {
             threshold_sq: (3.0 * sigma).powi(2),
             kernel: sigma / 3.0,
             iterations: 0,
+            input_points: scan.len(),
+            registration_points,
+            termination,
+            diagnostic_source,
         }
     }
 
@@ -585,8 +721,15 @@ impl Odometry {
     /// the steps would shrink below the tolerance only after many iterations.
     pub fn step(&self, registration: &mut Registration, (jtj, jtr): (Mat6, Vec6)) -> bool {
         let r = registration;
-        let Some(dx) = solve6(jtj, jtr) else {
+        if r.termination.is_some() {
             return true;
+        }
+        let dx = match solve6(jtj, jtr) {
+            Ok(dx) => dx,
+            Err(reason) => {
+                r.termination = Some(reason);
+                return true;
+            }
         };
         // Turn about the center, then shift.
         let rotation = crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]);
@@ -599,13 +742,30 @@ impl Odometry {
             rotation,
             translation: std::array::from_fn(|k| r.center[k] - turned[k] + dx[k]),
         };
-        r.total = step.compose(&r.total);
+        let total = step.compose(&r.total);
+        if !total
+            .rotation
+            .iter()
+            .flatten()
+            .chain(&total.translation)
+            .all(|v| v.is_finite())
+        {
+            r.termination = Some(RegistrationTermination::NonFiniteUpdate);
+            return true;
+        }
+        r.total = total;
         r.iterations += 1;
         // Converged: steps of under the tolerances.
         let shift = dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt();
         let turn = dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt();
-        (shift < self.params.tolerance_t && turn < self.params.tolerance_r)
-            || r.iterations >= self.params.max_iterations
+        r.termination = if shift < self.params.tolerance_t && turn < self.params.tolerance_r {
+            Some(RegistrationTermination::Converged)
+        } else if r.iterations >= self.params.max_iterations {
+            Some(RegistrationTermination::IterationLimit)
+        } else {
+            None
+        };
+        r.termination.is_some()
     }
 
     /// Finish the registration: the scan's pose, learnt from for the
@@ -613,9 +773,19 @@ impl Odometry {
     pub fn finish(&mut self, registration: Registration) -> Rigid {
         let p = self.params;
         let r = registration;
-        self.last_iterations = r.iterations;
         let mut pose = r.total.compose(&r.prediction);
         pose.rotation = orthonormal(&pose.rotation);
+        self.last_report = Some(RegistrationReport {
+            termination: r.termination.unwrap_or(RegistrationTermination::Unfinished),
+            iterations: r.iterations,
+            input_points: r.input_points,
+            registration_points: r.registration_points,
+            threshold_m: r.threshold_sq.sqrt(),
+            correspondences: r
+                .diagnostic_source
+                .as_ref()
+                .map(|source| self.map.correspondence_stats(source, &pose, r.threshold_sq)),
+        });
         // How far the motion model was off, as the most a point in range moved.
         let deviation = crate::pose_graph::inverse(&r.prediction).compose(&pose);
         let m = &deviation.rotation;
@@ -668,6 +838,240 @@ impl Odometry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn diagnostic_scene() -> PointCloud {
+        PointCloud {
+            positions: (0..12)
+                .map(|i| [3.0 * (i % 4) as f64, 3.0 * (i / 4) as f64, (i % 3) as f64])
+                .collect(),
+            ..PointCloud::default()
+        }
+    }
+
+    #[test]
+    fn reports_distinguish_no_alignment_and_early_finish() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            diagnostics: true,
+            ..OdometryParams::default()
+        });
+        assert!(odometry.last_report().is_none());
+        assert_eq!(odometry.last_iterations(), 0);
+        odometry.register(&diagnostic_scene());
+        let report = odometry.last_report().unwrap();
+        assert_eq!(report.termination, RegistrationTermination::EmptyMap);
+        assert_eq!(report.input_points, 12);
+        assert_eq!(report.registration_points, 12);
+        assert!(report.correspondences.is_none());
+        let small = PointCloud {
+            positions: vec![[2.0, 1.0, 0.0]],
+            ..PointCloud::default()
+        };
+        odometry.register(&small);
+        let report = odometry.last_report().unwrap();
+        assert_eq!(
+            report.termination,
+            RegistrationTermination::InsufficientPoints
+        );
+        assert_eq!(report.registration_points, 1);
+        assert_eq!(report.iterations, 0);
+        assert!(report.correspondences.is_none());
+        let registration = odometry.begin(&diagnostic_scene());
+        assert_eq!(registration.termination(), None);
+        odometry.finish(registration);
+        assert_eq!(
+            odometry.last_report().unwrap().termination,
+            RegistrationTermination::Unfinished
+        );
+    }
+
+    #[test]
+    fn zero_matches_and_collinear_matches_are_not_convergence() {
+        for collinear in [false, true] {
+            let mut odometry = Odometry::new(OdometryParams {
+                min_range: 0.0,
+                max_range: 200.0,
+                diagnostics: true,
+                ..OdometryParams::default()
+            });
+            let mut scan = diagnostic_scene();
+            if collinear {
+                scan.positions = (0..12).map(|i| [3.0 * i as f64, 0.0, 0.0]).collect();
+            }
+            odometry.register(&scan);
+            if !collinear {
+                for p in &mut scan.positions {
+                    p[0] += 50.0;
+                }
+            }
+            assert_eq!(odometry.register(&scan), Rigid::IDENTITY);
+            let report = odometry.last_report().unwrap();
+            assert_eq!(report.termination, RegistrationTermination::SingularSystem);
+            assert_eq!(report.iterations, 0);
+            let stats = report.correspondences.as_ref().unwrap();
+            assert_eq!(stats.matched_points, if collinear { 12 } else { 0 });
+            assert_eq!(stats.rmse_m, collinear.then_some(0.0));
+            assert_eq!(stats.max_residual_m, collinear.then_some(0.0));
+            assert_eq!(stats.matched_fraction, if collinear { 1.0 } else { 0.0 });
+            // Diagnostic only: the existing policy still inserts every scan.
+            assert_eq!(odometry.placed().len(), 12);
+        }
+    }
+
+    #[test]
+    fn reports_convergence_limits_and_repeated_steps_without_mutation() {
+        for limited in [false, true] {
+            let mut odometry = Odometry::new(OdometryParams {
+                min_range: 0.0,
+                max_iterations: 1,
+                ..OdometryParams::default()
+            });
+            let scan = diagnostic_scene();
+            odometry.register(&scan);
+            let mut registration = odometry.begin(&scan);
+            let mut h = [[0.0; 6]; 6];
+            for (i, row) in h.iter_mut().enumerate() {
+                row[i] = 1.0;
+            }
+            let dx = if limited { [0.01; 6] } else { [0.0; 6] };
+            assert!(odometry.step(&mut registration, (h, dx)));
+            let total = *registration.total();
+            assert!(odometry.step(&mut registration, (h, [1.0; 6])));
+            assert_eq!(*registration.total(), total);
+            odometry.finish(registration);
+            let report = odometry.last_report().unwrap();
+            assert_eq!(report.iterations, 1);
+            assert_eq!(
+                report.termination,
+                if limited {
+                    RegistrationTermination::IterationLimit
+                } else {
+                    RegistrationTermination::Converged
+                }
+            );
+            assert!(report.correspondences.is_none());
+        }
+    }
+
+    #[test]
+    fn nonfinite_systems_and_updates_preserve_the_last_finite_transform() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            ..OdometryParams::default()
+        });
+        let scan = diagnostic_scene();
+        odometry.register(&scan);
+        for case in 0..4 {
+            let mut registration = odometry.begin(&scan);
+            let mut h = [[0.0; 6]; 6];
+            for (i, row) in h.iter_mut().enumerate() {
+                row[i] = 1.0;
+            }
+            let mut b = [0.0; 6];
+            match case {
+                0 => h[2][3] = f64::NAN,
+                1 => b[1] = f64::INFINITY,
+                2 => {
+                    h[0][0] = f64::MAX;
+                    h[0][1] = -f64::MAX;
+                    h[1][0] = f64::MAX / 2.0;
+                    h[1][1] = f64::MAX;
+                }
+                _ => b[3] = f64::MAX,
+            }
+            assert!(odometry.step(&mut registration, (h, b)));
+            assert_eq!(*registration.total(), Rigid::IDENTITY);
+            assert_eq!(registration.iterations, 0);
+            assert_eq!(
+                registration.termination(),
+                Some(if case == 3 {
+                    RegistrationTermination::NonFiniteUpdate
+                } else {
+                    RegistrationTermination::NonFiniteSystem
+                })
+            );
+        }
+    }
+
+    #[test]
+    fn final_residuals_match_an_independent_search_before_insertion() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            initial_sigma: 0.1,
+            max_iterations: 1,
+            diagnostics: true,
+            ..OdometryParams::default()
+        });
+        let mut scan = diagnostic_scene();
+        odometry.register(&scan);
+        let old_map = odometry.map.map.clone();
+        for (i, p) in scan.positions.iter_mut().enumerate() {
+            p[0] += 0.10 + 0.003 * i as f64;
+            p[1] -= 0.02 * (i % 3) as f64;
+        }
+        scan.positions[0][0] += 0.6; // In the stencil, outside the threshold.
+        scan.positions.push([35.0, 0.0, 0.0]); // Outside the stencil entirely.
+        let registration = odometry.begin(&scan);
+        let source = registration.diagnostic_source.clone().unwrap();
+        let pose = odometry.complete(registration);
+        let report = odometry.last_report().unwrap();
+        let stats = report.correspondences.as_ref().unwrap();
+        let mut distances = Vec::new();
+        for p in &source {
+            let q = pose.apply(p);
+            let key = q.map(|v| v.floor() as i64);
+            let best = old_map
+                .iter()
+                .filter(|(k, _)| (0..3).all(|i| (k[i] - key[i]).abs() <= 1))
+                .flat_map(|(_, points)| points)
+                .map(|m| (0..3).map(|i| (q[i] - m[i]).powi(2)).sum::<f64>())
+                .min_by(f64::total_cmp);
+            if let Some(d) = best.filter(|d| *d <= report.threshold_m.powi(2)) {
+                distances.push(d);
+            }
+        }
+        assert_eq!(stats.matched_points, 11);
+        assert_eq!(stats.matched_points, distances.len());
+        assert_eq!(report.registration_points, 13);
+        assert_eq!(stats.matched_fraction, 11.0 / 13.0);
+        let rms = (distances.iter().sum::<f64>() / distances.len() as f64).sqrt();
+        assert!((stats.rmse_m.unwrap() - rms).abs() < 1e-14);
+        assert!(rms > 1e-3); // Would be zero after inserting the current points.
+        let maximum = distances.iter().copied().reduce(f64::max).unwrap().sqrt();
+        assert!((stats.max_residual_m.unwrap() - maximum).abs() < 1e-14);
+    }
+
+    #[test]
+    fn optional_diagnostics_preserve_pose_bits_and_threshold_history() {
+        let params = OdometryParams {
+            min_range: 0.0,
+            ..OdometryParams::default()
+        };
+        let mut plain = Odometry::new(params);
+        let mut measured = Odometry::new(OdometryParams {
+            diagnostics: true,
+            ..params
+        });
+        let mut scan = diagnostic_scene();
+        for _ in 0..5 {
+            let a = plain.register(&scan);
+            let b = measured.register(&scan);
+            assert_eq!(
+                a.to_matrix().map(f64::to_bits),
+                b.to_matrix().map(f64::to_bits)
+            );
+            assert_eq!(plain.error_sum.to_bits(), measured.error_sum.to_bits());
+            assert_eq!(plain.error_count, measured.error_count);
+            assert_eq!(plain.last_iterations(), measured.last_iterations());
+            assert_eq!(
+                plain.last_report().unwrap().termination,
+                measured.last_report().unwrap().termination
+            );
+            for p in &mut scan.positions {
+                p[0] -= 0.1;
+            }
+        }
+    }
 
     #[test]
     fn relative_prediction_composes_on_the_right_without_changing_deskew() {

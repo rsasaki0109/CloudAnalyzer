@@ -27,3 +27,5 @@ scripts/evaluate_nclt_imu_replay.py text eol=lf
 scripts/replay_nclt_imu_frontend.py text eol=lf
 scripts/evaluate_nclt_imu_frontend.py text eol=lf
 benchmarks/slam/nclt-imu-frontend/** text eol=lf
+scripts/audit_nclt_registration.py text eol=lf
+benchmarks/slam/nclt-registration-diagnostics/** text eol=lf

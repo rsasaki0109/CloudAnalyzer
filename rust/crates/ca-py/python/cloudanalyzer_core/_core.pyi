@@ -408,6 +408,23 @@ class BagReader:
         (N, 4)), the topic and its type."""
         ...
 
+class OdometryCorrespondences(TypedDict):
+    matched_points: int
+    matched_fraction: float
+    rmse_m: float | None
+    max_residual_m: float | None
+
+class OdometryReport(TypedDict):
+    termination: Literal[
+        "empty_map", "insufficient_points", "converged", "iteration_limit",
+        "singular_system", "non_finite_system", "non_finite_update", "unfinished",
+    ]
+    iterations: int
+    input_points: int
+    registration_points: int
+    threshold_m: float
+    correspondences: OdometryCorrespondences | None
+
 class LidarOdometry:
     """LiDAR odometry: scans registered one after another onto a local map of the ones before."""
 
@@ -418,6 +435,7 @@ class LidarOdometry:
         map_voxel: float = 1.0,
         map_points: int = 20,
         deskew: bool = False,
+        *, diagnostics: bool = False,
     ) -> None: ...
     def register(
         self, positions: npt.NDArray[np.float64], times: npt.NDArray[np.float32] | None = None,
@@ -429,6 +447,11 @@ class LidarOdometry:
         ...
     def last_iterations(self) -> int:
         """Gauss-Newton steps of the last registration, zero without alignment."""
+        ...
+    def last_report(self) -> OdometryReport | None:
+        """Termination/counts of the last scan, None before the first. With diagnostics=True,
+        includes final-pose residuals against the map before insertion; no quality gate.
+        """
         ...
     def poses(self) -> npt.NDArray[np.float64]:
         """Every pose so far, (K, 4, 4)."""

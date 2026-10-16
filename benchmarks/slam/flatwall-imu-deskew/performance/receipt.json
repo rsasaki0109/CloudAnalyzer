@@ -1,0 +1,30 @@
+{
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 13900,
+    "sha256": "28afd2748187e1e117d20bcb61176af7ff26be8763acab565292f5b2b149640f"
+  },
+  "samples": {
+    "name": "samples.json",
+    "bytes": 2280,
+    "sha256": "8a8ef4196215084ab85250b96e2c770f64acff5726679b56b57253ae15b17bed"
+  },
+  "results": {
+    "scans_per_batch": 8,
+    "points_per_batch": 192000,
+    "serial_median_ns": 21601500,
+    "parallel_median_ns": 9455300,
+    "serial_range_ns": [
+      19956500,
+      24142300
+    ],
+    "parallel_range_ns": [
+      8960500,
+      11110800
+    ],
+    "median_ratio_serial_over_parallel": 2.2845917104692606,
+    "serial_parallel_outputs_match": true,
+    "caller_inputs_unchanged": true,
+    "scope": "Eight fixed real scans, prewarmed Python API and four requested CPU workers; this host only."
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "input_sha256": [
+    "29826b8ddab2c986f691a1af3edae1719a6c66c80a4506606a2add8d518795a3",
+    "5a251113286971a56b0bf32ec08811695ce25bce953f9a23f8e9555c5c2caf8c",
+    "7aa646b282756caba74ef8af13339029ec8d89ad673929b133731d96cb1a7f09",
+    "8b7f16f8d0c722c66c6185745a7e9e1721be9d49fc866ef605adb04c7bed3470",
+    "d1e8d56cc767716091d41a826cdf0e9b35b5a78ed4d65563d139ac0d15e6bb00",
+    "86e5d800d4062e7679fb8ad0bb1fbdd2821c9ad64c4c63b8509c0327d55f441c",
+    "758f39c71b529f7e34d54e74744547329e709e8508a05d2833b11a644caccfca",
+    "e7711d7d20b26a2828cd6ff0332291047b3a02ecdc6cc39e5aa374eac45315fb"
+  ],
+  "output_sha256": [
+    "40669159069c830b469eba4986ea553b8cf02969a55870d4ba41cd49f1bbabc8",
+    "a6a3b39f3cd1c6eff44222c1ff007e90500ad47f6c582e8db3d559eff17e389e",
+    "92fd16e956aec1b03e5e301237f0d71f0591a92b11d69195a21301468ab0b874",
+    "dfd55e45124a1d095fe8205f3a67df0d2c3ecc9131ee34fa835ffa98bdf3e690",
+    "80ac24b480e273720b76860363c4ee82a5604d5e6f446271ee019cc7708680c1",
+    "f9cc37f8b775db9ede5cac0e86fa341375c97cfc550a2988177bae216fa4c990",
+    "783b9ab7946a6b2cc3241952cdc56a5ed35cb99758f86f0862b6b84e5895b5c4",
+    "42a1d6d2425c25651ad555ce119aa025ea097054bc49ef314b5e7aead6d106b0"
+  ],
+  "pairs": [
+    {
+      "pair": 0,
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "serial_ns": 24142300,
+      "parallel_ns": 11110800
+    },
+    {
+      "pair": 1,
+      "order": [
+        "parallel",
+        "serial"
+      ],
+      "parallel_ns": 9455300,
+      "serial_ns": 22970600
+    },
+    {
+      "pair": 2,
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "serial_ns": 21121900,
+      "parallel_ns": 8960500
+    },
+    {
+      "pair": 3,
+      "order": [
+        "parallel",
+        "serial"
+      ],
+      "parallel_ns": 9602400,
+      "serial_ns": 20079600
+    },
+    {
+      "pair": 4,
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "serial_ns": 19956500,
+      "parallel_ns": 8973500
+    },
+    {
+      "pair": 5,
+      "order": [
+        "parallel",
+        "serial"
+      ],
+      "parallel_ns": 9048500,
+      "serial_ns": 23396700
+    },
+    {
+      "pair": 6,
+      "order": [
+        "serial",
+        "parallel"
+      ],
+      "serial_ns": 21601500,
+      "parallel_ns": 10022600
+    }
+  ]
+}

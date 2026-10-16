@@ -93,6 +93,21 @@ impl LidarOdometry {
         self.inner.set_diagnostics(enabled);
     }
 
+    /// Sample registration points independently of map insertion, in metres.
+    /// A finite positive value affects subsequent begins; undefined restores legacy sampling.
+    #[wasm_bindgen(js_name = setRegistrationVoxel)]
+    pub fn set_registration_voxel(&mut self, voxel: Option<f64>) -> Result<(), JsError> {
+        self.inner
+            .set_registration_voxel(voxel)
+            .map_err(|e| JsError::new(&e.to_string()))
+    }
+
+    /// Explicit independent source voxel, or undefined for legacy two-stage sampling.
+    #[wasm_bindgen(getter, js_name = registrationVoxel)]
+    pub fn registration_voxel(&self) -> Option<f64> {
+        self.inner.registration_voxel()
+    }
+
     /// JSON report of the last finished scan (including worker-based steps),
     /// or undefined before the first scan. Residuals require setDiagnostics(true).
     #[wasm_bindgen(js_name = lastReport)]

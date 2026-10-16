@@ -1,0 +1,52 @@
+{
+  "frozen_at_utc": "2026-10-16T14:47:27.028677+00:00",
+  "base": "5c8454bc279609b7242385b86d4053e23f2ea497",
+  "slice": "Independent registration voxel for core, Python plain/IMU frontends and WASM; preserve default two-stage thinning exactly.",
+  "api": "None uses legacy thin(thin(near, 0.5*map_voxel), 1.5*map_voxel); finite positive explicit voxel uses thin(near, voxel), with first source point in each cell and original order. Filtering and any compensation precede both paths.",
+  "validation": "Invalid explicit voxel is rejected atomically. Python option is keyword-only. WASM setter affects subsequent begins; reset to None restores legacy behavior. Map voxel, insertion thinning, capacity, nearest stencil and solver are unchanged.",
+  "real_prefix": {
+    "source": "Exact original flatwall recording and saved source indices 1..64 from the previous audit.",
+    "map_voxel": 1.0,
+    "map_points": 20,
+    "min_range": 1.5,
+    "max_range": 80.0,
+    "deskew": false,
+    "diagnostics": true,
+    "registration_cases": [
+      "omitted",
+      "None",
+      1.5,
+      0.75,
+      0.375,
+      0.1875
+    ],
+    "control": "Omitted and None must reproduce all old 64 pose bits, timestamps and reports. Explicit 1.5 is a separate independent-source-path control, not a guaranteed legacy equivalence near floating grid boundaries.",
+    "acceptance": {
+      "gyro_bias": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "accel_bias": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "gravity_magnitude": 9.80665,
+      "max_gravity_error": 1.0,
+      "max_rotation_rms": 0.05,
+      "max_velocity_rms": 0.2,
+      "max_gyro_bias_change": 0.2,
+      "max_iterations": 15,
+      "max_gap_s": 0.05,
+      "min_singular_ratio": 1e-06
+    },
+    "imu_from_lidar": "identity",
+    "acceleration_scale": 9.80665,
+    "reference_time": "Frozen maximum checked integer point timestamp of each selected scan; raw undeskewed ICP poses are only a startup consistency probe."
+  },
+  "evidence": "Independent standard ROS/SciPy/NumPy startup calculation and serial/parallel native acceptance; retain all successful protocols, controllers, source/native snapshots and receipts verbatim. No limits are relaxed or new settings added after results.",
+  "scope": "No runtime run, GPU execution, reference-pose parsing, physical accuracy/calibration claim or adoption of a rejected state. Future map coordinates may change with fitted poses; only the map algorithms/settings are held fixed.",
+  "controller_sha256": "16ecd5706cd06398a1c48f6324ab3e786136f07fe8faaa621a32f83f0ab1d955",
+  "old_native_sha256": "5b30397affdbb44067acb03026b77d7c989de4238a7e2475ca808385e04189fc"
+}

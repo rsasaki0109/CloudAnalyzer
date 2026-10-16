@@ -35,7 +35,7 @@ fn matrix<'py>(py: Python<'py>, pose: &Rigid) -> Bound<'py, PyArray2<f64>> {
 impl ImuLidarOdometry {
     #[new]
     #[allow(clippy::too_many_arguments)] // Explicit Python initialization/calibration inputs.
-    #[pyo3(signature = (trajectory, imu_from_lidar, *, min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, parallel=false, diagnostics=false))]
+    #[pyo3(signature = (trajectory, imu_from_lidar, *, min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, parallel=false, diagnostics=false, registration_voxel=None))]
     fn new(
         trajectory: &crate::imu::ImuTrajectory,
         imu_from_lidar: PyReadonlyArray2<'_, f64>,
@@ -45,6 +45,7 @@ impl ImuLidarOdometry {
         map_points: usize,
         parallel: bool,
         diagnostics: bool,
+        registration_voxel: Option<f64>,
     ) -> PyResult<Self> {
         if !min_range.is_finite()
             || min_range < 0.0
@@ -63,25 +64,33 @@ impl ImuLidarOdometry {
         motion
             .relative_lidar_pose(motion.start_ns(), motion.start_ns(), &extrinsic)
             .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        let mut inner = Odometry::new(OdometryParams {
+            min_range,
+            max_range,
+            map_voxel,
+            map_points,
+            diagnostics,
+            deskew: false,
+            ..OdometryParams::default()
+        });
+        inner
+            .set_registration_voxel(registration_voxel)
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
         Ok(Self {
             trajectory: motion,
             imu_from_lidar: extrinsic,
-            odometry: crate::odometry::LidarOdometry {
-                inner: Odometry::new(OdometryParams {
-                    min_range,
-                    max_range,
-                    map_voxel,
-                    map_points,
-                    diagnostics,
-                    deskew: false,
-                    ..OdometryParams::default()
-                }),
-            },
+            odometry: crate::odometry::LidarOdometry { inner },
             parallel,
             reference_times: Vec::new(),
             world_from_first_lidar: None,
             last_prediction: None,
         })
+    }
+
+    /// Explicit independent source voxel in metres; None keeps legacy sampling.
+    #[getter]
+    fn registration_voxel(&self) -> Option<f64> {
+        self.odometry.registration_voxel()
     }
 
     /// Compensate once, register, then place the same reference-frame points.

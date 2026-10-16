@@ -97,6 +97,7 @@ impl Default for OdometryParams {
 /// Odometry state: the local map, the poses so far and the motion model's error.
 pub struct Odometry {
     params: OdometryParams,
+    registration_voxel: Option<f64>,
     map: LocalMap,
     poses: Vec<Rigid>,
     error_sum: f64,
@@ -170,6 +171,10 @@ pub enum PredictionError {
     #[error("relative prediction must be a finite proper rigid transform")]
     InvalidTransform,
 }
+
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+#[error("registration_voxel must be finite and positive")]
+pub struct RegistrationVoxelError;
 
 /// The local map: a voxel grid keeping at most so many points per voxel,
 /// with the nearest-point search and the normal equations of a
@@ -552,6 +557,7 @@ impl Odometry {
     pub fn new(params: OdometryParams) -> Self {
         Odometry {
             params,
+            registration_voxel: None,
             map: LocalMap::new(params.map_voxel, params.map_points),
             poses: Vec::new(),
             error_sum: 0.0,
@@ -592,6 +598,25 @@ impl Odometry {
     /// Enable final residuals for registrations begun after this call.
     pub fn set_diagnostics(&mut self, enabled: bool) {
         self.params.diagnostics = enabled;
+    }
+
+    /// Explicit source-sampling voxel in metres, or None for legacy two-stage thinning.
+    pub fn registration_voxel(&self) -> Option<f64> {
+        self.registration_voxel
+    }
+
+    /// Sample the range-filtered, deskewed points independently of map insertion.
+    /// Applies to subsequent `begin` calls; existing registrations retain their points.
+    /// None restores the original two-stage path. Invalid values leave all state intact.
+    pub fn set_registration_voxel(
+        &mut self,
+        voxel: Option<f64>,
+    ) -> Result<(), RegistrationVoxelError> {
+        if voxel.is_some_and(|v| !v.is_finite() || v <= 0.0) {
+            return Err(RegistrationVoxelError);
+        }
+        self.registration_voxel = voxel;
+        Ok(())
     }
 
     fn sigma(&self) -> f64 {
@@ -667,9 +692,12 @@ impl Odometry {
                 None => *q,
             })
             .collect();
-        // Half a map voxel for the map, one and a half for registering.
+        // Keep insertion independent and preserve the exact legacy two-stage default.
         let frame = thin(&near, 0.5 * p.map_voxel);
-        let thinned = thin(&frame, 1.5 * p.map_voxel);
+        let thinned = match self.registration_voxel {
+            Some(voxel) => thin(&near, voxel),
+            None => thin(&frame, 1.5 * p.map_voxel),
+        };
         let prediction = match n {
             0 => Rigid::IDENTITY,
             _ => self.poses[n - 1].compose(relative_prediction.unwrap_or(&motion)),
@@ -838,6 +866,155 @@ impl Odometry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn sampling_cloud() -> PointCloud {
+        PointCloud {
+            positions: (0..12)
+                .flat_map(|i| {
+                    (0..4).map(move |j| {
+                        [
+                            3.0 * (i % 4) as f64 - 6.0 + 0.03125 + 0.09375 * j as f64,
+                            3.0 * (i / 4) as f64 + 2.03125,
+                            (i % 3) as f64 + 0.03125,
+                        ]
+                    })
+                })
+                .collect(),
+            ..PointCloud::default()
+        }
+    }
+
+    #[test]
+    fn registration_sampling_is_independent_of_map_insertion() {
+        let params = OdometryParams {
+            min_range: 0.0,
+            diagnostics: true,
+            ..OdometryParams::default()
+        };
+        let mut legacy = Odometry::new(params);
+        let mut dense = Odometry::new(params);
+        dense.set_registration_voxel(Some(0.0625)).unwrap();
+        let cloud = sampling_cloud();
+        assert_eq!(
+            legacy.register(&cloud).to_matrix(),
+            dense.register(&cloud).to_matrix()
+        );
+        assert_eq!(legacy.placed(), dense.placed());
+        assert_eq!(legacy.placed().len(), 12);
+        assert_eq!(legacy.map.map, dense.map.map);
+        assert_eq!(legacy.map.voxel, dense.map.voxel);
+        assert_eq!(legacy.map.max_points, dense.map.max_points);
+        let sparse = legacy.begin(&cloud);
+        let full = dense.begin(&cloud);
+        assert_eq!(sparse.source().len(), 12);
+        assert_eq!(full.source(), cloud.positions);
+        assert_eq!(full.frame, sparse.frame);
+        assert_eq!(dense.registration_voxel(), Some(0.0625));
+    }
+
+    #[test]
+    fn registration_sampling_preserves_first_source_order_and_range_filtering() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 1.0,
+            ..OdometryParams::default()
+        });
+        let cloud = sampling_cloud();
+        odometry.register(&cloud);
+        odometry.set_registration_voxel(Some(0.125)).unwrap();
+        let expected: Vec<_> = cloud.positions.iter().step_by(4).copied().collect();
+        let mut positions = vec![[0.0; 3], [100.0, 0.0, 0.0], [f64::NAN, 0.0, 0.0]];
+        for point in &expected {
+            positions.push(*point);
+            positions.push([point[0] + 0.03125, point[1], point[2]]);
+        }
+        positions.extend(expected.iter().copied());
+        let scan = PointCloud {
+            positions,
+            ..PointCloud::default()
+        };
+        assert_eq!(odometry.begin(&scan).source(), expected);
+    }
+
+    #[test]
+    fn registration_sampling_changes_are_atomic_and_only_affect_future_begins() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            ..OdometryParams::default()
+        });
+        let cloud = sampling_cloud();
+        odometry.register(&cloud);
+        let pending = odometry.begin(&cloud);
+        odometry.set_registration_voxel(Some(0.0625)).unwrap();
+        assert_eq!(pending.source().len(), 12);
+        assert_eq!(odometry.begin(&cloud).source().len(), 48);
+        let report = odometry.last_report().cloned();
+        let placed = odometry.placed().to_vec();
+        let poses: Vec<_> = odometry.poses().iter().map(Rigid::to_matrix).collect();
+        for value in [0.0, -0.0, -0.1, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(
+                odometry.set_registration_voxel(Some(value)),
+                Err(RegistrationVoxelError)
+            );
+            assert_eq!(odometry.registration_voxel(), Some(0.0625));
+            assert_eq!(odometry.last_report(), report.as_ref());
+            assert_eq!(odometry.placed(), placed);
+            assert_eq!(
+                odometry
+                    .poses()
+                    .iter()
+                    .map(Rigid::to_matrix)
+                    .collect::<Vec<_>>(),
+                poses
+            );
+        }
+        odometry.set_registration_voxel(None).unwrap();
+        assert_eq!(odometry.registration_voxel(), None);
+        assert_eq!(odometry.begin(&cloud).source(), pending.source());
+    }
+
+    #[test]
+    fn registration_sampling_happens_after_constant_motion_deskew() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            deskew: true,
+            ..OdometryParams::default()
+        });
+        let mut cloud = sampling_cloud();
+        odometry.register(&cloud);
+        let motion = Rigid {
+            translation: [0.25, 0.0, 0.0],
+            ..Rigid::IDENTITY
+        };
+        odometry.poses.push(motion);
+        odometry.set_registration_voxel(Some(0.03125)).unwrap();
+        let times: Vec<f32> = (0..cloud.len()).map(|i| (i % 2) as f32).collect();
+        cloud.attributes.push(crate::Attribute {
+            name: TIME.into(),
+            values: crate::AttributeValues::F32(times.clone()),
+        });
+        let predicted = Rigid {
+            translation: [0.5, 0.0, 0.0],
+            ..Rigid::IDENTITY
+        };
+        let expected: Vec<_> = cloud
+            .positions
+            .iter()
+            .zip(times)
+            .map(|(point, time)| {
+                // Pure translation: undo time relative to mid-sweep, then apply the prediction.
+                [
+                    point[0] + (f64::from(time) - 0.5) * 0.25 + 0.5,
+                    point[1],
+                    point[2],
+                ]
+            })
+            .collect();
+        assert_eq!(odometry.begin(&cloud).source(), expected);
+        assert_eq!(
+            odometry.begin(&cloud).prediction.to_matrix(),
+            predicted.to_matrix()
+        );
+    }
 
     fn diagnostic_scene() -> PointCloud {
         PointCloud {

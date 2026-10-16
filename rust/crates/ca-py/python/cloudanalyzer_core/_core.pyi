@@ -534,7 +534,12 @@ class ImuLidarOdometry:
         min_range: float = 1.5, max_range: float = 80.0,
         map_voxel: float = 1.0, map_points: int = 20,
         parallel: bool = False, diagnostics: bool = False,
+        registration_voxel: float | None = None,
     ) -> None: ...
+    @property
+    def registration_voxel(self) -> float | None:
+        """Independent source voxel in metres; None preserves legacy two-stage sampling."""
+        ...
     def register(
         self, points: npt.NDArray[np.float64], point_times_ns: npt.NDArray[np.int64],
         reference_ns: int,
@@ -564,8 +569,12 @@ class LidarOdometry:
         map_voxel: float = 1.0,
         map_points: int = 20,
         deskew: bool = False,
-        *, diagnostics: bool = False,
+        *, diagnostics: bool = False, registration_voxel: float | None = None,
     ) -> None: ...
+    @property
+    def registration_voxel(self) -> float | None:
+        """Independent source voxel in metres; None preserves legacy two-stage sampling."""
+        ...
     def register(
         self, positions: npt.NDArray[np.float64], times: npt.NDArray[np.float32] | None = None,
         *, relative_prediction: npt.NDArray[np.float64] | None = None,

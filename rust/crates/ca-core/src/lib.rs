@@ -12,6 +12,7 @@ pub mod dynamic;
 pub mod filter;
 pub mod geotiff;
 pub mod gicp;
+pub mod gicp_registration;
 pub mod ground;
 pub mod icp;
 pub mod imu;

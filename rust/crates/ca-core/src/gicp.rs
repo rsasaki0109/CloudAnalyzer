@@ -53,7 +53,7 @@ impl std::fmt::Display for GicpError {
 
 impl std::error::Error for GicpError {}
 
-fn proper_pose(pose: &Rigid) -> bool {
+pub(crate) fn proper_pose(pose: &Rigid) -> bool {
     let r = &pose.rotation;
     if !r
         .iter()
@@ -77,7 +77,7 @@ fn proper_pose(pose: &Rigid) -> bool {
 
 // Fixed-size triangular dependencies are clearer as indexed loops.
 #[allow(clippy::needless_range_loop)]
-fn cholesky(matrix: &Matrix3) -> Option<Matrix3> {
+pub(crate) fn cholesky(matrix: &Matrix3) -> Option<Matrix3> {
     let mut lower = [[0.0; 3]; 3];
     for i in 0..3 {
         for j in 0..=i {
@@ -101,7 +101,7 @@ fn cholesky(matrix: &Matrix3) -> Option<Matrix3> {
     Some(lower)
 }
 
-fn canonical_shape(matrix: &Matrix3) -> Option<Matrix3> {
+pub(crate) fn canonical_shape(matrix: &Matrix3) -> Option<Matrix3> {
     if !matrix.iter().flatten().all(|v| v.is_finite()) {
         return None;
     }

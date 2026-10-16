@@ -1,0 +1,60 @@
+{
+  "at_utc": "2026-10-16T22:12:42.550634+00:00",
+  "base": "87c16d0e3de41b143b597b7e6cb2c6aa7dbf8a36",
+  "slice": "Standalone opt-in Rust/Python iterative GICP with caller-prepared SPD shapes; dedicated frozen-metric trial evaluator. Existing ICP, odometry, initialization gates and defaults remain unchanged.",
+  "matching": "Global exact f64 KdTree::nearest(query,None), deterministic existing tree seed/traversal strict tie policy. Each outer iteration rematches every source against all target points; retain only finite squared distances strictly below max_correspondence_distance squared. This differs from the odometry 27-voxel matcher; no residual-only improvement attribution.",
+  "frames": "Source points/shapes in source axes; target points/shapes in world axes. Explicit proper initial_pose and finite fixed center_world. Parameters translation xyz then left world rotation xyz about this center. Q=exp_so3(delta_rotation); R'=Q R; t'=Q(t-center)+center+delta_translation.",
+  "weights": "Unit weights by default. Optional robust_scale s is a positive finite distance: weight=(s*s/(s*s+d2))^2. Matches, weights and combined C=Ct+R Cs R.T are frozen through all inner trials, then refreshed at the next outer iteration. No global monotonic changing-metric cost claim.",
+  "solve": "At least three positive-weight matches and positive finite weighted RMS radius r about center. D=diag(1,1,1,1/r,1/r,1/r). Symmetric normalized A=D H D / sum_w, b=D rhs/sum_w. Undamped Cholesky solve, require each Schur pivot > 1e-12 times max diagonal of A. No eigenvalue flooring, damping, Horn/P2P fallback or physical quality interpretation of this numerical rank guard.",
+  "acceptance": "Solve full delta=D z. If its translation norm <= translation_tolerance AND rotation norm <= rotation_tolerance, report converged_step without adopting a step. Otherwise try scales [1,.5,.25,.125,.0625,.03125], first finite proper candidate with strictly smaller frozen-metric cost is adopted. A shortened step alone does not signal convergence. Retain all attempted trial costs/scales and outer before/after pose, matches, system, weights and metric in optional diagnostic history.",
+  "termination": "Explicit converged_step, insufficient_correspondences, singular_system, nonfinite, no_descent, max_iterations. Invalid input raises indexed error before matching, including invalid unmatched/zero-weight rows. Last accepted pose is returned; no rejected candidate is adopted. Final matches/cost are re-evaluated at the returned pose and identified separately from frozen trial costs.",
+  "defaults": {
+    "max_iterations": 30,
+    "translation_tolerance": 0.0001,
+    "rotation_tolerance": 1e-05,
+    "robust_scale": null,
+    "parallel": false,
+    "capture_history": false
+  },
+  "parallel": "Indexed independent matching, factor and trial rows; serial source-order accumulation, serial/parallel bit equality. Serial remains default; no new timing or speed claim in this slice.",
+  "real_evaluation": {
+    "input": "PR295 four immutable 64-frame source/map snapshots. Replay old canonical insertions, never feed new trial poses into future maps.",
+    "cases": [
+      "raw-legacy",
+      "raw-fine",
+      "rotation-legacy",
+      "rotation-fine"
+    ],
+    "rows": [
+      0,
+      1,
+      2,
+      9,
+      17,
+      33,
+      49,
+      60,
+      63
+    ],
+    "initialization": "Prior odometry constant-relative-motion prediction from frozen startup poses (identity for first, previous pose for second). Center equals prediction translation. No ground-truth parsing/fitting or rejected IMU initialization state adoption.",
+    "shape_model": "Same fixed 20-neighbor/minimum-5 local PCA and normalized [.001,1,1] shape model as PR296, using all selected source/all pre-insertion map points. Drop unsupported points explicitly before registration; no identity fallback.",
+    "parameters": {
+      "max_correspondence_distance": 2.0,
+      "max_iterations": 30,
+      "translation_tolerance": 0.0001,
+      "rotation_tolerance": 1e-05,
+      "robust_scale": null
+    },
+    "reference": "Independent NumPy/SciPy full iterative implementation, brute-force nearest matching and Cholesky solve; compare each outer pose/matches/weights/C/H/b, every frozen trial cost and accepted scale, termination and final result. For exact distance ties verify nearest distance and deterministic native tie rule separately. Serial/parallel all output bits equal.",
+    "scope": "36 independent fixed-map registrations, including four empty initial maps. These are new local trial poses, not a new trajectory or physical accuracy/GLIM benchmark. No production/frontend/default/gate change, timing or GPU claim."
+  },
+  "tolerances": {
+    "pose_atol": 2e-07,
+    "system_atol": 2e-06,
+    "system_rtol": 1e-09,
+    "cost_atol": 2e-06,
+    "cost_rtol": 1e-09,
+    "shapes_atol": 2e-12
+  },
+  "validation": "Core/Python controls cover frozen-metric vs refreshed transport, derivatives, rigid recovery, world/source frame changes with lever arm, degenerate/no-match/empty/iteration-limit/nonfinite/no-descent outcomes, strict threshold/ties, invalid parameter/shape/ownership/strides and serial/parallel equality. Complete private package/source snapshot; unchanged full-motion component and frontend regressions. Preserve all old evidence verbatim."
+}

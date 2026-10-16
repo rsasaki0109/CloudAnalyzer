@@ -56,6 +56,68 @@ def gicp_linearization(
     """
     ...
 
+class GicpFrozenCost(TypedDict):
+    cost: float
+    mahalanobis_squared: npt.NDArray[np.float64]
+
+class GicpIteration(TypedDict):
+    pose_before: npt.NDArray[np.float64]
+    pose_after: npt.NDArray[np.float64]
+    source_indices: npt.NDArray[np.uint64]
+    target_indices: npt.NDArray[np.uint64]
+    squared_distances: npt.NDArray[np.float64]
+    weights: npt.NDArray[np.float64]
+    combined_shapes: npt.NDArray[np.float64]
+    normal_matrix: npt.NDArray[np.float64]
+    right_hand_side: npt.NDArray[np.float64]
+    cost_before: float
+    cost_after: float | None
+    step: npt.NDArray[np.float64] | None
+    trial_scales: npt.NDArray[np.float64]
+    trial_costs: list[float | None]
+    accepted_scale: float | None
+
+class GicpRegistration(TypedDict):
+    pose: npt.NDArray[np.float64]
+    termination: Literal["converged_step", "insufficient_correspondences", "singular_system", "nonfinite", "no_descent", "max_iterations"]
+    converged: bool
+    iterations: int
+    accepted_steps: int
+    final_cost: float | None
+    matched_source_indices: npt.NDArray[np.uint64]
+    matched_target_indices: npt.NDArray[np.uint64]
+    squared_distances: npt.NDArray[np.float64]
+    weights: npt.NDArray[np.float64]
+    failure_reason: str | None
+    history: list[GicpIteration]
+
+def gicp_frozen_cost(
+    source: npt.NDArray[np.float64], target: npt.NDArray[np.float64],
+    combined_shapes: npt.NDArray[np.float64], pose: npt.NDArray[np.float64], *,
+    weights: npt.NDArray[np.float64] | None = None, parallel: bool = False,
+) -> GicpFrozenCost:
+    """Evaluate candidate residuals against supplied baseline (N,3,3) metrics.
+    Copy inputs/results. Never refresh shapes, weights or correspondences.
+    """
+    ...
+
+def gicp_register(
+    source: npt.NDArray[np.float64], target: npt.NDArray[np.float64],
+    source_shapes: npt.NDArray[np.float64], target_shapes: npt.NDArray[np.float64],
+    initial_pose: npt.NDArray[np.float64], center_world: npt.NDArray[np.float64], *,
+    max_correspondence_distance: float, max_iterations: int = 30,
+    translation_tolerance: float = 1e-4, rotation_tolerance: float = 1e-5,
+    robust_scale: float | None = None, parallel: bool = False,
+    capture_history: bool = False,
+) -> GicpRegistration:
+    """Opt-in global nearest-neighbor alignment on prepared SPD shapes.
+    Source arrays use source axes; target arrays use world axes. Explicit
+    center, translation-then-world-rotation steps, undamped rank-checked solve,
+    six frozen-metric backtracking trials. Return the last accepted pose.
+    History is optional; final_cost rematches/retransports at that pose.
+    """
+    ...
+
 def read(path: str, keep_every: int = 1) -> PointData: ...
 def discover_vector_map_features(cloud: str, vector_map: str | None = None, options: str = "{}", confirmations: str | None = None) -> str: ...
 def measure_vector_map_crosswalk(

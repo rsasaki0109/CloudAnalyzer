@@ -1,0 +1,49 @@
+{
+  "json_files": {
+    "audit/frames.json": {
+      "name": "frames.json",
+      "bytes": 122666,
+      "sha256": "c613446a8b5196a7ab9f32ccb512f91fc82c4c6d49e052f3ca9071eee740a347"
+    },
+    "audit/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 54864,
+      "sha256": "0432a98596f88f998fb0c45ca84c91d5f5732384f7f41b5d288b3570f7875868"
+    },
+    "audit/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1271,
+      "sha256": "99d0b6da1712b7aea75bd1df1934623553c716b48d1f1eeba74c146134b0894f"
+    },
+    "audit/summary.json": {
+      "name": "summary.json",
+      "bytes": 8634,
+      "sha256": "07421e2966226b7c3318e12bfc9900ce6b4995f391537c06dc47c8549b9ab48c"
+    },
+    "deskew-regression/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 6054,
+      "sha256": "66bb2cdfb37de8b0ffde92f27ef82ca1461faa9fcbb2bf5cfaa0b0ff92d14e6f"
+    },
+    "integration/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 4240,
+      "sha256": "534f9b10ef3fb9ca8262e8dd7b49eaf995ccbe18fab507f5795af340c3fcddf5"
+    },
+    "native-build-inputs.json": {
+      "name": "native-build-inputs.json",
+      "bytes": 13105,
+      "sha256": "696d3666fc10ec1c309126150d1597f9ade67ee3ca3179e4fdac1f7cedda324a"
+    },
+    "slice-protocol.json": {
+      "name": "slice-protocol.json",
+      "bytes": 5327,
+      "sha256": "ed199960a373953a511b859ffadfb0d0ed174c8e50d8eb77bf2537f44d956560"
+    }
+  },
+  "verifier": {
+    "name": "verify.py",
+    "bytes": 5435,
+    "sha256": "3ac1e1f14d301c33d5e95b955e383f0725771b3bc9f8e70b16b88179149b3b92"
+  }
+}

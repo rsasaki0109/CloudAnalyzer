@@ -1,0 +1,26 @@
+{
+  "prefix_imu_samples": 1293,
+  "frame_id": "livox_frame",
+  "sample_interval_ns": {
+    "min": 1023531,
+    "median": 4997492.0,
+    "max": 5110264
+  },
+  "gyro_rad_s": {
+    "mean": [
+      0.015445738469019291,
+      -0.002619514441332288,
+      -0.0698655616319706
+    ],
+    "std": [
+      0.04120091218236405,
+      0.07297373538040784,
+      0.09547025614235724
+    ]
+  },
+  "scaled_acceleration_norm_m_s2": {
+    "mean": 9.708379298291554,
+    "std": 0.13887606566031718
+  },
+  "scope": "Descriptive measurements on the fixed expanded prefix, without stationary or sensor-noise calibration."
+}

@@ -1,0 +1,223 @@
+{
+  "schema": "cloudanalyzer.flatwall_startup_residuals.v1",
+  "inputs": {
+    "recording": {
+      "name": "flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7573504,
+      "sha256": "66efeab7fbc86f0499511e6a0ba0db49e01f7ba745f935e66fba8bd1e5e81569"
+    },
+    "controller": {
+      "name": "audit_flatwall_startup_residuals.py",
+      "bytes": 21813,
+      "sha256": "59c1c4c64459bd1cb7ce8ea7424eda1a8abf6067277b1f3fb07439fcd90dbf30"
+    },
+    "helper": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "rosbags_version": "0.11.3",
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "optimizer_implementation": {
+      "name": "least_squares.py",
+      "bytes": 43856,
+      "sha256": "b6becbe3b248ea5edcbc40434f101f5d46e5304b66d3c97331bced459dc38765"
+    },
+    "rotation_implementation": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    },
+    "standard_types": {
+      "name": "ros1_noetic.py",
+      "bytes": 101472,
+      "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+    },
+    "previous": {
+      "raw-legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6673,
+          "sha256": "38eedcdabef3209607fadb53e77b02c41ca54e232f9989e6473c337b2d14cee2"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6517,
+          "sha256": "d85dba324ae0a7e35d7f9cde8650a27e195faf3e4559062824ea90ba01b43f6f"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1956,
+          "sha256": "cd13d484736119b6a7dd4064099d86914eb6a855c8f5dc70e1c3645fe3e7f510"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20908,
+          "sha256": "5455cc437a5c3fe46d0eb6244c4c872b0eeb8a85f3dd57c0569f534248c331f5"
+        }
+      },
+      "raw-fine": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6670,
+          "sha256": "1bf02c09d75236bead70fdfafe305fc57b9ce561e3a7030430f827523674dfee"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6592,
+          "sha256": "5c6b940c6a2a5fa5f4f7dbdb47bd625c3c615af335541d5e077fbc385313fe20"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 1854,
+          "sha256": "a83d8c673dfb73f587be57e51441be4ecd5e95328b7d39ad989c7cc317913814"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21073,
+          "sha256": "578660362b76f9b2b528e3d1a7537e10b18a0ed0660c75f2bfbb697ab46bd78a"
+        }
+      },
+      "rotation-legacy": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6680,
+          "sha256": "84abff0ec97b3596798f99200d6d8011544806627fdc2c58edcbacf16322c694"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6515,
+          "sha256": "49368ef4470d29bcb3222c1cba88315e9c20455b9d8b064f147eb0fadb117360"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 2127,
+          "sha256": "a3b552a1c4c61700fa3fd0f052ec241ef0516b04370a8804ac58392623b0b7dd"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 20892,
+          "sha256": "909cc3934322df1f1b42474050dea8314b2d3a3d78e0e016f96077786eacbeb6"
+        }
+      },
+      "rotation-fine": {
+        "startup-poses.npz": {
+          "name": "startup-poses.npz",
+          "bytes": 6669,
+          "sha256": "4cca234d88b88c8f81bc8913fabaab84006fbeab0197d1650ee4320328edfa64"
+        },
+        "independent.json": {
+          "name": "independent.json",
+          "bytes": 6581,
+          "sha256": "f69244e3cb5f9146d7dac9b198fa08d21161501062f20467c1c5835760c947fc"
+        },
+        "receipt.json": {
+          "name": "receipt.json",
+          "bytes": 2054,
+          "sha256": "393c9600ced8763ec89072ea930bf038298af8177c40809d33e62852e1cba08c"
+        },
+        "lidar-diagnostics.json": {
+          "name": "lidar-diagnostics.json",
+          "bytes": 21068,
+          "sha256": "9a1bcceb8c6b70e7f793c3a8c6bdd404a2a0658ede628a4129c5c08dbe3107cc"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "gyro_bias": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "accel_bias": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "gravity_magnitude": 9.80665,
+    "max_gravity_error": 1.0,
+    "max_rotation_rms": 0.05,
+    "max_velocity_rms": 0.2,
+    "max_gyro_bias_change": 0.2,
+    "max_iterations": 15,
+    "max_gap_s": 0.05,
+    "min_singular_ratio": 1e-06
+  },
+  "acceleration_scale": 9.80665,
+  "imu_from_lidar": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "reference_strides": [
+    1,
+    3,
+    7
+  ],
+  "clock_offsets_ns": [
+    -50000000,
+    -45000000,
+    -40000000,
+    -35000000,
+    -30000000,
+    -25000000,
+    -20000000,
+    -15000000,
+    -10000000,
+    -5000000,
+    0,
+    5000000,
+    10000000,
+    15000000,
+    20000000,
+    25000000,
+    30000000,
+    35000000,
+    40000000,
+    45000000,
+    50000000
+  ],
+  "workers": 4,
+  "clock_sign": "IMU timestamp = saved LiDAR reference timestamp + offset_ns",
+  "clock_scope": "Nonzero offsets only on raw poses with stride 1; zero-offset gyro-compensated poses are not reused for a joint calibration.",
+  "reference_policy": "Indices 0,stride,...,63; both endpoints and the same total span are preserved.",
+  "decomposition": "A=diff(diff(p)/dt), B=-diff(R*delta_p/dt)-R*delta_v[:-1]; project each through P=I-alpha*alpha.T/(alpha.T*alpha). P*(A+B)=P*A+P*B, with signed cross energy.",
+  "tolerance": {
+    "baseline_values": 1e-10,
+    "native_estimates": 2e-05
+  },
+  "scope": "Exploratory equation/clock/reference sensitivity, no smoothing, deletion, reweighting, changed limits, state adoption, physical calibration/uncertainty/causal diagnosis, ground-truth pose parsing, timing or GPU result. Coarse-batch acceptance does not validate omitted references."
+}

@@ -131,3 +131,6 @@ LiDAR pose quality, remaining accelerometer calibration, physical initialization
 observability and subsequent causal velocity/bias updates remain estimator work.
 This initializer does not fit the LiDAR poses, optimize coupled LiDAR/IMU factors,
 or establish complete SLAM accuracy or GPU acceleration.
+
+For per-interval equation diagnostics and fixed reference/clock sensitivity,
+see [startup residual inspection](slam-startup-residuals.md).

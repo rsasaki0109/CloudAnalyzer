@@ -57,3 +57,7 @@ calibrated LiDAR-to-IMU rotation and lever arm applied explicitly.
 `[0,1]`; it does not provide absolute point timestamps or a calibrated sweep
 duration. This metadata addition supports subsequent timing/calibration work;
 it does not by itself perform motion compensation or LiDAR-inertial fusion.
+
+For the bundled NCLT lineage, see [synchronized body-frame conventions](slam-nclt-body-frames.md)
+before interpreting the historical `velodyne` frame label or preparing new
+reference trajectories.

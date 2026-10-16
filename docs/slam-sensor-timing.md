@@ -58,6 +58,56 @@ calibrated LiDAR-to-IMU rotation and lever arm applied explicitly.
 duration. This metadata addition supports subsequent timing/calibration work;
 it does not by itself perform motion compensation or LiDAR-inertial fusion.
 
+## Retaining a source point-time field
+
+Request the exact field name when creating the iterator:
+
+```python
+for scan in reader.scans(topic="/livox/points", raw_time_field="t"):
+    values = scan.raw_time()  # float64, aligned with scan.positions()
+    print(scan.raw_time_field, scan.raw_time_datatype)  # "t", 6 (UINT32)
+```
+
+`BagReader.messages(topics, raw_time_field="t")` provides the same option for
+its PointCloud2 messages. Other message types retain their existing behavior.
+The default `raw_time_field=None` retains no raw-time array or metadata.
+
+| Scan member | Meaning |
+| --- | --- |
+| `raw_time()` | A copied float64 array of the requested scalar source values, or `None` when not requested. |
+| `raw_time_field` | Read-only exact source field name, or `None`. |
+| `raw_time_datatype` | Read-only ROS PointField datatype code, or `None`. |
+
+All standard PointField integer values (INT8 through UINT32) are exactly
+representable in float64. FLOAT32 source values widen to float64, and FLOAT64
+source values retain their precision. Signed zero, nonfinite values, constant
+fields and the original point order are retained. Nonfinite XYZ points are
+filtered as before, with the corresponding raw values removed. An empty
+decoded scan retains the requested metadata and an empty array. Mutating a
+returned array does not change the scan.
+
+The field name and datatype do not establish a physical unit, a clock origin,
+or whether a value is an offset or absolute time. Values are not resampled,
+sorted, converted to nanoseconds or shifted by the header. A consumer must
+declare these conventions and validate nonfinite values before constructing
+inertial timestamps. Standard float64 timestamp precision cannot recover
+information already lost by the original publisher.
+
+An explicit request raises `ValueError` for a missing/duplicate field name,
+unsupported datatype, nonscalar count, an out-of-point field extent, overlapping
+rows or incomplete point records. Missing values are not replaced with zeros.
+The existing `Scan.time()` continues to use its existing field selection and
+normalization, independently of the requested raw field. Headers, XYZ and
+intensity retain their existing behavior.
+
+Retaining raw values extends the lifetime of a float64 buffer. If the requested
+field shares the layout used for normalized time, the decoder moves its existing
+temporary buffer into the scan. A different field requires a separate buffer.
+Calling `raw_time()` copies the retained values into a NumPy array.
+
+The [flat-wall raw-time audit](../benchmarks/slam/flatwall-raw-point-time/README.md)
+contains frozen old/new native receipts and independent field comparisons.
+
 For the bundled NCLT lineage, see [synchronized body-frame conventions](slam-nclt-body-frames.md)
 before interpreting the historical `velodyne` frame label or preparing new
 reference trajectories.

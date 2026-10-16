@@ -179,6 +179,18 @@ class Scan:
     def time(self) -> npt.NDArray[np.float32] | None:
         """How far through the scan each point was taken, 0 to 1, when the cloud has a time field."""
         ...
+    @property
+    def raw_time_field(self) -> str | None: ...
+    @property
+    def raw_time_datatype(self) -> int | None:
+        """ROS PointField datatype code (1..8), when explicitly requested."""
+        ...
+    def raw_time(self) -> npt.NDArray[np.float64] | None:
+        """Copied source values aligned with finite points, including nonfinite values.
+        No units/origin inferred. All PointField integers fit exactly in float64.
+        None unless raw_time_field was explicitly requested on the iterator.
+        """
+        ...
     def __len__(self) -> int: ...
 
 class BagMessages:
@@ -364,12 +376,12 @@ class BagReader:
     def time_range(self) -> tuple[float, float] | None:
         """When the first and the last message were recorded (seconds), from the bag's index."""
         ...
-    def messages(self, topics: list[str]) -> BagMessages:
+    def messages(self, topics: list[str], *, raw_time_field: str | None = None) -> BagMessages:
         """Within ROS 1/MCAP chunks, equal recording times retain physical record order.
         Sensor headers are not sorted or changed.
         """
         ...
-    def scans(self, topic: str | None = None) -> BagMessages:
+    def scans(self, topic: str | None = None, *, raw_time_field: str | None = None) -> BagMessages:
         """The PointCloud2 messages of a topic (the one such topic when None), decoded as Scans."""
         ...
     def imu(

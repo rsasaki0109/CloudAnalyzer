@@ -1,0 +1,68 @@
+{
+  "schema": "cloudanalyzer.flatwall_raw_point_time.v1",
+  "inputs": {
+    "recordings": {
+      "flatwall": {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6",
+        "topic": "/livox/points"
+      },
+      "nclt-april": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 10054898,
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+        "topic": "/velodyne_points"
+      },
+      "nclt-june": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 9387931,
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+        "topic": "/velodyne_points"
+      }
+    },
+    "controller": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7380480,
+      "sha256": "865f1b9f8d4bd3b38d03b08c607c2cc50655b6e29f7f60656f5aaeff02c3d271"
+    },
+    "numpy_version": "2.3.4",
+    "rosbags_version": "0.11.3",
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "standard_type_sources": [
+      {
+        "name": "ros1_noetic.py",
+        "bytes": 101472,
+        "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+      },
+      {
+        "name": "ros2_humble.py",
+        "bytes": 29920,
+        "sha256": "ce5198b485e21d2c8bce1d1d8faff33ded1585b493f1195d2e322ec97d0888ff"
+      }
+    ],
+    "comparison_receipt": {
+      "name": "receipt.json",
+      "bytes": 4878,
+      "sha256": "6595cbcb78f40cf9c49d2bf6cf903eb34286d230afb00063b9e7b5f6c624336c"
+    },
+    "comparison_protocol": {
+      "name": "protocol.json",
+      "bytes": 2100,
+      "sha256": "b7d583a15b8035481e42cecb7cf90a308ba6f4613f6549f8ad111fcc30cea8cb"
+    }
+  },
+  "baseline": false,
+  "requested_field": "t for flatwall; controls have no t field and retain None timing",
+  "independent_decoder": "Standard ROS1_NOETIC/ROS2_HUMBLE PointCloud2, explicitly supplied even when the NCLT MCAP schema text is empty",
+  "scope": "Every finite point, raw timing and legacy field digest. No unit/origin inference, reference archive access, clock shift, deskew, trajectory or runtime claim."
+}

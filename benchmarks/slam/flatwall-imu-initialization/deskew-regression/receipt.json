@@ -1,0 +1,194 @@
+{
+  "schema": "cloudanalyzer.flatwall_imu_deskew.v1",
+  "inputs": {
+    "recordings": {
+      "flatwall": {
+        "name": "flatwall_01.bag",
+        "bytes": 184597802,
+        "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6",
+        "topic": "/livox/points"
+      },
+      "nclt-april": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 10054898,
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+        "topic": "/velodyne_points"
+      },
+      "nclt-june": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 9387931,
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+        "topic": "/velodyne_points"
+      }
+    },
+    "controller": {
+      "name": "audit_flatwall_imu_deskew.py",
+      "bytes": 16091,
+      "sha256": "aca80719760444ff4d139ad5b43539c6e8d3df010723a4f6845d4147ff01601f"
+    },
+    "field_audit_helpers": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    },
+    "native": {
+      "name": "_core.pyd",
+      "bytes": 7532032,
+      "sha256": "5b30397affdbb44067acb03026b77d7c989de4238a7e2475ca808385e04189fc"
+    },
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.17.1",
+    "rosbags_version": "0.11.3",
+    "rayon_threads_requested": 4,
+    "rotation_backend": {
+      "name": "_rotation.py",
+      "bytes": 110219,
+      "sha256": "307bb7c9dfff61d28383536a1c8e3ad7396221ca33b0fe71fccb7aac5bd861d6"
+    },
+    "independent_reader": {
+      "name": "anyreader.py",
+      "bytes": 8589,
+      "sha256": "b12f007c08a44bf0b9d7a1fbeb0e00bf5b049592cabce73b87765346aa670552"
+    },
+    "standard_type_sources": [
+      {
+        "name": "ros1_noetic.py",
+        "bytes": 101472,
+        "sha256": "441705d156e3d1831edaf76a253ed30d90cc4985251f5708d09c94c9c9e4e5a1"
+      },
+      {
+        "name": "ros2_humble.py",
+        "bytes": 29920,
+        "sha256": "ce5198b485e21d2c8bce1d1d8faff33ded1585b493f1195d2e322ec97d0888ff"
+      }
+    ],
+    "comparison_protocol": {
+      "name": "protocol.json",
+      "bytes": 3775,
+      "sha256": "a88e4b90f7dfacdc9521edcf5e98669dd6e52807c6b89617688985b71eec1b60"
+    },
+    "comparison_receipt": {
+      "name": "receipt.json",
+      "bytes": 5282,
+      "sha256": "4fed39d3f6822e1d0b0b00d0d33aa4c7c2a6603c20479fc481be28284a983e45"
+    }
+  },
+  "baseline": false,
+  "declared_policy": {
+    "point_time": "UINT32 t, ns offsets from integer PointCloud2 Header",
+    "initial_state": "first IMU header, identity IMU-to-world pose, zero world velocity",
+    "gravity_world": [
+      0.0,
+      0.0,
+      -9.80665
+    ],
+    "bias": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "acceleration_scale": 9.80665,
+    "imu_from_lidar": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "reference": "maximum point timestamp",
+    "max_gap_s": 0.05
+  },
+  "independent_model": "standard ROS1 IMU decode, SciPy held-gyro exponentials and NumPy fixed-left acceleration recurrence; full rigid point transform",
+  "comparison": {
+    "all_covered_points_tolerance": 2e-08,
+    "state_rotation_tolerance": 1e-10,
+    "state_velocity_position_tolerance": 1e-08,
+    "native_preintegration_scan_indices": [
+      1,
+      2,
+      9,
+      17,
+      49,
+      93,
+      139,
+      185
+    ],
+    "point_indices": "0, N//2, N-1 and reference",
+    "parallel": "four-thread indexed map must match serial output bits"
+  },
+  "coverage": "reject the entire first scan rather than extrapolate 632 uncovered points; retain every other point in source order",
+  "scope": "Real measurements with arbitrary declared numerical initial state/gravity. No physical initialization or calibration fitted, reference archive access, LiDAR fusion, trajectory accuracy or runtime claim.",
+  "protocol": {
+    "name": "protocol.json",
+    "bytes": 4116,
+    "sha256": "309c801a4981546179d2f819d7fb751686cfce53fa6baef19c7e316df09767e2"
+  },
+  "common_results": {
+    "legacy_inputs": {
+      "flatwall": {
+        "scans": 186,
+        "finite_points": 4464000,
+        "legacy_fields_sha256": "298953c04207fbb1a98e57818b253b6d78bf61bda9dfb18e4cfa768e30764baa",
+        "point_times_ns_sha256": "2433bc10419c9cb0be6a1c1fb67ae486ee672b291863c892dcdfb9583a895199"
+      },
+      "nclt-april": {
+        "scans": 236,
+        "finite_points": 1400497,
+        "legacy_fields_sha256": "cd7d09e6afbdfe9bfb5fd6982737a6d9f17d6ed85f3ddca41be3e6b6bc811192",
+        "point_times_ns_sha256": null
+      },
+      "nclt-june": {
+        "scans": 238,
+        "finite_points": 1311375,
+        "legacy_fields_sha256": "cac98049c81cc4d251a49d63c58f58d3cf676fbc38f67ca78d80231383504952",
+        "point_times_ns_sha256": null
+      }
+    },
+    "raw_imu_sha256": "b9f056d17bb3e009b1cee502bd25f982b023bb72c45b48b8e83623fd63ee88ec",
+    "imu_samples": 3755,
+    "covered_scans": 185,
+    "covered_points": 4440000,
+    "skipped_scan_indices": [
+      0
+    ],
+    "decreasing_point_time_steps": 11,
+    "independent_deskew_sha256": "08033f6259f32553e07a18adc1c7391607bf3e1d1e95d548597c0a772b7ee319",
+    "legacy_preintegration_sha256": "07b565286042b6cb8dc99fdf27efb2b21bf699cc03d3c7c147da17d68cd5148f"
+  },
+  "native_results": {
+    "max_abs_errors": {
+      "state_rotation": 8.881784197001252e-15,
+      "state_velocity": 5.400124791776761e-13,
+      "state_position": 4.206412995699793e-12,
+      "point_coordinates": 8.029132914089132e-13
+    },
+    "deskew_sha256": "a31223af0ab27fe527203ffa1887310d022295e01e717eff6f4eb65e16f9b53b",
+    "serial_parallel_bits_match": true,
+    "first_unbracketed_scan_rejected": true,
+    "caller_points_unchanged": true
+  },
+  "legacy_fields_match_old_native": true,
+  "ground_truth_archive_read": false
+}

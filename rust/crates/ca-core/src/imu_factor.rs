@@ -73,7 +73,7 @@ fn validate_rotation(r: &Mat3) -> Result<(), ImuError> {
     Ok(())
 }
 
-fn validate_state(state: &ImuState) -> Result<(), ImuError> {
+pub(crate) fn validate_state(state: &ImuState) -> Result<(), ImuError> {
     validate_rotation(&state.rotation)?;
     finite(state.velocity.into_iter().chain(state.position))
 }
@@ -82,7 +82,7 @@ fn rotate(r: &Mat3, v: [f64; 3]) -> [f64; 3] {
     std::array::from_fn(|i| (0..3).map(|j| r[i][j] * v[j]).sum())
 }
 
-fn right_jacobian_inverse(v: [f64; 3]) -> Mat3 {
+pub(crate) fn right_jacobian_inverse(v: [f64; 3]) -> Mat3 {
     let t2: f64 = v.iter().map(|x| x * x).sum();
     let coefficient = if t2 < 1e-8 {
         1.0 / 12.0 + t2 / 720.0 + t2 * t2 / 30240.0
@@ -146,9 +146,16 @@ fn cholesky(covariance: &Mat9) -> Result<Mat9, ImuError> {
 
 impl ImuFactor {
     pub fn new(measurement: PreintegratedImu) -> Result<Self, ImuError> {
+        let duration = measurement
+            .end_ns
+            .checked_sub(measurement.start_ns)
+            .filter(|dt| *dt > 0)
+            .ok_or_else(|| ImuError("IMU factor requires increasing exact timestamps".into()))?;
+        let expected_dt = duration as f64 * 1e-9;
         if !measurement.delta_time_s.is_finite()
             || measurement.delta_time_s <= 0.0
             || measurement.integration_steps == 0
+            || (measurement.delta_time_s - expected_dt).abs() > 1e-12 * expected_dt
         {
             return Err(ImuError(
                 "IMU factor requires a positive integration interval".into(),

@@ -8,7 +8,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
-fn err(error: ImuError) -> PyErr {
+pub(crate) fn err(error: ImuError) -> PyErr {
     PyValueError::new_err(error.0)
 }
 
@@ -42,6 +42,8 @@ pub(crate) fn measurement_dict<'py>(
     m: &PreintegratedImu,
 ) -> PyResult<Bound<'py, PyDict>> {
     let result = PyDict::new(py);
+    result.set_item("start_ns", m.start_ns)?;
+    result.set_item("end_ns", m.end_ns)?;
     result.set_item("delta_rotation", matrix(py, &m.delta_rotation))?;
     result.set_item("delta_velocity", m.delta_velocity.to_vec().into_pyarray(py))?;
     result.set_item("delta_position", m.delta_position.to_vec().into_pyarray(py))?;
@@ -57,7 +59,7 @@ pub(crate) fn measurement_dict<'py>(
     Ok(result)
 }
 
-fn state(pose: PyReadonlyArray2<'_, f64>, velocity: [f64; 3]) -> PyResult<ImuState> {
+pub(crate) fn state(pose: PyReadonlyArray2<'_, f64>, velocity: [f64; 3]) -> PyResult<ImuState> {
     if pose.shape() != [4, 4] {
         return Err(PyValueError::new_err("expected a (4, 4) IMU-to-world pose"));
     }
@@ -90,7 +92,7 @@ fn evaluation_dict<'py>(py: Python<'py>, out: &ImuEvaluation) -> PyResult<Bound<
 /// A preintegrated IMU factor, created by BagReader.imu_factor().
 #[pyclass(frozen, module = "cloudanalyzer_core._core")]
 pub struct ImuFactor {
-    factor: Factor,
+    pub(crate) factor: Factor,
 }
 
 impl ImuFactor {

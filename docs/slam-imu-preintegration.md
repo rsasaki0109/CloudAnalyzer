@@ -63,8 +63,9 @@ delta_velocity += delta_rotation * a * dt
 delta_rotation  = delta_rotation * Exp(w * dt)
 ```
 
-The result contains a 3x3 rotation, 3-vectors for velocity and position, elapsed
-seconds, integration step count, frame ID, a 9x9 covariance, and a 9x6 bias
+The result contains exact integer `start_ns` and `end_ns`, a 3x3 rotation,
+3-vectors for velocity and position, elapsed seconds, integration step count,
+frame ID, a 9x9 covariance, and a 9x6 bias
 Jacobian, and the saved `linearization_bias` (gyro then accelerometer).
 Covariance/Jacobian rows are **right-local rotation, additive velocity,
 additive position**; bias columns are **gyro, accelerometer**. Velocity and
@@ -95,8 +96,9 @@ The bundled NCLT demo bags declare their gyro and accelerometer measurements
 unavailable and must not be treated as raw inertial recordings for this API.
 Validation covers ROS serialization, exact timestamp handling, numerical bias
 derivatives, and covariance checked against independent measurement derivatives.
-The next estimator step needs calibration, initialization, integration into a
-state optimizer and a trajectory accuracy evaluation with raw LiDAR+IMU data.
+The [bounded inertial window](slam-imu-window.md) supplies a state optimizer.
+Calibration, initialization, LiDAR integration and trajectory accuracy evaluation
+with raw LiDAR+IMU data are still required.
 
 ## Reusable inertial factors
 
@@ -175,3 +177,7 @@ The factor supplies the residual and derivative blocks for a navigation-state
 optimizer. It does not include a prior, bias random-walk factor, marginalization
 or a LiDAR-inertial initialization policy. Numerical optimizer checks establish
 the interface and derivatives, without establishing fused SLAM accuracy.
+
+`ImuWindow` combines these factors, bias random walks and explicit state/pose
+priors in a bounded batch problem. See [inertial windows](slam-imu-window.md)
+for its noise model, frame conventions and limitations.

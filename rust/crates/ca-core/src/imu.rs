@@ -28,6 +28,9 @@ pub struct PreintegrationParams {
 
 #[derive(Debug, Clone)]
 pub struct PreintegratedImu {
+    /// Exact header-time endpoints of the integrated interval.
+    pub start_ns: i64,
+    pub end_ns: i64,
     pub delta_rotation: Mat3,
     pub delta_velocity: [f64; 3],
     pub delta_position: [f64; 3],
@@ -117,6 +120,8 @@ pub fn preintegrate(
         elapsed(pair[0].stamp_ns, pair[1].stamp_ns)?;
     }
     let mut out = PreintegratedImu {
+        start_ns,
+        end_ns,
         delta_rotation: IDENTITY,
         delta_velocity: [0.0; 3],
         delta_position: [0.0; 3],

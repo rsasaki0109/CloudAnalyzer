@@ -23,6 +23,9 @@ rows and optional exact neighborhoods. See [shape preparation](../../../docs/sla
 `GicpTarget(target, target_shapes)` owns a validated immutable target and exact
 search tree for repeated registrations. See [target reuse](../../../docs/slam-gicp-target.md).
 
+An explicit `GicpCycleGuard` diagnoses repeated outer states with a distinct
+failure status. See [bounded recurrence semantics](../../../docs/slam-gicp-cycles.md).
+
 ```python
 import cloudanalyzer_core as cc
 import numpy as np

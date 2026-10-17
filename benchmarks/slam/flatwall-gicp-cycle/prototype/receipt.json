@@ -1,0 +1,25 @@
+{
+  "controller": {
+    "name": "audit_flatwall_gicp_cycles.py",
+    "bytes": 7602,
+    "sha256": "9fbbd5e506f253682765218982732983f6353cd8ec093ed9a6f32c6e118f9c5e"
+  },
+  "frozen_inputs_unchanged": 84,
+  "outputs": {
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 17101,
+      "sha256": "8e364bef7f8ae73f66f3b04c05709b57a470d67f6b1d48d24da5e20bb9606c24"
+    },
+    "frames.json": {
+      "name": "frames.json",
+      "bytes": 11862,
+      "sha256": "acba22a6b6600ee32775a1ed4f6fc17abb7c5ea15b4893d852589afca9e2f59e"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 265,
+      "sha256": "6ddd24adc3bfa478423a35a54205242175a74973adc675fd331b3ef0b485622a"
+    }
+  }
+}

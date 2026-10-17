@@ -66,3 +66,6 @@ benchmarks/slam/flatwall-gicp-target/** text eol=lf
 scripts/audit_flatwall_gicp_transition.py text eol=lf
 benchmarks/slam/flatwall-gicp-transition/** text eol=lf
 scripts/analyze_flatwall_gicp_transitions.py text eol=lf
+scripts/audit_flatwall_gicp_cycles.py text eol=lf
+scripts/audit_flatwall_gicp_cycle_guard.py text eol=lf
+benchmarks/slam/flatwall-gicp-cycle/** text eol=lf

@@ -1,0 +1,10 @@
+{
+  "histories": 72,
+  "cycles": 4,
+  "original_statuses": {
+    "insufficient_correspondences": 8,
+    "converged_step": 54,
+    "max_iterations": 10
+  },
+  "scope": "All frozen histories, with predeclared tolerances and bounds; a cycle is a failure diagnosis."
+}

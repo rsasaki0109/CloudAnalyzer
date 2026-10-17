@@ -265,6 +265,39 @@ pub(crate) fn gicp_frozen_cost<'py>(
     Ok(out)
 }
 
+/// Explicit bounded recurrence guard. A detected cycle is a failure, not convergence.
+#[pyclass(frozen, module = "cloudanalyzer_core._core")]
+pub(crate) struct GicpCycleGuard {
+    params: ca_core::gicp_cycle::CycleGuardParams,
+}
+
+#[pymethods]
+impl GicpCycleGuard {
+    #[new]
+    #[pyo3(signature = (*, max_period=8, confirmations=2, translation_tolerance=1e-9, rotation_tolerance=1e-10, relative_shape_tolerance=1e-9, weight_tolerance=1e-12))]
+    fn new(
+        max_period: usize,
+        confirmations: usize,
+        translation_tolerance: f64,
+        rotation_tolerance: f64,
+        relative_shape_tolerance: f64,
+        weight_tolerance: f64,
+    ) -> PyResult<Self> {
+        let params = ca_core::gicp_cycle::CycleGuardParams {
+            max_period,
+            confirmations,
+            translation_tolerance,
+            rotation_tolerance,
+            relative_shape_tolerance,
+            weight_tolerance,
+        };
+        params
+            .validate()
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        Ok(Self { params })
+    }
+}
+
 /// Immutable copied world-frame points/shapes and an exact target search tree.
 #[pyclass(frozen, module = "cloudanalyzer_core._core")]
 pub(crate) struct GicpTarget {
@@ -292,7 +325,7 @@ impl GicpTarget {
     }
 
     /// Register sensor-frame source points/shapes against this fixed target.
-    #[pyo3(signature = (source, source_shapes, initial_pose, center_world, *, max_correspondence_distance, max_iterations=30, translation_tolerance=1e-4, rotation_tolerance=1e-5, robust_scale=None, parallel=false, capture_history=false))]
+    #[pyo3(signature = (source, source_shapes, initial_pose, center_world, *, max_correspondence_distance, max_iterations=30, translation_tolerance=1e-4, rotation_tolerance=1e-5, robust_scale=None, parallel=false, capture_history=false, cycle_guard=None))]
     #[allow(clippy::too_many_arguments)]
     fn register<'py>(
         &self,
@@ -308,6 +341,7 @@ impl GicpTarget {
         robust_scale: Option<f64>,
         parallel: bool,
         capture_history: bool,
+        cycle_guard: Option<PyRef<'_, GicpCycleGuard>>,
     ) -> PyResult<Bound<'py, PyDict>> {
         let source = crate::points(&source)?;
         let source_shapes = shapes(&source_shapes, source.len(), "source_shapes")?;
@@ -325,6 +359,7 @@ impl GicpTarget {
             robust_scale,
             parallel,
             capture_history,
+            cycle_guard: cycle_guard.map(|guard| guard.params),
         };
         let result = py
             .detach(|| {
@@ -339,7 +374,7 @@ impl GicpTarget {
 /// Iterative global nearest-neighbor GICP on explicit source/world SPD shapes.
 /// Returns the last accepted pose and an explicit termination reason.
 #[pyfunction]
-#[pyo3(signature = (source, target, source_shapes, target_shapes, initial_pose, center_world, *, max_correspondence_distance, max_iterations=30, translation_tolerance=1e-4, rotation_tolerance=1e-5, robust_scale=None, parallel=false, capture_history=false))]
+#[pyo3(signature = (source, target, source_shapes, target_shapes, initial_pose, center_world, *, max_correspondence_distance, max_iterations=30, translation_tolerance=1e-4, rotation_tolerance=1e-5, robust_scale=None, parallel=false, capture_history=false, cycle_guard=None))]
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn gicp_register<'py>(
     py: Python<'py>,
@@ -356,6 +391,7 @@ pub(crate) fn gicp_register<'py>(
     robust_scale: Option<f64>,
     parallel: bool,
     capture_history: bool,
+    cycle_guard: Option<PyRef<'_, GicpCycleGuard>>,
 ) -> PyResult<Bound<'py, PyDict>> {
     let source = crate::points(&source)?;
     let target = crate::points(&target)?;
@@ -375,6 +411,7 @@ pub(crate) fn gicp_register<'py>(
         robust_scale,
         parallel,
         capture_history,
+        cycle_guard: cycle_guard.map(|guard| guard.params),
     };
     let result = py
         .detach(|| {
@@ -430,6 +467,19 @@ fn registration_dict<'py>(
     )?;
     out.set_item("weights", result.weights.into_pyarray(py))?;
     out.set_item("failure_reason", result.failure_reason)?;
+    if let Some(cycle) = result.cycle {
+        let report = PyDict::new(py);
+        report.set_item("period", cycle.period)?;
+        report.set_item("confirmations", cycle.confirmations)?;
+        report.set_item("first_iteration", cycle.first_iteration)?;
+        report.set_item("last_iteration", cycle.last_iteration)?;
+        report.set_item("compared_state_pairs", cycle.compared_state_pairs)?;
+        report.set_item("max_translation", cycle.max_translation)?;
+        report.set_item("max_rotation", cycle.max_rotation)?;
+        report.set_item("max_relative_shape", cycle.max_relative_shape)?;
+        report.set_item("max_weight", cycle.max_weight)?;
+        out.set_item("cycle", report)?;
+    }
     let history = pyo3::types::PyList::empty(py);
     for item in result.history {
         let row = PyDict::new(py);

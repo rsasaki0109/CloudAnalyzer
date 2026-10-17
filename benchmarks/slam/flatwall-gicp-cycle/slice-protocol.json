@@ -1,0 +1,28 @@
+{
+  "at_utc": "2026-10-17T02:24:25.219452+00:00",
+  "base": "f50fbc2f543f6fa4299cc2b82dff3afe95cb229e",
+  "api": "Rust RegistrationParams.cycle_guard: Option<CycleGuardParams>, default None. Immutable Python GicpCycleGuard keyword-only configuration, passed as cycle_guard=None to standalone/prepared register. No frontend/default adoption. Disabled registration output keys, values, floating-point bits and histories stay identical.",
+  "defaults": {
+    "max_period": 8,
+    "confirmations": 2,
+    "translation_tolerance": 1e-09,
+    "rotation_tolerance": 1e-10,
+    "relative_shape_tolerance": 1e-09,
+    "weight_tolerance": 1e-12
+  },
+  "bounds": "max_period in2..16; confirmations in2..4. All four tolerances finite and positive. Cycle pose tolerances must be <=one hundredth of the corresponding registration convergence tolerances; choose explicitly smaller values for tight registration. Store at most(max_period*(confirmations+1)) baseline states per call, with source/target IDs, pose, combined shapes and weights. No mutable target state or need for capture_history.",
+  "recurrence": "For periods2..max_period in increasing order require(confirmations+1)*period consecutive baseline states. Every last confirmations*period state is compared with its lag-period state, covering every phase of each return. Literal ordered source and target IDs must match, not only hashes. At least one adjacent pose pair in the final period must move beyond the existing registration translation OR rotation convergence tolerance; this excludes a stationary/slow drift within that envelope. No one-lag convergence or damped-step convergence is introduced.",
+  "comparison": "For exact rotations Rrel=Ra*Rb.T and dt=(ta-center)-Rrel*(tb-center). Evaluate the equivalent increment D=(Ra-Rb)*Rb.T; dt=(ta-tb)-D*(tb-center); angle=atan2(norm(vee(D-D.T)/2),1+trace(D)/2). Subtract rotations and translations first so identical poses return exactzero even with large source lever arms; do not project/repair/floor poses. Check finite arithmetic. Keep the original per-row relative Frobenius combined-shape and absolute weight differences and all predeclared bounds.",
+  "ordering": "Keep matching/linearization finite errors, positive-support check, finite radius and undamped solve failures first; original full-step convergence test precedes cycle check. Only then append/inspect a baseline snapshot before inner trials. Detector arithmetic failure is nonfinite with a reason. On confirmed cycle return cycle_detected, converged=False, failure_reason, last accepted current pose, unchanged accepted_steps, full-step and no trials in final history row. Final matches/transported cost are recomputed exactly as before; final rematch errors still override termination. Nonfinite/no-descent before sufficient witnesses cannot be hidden.",
+  "report": "Only a detected cycle adds a Python cycle key: period, confirmations, first_iteration,last_iteration, compared_state_pairs and maxima of centered translation, angle, relative-shape difference and weight difference. Indices are one-based baseline iterations. Otherwise keep dictionary keys unchanged, including for enabled runs without a detected cycle.",
+  "prototype": "First implement independent NumPy saved-history decision using the frozen contract, before native guard execution. All72 PR300 histories, both shape variants, all five limited patterns and all other outcomes. Freeze source/input hashes before each execution; do not tune bounds/tolerances after observing classifications.",
+  "controls": "Exact periods2/3/5/7 and outside bound; full-phase confirmation (a single returning phase is insufficient); literal IDs including changed support; repeating IDs/drifting pose; repeating pose/changed shapes or weights; shape scaling and basis; stationary and slowly moving states; large world origins and source lever arms; invalid config and first-error order; empty/low-support/singular/nonfinite/no-descent; history on/off; serial/parallel and standalone/prepared/shared immutable target; full original defaults and all native regression tests.",
+  "real": "Replay all72 frozen problems with guard disabled to compare every output/history bit to PR300, then enabled to compare decisions to independent saved-history prototype and accepted prefix exactly. Verify serial/parallel/prepared/shared-target equality, last pose/final matches/frozen descent. Capture changed outputs at fresh paths. No accuracy or speed claim; a diagnosed cycle is a failure, not successful convergence.",
+  "preservation": "Verify all prior artifact hashes before/after. Never overwrite protocols, successful or failed runs, source/native snapshots, original controllers or installed extension. Build a complete fresh private package from a frozen build-source snapshot. Version any corrections into fresh artifact paths.",
+  "scope": "Explicit bounded numerical recurrence guard, not a cycle correction, objective change, physical accuracy certificate or GPU acceleration.",
+  "supersedes": {
+    "protocol_sha256": "c8f4707408f9b451d070ba2ad10b1ffc917cdb87de777f10100bdb1a5f8a4fa7",
+    "study": "slam-gicp-cycle-20261017",
+    "reason": "Additional source-origin translation control at1e6m exposed cancellation in Ra*Rb.T and separate large translations even for literally repeating poses. First23 prototype controls, native708, real72 replay, all v1 snapshots/results and failed extra control are preserved. Bounds, confirmations, statuses, solver and trial schedules stay fixed."
+  }
+}

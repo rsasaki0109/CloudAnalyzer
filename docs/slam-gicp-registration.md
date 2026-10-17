@@ -110,3 +110,6 @@ records the frozen protocol and limits. Subsequent maps use the original
 captured poses. These local trial poses do not establish trajectory accuracy,
 physical observability or successful IMU initialization. Existing ICP,
 odometry, initialization gates and defaults are unchanged.
+
+An explicit [`GicpCycleGuard`](slam-gicp-cycles.md) can diagnose repeated outer
+states separately from convergence. It is disabled by default.

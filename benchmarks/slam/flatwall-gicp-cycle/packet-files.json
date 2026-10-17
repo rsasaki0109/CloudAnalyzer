@@ -1,0 +1,60 @@
+{
+  "files": {
+    "slice-protocol.json": {
+      "name": "slice-protocol.json",
+      "bytes": 5519,
+      "sha256": "10ce26d84084c49cba7870c9e03dc692e660c1bc247db0257132be38a3c96c9e"
+    },
+    "native-build-inputs.json": {
+      "name": "native-build-inputs.json",
+      "bytes": 13332,
+      "sha256": "20b9e3ee99fa16d33a04a8df2d0eb8745c49e9fef4a97721242bd44db8e4f74b"
+    },
+    "native-artifact.json": {
+      "name": "native-artifact.json",
+      "bytes": 759,
+      "sha256": "4fe39c944fbb2e2e9e424a9e5ee76760d3080f602d81f766cf06cfb714a9d013"
+    },
+    "prototype/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 17101,
+      "sha256": "8e364bef7f8ae73f66f3b04c05709b57a470d67f6b1d48d24da5e20bb9606c24"
+    },
+    "prototype/frames.json": {
+      "name": "frames.json",
+      "bytes": 11862,
+      "sha256": "acba22a6b6600ee32775a1ed4f6fc17abb7c5ea15b4893d852589afca9e2f59e"
+    },
+    "prototype/summary.json": {
+      "name": "summary.json",
+      "bytes": 265,
+      "sha256": "6ddd24adc3bfa478423a35a54205242175a74973adc675fd331b3ef0b485622a"
+    },
+    "prototype/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 713,
+      "sha256": "e634e4e3e13494e4af67a9fd33fc155f1b03b27339d5d8790406012daafcfd27"
+    },
+    "audit/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 18624,
+      "sha256": "5eb0c2060ec9caed59b6c264d212dc6e058d522bd9f2a7d1a5c20d37be791314"
+    },
+    "audit/frames.json": {
+      "name": "frames.json",
+      "bytes": 34970,
+      "sha256": "f62ec6adf10cb2444e889286483247c11840aba9a02e68b6c2f15fd73d3c73f0"
+    },
+    "audit/summary.json": {
+      "name": "summary.json",
+      "bytes": 796,
+      "sha256": "30e95d14a7cd9881421b0e5357c071a9678039054dbce2cecc9e51a6deb1fa83"
+    },
+    "audit/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 14731,
+      "sha256": "c949513536061dc1fa08265e4c717977cac5a471524435c8d67a93e6ccddbc87"
+    }
+  },
+  "scope": "Exact copied evidence bytes; raw real input/output arrays and native package remain private."
+}

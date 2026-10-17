@@ -1,0 +1,151 @@
+{
+  "prior_summary": "benchmarks/slam/flatwall-prediction-policy/summary.json",
+  "prior_summary_sha256": "f7fd5576f3fa60633161cae74fb67075527c3dc58795e28ba87cd93312d91963",
+  "cases": [
+    {
+      "recording": "flatwall_01",
+      "policy": "repeat-motion",
+      "arm": "raw-legacy",
+      "rigid_position_ape_m": 3.206249796395917,
+      "origin_position_ape_m": 7.250963976328305,
+      "consecutive_rpe_translation_m": 0.33093992106714554,
+      "consecutive_rpe_rotation_deg": 9.040502691968841
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "repeat-motion",
+      "arm": "gyro-legacy",
+      "rigid_position_ape_m": 2.2890947462359446,
+      "origin_position_ape_m": 3.8833156282903314,
+      "consecutive_rpe_translation_m": 0.27559330370727136,
+      "consecutive_rpe_rotation_deg": 7.331932243998003
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "repeat-motion",
+      "arm": "raw-0.1875",
+      "rigid_position_ape_m": 0.715796023055954,
+      "origin_position_ape_m": 3.6967756089876955,
+      "consecutive_rpe_translation_m": 0.13842888038486897,
+      "consecutive_rpe_rotation_deg": 4.282594620656812
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "repeat-motion",
+      "arm": "gyro-0.1875",
+      "rigid_position_ape_m": 1.483598865085861,
+      "origin_position_ape_m": 2.920571004253355,
+      "consecutive_rpe_translation_m": 0.5695638102312909,
+      "consecutive_rpe_rotation_deg": 23.65695461871857
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "last-pose",
+      "arm": "raw-legacy",
+      "rigid_position_ape_m": 0.7838529388242347,
+      "origin_position_ape_m": 3.1191374161015397,
+      "consecutive_rpe_translation_m": 0.16648888862915165,
+      "consecutive_rpe_rotation_deg": 4.033874470773796
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "last-pose",
+      "arm": "gyro-legacy",
+      "rigid_position_ape_m": 1.0756171060681787,
+      "origin_position_ape_m": 2.2510543614292122,
+      "consecutive_rpe_translation_m": 0.16861412589839972,
+      "consecutive_rpe_rotation_deg": 4.736594946760765
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "last-pose",
+      "arm": "raw-0.1875",
+      "rigid_position_ape_m": 0.7143409497597644,
+      "origin_position_ape_m": 4.865942807568413,
+      "consecutive_rpe_translation_m": 0.16221319888091495,
+      "consecutive_rpe_rotation_deg": 2.6228290410934516
+    },
+    {
+      "recording": "flatwall_01",
+      "policy": "last-pose",
+      "arm": "gyro-0.1875",
+      "rigid_position_ape_m": 1.7784265523865108,
+      "origin_position_ape_m": 6.303636692816478,
+      "consecutive_rpe_translation_m": 0.197195685150449,
+      "consecutive_rpe_rotation_deg": 2.689693202082092
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "repeat-motion",
+      "arm": "raw-legacy",
+      "rigid_position_ape_m": 2.3498074637984705,
+      "origin_position_ape_m": 4.748808535394135,
+      "consecutive_rpe_translation_m": 0.4911642201620212,
+      "consecutive_rpe_rotation_deg": 17.980887715684027
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "repeat-motion",
+      "arm": "gyro-legacy",
+      "rigid_position_ape_m": 2.944726357919946,
+      "origin_position_ape_m": 5.614771980880671,
+      "consecutive_rpe_translation_m": 0.3340666354677598,
+      "consecutive_rpe_rotation_deg": 7.891425575067738
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "repeat-motion",
+      "arm": "raw-0.1875",
+      "rigid_position_ape_m": 0.9437760207208042,
+      "origin_position_ape_m": 3.23654663078211,
+      "consecutive_rpe_translation_m": 0.11843633127676341,
+      "consecutive_rpe_rotation_deg": 4.240806091810064
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "repeat-motion",
+      "arm": "gyro-0.1875",
+      "rigid_position_ape_m": 1.2412841241837431,
+      "origin_position_ape_m": 2.502036510567924,
+      "consecutive_rpe_translation_m": 0.15630577742474597,
+      "consecutive_rpe_rotation_deg": 5.35929780508241
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "last-pose",
+      "arm": "raw-legacy",
+      "rigid_position_ape_m": 1.1160254432965284,
+      "origin_position_ape_m": 2.740426443203013,
+      "consecutive_rpe_translation_m": 0.15136059150459885,
+      "consecutive_rpe_rotation_deg": 3.3576722250314535
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "last-pose",
+      "arm": "gyro-legacy",
+      "rigid_position_ape_m": 1.073579397648487,
+      "origin_position_ape_m": 2.941642725601735,
+      "consecutive_rpe_translation_m": 0.15030469546178526,
+      "consecutive_rpe_rotation_deg": 3.5740584880380206
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "last-pose",
+      "arm": "raw-0.1875",
+      "rigid_position_ape_m": 1.6366500882904267,
+      "origin_position_ape_m": 5.980249826328751,
+      "consecutive_rpe_translation_m": 0.23347766378528023,
+      "consecutive_rpe_rotation_deg": 2.8683509603453734
+    },
+    {
+      "recording": "flatwall_02",
+      "policy": "last-pose",
+      "arm": "gyro-0.1875",
+      "rigid_position_ape_m": 1.7449214365829084,
+      "origin_position_ape_m": 6.158628507792508,
+      "consecutive_rpe_translation_m": 0.24492821601264952,
+      "consecutive_rpe_rotation_deg": 2.9055210296524345
+    }
+  ],
+  "interpretation": "Two different exploratory conditional cohorts; compare policies within each recording. No physical-calibration certificate, paired cross-recording population, winner adoption or statistical significance claim."
+}

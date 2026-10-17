@@ -15,6 +15,7 @@ pub mod gicp;
 pub mod gicp_cycle;
 pub mod gicp_registration;
 pub mod gicp_shapes;
+pub mod gicp_transported;
 pub mod ground;
 pub mod icp;
 pub mod imu;

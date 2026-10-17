@@ -1,0 +1,26 @@
+{
+  "histories": 72,
+  "statuses": {
+    "insufficient_correspondences": 8,
+    "converged_step": 22,
+    "no_descent": 42
+  },
+  "original_statuses": {
+    "insufficient_correspondences": 8,
+    "converged_step": 54,
+    "max_iterations": 10
+  },
+  "original_converged_new_statuses": {
+    "converged_step": 20,
+    "no_descent": 34
+  },
+  "original_limited_new_statuses": {
+    "no_descent": 8,
+    "converged_step": 2
+  },
+  "accepted_steps": 372,
+  "iterations": 444,
+  "same_or_lower_reported_final_cost": 58,
+  "rejected_support_changes": 0,
+  "scope": "Independent experimental residual-score optimizer with fixed budgets. Report all regressions; no physical accuracy/convergence recovery or native/default adoption claim."
+}

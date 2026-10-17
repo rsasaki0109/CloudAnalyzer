@@ -1,0 +1,10 @@
+{
+  "at_utc": "2026-10-17T03:09:16.184206+00:00",
+  "original_protocol_sha256": "9d3ed1b07f9cbd4dd6e77110dfe0750133782054f8a5123d8147d8e3bee6882f",
+  "original_summary_sha256": "4b82eeef67ee5269cb6f4f208fb513796a743e3783c3ad9dec81674609a1381b",
+  "rationale": "The first predeclared rematched-candidate variant produces42 no_descent histories, including34 originally converged cases. Test a separately declared continuous inner surrogate: hold all baseline source/target IDs and target shapes fixed, retransport source shapes at each trial. Source-metric gradient, SPD preconditioner, Armijo1e-4, six scales,30 iterations and tolerances stay identical. Rematch at the next outer baseline; no cross-surrogate monotonicity assertion. No result-driven grid/tolerance changes or native adoption yet.",
+  "source_sha256": "d3adbaa64f8d905e576c3736e2e5d4f52809567bbe07f567b45e1fc4aacc94eb",
+  "source_path": "scripts/gicp_transported_fixed_reference.py",
+  "controller_sha256": "5a1ca8133c57dd1e05e68ba9809a485899b701d4a28ada67ee96998732c002f9",
+  "controls": "Same numerical/frame/gradient controls required before any native implementation; compare all54 originally converged histories and all10 limited histories. Report regressions and all costs. A lower shape score is not an accuracy result."
+}

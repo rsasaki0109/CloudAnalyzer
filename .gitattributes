@@ -69,3 +69,7 @@ scripts/analyze_flatwall_gicp_transitions.py text eol=lf
 scripts/audit_flatwall_gicp_cycles.py text eol=lf
 scripts/audit_flatwall_gicp_cycle_guard.py text eol=lf
 benchmarks/slam/flatwall-gicp-cycle/** text eol=lf
+scripts/gicp_transported_reference.py text eol=lf
+scripts/gicp_transported_fixed_reference.py text eol=lf
+scripts/audit_flatwall_gicp_transported.py text eol=lf
+benchmarks/slam/flatwall-gicp-transported/** text eol=lf

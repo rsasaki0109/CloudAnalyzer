@@ -1,0 +1,34 @@
+{
+  "real_histories": 216,
+  "distinct_problems": 36,
+  "shape_families": 2,
+  "checked_gradient_baselines": 2018,
+  "checked_gradient_trials": 1710,
+  "checked_gradient_states": 3728,
+  "rematched_candidate_native_ID_checks": 944,
+  "max_independent_gradient_error": 1.836042429204099e-11,
+  "max_independent_metric_error": 1.836042429204099e-11,
+  "group_statuses": {
+    "original": {
+      "insufficient_correspondences": 8,
+      "converged_step": 54,
+      "max_iterations": 10
+    },
+    "rematched": {
+      "insufficient_correspondences": 8,
+      "converged_step": 22,
+      "no_descent": 42
+    },
+    "fixed": {
+      "insufficient_correspondences": 8,
+      "converged_step": 54,
+      "max_iterations": 10
+    }
+  },
+  "default_registrations_bit_equal": 72,
+  "cycle_enabled_registrations_bit_equal": 72,
+  "existing_frozen_factor_fields_bit_equal": true,
+  "serial_parallel_gradient_bits_equal": true,
+  "native_registration_policy_added": false,
+  "scope": "Unit-weight fixed-pair derivative validation and exact old regression. Experimental reference policies show regressions and are not native/default/frontend behavior. No physical accuracy, convergence repair or speed claim."
+}

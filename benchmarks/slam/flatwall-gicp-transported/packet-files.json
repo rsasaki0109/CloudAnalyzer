@@ -1,0 +1,90 @@
+{
+  "files": {
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 5054,
+      "sha256": "9d3ed1b07f9cbd4dd6e77110dfe0750133782054f8a5123d8147d8e3bee6882f"
+    },
+    "scope-decision.json": {
+      "name": "scope-decision.json",
+      "bytes": 4517,
+      "sha256": "7dd94d6d6e9f4e8d50a2105bd9e06cc818f82d34a4bb708b322f94b3c6853d83"
+    },
+    "native-build-inputs.json": {
+      "name": "native-build-inputs.json",
+      "bytes": 13451,
+      "sha256": "b5b0f84737964141803176d3f912f313df40dce645ce26439a8222d6d5475271"
+    },
+    "native-artifact.json": {
+      "name": "native-artifact.json",
+      "bytes": 759,
+      "sha256": "7c001fbb1d0408a77b499839079c56bd1f50590c9c830a12b882a7fb9e46eaea"
+    },
+    "fixed-variant-protocol.json": {
+      "name": "fixed-variant-protocol.json",
+      "bytes": 1295,
+      "sha256": "1cced6ca0464c774ded97f8a46673bd590f9b8118457f8516bf8847b0cb73378"
+    },
+    "rematched/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 18218,
+      "sha256": "12fd460836b9ee83535b31afd1d3b86e383ef81a59d6f3fe6764fc85c1b66f53"
+    },
+    "rematched/frames.json": {
+      "name": "frames.json",
+      "bytes": 30704,
+      "sha256": "1b603b605768dcb22beb423eba138f0058707571ba966f5103c3c9eac1608c54"
+    },
+    "rematched/summary.json": {
+      "name": "summary.json",
+      "bytes": 733,
+      "sha256": "4b82eeef67ee5269cb6f4f208fb513796a743e3783c3ad9dec81674609a1381b"
+    },
+    "rematched/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 9322,
+      "sha256": "0df00e0f63c83eff38a3cb20cda6864306ff7577fecb2e31b1efe5f401e987c8"
+    },
+    "fixed/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 18230,
+      "sha256": "2cb7d7340a095ddcf1cbff7339df2f9efd4980253186e45cda46d57af9fdfbc3"
+    },
+    "fixed/frames.json": {
+      "name": "frames.json",
+      "bytes": 30882,
+      "sha256": "505cf4f97195a83cd0b60a60f3e5266c74fdd5acc60607dfddf24c31f53f2014"
+    },
+    "fixed/summary.json": {
+      "name": "summary.json",
+      "bytes": 744,
+      "sha256": "a3f5e12ea3259fe366cef3a79569072cbba140f6cb92660aa4b05334307cf317"
+    },
+    "fixed/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 9334,
+      "sha256": "f44b699bb5ade4998fb5d8fdeb58847c25877e5ce0c6217d0ddeed1ab4dea476"
+    },
+    "audit/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 66007,
+      "sha256": "91f2b25953a1d12cc45537d72e6b37cb5ab1a34636b7885557af4e16f06ab2e1"
+    },
+    "audit/frames.json": {
+      "name": "frames.json",
+      "bytes": 60376,
+      "sha256": "fde506686675e75d8e14ae8eabfd9b5cfe00b3e944a2d98671303d119d548726"
+    },
+    "audit/summary.json": {
+      "name": "summary.json",
+      "bytes": 1200,
+      "sha256": "07f65d61ddb19bd8eb0f186d882780b3cc43468fb24cb7648628b78c0d12ede6"
+    },
+    "audit/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1081,
+      "sha256": "56279d45d4b0f85e7e0b0f9c8b451e303c36798b74bd1f64872a2036d620d8db"
+    }
+  },
+  "scope": "Exact report bytes; all raw real inputs, captured optimizer arrays, detailed native states and complete private native package remain private."
+}

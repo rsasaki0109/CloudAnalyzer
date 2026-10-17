@@ -155,6 +155,14 @@ pub(crate) fn gicp_linearization<'py>(
     let result = py
         .detach(|| ca_core::gicp::linearize(&pairs, &pose, center, parallel))
         .map_err(|error| PyValueError::new_err(error.to_string()))?;
+    linearization_dict(py, result)
+}
+
+fn linearization_dict<'py>(
+    py: Python<'py>,
+    result: ca_core::gicp::GicpLinearization,
+) -> PyResult<Bound<'py, PyDict>> {
+    let n = result.source_world.len();
     let out = PyDict::new(py);
     out.set_item(
         "normal_matrix",
@@ -187,6 +195,65 @@ pub(crate) fn gicp_linearization<'py>(
     out.set_item(
         "mahalanobis_squared",
         result.mahalanobis_squared.into_pyarray(py),
+    )?;
+    Ok(out)
+}
+
+/// Explicit unit-weight transported-shape gradient at declared fixed pairs.
+/// No matching, solver, robust-weight derivative or state update.
+#[pyfunction]
+#[pyo3(signature = (source, target, source_shapes, target_shapes, pose, center_world, *, parallel=false))]
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn gicp_transported_linearization<'py>(
+    py: Python<'py>,
+    source: PyReadonlyArray2<f64>,
+    target: PyReadonlyArray2<f64>,
+    source_shapes: PyReadonlyArray3<f64>,
+    target_shapes: PyReadonlyArray3<f64>,
+    pose: PyReadonlyArray2<f64>,
+    center_world: PyReadonlyArray1<f64>,
+    parallel: bool,
+) -> PyResult<Bound<'py, PyDict>> {
+    let source = crate::points(&source)?;
+    let target = crate::points(&target)?;
+    if target.len() != source.len() {
+        return Err(PyValueError::new_err(
+            "target needs one point per source point",
+        ));
+    }
+    let n = source.len();
+    let source_shapes = shapes(&source_shapes, n, "source_shapes")?;
+    let target_shapes = shapes(&target_shapes, n, "target_shapes")?;
+    let pose = rigid(&pose)?;
+    if center_world.shape() != [3] {
+        return Err(PyValueError::new_err("center_world needs shape (3,)"));
+    }
+    let c = center_world.as_array();
+    let center = [c[0], c[1], c[2]];
+    let pairs: Vec<_> = (0..n)
+        .map(|i| Correspondence {
+            source: source[i],
+            target: target[i],
+            source_shape: source_shapes[i],
+            target_shape: target_shapes[i],
+            weight: 1.,
+        })
+        .collect();
+    let result = py
+        .detach(|| ca_core::gicp_transported::linearize(&pairs, &pose, center, parallel))
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let out = linearization_dict(py, result.frozen)?;
+    out.set_item(
+        "metric_gradient_rotation",
+        result.metric_gradient_rotation.to_vec().into_pyarray(py),
+    )?;
+    out.set_item(
+        "objective_gradient",
+        result.objective_gradient.to_vec().into_pyarray(py),
+    )?;
+    out.set_item(
+        "objective_right_hand_side",
+        result.objective_right_hand_side.to_vec().into_pyarray(py),
     )?;
     Ok(out)
 }

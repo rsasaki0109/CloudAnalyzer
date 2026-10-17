@@ -747,6 +747,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PreparedMesh>()?;
     m.add_function(wrap_pyfunction!(icp, m)?)?;
     m.add_function(wrap_pyfunction!(gicp::gicp_linearization, m)?)?;
+    m.add_function(wrap_pyfunction!(gicp::gicp_transported_linearization, m)?)?;
     m.add_function(wrap_pyfunction!(gicp::gicp_frozen_cost, m)?)?;
     m.add_function(wrap_pyfunction!(gicp::gicp_register, m)?)?;
     m.add_function(wrap_pyfunction!(gicp::gicp_shapes, m)?)?;

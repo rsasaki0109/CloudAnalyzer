@@ -1,0 +1,62 @@
+{
+  "at_utc": "2026-10-17T03:11:16.004684+00:00",
+  "original_protocol_sha256": "9d3ed1b07f9cbd4dd6e77110dfe0750133782054f8a5123d8147d8e3bee6882f",
+  "rematched_summary": {
+    "histories": 72,
+    "statuses": {
+      "insufficient_correspondences": 8,
+      "converged_step": 22,
+      "no_descent": 42
+    },
+    "original_statuses": {
+      "insufficient_correspondences": 8,
+      "converged_step": 54,
+      "max_iterations": 10
+    },
+    "original_converged_new_statuses": {
+      "converged_step": 20,
+      "no_descent": 34
+    },
+    "original_limited_new_statuses": {
+      "no_descent": 8,
+      "converged_step": 2
+    },
+    "accepted_steps": 372,
+    "iterations": 444,
+    "same_or_lower_reported_final_cost": 58,
+    "rejected_support_changes": 0,
+    "scope": "Independent experimental residual-score optimizer with fixed budgets. Report all regressions; no physical accuracy/convergence recovery or native/default adoption claim."
+  },
+  "fixed_summary": {
+    "histories": 72,
+    "statuses": {
+      "insufficient_correspondences": 8,
+      "converged_step": 54,
+      "max_iterations": 10
+    },
+    "original_statuses": {
+      "insufficient_correspondences": 8,
+      "converged_step": 54,
+      "max_iterations": 10
+    },
+    "original_converged_new_statuses": {
+      "converged_step": 48,
+      "max_iterations": 6
+    },
+    "original_limited_new_statuses": {
+      "max_iterations": 4,
+      "converged_step": 6
+    },
+    "accepted_steps": 764,
+    "iterations": 826,
+    "same_or_lower_reported_final_cost": 52,
+    "rejected_support_changes": 0,
+    "scope": "Independent experimental residual-score optimizer with fixed budgets. Report all regressions; no physical accuracy/convergence recovery or native/default adoption claim."
+  },
+  "decision": "Do not implement either experimental registration policy in the native/default/frontend path. Rematched trials regress34 originally converged histories to no_descent; held-ID trials exchange six converged/limited histories in each direction and require more accepted steps. Lower residual score alone is not evidence of better physical alignment.",
+  "native_scope": "Add only an independent explicit unit-weight gicp_transported_linearization API. Return the unchanged frozen factor fields plus metric_gradient_rotation, objective_gradient and objective_right_hand_side. Keep normal_matrix/right_hand_side as the frozen definitions; the normal matrix is not claimed to be the exact transported Hessian. No registration params, solver, trial, convergence, cycle guard or frontend behavior changes.",
+  "core_contract": "gicp_transported::linearize(pairs,pose,center,parallel) first calls unchanged gicp::linearize for all original validation/results. Then require every external weight exactly1 in input order. Compute C^-1r with Cholesky backsubstitution, canonical source-shape transport and e cross(S e) per row. Validate finite contributions and ordered accumulation. Parallel row work must retain all serial output/error bits; original factor and registration paths never call it implicitly.",
+  "python_contract": "gicp_transported_linearization(source,target,source_shapes,target_shapes,pose,center_world,*,parallel=False). Explicit pairs and unit weights; no robust parameter, correspondence search, state update, covariance calibration or likelihood/log-determinant claim. Arrays and output ownership follow original factor. Shared serializer may be factored verbatim without changing existing dictionary fields or bits.",
+  "tests": "Closed-form9/22 gradient, isotropic source zero metric gradient, independent finite differences on all6 components, world/source basis+origin+lever arm controls, strict input/shape/proper-pose/first error and numerical overflow, strided/owned outputs, empty pairs, exact parallel bits. Real native vs independent gradient on all686 old accepted baselines and all new prototype baselines/finite trial states, default72 and cycle-enabled72 frozen bit regressions, complete native suite and existing660/185 motion/frontend regressions.",
+  "publication": "Publish both rejected policy prototypes and full outcome comparison as audit/reference controllers, not production algorithms. Explicitly disclose34 original convergence regressions in rematched trials and6-to-6 swap in fixed trials, allsame30 iterations/tolerances/six scales. No claim of convergence recovery, physical accuracy or acceleration. Preserve original protocols/source/results and use additive paths for any correction."
+}

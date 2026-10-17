@@ -1,0 +1,36 @@
+{
+  "controller": {
+    "name": "audit_flatwall_gicp_transported.py",
+    "bytes": 10233,
+    "sha256": "d50b49173a36cbbffb64e7f1814162948483f728f3dc095afe00f3c28b99b31c"
+  },
+  "native": {
+    "name": "_core.pyd",
+    "bytes": 7863808,
+    "sha256": "8f8d7213ce4067f9c322ff6dba4be9ac5c7fe4f2da3413d1a0fa9a3760ea5fd2"
+  },
+  "frozen_input_artifacts_unchanged": 322,
+  "outputs": {
+    "frames.json": {
+      "name": "frames.json",
+      "bytes": 60376,
+      "sha256": "fde506686675e75d8e14ae8eabfd9b5cfe00b3e944a2d98671303d119d548726"
+    },
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 66007,
+      "sha256": "91f2b25953a1d12cc45537d72e6b37cb5ab1a34636b7885557af4e16f06ab2e1"
+    },
+    "states.json": {
+      "name": "states.json",
+      "bytes": 2608401,
+      "sha256": "83675197e557333b469e34f6987b47953ee9df44fd2b43f3833c481e42fe7ceb"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 1200,
+      "sha256": "07f65d61ddb19bd8eb0f186d882780b3cc43468fb24cb7648628b78c0d12ede6"
+    }
+  },
+  "no_registration_policy_added": true
+}

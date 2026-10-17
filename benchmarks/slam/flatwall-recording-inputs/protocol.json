@@ -1,0 +1,39 @@
+{
+  "schema": "cloudanalyzer.flatwall_input_inspection.v1",
+  "frozen_at_utc": "2026-10-17T11:28:01.382099+00:00",
+  "base_commit": "9100ec0336e07a520088cc8561a159b256bcb2fa",
+  "recordings": {
+    "flatwall_01": "notes/slam-flatwall-inputs-20261016/flatwall_01.bag",
+    "flatwall_02": "notes/slam-flatwall-input-provenance-20261017/acquisition-attempt-01/flatwall_02.bag"
+  },
+  "acquisition_protocol_sha256": "fb65af0d52745ff14ef1e0803da2e3b4434a43540dfdb6ed5026b54ef0d5d824",
+  "scope": "Full real input/connection inspection only. No estimator, reference archive access, parameter search, clock/extrinsic fit, score, native rebuild, default change or performance claim.",
+  "selection": "01 is the prior recording; 02 was fixed by next ordinal before full reference parsing. All eight reference prefixes were historically exposed; future evaluation remains exploratory.",
+  "source_evidence": "Author Flatwall sensor configuration, SDK LivoxImuPoint units and ROS driver direct field transfer are separate evidence classes. Current pinned generic driver source is not proof of this replay recording producer version.",
+  "time_policy": "Retain every original scan/point order. Independently compare CustomMsg coordinates, reflectivity, tag, line and offset_time with PointCloud2. Report integer CustomMsg timebase separately from the rounded ROS header; do not replace prior header-plus-t estimates.",
+  "coverage_policy": {
+    "maximum_imu_gap_ns": 50000000,
+    "endpoints_inclusive": true,
+    "no_extrapolation": true,
+    "every_intersected_imu_interval_checked": true,
+    "both_origins_reported": [
+      "header",
+      "timebase"
+    ],
+    "no_reference_used_for_selection": true,
+    "excluded_scans_retained": true
+  },
+  "native_package": "notes/slam-gicp-transported-20261017/native/cloudanalyzer_core",
+  "native_binary_sha256": "8f8d7213ce4067f9c322ff6dba4be9ac5c7fe4f2da3413d1a0fa9a3760ea5fd2",
+  "native_checks": "All finite XYZ/header-plus-t point timestamps and every raw IMU timestamp/vector/frame, exactly against independent rosbags decoding. Unit-sounding native field names do not rescale raw vendor data.",
+  "packages": {
+    "numpy": "2.3.4",
+    "scipy": "1.17.1",
+    "rosbags": "0.11.3",
+    "lz4": "4.4.5",
+    "zstandard": "0.25.0"
+  },
+  "failures": "Abort on source/point/timestamp/frame mismatch; preserve failure output and prior evidence. No truncation or reference-driven repair.",
+  "physical_calibration_certified": false,
+  "reference_provenance": "Author calls it LiDAR ground truth and describes PTP plus LiDAR-camera calibration. Archive-specific pose/clock convention remains unresolved; a configured identity LiDAR/IMU transform does not certify physical calibration."
+}

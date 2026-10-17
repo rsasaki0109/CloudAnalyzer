@@ -1,0 +1,11 @@
+{
+  "creator": "Kenji Koide, AIST",
+  "dataset": "LiDAR Degeneration Test Dataset (Flatwall experiment), v2",
+  "doi": "10.5281/zenodo.7641866",
+  "source": "https://zenodo.org/records/7641866",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "derivatives": "Per-scan metadata, connection summaries and complete original IMU header/vector/sequence arrays decoded from the original recordings, plus derived timing, norm and coverage summaries. No reference trajectories or original point payloads are redistributed in this packet.",
+  "imu_array_units": "raw_angular_velocity and raw_linear_acceleration retain original numeric fields, with no scaling, fitting, bias subtraction or coordinate transform. Manufacturer and author evidence supports rad/s and g respectively; values are not a physical calibration certificate.",
+  "reference_exposure": "All eight reference member prefixes were historically read; full 01 was already evaluated. No reference archive read in this input-only stage, and full 02 remains unopened. This is not blind/held-out preparation."
+}

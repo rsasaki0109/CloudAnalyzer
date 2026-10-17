@@ -98,3 +98,8 @@ cloudanalyzer/tests/test_flatwall_prediction_policy_packet.py text eol=lf
 benchmarks/slam/flatwall-prediction-policy/** text eol=lf
 benchmarks/slam/flatwall-prediction-policy/*.png binary
 benchmarks/slam/flatwall-prediction-policy/**/*.npz binary
+scripts/audit_flatwall_recording_inputs.py text eol=lf
+cloudanalyzer/tests/test_flatwall_recording_inputs.py text eol=lf
+cloudanalyzer/tests/test_flatwall_recording_inputs_packet.py text eol=lf
+benchmarks/slam/flatwall-recording-inputs/** text eol=lf
+benchmarks/slam/flatwall-recording-inputs/**/*.npz binary

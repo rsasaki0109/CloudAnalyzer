@@ -1,0 +1,91 @@
+{
+  "schema": "cloudanalyzer.flatwall_recording_inputs_packet.v1",
+  "recordings": {
+    "flatwall_01": {
+      "scans": 186,
+      "finite_points": 4464000,
+      "imu": {
+        "count": 3755,
+        "first_ns": 1656505431202246666,
+        "last_ns": 1656505449799885511,
+        "duration_ns": 18597638845,
+        "minimum_delta_ns": 1018524,
+        "median_delta_ns": 4998684.0,
+        "maximum_delta_ns": 5128860,
+        "gaps_over_50ms": 0
+      },
+      "header_minus_timebase_ns": {
+        "min": -233,
+        "max": 209,
+        "nonzero": 184
+      },
+      "coverage_counts": {
+        "header": {
+          "outside_imu_range": 1,
+          "covered": 185
+        },
+        "timebase": {
+          "outside_imu_range": 1,
+          "covered": 185
+        }
+      }
+    },
+    "flatwall_02": {
+      "scans": 137,
+      "finite_points": 3288000,
+      "imu": {
+        "count": 2775,
+        "first_ns": 1656505449804849863,
+        "last_ns": 1656505463497565985,
+        "duration_ns": 13692716122,
+        "minimum_delta_ns": 997544,
+        "median_delta_ns": 4997849.5,
+        "maximum_delta_ns": 5126238,
+        "gaps_over_50ms": 0
+      },
+      "header_minus_timebase_ns": {
+        "min": -218,
+        "max": 222,
+        "nonzero": 136
+      },
+      "coverage_counts": {
+        "header": {
+          "outside_imu_range": 2,
+          "covered": 135
+        },
+        "timebase": {
+          "outside_imu_range": 2,
+          "covered": 135
+        }
+      }
+    }
+  },
+  "checkout_sources_sha256": {
+    "scripts/audit_flatwall_recording_inputs.py": "70d54e7be4a52f5f9a72e4bb8f3c980248a8c614d1a2e7908bbf6f6474fd84b1",
+    "cloudanalyzer/tests/test_flatwall_recording_inputs.py": "880aa212bd856e1b898adec71f9bd2c83d6a524c87eab0b3020207edf8d3cf94"
+  },
+  "files_sha256": {
+    "acquisition-protocol.json": "fb65af0d52745ff14ef1e0803da2e3b4434a43540dfdb6ed5026b54ef0d5d824",
+    "additional-download-attempt.json": "351aed74b5976aebf09ab989ddbc04c56979fdf978377361e8b8887f50334faf",
+    "attribution.json": "99d99ccf5e31ccce70e9b56ea1d278010f953a36be52a094928dd6ad30b9e4c2",
+    "controller-freeze.json": "cdfba605eb48ce07c9a0c1e326b11d263e3acbd5ddd1d8ce5b68f624295487bf",
+    "flatwall_01/imu.npz": "fc6db6d0af422d4693483fb41c80b3363ac69a5f366aca6b1c25865d866e1cd2",
+    "flatwall_01/metadata.json": "088a1309fd66aa4b731b4f428e3ee9a5afd451db855b312afa8fbcc5574efaaa",
+    "flatwall_01/scans.json": "4f8dcdbe7ec493e133e499095a0455ef4af8f98cca4f2a0b4607b57e90029aed",
+    "flatwall_01/summary.json": "536a35b6545ed994f2947dc9eb57dedf7e66dd74d8768e9695c0eadf514dab39",
+    "flatwall_02/imu.npz": "3f83a7d1a5c70b7728161af75779bbd968cfea95501e0f8b99bd172922ea312b",
+    "flatwall_02/metadata.json": "d9fcaba3210b6caef14dc8a05e4b9ceacbea7fe693c222eeef403f9a9b73c02c",
+    "flatwall_02/scans.json": "b54d07d43ffa8f292d38bec2c525e35e2c878249f19de12efb3e744ce0664712",
+    "flatwall_02/summary.json": "11f00251975b9221bc7543ed127b2d38f418afcef41b345efbff5f9e77e4d566",
+    "inspection-receipt.json": "cca06f6c5f003d3f4c386c188efb6378f8b0f1e83270ebc1c896a1e0f52aa7c9",
+    "primary-source-addendum.json": "7bbaf475f56220a8ac5c86ed6b87c3146efea92f579987b437d71c52a0efdea6",
+    "primary-source-receipts.json": "c23bfca50be5d34edb42aef7e51f09c162cd8f4c764e216ee0bb1fc15cd14aeb",
+    "protocol.json": "fe3c0fb977ed2b59ae0eee1a2a490b5abff362d1dd59fc31084ef69bce245b8f",
+    "provenance.json": "40738699716dba8d50b13770eb267def94350e2fc67e239ba2e6819a13f5a617",
+    "recording-acquisition.json": "77586d5760346e426581cc7cb6b3760bd68566919d15c981047b8f344e89ebb3",
+    "source-snapshot/cloudanalyzer/tests/test_flatwall_recording_inputs.py": "880aa212bd856e1b898adec71f9bd2c83d6a524c87eab0b3020207edf8d3cf94",
+    "source-snapshot/scripts/audit_flatwall_recording_inputs.py": "70d54e7be4a52f5f9a72e4bb8f3c980248a8c614d1a2e7908bbf6f6474fd84b1",
+    "verify.py": "decc90b24386eb150074c5e52e34a0087565aab26b6e3fd1f0fa25742d564ed4"
+  },
+  "scope": "A reproducible input-accounting packet. Verification checks published arrays, scan timing and receipt consistency; it does not replay raw point comparisons or certify physical calibration."
+}

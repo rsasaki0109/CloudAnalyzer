@@ -1,0 +1,24 @@
+{
+  "at_utc": "2026-10-17T11:08:25.161973+00:00",
+  "repo": "Livox-SDK/livox_ros_driver",
+  "commit": "3d240d5666129e1a3052e78ee8487a04b08fdda3",
+  "reason": "The first requested nested lddc.cpp path returned 404. That failure is preserved. Correct paths come from the preserved pinned repository tree.",
+  "controller_sha256": "e5d18f90470d3e3637df354a94bc12786f520c27549922b7840e6ad4c9c62930",
+  "files": {
+    "livox_ros_driver/livox_ros_driver/lddc.cpp": {
+      "url": "https://raw.githubusercontent.com/Livox-SDK/livox_ros_driver/3d240d5666129e1a3052e78ee8487a04b08fdda3/livox_ros_driver/livox_ros_driver/lddc.cpp",
+      "bytes": 23554,
+      "sha256": "345b85c22536c56ddc64685f1d68e2f261f08c6222851283e4326118977d64df"
+    },
+    "livox_ros_driver/msg/CustomPoint.msg": {
+      "url": "https://raw.githubusercontent.com/Livox-SDK/livox_ros_driver/3d240d5666129e1a3052e78ee8487a04b08fdda3/livox_ros_driver/msg/CustomPoint.msg",
+      "bytes": 353,
+      "sha256": "b64b31a8edc8c8b3765d82b5d3ccd2d2e1f217b9525ef7007ab918674c619c59"
+    },
+    "livox_ros_driver/msg/CustomMsg.msg": {
+      "url": "https://raw.githubusercontent.com/Livox-SDK/livox_ros_driver/3d240d5666129e1a3052e78ee8487a04b08fdda3/livox_ros_driver/msg/CustomMsg.msg",
+      "bytes": 341,
+      "sha256": "4616a88cf3f8b2d545ec1cfa223c6054d59dbdbd267c53fe9cef4f44c58ef2e1"
+    }
+  }
+}

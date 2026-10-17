@@ -1,0 +1,218 @@
+{
+  "at_utc": "2026-10-17T11:06:44.343549+00:00",
+  "controller_sha256": "226a69cbaa03017c4b90a569fcb496c255101afb7a8d77b88e17cbe327a96d79",
+  "sources": {
+    "author-flatwall.html": {
+      "url": "https://staff.aist.go.jp/k.koide/projects/glimsupp/flatwall.html",
+      "resolved_url": "https://staff.aist.go.jp/k.koide/projects/glimsupp/flatwall.html",
+      "retrieved_at_utc": "2026-10-17T11:06:39.210118+00:00",
+      "completed_at_utc": "2026-10-17T11:06:39.387201+00:00",
+      "bytes": 17777,
+      "sha256": "15320dfad4676a0742efde4538e4bc46e5ff47517d76930ab492715d46aef061",
+      "headers": {
+        "Last-Modified": "Tue, 09 Jun 2026 01:39:20 GMT",
+        "Content-Length": "17777",
+        "Content-Type": "text/html"
+      }
+    },
+    "author-config-flatwall.tar.gz": {
+      "url": "https://staff.aist.go.jp/k.koide/projects/glim_params/config_flatwall.tar.gz",
+      "resolved_url": "https://staff.aist.go.jp/k.koide/projects/glim_params/config_flatwall.tar.gz",
+      "retrieved_at_utc": "2026-10-17T11:06:39.415243+00:00",
+      "completed_at_utc": "2026-10-17T11:06:39.498052+00:00",
+      "bytes": 3597,
+      "sha256": "0a1a5a206ea24ad109207b3767510c74b89f878b77958cc1e5f75621127af63b",
+      "headers": {
+        "Last-Modified": "Tue, 09 Jun 2026 01:39:21 GMT",
+        "Content-Length": "3597",
+        "Content-Type": "application/x-gzip"
+      }
+    },
+    "glim-paper-v1.html": {
+      "url": "https://arxiv.org/html/2407.10344v1",
+      "resolved_url": "https://arxiv.org/html/2407.10344v1",
+      "retrieved_at_utc": "2026-10-17T11:06:39.505421+00:00",
+      "completed_at_utc": "2026-10-17T11:06:39.676796+00:00",
+      "bytes": 467695,
+      "sha256": "5ddd412cf847e95d8d8fd65a1536b4aed4c39cf400844d38f31c563f4b357d04",
+      "headers": {
+        "Content-Length": "467695",
+        "content-type": "text/html; charset=utf-8",
+        "etag": "\"CMaRi5z6uZYDEAE=\"",
+        "last-modified": "Mon, 24 Aug 2026 19:03:16 GMT"
+      }
+    },
+    "livox-sdk": {
+      "repo": "Livox-SDK/Livox-SDK",
+      "commit": "9306596a2bf15c1343bc023b497465ed0a32909d",
+      "commit_receipt": {
+        "url": "https://api.github.com/repos/Livox-SDK/Livox-SDK/commits/HEAD",
+        "resolved_url": "https://api.github.com/repos/Livox-SDK/Livox-SDK/commits/HEAD",
+        "retrieved_at_utc": "2026-10-17T11:06:39.712757+00:00",
+        "completed_at_utc": "2026-10-17T11:06:40.056438+00:00",
+        "bytes": 6014,
+        "sha256": "718cc8d8ce332e74dff04a26f04ef87d5373d8efebe87a9f1f76fb400afec7e2",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "ETag": "W/\"718cc8d8ce332e74dff04a26f04ef87d5373d8efebe87a9f1f76fb400afec7e2\"",
+          "Last-Modified": "Mon, 06 Sep 2021 02:52:21 GMT",
+          "Content-Length": "6014"
+        }
+      },
+      "tree_receipt": {
+        "url": "https://api.github.com/repos/Livox-SDK/Livox-SDK/git/trees/9306596a2bf15c1343bc023b497465ed0a32909d?recursive=1",
+        "resolved_url": "https://api.github.com/repos/Livox-SDK/Livox-SDK/git/trees/9306596a2bf15c1343bc023b497465ed0a32909d?recursive=1",
+        "retrieved_at_utc": "2026-10-17T11:06:40.077299+00:00",
+        "completed_at_utc": "2026-10-17T11:06:40.412576+00:00",
+        "bytes": 49950,
+        "sha256": "cb0af7315ee4925d992a541295f0580804487da3d09138b312eb49a305fc67d5",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "ETag": "W/\"cb0af7315ee4925d992a541295f0580804487da3d09138b312eb49a305fc67d5\"",
+          "Last-Modified": "Fri, 02 Oct 2026 09:19:09 GMT"
+        }
+      },
+      "files": {
+        "sdk_core/include/livox_def.h": {
+          "url": "https://raw.githubusercontent.com/Livox-SDK/Livox-SDK/9306596a2bf15c1343bc023b497465ed0a32909d/sdk_core/include/livox_def.h",
+          "resolved_url": "https://raw.githubusercontent.com/Livox-SDK/Livox-SDK/9306596a2bf15c1343bc023b497465ed0a32909d/sdk_core/include/livox_def.h",
+          "retrieved_at_utc": "2026-10-17T11:06:40.428763+00:00",
+          "completed_at_utc": "2026-10-17T11:06:40.722931+00:00",
+          "bytes": 33423,
+          "sha256": "de5e601b5f2e9cdc8afcd7f5ce56d7e8184db1d5b694c4981db38b151757a5c8",
+          "headers": {
+            "Content-Length": "33423",
+            "Content-Type": "text/plain; charset=utf-8",
+            "ETag": "\"d5c50a70252784cb0e20fa346088cb7c053eda1c48e14e920a3bdef8f89476be\""
+          }
+        }
+      },
+      "scope": "Generic current pinned upstream source; not the unidentified recording producer build."
+    },
+    "livox-ros-driver": {
+      "repo": "Livox-SDK/livox_ros_driver",
+      "error_type": "HTTPError",
+      "error": "HTTP Error 404: Not Found"
+    },
+    "glim": {
+      "repo": "koide3/glim",
+      "commit": "1a197c999e4865f5cab7c9cd25474128413ebbca",
+      "commit_receipt": {
+        "url": "https://api.github.com/repos/koide3/glim/commits/HEAD",
+        "resolved_url": "https://api.github.com/repos/koide3/glim/commits/HEAD",
+        "retrieved_at_utc": "2026-10-17T11:06:41.688744+00:00",
+        "completed_at_utc": "2026-10-17T11:06:42.081899+00:00",
+        "bytes": 5731,
+        "sha256": "5109192a402bd172b9a141f37a00a5fc2dd6661ee7c65259ad1d694d3f4b13bc",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "ETag": "W/\"5109192a402bd172b9a141f37a00a5fc2dd6661ee7c65259ad1d694d3f4b13bc\"",
+          "Last-Modified": "Thu, 08 Oct 2026 00:28:49 GMT",
+          "Content-Length": "5731"
+        }
+      },
+      "tree_receipt": {
+        "url": "https://api.github.com/repos/koide3/glim/git/trees/1a197c999e4865f5cab7c9cd25474128413ebbca?recursive=1",
+        "resolved_url": "https://api.github.com/repos/koide3/glim/git/trees/1a197c999e4865f5cab7c9cd25474128413ebbca?recursive=1",
+        "retrieved_at_utc": "2026-10-17T11:06:42.101724+00:00",
+        "completed_at_utc": "2026-10-17T11:06:42.425118+00:00",
+        "bytes": 61774,
+        "sha256": "70e58e254f3761b5757c50f470b58a47c56e1c053513ba18f036c98d55614395",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "ETag": "W/\"70e58e254f3761b5757c50f470b58a47c56e1c053513ba18f036c98d55614395\"",
+          "Last-Modified": "Sat, 17 Oct 2026 04:37:25 GMT"
+        }
+      },
+      "files": {
+        "config/config_sensors.json": {
+          "url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/config/config_sensors.json",
+          "resolved_url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/config/config_sensors.json",
+          "retrieved_at_utc": "2026-10-17T11:06:42.439342+00:00",
+          "completed_at_utc": "2026-10-17T11:06:42.728916+00:00",
+          "bytes": 4240,
+          "sha256": "5b8fe74971e449f64502910c046889e09af8708cf1d755c4f7ebf54f63c97fda",
+          "headers": {
+            "Content-Length": "4240",
+            "Content-Type": "text/plain; charset=utf-8",
+            "ETag": "\"e0b32fca211e61635ea3d9717d7c318fef1e342975d448b99b6cfb8c4c616426\""
+          }
+        },
+        "docs/parameters.md": {
+          "url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/docs/parameters.md",
+          "resolved_url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/docs/parameters.md",
+          "retrieved_at_utc": "2026-10-17T11:06:42.741152+00:00",
+          "completed_at_utc": "2026-10-17T11:06:43.005083+00:00",
+          "bytes": 5267,
+          "sha256": "8621b53ee6804bc3015153ceb5861d2a9eed992c0cb000c9dfe82c0e3b3a55ba",
+          "headers": {
+            "Content-Length": "5267",
+            "Content-Type": "text/plain; charset=utf-8",
+            "ETag": "\"10e36d43830d8e9dbbaa5e6975bf98176e06d7104e42c513426e6189765d5256\""
+          }
+        },
+        "include/glim/util/config.hpp": {
+          "url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/include/glim/util/config.hpp",
+          "resolved_url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/include/glim/util/config.hpp",
+          "retrieved_at_utc": "2026-10-17T11:06:43.024067+00:00",
+          "completed_at_utc": "2026-10-17T11:06:43.296597+00:00",
+          "bytes": 4298,
+          "sha256": "97fcd73306113d2646c0e281f42d00505865336b95d133b5e24818f3a8c1e4cf",
+          "headers": {
+            "Content-Length": "4298",
+            "Content-Type": "text/plain; charset=utf-8",
+            "ETag": "\"d1284cefb270242bdfe754e1a1de720d92a9ed8ed654e6505b1e5bce47065962\""
+          }
+        }
+      },
+      "scope": "Generic current pinned upstream source; not the unidentified recording producer build."
+    },
+    "ros-common-msgs": {
+      "repo": "ros/common_msgs",
+      "commit": "092bc230c8153dd4cfee0c84c9796cc7e6b09fdb",
+      "commit_receipt": {
+        "url": "https://api.github.com/repos/ros/common_msgs/commits/HEAD",
+        "resolved_url": "https://api.github.com/repos/ros/common_msgs/commits/HEAD",
+        "retrieved_at_utc": "2026-10-17T11:06:43.308001+00:00",
+        "completed_at_utc": "2026-10-17T11:06:43.687095+00:00",
+        "bytes": 4015,
+        "sha256": "3e3a598e7df9980ed6d21fe8cd41b17e29fff63d45e17b689296e956f700c7c5",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "ETag": "W/\"3e3a598e7df9980ed6d21fe8cd41b17e29fff63d45e17b689296e956f700c7c5\"",
+          "Last-Modified": "Sat, 31 May 2025 16:56:17 GMT",
+          "Content-Length": "4015"
+        }
+      },
+      "tree_receipt": {
+        "url": "https://api.github.com/repos/ros/common_msgs/git/trees/092bc230c8153dd4cfee0c84c9796cc7e6b09fdb?recursive=1",
+        "resolved_url": "https://api.github.com/repos/ros/common_msgs/git/trees/092bc230c8153dd4cfee0c84c9796cc7e6b09fdb?recursive=1",
+        "retrieved_at_utc": "2026-10-17T11:06:43.713230+00:00",
+        "completed_at_utc": "2026-10-17T11:06:44.035744+00:00",
+        "bytes": 42621,
+        "sha256": "b05dfd3328d8c2392e5689ff4b6be1d1bcf328121e03ffbb6be9ef6609eb588f",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "ETag": "W/\"b05dfd3328d8c2392e5689ff4b6be1d1bcf328121e03ffbb6be9ef6609eb588f\"",
+          "Last-Modified": "Fri, 21 Aug 2026 05:51:55 GMT"
+        }
+      },
+      "files": {
+        "sensor_msgs/msg/Imu.msg": {
+          "url": "https://raw.githubusercontent.com/ros/common_msgs/092bc230c8153dd4cfee0c84c9796cc7e6b09fdb/sensor_msgs/msg/Imu.msg",
+          "resolved_url": "https://raw.githubusercontent.com/ros/common_msgs/092bc230c8153dd4cfee0c84c9796cc7e6b09fdb/sensor_msgs/msg/Imu.msg",
+          "retrieved_at_utc": "2026-10-17T11:06:44.059524+00:00",
+          "completed_at_utc": "2026-10-17T11:06:44.331905+00:00",
+          "bytes": 1206,
+          "sha256": "50f2420308c7ca63f2f8e18ff1a03166fc7c922b00c7bf33a40c203902242ed9",
+          "headers": {
+            "Content-Length": "1206",
+            "Content-Type": "text/plain; charset=utf-8",
+            "ETag": "\"6746addcd56931229406d94c3bb77d208c01094034c5bf2d24d54e69c0b2e839\""
+          }
+        }
+      },
+      "scope": "Generic current pinned upstream source; not the unidentified recording producer build."
+    }
+  }
+}

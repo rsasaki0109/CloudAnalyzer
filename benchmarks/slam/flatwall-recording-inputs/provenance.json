@@ -1,0 +1,83 @@
+{
+  "schema": "cloudanalyzer.flatwall_input_provenance.v1",
+  "author_setup": {
+    "imu_topic": "/livox/imu",
+    "points_topic": "/livox/points",
+    "acc_scale": 9.80665,
+    "imu_time_offset": 0.0,
+    "T_lidar_imu": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "T_lidar_camera": [
+      -0.0032,
+      -0.05292,
+      0.00108,
+      0.00837,
+      0.72559,
+      -0.00328,
+      0.68807
+    ]
+  },
+  "author_setup_source": {
+    "url": "https://staff.aist.go.jp/k.koide/projects/glim_params/config_flatwall.tar.gz",
+    "bytes": 3597,
+    "sha256": "0a1a5a206ea24ad109207b3767510c74b89f878b77958cc1e5f75621127af63b",
+    "byte_identical_to_preexisting_20261016_download": true,
+    "members": {
+      "config/config_ros.json": {
+        "bytes": 417,
+        "sha256": "8683b292b6c92aa31b843ebe456c04b98ff4c6ba67771c5ae8edd38f8948a043"
+      },
+      "config/config_sensors.json": {
+        "bytes": 1544,
+        "sha256": "a550993ca0d5358d8c8f4edc05aa95a69f8bc6e0c88990bfc5b50a40fabb1382"
+      }
+    }
+  },
+  "manufacturer_units": {
+    "repo": "Livox-SDK/Livox-SDK",
+    "commit": "9306596a2bf15c1343bc023b497465ed0a32909d",
+    "url": "https://raw.githubusercontent.com/Livox-SDK/Livox-SDK/9306596a2bf15c1343bc023b497465ed0a32909d/sdk_core/include/livox_def.h",
+    "sha256": "de5e601b5f2e9cdc8afcd7f5ce56d7e8184db1d5b694c4981db38b151757a5c8",
+    "locator": "LivoxImuPoint gyro_x/y/z and acc_x/y/z declarations",
+    "gyro_unit": "rad/s",
+    "acceleration_unit": "g",
+    "evidence_class": "Manufacturer type declaration, not identification of the recording producer build."
+  },
+  "manufacturer_transfer": {
+    "repo": "Livox-SDK/livox_ros_driver",
+    "commit": "3d240d5666129e1a3052e78ee8487a04b08fdda3",
+    "url": "https://raw.githubusercontent.com/Livox-SDK/livox_ros_driver/3d240d5666129e1a3052e78ee8487a04b08fdda3/livox_ros_driver/livox_ros_driver/lddc.cpp",
+    "sha256": "345b85c22536c56ddc64685f1d68e2f261f08c6222851283e4326118977d64df",
+    "imu_locator": "Lddc::PublishImuData, lines 481-509",
+    "fact": "This pinned generic driver copies SDK gyro and acceleration fields directly to sensor_msgs/Imu.",
+    "custom_time_locator": "Lddc::PublishCustomPointcloud and FillPointsToCustomMsg, lines 356-452",
+    "custom_time_fact": "The driver labels packet_offset_time in ns, computes it from timestamp minus timebase, and writes header.stamp through double seconds.",
+    "limitation": "The recording caller ID is a replay process. Its producer/converter build and any applied calibration are unidentified; current generic code does not identify them."
+  },
+  "transform_convention": {
+    "url": "https://raw.githubusercontent.com/koide3/glim/1a197c999e4865f5cab7c9cd25474128413ebbca/docs/parameters.md",
+    "sha256": "8621b53ee6804bc3015153ceb5861d2a9eed992c0cb000c9dfe82c0e3b3a55ba",
+    "author_archive_comment": "T_lidar_imu maps IMU coordinates into LiDAR coordinates; stored poses use translation then xyzw quaternion.",
+    "cloudanalyzer_parameter": "imu_from_lidar maps in the opposite direction; an author nonidentity T_lidar_imu would require inversion. Identity is unchanged by inversion.",
+    "limitation": "Configuration direction/order is not an archive-specific declaration of the reference pose convention."
+  },
+  "reference_facts": {
+    "author": "https://staff.aist.go.jp/k.koide/projects/glimsupp/flatwall.html",
+    "paper": "https://arxiv.org/html/2407.10344v1#S6.SS1",
+    "supported": "The author describes LiDAR ground truth from a rigid camera observing tags. The paper describes batch tag/IMU camera trajectories, PTP synchronization and calibrated LiDAR-camera alignment.",
+    "unresolved": "The selected reference text column/pose direction/body convention and numerical reference-to-LiDAR clock mapping are not established by the inspected sources.",
+    "numeric_camera_config_is_not_reference_conversion_proof": true,
+    "zero_configured_imu_offset_is_not_reference_clock_proof": true
+  },
+  "physical_calibration_certified": false,
+  "reference_archive_read_in_this_stage": false,
+  "interpretation": "Record author-configured values separately from physically verified calibration. Do not fit a transform or offset to reference errors, revise prior results, change defaults or claim accuracy/performance from this input audit.",
+  "helper_sha256": "ec19b111e7d425c68c8157901dc4920126fd35103e0d0b7db05c912250e2202b"
+}

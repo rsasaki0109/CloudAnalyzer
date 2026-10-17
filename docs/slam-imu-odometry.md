@@ -104,3 +104,8 @@ their existing behavior.
 The [real-data packet](../benchmarks/slam/flatwall-imu-odometry/README.md) checks
 reference transforms, complete covered scans and map-coordinate consistency.
 It establishes no trajectory accuracy, complete SLAM speedup or GPU result.
+
+A separate [conditional trajectory evaluation](slam-flatwall-trajectory.md)
+now scores the frozen nominal-state output against the selected reference.
+It reports a large covered-subset mismatch and retains all coverage exclusions;
+the reference body/time convention and physical initialization remain unresolved.

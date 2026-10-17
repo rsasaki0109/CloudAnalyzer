@@ -1,0 +1,60 @@
+{
+  "at_utc": "2026-10-17T03:31:55.557605+00:00",
+  "earlier_policy": "Download archive as opaque bytes; do not unpack or read poses before estimates and scoring policy are frozen",
+  "earlier_policy_sha256": "e8fde8fc8ca2c0335f07b4d346abcfe1c295a7689fdba05b7d56f7d76cad8a21",
+  "deviation": "The inventory controller read16KiB prefixes and retained the first8 nonempty lines of every regular reference text member before a trajectory scoring policy was frozen. These prefixes include numeric poses, so this is a deviation from the earlier opaque-reference policy. Preserve both protocols/receipts and the exact exposure record; do not describe subsequent reference use as a fully blind preregistered evaluation.",
+  "exposed_members": [
+    {
+      "name": "gt/flatwall_01.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "f3bc47ed4fb92a7300756a4467da90772fb0c26dc9575510b6d9b3ebacca94c8",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_07.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "97486c300bd293ff51f38a7625e1190126e655d05c294414f21fea0b49c2300e",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_05.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "a7b205c609c895570ab001038e31f316e155852b68e318fbf1ead45588263d85",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_08.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "c873b2f4621374fe93025c20594c5ccd82e97a3b4daf35fb631dd4989e26f9d4",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_06.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "dde2089abeb998a0db69e57916befcc42f4f6d214ae5f8fec2a1421a535ad21a",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_04.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "dd707388b359604598ac6e5c8685977ffa6d80e082992bfa174c7dd3a24020a9",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_03.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "4793c7f0d5182448f60276883cc5c03154242e57c154f078537c491ffb2c7c89",
+      "saved_nonempty_lines": 8
+    },
+    {
+      "name": "gt/flatwall_02.txt",
+      "prefix_bytes_read": 16384,
+      "prefix_sha256": "c97f97380f5c255dbd8cd8368b996d459371cd279a7e789dde9d419eed0940d4",
+      "saved_nonempty_lines": 8
+    }
+  ],
+  "inventory_protocol_sha256": "99a67a1d7939686df7122e3ebca589c9d457adc01f4d594d8ee99d57375c7e4d",
+  "inventory_receipt_sha256": "d77134ca47ea7caf1756726b6c3af8fe529e423e34a5b618b9bd7ef56be62996",
+  "unaffected": "The public gradient feature1088beecd309e62970df24bf205b3fea76754f7f, both optimizer comparison results and all registration estimates were frozen/committed before this first archive inspection. No public source or estimates changed afterward; reference values are not used by the feature/tests or update comparisons.",
+  "next_policy": "Before parsing a complete reference trajectory or computing any accuracy metric, freeze a new openly exploratory evaluation protocol: official column/body/time/extrinsic provenance, exact estimate commit/array identities, timestamp association/interpolation and coverage, rigid alignment/scale rules, exclusions and all outcomes. Metadata/pose prefixes are already inspected and must be disclosed. Preserve archives and all old acquisition/protocol receipts verbatim."
+}

@@ -1,0 +1,31 @@
+{
+  "started_at_utc": "2026-10-17T05:02:37.677765+00:00",
+  "completed_at_utc": "2026-10-17T05:02:42.575511+00:00",
+  "controller_freeze_sha256": "09a4aa022a63ebec0386c4dcf40a8cc782c3feed5cb291f3ca53afbbe660c5f5",
+  "protocol_sha256": "ac414581f94797cde51c80d246f91d66bd76591c05405d678a4fbab32b7a9452",
+  "full_reference_first_read_after_controller_freeze": true,
+  "selected_reference_member": "gt/flatwall_01.txt",
+  "reference_rows": 729,
+  "estimates_checked": 185,
+  "paired_estimates": 183,
+  "consecutive_edges_checked": 182,
+  "maximum_abs_differences": {
+    "reference_pose_matrix": 8.881784197001252e-16,
+    "world_alignment_matrix": 6.572520305780927e-14,
+    "origin_position_ape_m": 4.263256414560601e-14,
+    "origin_rotation_ape_deg": 5.684341886080802e-14,
+    "rigid_position_ape_m": 9.947598300641403e-14,
+    "consecutive_rpe_translation_m": 1.0658141036401503e-14,
+    "consecutive_rpe_rotation_deg": 3.375077994860476e-14
+  },
+  "reference_timestamp_method": "Independent bisect on exact Decimal nanoseconds; evo floating Unix timestamps are not used for association.",
+  "independent_methods": "Installed evo TUM parser and quaternion SLERP, no-scale Umeyama, APE, SE3 inverse and RPE base.",
+  "prior_artifacts_verified": 4923,
+  "source_files_verified": 4,
+  "selected_dependency_files_verified": 50,
+  "input_hashes_unchanged": true,
+  "physical_provenance_certified": false,
+  "outputs_sha256": {
+    "evo-errors.npz": "553ec57d8174ae319977c2705a3aff8760084938fa0989a13704a204e1b77b68"
+  }
+}

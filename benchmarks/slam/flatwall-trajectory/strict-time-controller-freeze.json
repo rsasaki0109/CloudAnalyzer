@@ -1,0 +1,15 @@
+{
+  "at_utc": "2026-10-17T05:13:31.194907+00:00",
+  "protocol_sha256": "ac414581f94797cde51c80d246f91d66bd76591c05405d678a4fbab32b7a9452",
+  "source_files_sha256": {
+    "scripts/flatwall_trajectory_reference.py": "6ccec1362344a32f3864fc11b1d26f98f1da76d971cc2c6182397bf70e0cf957",
+    "scripts/audit_flatwall_trajectory.py": "b8e72c3bdaa2e508566d492ac0b0184e572667cb8d3c4b42611492e6f1f4b430",
+    "cloudanalyzer/tests/test_flatwall_trajectory_reference.py": "ec85d19d2936ba6760f90d9e288c39ad92661f165c16d3d87273de060adcbad6"
+  },
+  "complete_reference_previously_inspected": true,
+  "change": "Context-independent decimal digit conversion; preserve original policy, archive, estimates and numeric thresholds.",
+  "analytic_controls_passed": 35,
+  "unit_controls_log_sha256": "59d4ec61f05bb772e22869c7265fdb95362dd08f28abc2c83c1e9c42e15d1b9f",
+  "original_controller_freeze_sha256": "09a4aa022a63ebec0386c4dcf40a8cc782c3feed5cb291f3ca53afbbe660c5f5",
+  "helper_sha256": "3101d28116c8e9c7248d2639a3702d1e524d2c86289b410fd8864df1439e0b3d"
+}

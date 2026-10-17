@@ -1,0 +1,36 @@
+{
+  "schema": "cloudanalyzer.flatwall_gicp_transition_analysis.v1",
+  "controller": {
+    "name": "analyze_flatwall_gicp_transitions.py",
+    "bytes": 8438,
+    "sha256": "11248c8531c0a2599ecdd9018c7b3383c191bcbe4507fb32bd157bf29f31bb3b"
+  },
+  "histories": 72,
+  "transitions": 686,
+  "limited_tail_transitions": 100,
+  "limited_histories": 10,
+  "original_input_artifacts_unchanged": 84,
+  "outputs": {
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 18487,
+      "sha256": "739d90da2a2b5e2a8ffea26756a30e0b59080f92e6ba57c4f3bdc05da0d766d6"
+    },
+    "limited-effects.json": {
+      "name": "limited-effects.json",
+      "bytes": 20183,
+      "sha256": "50ef9a449b86d420e1b45ec300000e873570d2a08a583606d69dd3e120a068f2"
+    },
+    "recurrence.json": {
+      "name": "recurrence.json",
+      "bytes": 23297,
+      "sha256": "abbd55547e805c1b4b3102280468d70a292608b97518fc766e8960c583358bd5"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 4349,
+      "sha256": "08cceb6cda5de1210f98c6c62b722ae52d678fb3808717870e31204e9b0de877"
+    }
+  },
+  "solver_and_termination_unchanged": true
+}

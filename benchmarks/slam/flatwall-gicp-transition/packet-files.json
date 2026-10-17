@@ -1,0 +1,69 @@
+{
+  "json_files": {
+    "analysis/limited-effects.json": {
+      "name": "limited-effects.json",
+      "bytes": 20183,
+      "sha256": "50ef9a449b86d420e1b45ec300000e873570d2a08a583606d69dd3e120a068f2"
+    },
+    "analysis/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 18487,
+      "sha256": "739d90da2a2b5e2a8ffea26756a30e0b59080f92e6ba57c4f3bdc05da0d766d6"
+    },
+    "analysis/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1133,
+      "sha256": "82f20c2907030200be69571afc2f56ce10318b6a6ae4cfb10ee19393373f5d8f"
+    },
+    "analysis/recurrence.json": {
+      "name": "recurrence.json",
+      "bytes": 23297,
+      "sha256": "abbd55547e805c1b4b3102280468d70a292608b97518fc766e8960c583358bd5"
+    },
+    "analysis/summary.json": {
+      "name": "summary.json",
+      "bytes": 4349,
+      "sha256": "08cceb6cda5de1210f98c6c62b722ae52d678fb3808717870e31204e9b0de877"
+    },
+    "audit/frames.json": {
+      "name": "frames.json",
+      "bytes": 25032,
+      "sha256": "c99898991202bb776dd139f7e3b72962104b2417a82980e9967037c3a9900d6e"
+    },
+    "audit/limited-tails.json": {
+      "name": "limited-tails.json",
+      "bytes": 116322,
+      "sha256": "2a5b7b6ef3d25edf9cd73a2dab8188401e23d44bad725261ae27f87428b1da5a"
+    },
+    "audit/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 21518,
+      "sha256": "3069740803c0d57ad6d36f3909edd25d53f376c26e590211d2fdb4947f8d14a5"
+    },
+    "audit/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1664,
+      "sha256": "6e00a75f557de45b8191bdff15fe9e867b000e5c46b9e2f17f7ec42a8318f435"
+    },
+    "audit/summary.json": {
+      "name": "summary.json",
+      "bytes": 3748,
+      "sha256": "ec0dade9f7f34249a3884787956ef41b3ca35925706005a07adbb313e177c25c"
+    },
+    "reused-native.json": {
+      "name": "reused-native.json",
+      "bytes": 1175,
+      "sha256": "92f825c3822c34940da62dca7b366b78433b67ce5311cea985573204309a83fb"
+    },
+    "slice-protocol.json": {
+      "name": "slice-protocol.json",
+      "bytes": 3778,
+      "sha256": "f686dd07262ad68092337861c3fc3100a4b892d7191ce2407852a00d03cd4f9d"
+    }
+  },
+  "verifier": {
+    "name": "verify.py",
+    "bytes": 6307,
+    "sha256": "e4e6288a92071d26ddc3ada876c3b563ce7f17cf01a4e7da1778751d9e48c67d"
+  }
+}

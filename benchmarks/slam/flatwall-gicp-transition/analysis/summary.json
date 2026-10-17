@@ -1,0 +1,172 @@
+{
+  "histories": 72,
+  "statuses": {
+    "insufficient_correspondences": 8,
+    "converged_step": 54,
+    "max_iterations": 10
+  },
+  "all_transitions": {
+    "transitions": 686,
+    "strict_frozen_motion_decreases": 686,
+    "strict_refreshed_increases": 278,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -1366.8853733954522,
+        "mean": -1.992544276086665,
+        "range": [
+          -89.2182490745082,
+          -7.040758753795728e-09
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 228.68052150381573,
+        "mean": 0.33335352988894423,
+        "range": [
+          -1.1574134760668358,
+          35.510720458590235
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": -149.6943334007619,
+        "mean": -0.21821331399527974,
+        "range": [
+          -25.738566553451378,
+          16.5512414273539
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": -107.10708261983302,
+        "mean": -0.15613277349829888,
+        "range": [
+          -21.888731899150372,
+          11.993059748501416
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 186.09327072288684,
+        "mean": 0.2712729893919633,
+        "range": [
+          -3.7153311416260664,
+          41.24896136572181
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -42.58725078092887,
+        "mean": -0.062080540496980856,
+        "range": [
+          -5.337594695715637,
+          5.738240907132493
+        ]
+      },
+      "full_delta": {
+        "signed_sum": -1287.8991852923984,
+        "mean": -1.8774040601930007,
+        "range": [
+          -84.39505611871759,
+          25.148462953516912
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "limited_last_ten": {
+    "transitions": 100,
+    "strict_frozen_motion_decreases": 100,
+    "strict_refreshed_increases": 60,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -1.0394654795964537,
+        "mean": -0.010394654795964537,
+        "range": [
+          -0.06390926580169776,
+          -2.2368404142270037e-05
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.32555819510753603,
+        "mean": 0.0032555819510753604,
+        "range": [
+          -0.058527190231970394,
+          0.09683805836428405
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 1.0123275184001521,
+        "mean": 0.010123275184001522,
+        "range": [
+          -1.1683087539739603,
+          1.159265212543879
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 1.6450070991717265,
+        "mean": 0.016450070991717265,
+        "range": [
+          -1.1302043877644934,
+          1.168838440215076
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": -0.30712138566403835,
+        "mean": -0.0030712138566403833,
+        "range": [
+          -0.10090193256554159,
+          0.058733692110386926
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.6326795807715744,
+        "mean": -0.006326795807715744,
+        "range": [
+          -0.05404242125626979,
+          0.0027062838305624837
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.2984202339112345,
+        "mean": 0.002984202339112345,
+        "range": [
+          -1.0971350993033795,
+          1.1445068326392018
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "max_native_cost_error": 2.3874235921539366e-12,
+  "max_native_shape_error": 4.440892098500626e-16,
+  "max_accounting_error": 1.4210854715202004e-14,
+  "scope": "Observed fixed-support costs and recurrence descriptors only; no new optimizer/pose, significance cutoff, convergence/failure policy, physical accuracy or speed claim."
+}

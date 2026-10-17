@@ -1,0 +1,21 @@
+{
+  "origin_pr": "https://github.com/rsasaki0109/CloudAnalyzer/pull/300",
+  "origin_commit": "7aa575681d9ed76877994f20f2c984333eaae82e",
+  "native_sha256": "9e47d88a73e12b097e0242afda72e38a4a01068bbdca1acebaa684fb274b3eed",
+  "package_sha256": {
+    "__init__.py": "17497aee3de6141375f8a22c2b1c6ff276628e0d2e3ba3e2a4b74be9807d4903",
+    "_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "_core.pyd": "9e47d88a73e12b097e0242afda72e38a4a01068bbdca1acebaa684fb274b3eed",
+    "_core.pyi": "1afc609401c53232e2c5e455c2417012766126e828ec7c4f56469404c7d0be45",
+    "_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "verified_original_build_paths": 111,
+  "origin_build_inputs": {
+    "path": "notes/slam-gicp-target-20261017/native-build-inputs.json",
+    "sha256": "e4ac48f3ac83cb6380f9e0392bcac1e8b8e3fbac863e253fe2f90088ca8d22b6"
+  },
+  "new_compilation": false,
+  "current_committed_native_sources_equal_under_lf_normalization": true
+}

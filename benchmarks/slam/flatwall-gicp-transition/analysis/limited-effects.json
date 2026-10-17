@@ -1,0 +1,832 @@
+[
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 60,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 7,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.024324776080284494,
+        "mean": -0.0024324776080284494,
+        "range": [
+          -0.0038309906823883466,
+          -0.00031538676070397287
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.026736535382681836,
+        "mean": 0.0026736535382681837,
+        "range": [
+          -0.028389352737256957,
+          0.024605733571156918
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.1414708291585427,
+        "mean": 0.01414708291585427,
+        "range": [
+          -0.16429106601050592,
+          0.12310784532837715
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.14592277197483838,
+        "mean": 0.014592277197483839,
+        "range": [
+          -0.1639850253103532,
+          0.12422486645198916
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 0.022284592566386152,
+        "mean": 0.002228459256638615,
+        "range": [
+          -0.02807793147887594,
+          0.02348871246711326
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.004451942816295684,
+        "mean": -0.0004451942816295684,
+        "range": [
+          -0.0011170211289197596,
+          0.0003114212583810172
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.14388258846094004,
+        "mean": 0.014388258846094005,
+        "range": [
+          -0.160112565488987,
+          0.143882588271957
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 63,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 5,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.04368707785239678,
+        "mean": -0.004368707785239678,
+        "range": [
+          -0.004448119448795751,
+          -0.004275512392247549
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": -0.004372026490962355,
+        "mean": -0.0004372026490962355,
+        "range": [
+          -0.04435237005534276,
+          0.04596097100367302
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.053013547290852614,
+        "mean": 0.005301354729085261,
+        "range": [
+          -0.22899705931165215,
+          0.23960296677349646
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.028062920258193458,
+        "mean": 0.002806292025819346,
+        "range": [
+          -0.23142599507475836,
+          0.2370740241806999
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 0.0205786005416968,
+        "mean": 0.00205786005416968,
+        "range": [
+          -0.04192081026000949,
+          0.04866725483423551
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": 0.024950627032659156,
+        "mean": 0.0024950627032659157,
+        "range": [
+          0.002402811968792662,
+          0.0027062838305624837
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.004954442947493476,
+        "mean": 0.0004954442947493476,
+        "range": [
+          -0.27775653978641657,
+          0.28126527405412105
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 49,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 5,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.01721841463860585,
+        "mean": -0.001721841463860585,
+        "range": [
+          -0.00339007963744109,
+          -2.2368404142270037e-05
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": -0.009560325496803301,
+        "mean": -0.0009560325496803301,
+        "range": [
+          -0.011948898959829535,
+          0.008808050186452476
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.025325584247973154,
+        "mean": 0.0025325584247973152,
+        "range": [
+          -0.08486770950393563,
+          0.1078346881404606
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.022751101041777133,
+        "mean": 0.0022751101041777132,
+        "range": [
+          -0.08556434172039218,
+          0.10788052162358142
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": -0.00698584229060728,
+        "mean": -0.000698584229060728,
+        "range": [
+          -0.011428593722833114,
+          0.008902803564165396
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": 0.002574483206196021,
+        "mean": 0.0002574483206196021,
+        "range": [
+          -4.5833483120816254e-05,
+          0.0006966322164565497
+        ]
+      },
+      "full_delta": {
+        "signed_sum": -0.0014531558874359973,
+        "mean": -0.00014531558874359974,
+        "range": [
+          -0.07868427905291853,
+          0.10860430814110344
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 63,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 6,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.34653749238267295,
+        "mean": -0.03465374923826729,
+        "range": [
+          -0.06390926580169776,
+          -0.012651919870627637
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.14099366216381526,
+        "mean": 0.014099366216381526,
+        "range": [
+          -0.05852719023192776,
+          0.0968380583642201
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.2055438301442436,
+        "mean": 0.02055438301442436,
+        "range": [
+          -1.168308753973946,
+          1.1592652125434668
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.5443145566568788,
+        "mean": 0.054431455665687876,
+        "range": [
+          -1.1302043877644934,
+          1.168838440214735
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": -0.19777706434881992,
+        "mean": -0.01977770643488199,
+        "range": [
+          -0.10090193256551316,
+          0.05873369211031587
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.3387707265126352,
+        "mean": -0.033877072651263516,
+        "range": [
+          -0.05404242125626979,
+          -0.009573227670955475
+        ]
+      },
+      "full_delta": {
+        "signed_sum": -7.461409268216812e-11,
+        "mean": -7.461409268216811e-12,
+        "range": [
+          -1.0971350993033653,
+          1.144506832638946
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 63,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 7,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.08796497884422794,
+        "mean": -0.008796497884422794,
+        "range": [
+          -0.018516520998299257,
+          -8.328983856975558e-05
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.008981251994812589,
+        "mean": 0.0008981251994812589,
+        "range": [
+          -0.0101934414027961,
+          0.009867624950930076
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.08080996835861709,
+        "mean": 0.00808099683586171,
+        "range": [
+          -0.011019703570279926,
+          0.037956360107357145
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.08145219965405348,
+        "mean": 0.008145219965405348,
+        "range": [
+          -0.010806686809733623,
+          0.03795742055598583
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 0.008339020699376198,
+        "mean": 0.0008339020699376198,
+        "range": [
+          -0.01040645818399455,
+          0.009867624950930076
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.0006422312954363907,
+        "mean": -6.422312954363907e-05,
+        "range": [
+          -0.00021301678119844958,
+          0.0
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.0018262415092017426,
+        "mean": 0.00018262415092017424,
+        "range": [
+          -0.03972966542339251,
+          0.037903436060561235
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 60,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 7,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.024324776080312915,
+        "mean": -0.0024324776080312917,
+        "range": [
+          -0.0038309906824238737,
+          -0.00031538676069686744
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.02673653538273868,
+        "mean": 0.002673653538273868,
+        "range": [
+          -0.0283893527373138,
+          0.024605733571085864
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.14147082915852138,
+        "mean": 0.014147082915852139,
+        "range": [
+          -0.16429106601051302,
+          0.12310784532837715
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.1459227719748668,
+        "mean": 0.01459227719748668,
+        "range": [
+          -0.1639850253103532,
+          0.12422486645199626
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 0.022284592566393258,
+        "mean": 0.0022284592566393256,
+        "range": [
+          -0.028077931478946994,
+          0.0234887124670351
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.004451942816345422,
+        "mean": -0.00044519428163454223,
+        "range": [
+          -0.0011170211289197596,
+          0.00031142125836680634
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.14388258846094715,
+        "mean": 0.014388258846094714,
+        "range": [
+          -0.16011256548895147,
+          0.1438825882718504
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 63,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 5,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.04368707785240389,
+        "mean": -0.004368707785240389,
+        "range": [
+          -0.004448119448817067,
+          -0.004275512392247549
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": -0.004372026491004988,
+        "mean": -0.00043720264910049875,
+        "range": [
+          -0.044352370055399604,
+          0.04596097100350249
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.0530135472908313,
+        "mean": 0.00530135472908313,
+        "range": [
+          -0.22899705931166636,
+          0.23960296677349646
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.02806292025817214,
+        "mean": 0.002806292025817214,
+        "range": [
+          -0.23142599507477257,
+          0.237074024180707
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 0.02057860054165417,
+        "mean": 0.002057860054165417,
+        "range": [
+          -0.04192081026005923,
+          0.04866725483406498
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": 0.024950627032659156,
+        "mean": 0.0024950627032659157,
+        "range": [
+          0.002402811968792662,
+          0.0027062838305624837
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.004954442947422422,
+        "mean": 0.0004954442947422422,
+        "range": [
+          -0.277756539786445,
+          0.2812652740539576
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 49,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 5,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.017218414638634272,
+        "mean": -0.0017218414638634273,
+        "range": [
+          -0.0033900796374375375,
+          -2.2368404167139033e-05
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": -0.00956032549669672,
+        "mean": -0.000956032549669672,
+        "range": [
+          -0.011948898959897036,
+          0.008808050186434713
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.02532558424798026,
+        "mean": 0.002532558424798026,
+        "range": [
+          -0.08486770950396405,
+          0.1078346881404606
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.022751101041802002,
+        "mean": 0.0022751101041802004,
+        "range": [
+          -0.0855643417204206,
+          0.10788052162359207
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": -0.0069858422905184625,
+        "mean": -0.0006985842290518462,
+        "range": [
+          -0.011428593722900615,
+          0.008902803564140527
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": 0.0025744832061782574,
+        "mean": 0.00025744832061782576,
+        "range": [
+          -4.5833483131474395e-05,
+          0.0006966322164565497
+        ]
+      },
+      "full_delta": {
+        "signed_sum": -0.0014531558873507322,
+        "mean": -0.00014531558873507323,
+        "range": [
+          -0.07868427905243536,
+          0.10860430814121003
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 63,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 6,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.34653749238268716,
+        "mean": -0.034653749238268715,
+        "range": [
+          -0.06390926580168355,
+          -0.012651919870634742
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.1409936621641421,
+        "mean": 0.014099366216414212,
+        "range": [
+          -0.058527190231970394,
+          0.09683805836428405
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.2055438301439736,
+        "mean": 0.02055438301439736,
+        "range": [
+          -1.1683087539739603,
+          1.159265212543879
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.5443145566570919,
+        "mean": 0.05443145566570919,
+        "range": [
+          -1.1302043877644934,
+          1.168838440215076
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": -0.19777706434897624,
+        "mean": -0.019777706434897624,
+        "range": [
+          -0.10090193256554159,
+          0.058733692110386926
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.33877072651311835,
+        "mean": -0.03387707265131183,
+        "range": [
+          -0.05404242125611347,
+          -0.009573227671012319
+        ]
+      },
+      "full_delta": {
+        "signed_sum": -7.457146011802251e-11,
+        "mean": -7.457146011802251e-12,
+        "range": [
+          -1.0971350993033795,
+          1.1445068326392018
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 63,
+    "transitions": 10,
+    "strict_frozen_motion_decreases": 10,
+    "strict_refreshed_increases": 7,
+    "support_changed_transitions": 0,
+    "terms": {
+      "motion_delta": {
+        "signed_sum": -0.08796497884422749,
+        "mean": -0.008796497884422749,
+        "range": [
+          -0.018516520998298036,
+          -8.32898385698666e-05
+        ]
+      },
+      "source_metric_delta": {
+        "signed_sum": 0.008981251994812922,
+        "mean": 0.0008981251994812922,
+        "range": [
+          -0.01019344140279732,
+          0.009867624950925302
+        ]
+      },
+      "assignment_delta": {
+        "signed_sum": 0.08080996835861654,
+        "mean": 0.008080996835861654,
+        "range": [
+          -0.011019703570279482,
+          0.03795636010735681
+        ]
+      },
+      "assignment_first_delta": {
+        "signed_sum": 0.08145219965405248,
+        "mean": 0.008145219965405247,
+        "range": [
+          -0.01080668680973329,
+          0.03795742055598583
+        ]
+      },
+      "source_metric_second_delta": {
+        "signed_sum": 0.008339020699376976,
+        "mean": 0.0008339020699376975,
+        "range": [
+          -0.010406458183995881,
+          0.009867624950925302
+        ]
+      },
+      "assignment_metric_interaction": {
+        "signed_sum": -0.0006422312954359466,
+        "mean": -6.422312954359465e-05,
+        "range": [
+          -0.0002130167811985606,
+          0.0
+        ]
+      },
+      "full_delta": {
+        "signed_sum": 0.0018262415092019646,
+        "mean": 0.00018262415092019647,
+        "range": [
+          -0.03972966542339329,
+          0.03790343606056379
+        ]
+      },
+      "added_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      },
+      "removed_cost": {
+        "signed_sum": 0.0,
+        "mean": 0.0,
+        "range": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  }
+]

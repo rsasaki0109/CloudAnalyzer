@@ -1,0 +1,546 @@
+[
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 49,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 60,
+    "original_termination": "max_iterations",
+    "cycle": {
+      "period": 3,
+      "confirmations": 2,
+      "first_iteration": 21,
+      "last_iteration": 29,
+      "compared_state_pairs": 6,
+      "max_translation": 1.5727109945182594e-10,
+      "max_rotation": 6.465734369796373e-11,
+      "max_relative_shape": 3.720571387159759e-11,
+      "max_weight": 0.0
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 63,
+    "original_termination": "max_iterations",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 49,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 60,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "row": 63,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 49,
+    "original_termination": "max_iterations",
+    "cycle": {
+      "period": 7,
+      "confirmations": 2,
+      "first_iteration": 9,
+      "last_iteration": 29,
+      "compared_state_pairs": 14,
+      "max_translation": 1.6558769660988444e-10,
+      "max_rotation": 5.029800601286972e-11,
+      "max_relative_shape": 2.8975305410719867e-11,
+      "max_weight": 0.0
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 60,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 63,
+    "original_termination": "max_iterations",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 49,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 60,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 63,
+    "original_termination": "max_iterations",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 49,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 60,
+    "original_termination": "max_iterations",
+    "cycle": {
+      "period": 3,
+      "confirmations": 2,
+      "first_iteration": 21,
+      "last_iteration": 29,
+      "compared_state_pairs": 6,
+      "max_translation": 1.572716079232402e-10,
+      "max_rotation": 6.465742727796675e-11,
+      "max_relative_shape": 3.7205747817332685e-11,
+      "max_weight": 0.0
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 63,
+    "original_termination": "max_iterations",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 49,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 60,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "row": 63,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 49,
+    "original_termination": "max_iterations",
+    "cycle": {
+      "period": 7,
+      "confirmations": 2,
+      "first_iteration": 9,
+      "last_iteration": 29,
+      "compared_state_pairs": 14,
+      "max_translation": 1.6558804971320756e-10,
+      "max_rotation": 5.0298274788260035e-11,
+      "max_relative_shape": 2.8975458791199414e-11,
+      "max_weight": 0.0
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 60,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 63,
+    "original_termination": "max_iterations",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 0,
+    "original_termination": "insufficient_correspondences",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 1,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 2,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 9,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 17,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 33,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 49,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 60,
+    "original_termination": "converged_step",
+    "cycle": null
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 63,
+    "original_termination": "max_iterations",
+    "cycle": null
+  }
+]

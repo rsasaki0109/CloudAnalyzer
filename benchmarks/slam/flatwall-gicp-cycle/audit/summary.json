@@ -1,0 +1,25 @@
+{
+  "histories": 72,
+  "cycles": 4,
+  "original_statuses": {
+    "insufficient_correspondences": 8,
+    "converged_step": 54,
+    "max_iterations": 10
+  },
+  "statuses": {
+    "insufficient_correspondences": 8,
+    "converged_step": 54,
+    "cycle_detected": 4,
+    "max_iterations": 6
+  },
+  "iterations": 744,
+  "accepted_steps": 678,
+  "disabled_frozen_bit_equal": true,
+  "independent_decisions_agree": true,
+  "accepted_prefix_bit_equal": true,
+  "serial_parallel_prepared_owned_bits_equal": true,
+  "history_capture_independent": true,
+  "shared_target_cycle_calls": 32,
+  "returned_cycle_outputs_owned": true,
+  "scope": "Bounded failure diagnosis on fixed real inputs. Remaining limited cases stay limited. No convergence recovery, frontend adoption, physical accuracy or speed claim."
+}

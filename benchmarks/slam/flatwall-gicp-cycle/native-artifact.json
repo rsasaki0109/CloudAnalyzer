@@ -1,0 +1,14 @@
+{
+  "sha256": "91e951fc94ab217fc2af8b4447d37bfe1291ba08aa98fc32ab03565dedd9a4e0",
+  "bytes": 7834112,
+  "verified_build_inputs": 112,
+  "package_sha256": {
+    "__init__.py": "96eba4311fd14ceb264e08e3a6813de073532bf6a1e267e9361dbb5f72e24fd2",
+    "_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "_core.pyd": "91e951fc94ab217fc2af8b4447d37bfe1291ba08aa98fc32ab03565dedd9a4e0",
+    "_core.pyi": "1afc609401c53232e2c5e455c2417012766126e828ec7c4f56469404c7d0be45",
+    "_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

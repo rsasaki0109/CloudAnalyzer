@@ -3,6 +3,7 @@
 //! starts a different surrogate; costs across outer iterations need not decrease.
 
 use crate::gicp::{self, Correspondence, GicpError, Matrix3};
+use crate::gicp_cycle::{CycleGuardParams, CycleReport, CycleTracker};
 use crate::icp::Rigid;
 use crate::kdtree::KdTree;
 
@@ -119,6 +120,8 @@ pub struct RegistrationParams {
     pub robust_scale: Option<f64>,
     pub parallel: bool,
     pub capture_history: bool,
+    /// Explicit failure diagnosis; disabled by default and independent of history capture.
+    pub cycle_guard: Option<CycleGuardParams>,
 }
 
 impl Default for RegistrationParams {
@@ -131,6 +134,7 @@ impl Default for RegistrationParams {
             robust_scale: None,
             parallel: false,
             capture_history: false,
+            cycle_guard: None,
         }
     }
 }
@@ -143,6 +147,7 @@ pub enum Termination {
     Nonfinite,
     NoDescent,
     MaxIterations,
+    CycleDetected,
 }
 
 impl Termination {
@@ -154,6 +159,7 @@ impl Termination {
             Self::Nonfinite => "nonfinite",
             Self::NoDescent => "no_descent",
             Self::MaxIterations => "max_iterations",
+            Self::CycleDetected => "cycle_detected",
         }
     }
 }
@@ -192,6 +198,7 @@ pub struct Registration {
     pub weights: Vec<f64>,
     pub failure_reason: Option<&'static str>,
     pub history: Vec<Iteration>,
+    pub cycle: Option<CycleReport>,
 }
 
 /// Owned, immutable world-frame target for repeated GICP registration.
@@ -447,6 +454,17 @@ fn validate_common(
             "iterations, distances and tolerances must be finite and positive",
         ));
     }
+    if let Some(cycle) = params.cycle_guard {
+        cycle.validate()?;
+        if cycle.translation_tolerance > 0.01 * params.translation_tolerance
+            || cycle.rotation_tolerance > 0.01 * params.rotation_tolerance
+        {
+            return Err(error(
+                None,
+                "cycle pose tolerances must be <= 0.01 of convergence tolerances",
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -491,7 +509,9 @@ fn register_problem(
         weights: Vec::new(),
         failure_reason: None,
         history: Vec::new(),
+        cycle: None,
     };
+    let mut cycle_tracker = params.cycle_guard.map(CycleTracker::new);
     for _ in 0..params.max_iterations {
         result.iterations += 1;
         let matches = match problem.matches(&result.pose) {
@@ -559,6 +579,26 @@ fn register_problem(
                 && norm(&delta[3..]) <= params.rotation_tolerance
             {
                 return Err(Termination::ConvergedStep);
+            }
+            if let Some(tracker) = &mut cycle_tracker {
+                match tracker.observe(
+                    &item,
+                    result.iterations,
+                    center_world,
+                    params.translation_tolerance,
+                    params.rotation_tolerance,
+                ) {
+                    Ok(Some(report)) => {
+                        result.cycle = Some(report);
+                        result.failure_reason = Some("repeated nonstationary GICP outer states");
+                        return Err(Termination::CycleDetected);
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        result.failure_reason = Some(e.reason);
+                        return Err(Termination::Nonfinite);
+                    }
+                }
             }
             let frozen = FrozenMetric::new(
                 &matches.pairs.iter().map(|p| p.source).collect::<Vec<_>>(),

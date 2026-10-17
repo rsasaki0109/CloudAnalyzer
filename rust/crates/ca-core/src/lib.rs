@@ -12,6 +12,7 @@ pub mod dynamic;
 pub mod filter;
 pub mod geotiff;
 pub mod gicp;
+pub mod gicp_cycle;
 pub mod gicp_registration;
 pub mod gicp_shapes;
 pub mod ground;

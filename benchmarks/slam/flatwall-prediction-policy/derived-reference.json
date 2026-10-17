@@ -1,0 +1,17 @@
+{
+  "source_pairing_sha256": "7824370fb979484861af9770a83c2659c53dab62c6fb57b2d3c2174dbd99f79f",
+  "output_sha256": "7d602abbccfe99d6c5bd36e987c8642ef70aeec2c94efa30ca544e22370f6e94",
+  "source_reference_member": {
+    "member": "gt/flatwall_01.txt",
+    "bytes": 149166,
+    "sha256": "978d0b51cb53ca75fafee7b1a112c7c54b68f3c5617d0263cd2084065c242298",
+    "rows": 729,
+    "first_timestamp_ns": 1656505431190762997,
+    "last_timestamp_ns": 1656505449692433119,
+    "maximum_original_quaternion_norm_error": 7.295077660840477e-07,
+    "interpretation": "Assumed TUM syntax and reference-world-from-LiDAR; archive-specific axes and clock mapping unverified."
+  },
+  "attribution": "Kenji Koide / AIST, Flatwall experiment v2, DOI 10.5281/zenodo.7641866, CC BY 4.0.",
+  "derivation": "Copy the 183 interpolated reference matrices, exact integer times and original indices from the pre-existing independently audited pairing. No clock/body/scale fit or new interpolation policy. These are derived values under the prior declared reference assumptions.",
+  "physical_provenance_certified": false
+}

@@ -1,0 +1,128 @@
+{
+  "at_utc": "2026-10-17T09:42:54.383721+00:00",
+  "controls": {
+    "repeat-motion": {
+      "raw-legacy": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 2.1760371282653068e-14,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 4.263256414560601e-14,
+          "rigid_position_ape_m": 8.43769498715119e-15,
+          "consecutive_rpe_translation_m": 1.5543122344752192e-15,
+          "consecutive_rpe_rotation_deg": 2.1316282072803006e-14
+        },
+        "prior_exact_pairing_reproduced": true
+      },
+      "gyro-legacy": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 4.463096558993129e-14,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 5.684341886080802e-14,
+          "rigid_position_ape_m": 6.217248937900877e-15,
+          "consecutive_rpe_translation_m": 8.049116928532385e-16,
+          "consecutive_rpe_rotation_deg": 8.881784197001252e-15
+        },
+        "prior_exact_pairing_reproduced": true
+      },
+      "raw-0.1875": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 5.592748486549226e-14,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 7.105427357601002e-14,
+          "rigid_position_ape_m": 2.3092638912203256e-14,
+          "consecutive_rpe_translation_m": 5.551115123125783e-16,
+          "consecutive_rpe_rotation_deg": 7.105427357601002e-15
+        },
+        "prior_exact_pairing_reproduced": true
+      },
+      "gyro-0.1875": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 6.439293542825908e-15,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 5.684341886080802e-14,
+          "rigid_position_ape_m": 5.773159728050814e-15,
+          "consecutive_rpe_translation_m": 6.661338147750939e-16,
+          "consecutive_rpe_rotation_deg": 4.263256414560601e-14
+        },
+        "prior_exact_pairing_reproduced": true
+      }
+    },
+    "last-pose": {
+      "raw-legacy": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 9.2148511043888e-15,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 5.684341886080802e-14,
+          "rigid_position_ape_m": 1.6653345369377348e-14,
+          "consecutive_rpe_translation_m": 8.465450562766819e-16,
+          "consecutive_rpe_rotation_deg": 7.105427357601002e-15
+        },
+        "prior_exact_pairing_reproduced": true
+      },
+      "gyro-legacy": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 1.9761969838327786e-14,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 5.684341886080802e-14,
+          "rigid_position_ape_m": 5.662137425588298e-15,
+          "consecutive_rpe_translation_m": 5.273559366969494e-16,
+          "consecutive_rpe_rotation_deg": 7.105427357601002e-15
+        },
+        "prior_exact_pairing_reproduced": true
+      },
+      "raw-0.1875": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 4.2674197509029455e-15,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 1.0658141036401503e-14,
+          "rigid_position_ape_m": 2.4424906541753444e-15,
+          "consecutive_rpe_translation_m": 9.922618282587337e-16,
+          "consecutive_rpe_rotation_deg": 3.552713678800501e-15
+        },
+        "prior_exact_pairing_reproduced": true
+      },
+      "gyro-0.1875": {
+        "paired_estimates": 183,
+        "consecutive_edges": 182,
+        "maximum_abs_differences": {
+          "world_alignment_matrix": 4.9682480351975755e-14,
+          "origin_position_ape_m": 0.0,
+          "origin_rotation_ape_deg": 1.4210854715202004e-14,
+          "rigid_position_ape_m": 2.192690473634684e-15,
+          "consecutive_rpe_translation_m": 1.0547118733938987e-15,
+          "consecutive_rpe_rotation_deg": 3.552713678800501e-15
+        },
+        "prior_exact_pairing_reproduced": true
+      }
+    }
+  },
+  "controller_freeze_sha256": "452c996d0ca623832c9f46c294b823c5bf296fa092b6ad8bbe711eb9aa9a98d5",
+  "scoring_boundary_sha256": "4b6fe7efcf3d7ecbc8dc6c011b818e44e8987ee0ccef2804b922312f6dbf51fa",
+  "input_hashes_unchanged": true,
+  "physical_provenance_certified": false,
+  "methods": "Installed evo APE/RPE and no-scale Umeyama on eight paired cohorts. All reference matrices, integer times and indices must equal the previous independently audited pairing; no new independent raw-reference association claim.",
+  "outputs_sha256": {
+    "last-pose--gyro-0.1875.npz": "a763a07017d19c61f9d6dbe30696e6f75e9fd86e68ec37610cfb1e22253b1947",
+    "last-pose--gyro-legacy.npz": "e75a93f7c7946d23753d91b79cb89a0ae836f29a1935eb48d8d2595f40a1ffa4",
+    "last-pose--raw-0.1875.npz": "4e89f3abe3914a7849098133dfa1bd155583468d23d4a34c91525862696795da",
+    "last-pose--raw-legacy.npz": "f81de91a7573eeb9974078fbb880972d4d7191dcf0f4442367bb16023a3b3790",
+    "repeat-motion--gyro-0.1875.npz": "b1a0f2b035c7c1301fe1b3e744973d18280ac9c645793da28901e4fc13df8253",
+    "repeat-motion--gyro-legacy.npz": "9b2bd00a2c6102ad2d0fa1e2db2280110aec7c480f88f80904146cc1a360d625",
+    "repeat-motion--raw-0.1875.npz": "c965e92542c489a5ab925e70aea3c81140b9f8ae1f9f8430b7c890c7a1ab824f",
+    "repeat-motion--raw-legacy.npz": "cf49591e2e454759f69c8f189094838e0d246e6bfe30425fd8f29f85eaa31a8e"
+  }
+}

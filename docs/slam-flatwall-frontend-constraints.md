@@ -68,3 +68,7 @@ native scalar metadata remain local and are listed by hash in the public catalog
 
 This adds an audit controller and evidence. Estimator defaults, motion prediction,
 compensation policy, initialization gates and accepted states are unchanged.
+
+The [prediction-policy trial](slam-flatwall-prediction-policy.md) subsequently
+compares these frozen controls with a last-pose warm start across the full
+cohort, retaining all failures and the same conditional scoring policy.

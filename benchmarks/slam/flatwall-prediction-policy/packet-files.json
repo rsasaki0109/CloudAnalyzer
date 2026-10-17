@@ -1,0 +1,275 @@
+{
+  "files": {
+    "audit-receipt.json": {
+      "bytes": 5064,
+      "sha256": "44311352039f97ca6e32d93b6a1e8c42a3663c618b7ea909d6a840833474af1f"
+    },
+    "comparison.png": {
+      "bytes": 287139,
+      "sha256": "894350a59737018c9c8b8d178b1745f9bfbc2ccd21f5399fd622e7e93daa4f7d"
+    },
+    "controller-freeze.json": {
+      "bytes": 286340,
+      "sha256": "452c996d0ca623832c9f46c294b823c5bf296fa092b6ad8bbe711eb9aa9a98d5"
+    },
+    "derived-reference.json": {
+      "bytes": 1096,
+      "sha256": "157ecd3d1a8b0a9a79346ce235e4f10e319528aed59f283542a8549f07bc6eee"
+    },
+    "estimates-receipt.json": {
+      "bytes": 152058,
+      "sha256": "517963e3c61a1dec90f00e3b9ce3258fc1db82ac3657c9ed63b6ace3139cfb83"
+    },
+    "last-pose/gyro-0.1875/edges.json": {
+      "bytes": 33105,
+      "sha256": "face8036230e2033301b22bb487ace8898968149d83e42a2702865a009525add"
+    },
+    "last-pose/gyro-0.1875/frames.jsonl": {
+      "bytes": 394975,
+      "sha256": "04bd3b3125e22896e8a50f04df0f9da4b3bbb79c70697d3c349b8df099c88b50"
+    },
+    "last-pose/gyro-0.1875/per-scan.json": {
+      "bytes": 87312,
+      "sha256": "30457289bf46bce46f0dcfee51a0e796478e2745af1db84cc3b42a83e86c2065"
+    },
+    "last-pose/gyro-0.1875/samples.json": {
+      "bytes": 74882,
+      "sha256": "684eb122bef1d0c79809c22dbab22c8bbd63139965245e7aa15cc9adb96b8c1d"
+    },
+    "last-pose/gyro-0.1875/trajectory.npz": {
+      "bytes": 18578,
+      "sha256": "5cb0b803554533fadbd22193de6e04cb28e4638e74aaa31caa5e37e056b5b868"
+    },
+    "last-pose/gyro-legacy/edges.json": {
+      "bytes": 33053,
+      "sha256": "7a82c40581e1d16669382c87219818d9fa33b61dbdac642786c5f0607cf5bed9"
+    },
+    "last-pose/gyro-legacy/frames.jsonl": {
+      "bytes": 369065,
+      "sha256": "3c1d0305297d4a1f03856c115521577391aac01af89408a89e5af07b9950d4dc"
+    },
+    "last-pose/gyro-legacy/per-scan.json": {
+      "bytes": 81447,
+      "sha256": "1f3ebb62dd5232ffa992a994757c4ff80e0a5b5bed59f927c2633b1e325da1fc"
+    },
+    "last-pose/gyro-legacy/samples.json": {
+      "bytes": 74838,
+      "sha256": "8b77facccdea66cb363bd05118efb42802bf54a3dcd7f05ba3db3e39a8692ccd"
+    },
+    "last-pose/gyro-legacy/trajectory.npz": {
+      "bytes": 15162,
+      "sha256": "0c99751c30924def19a51b85aab4505769b9a6ae09b9ce872096edcb29092b22"
+    },
+    "last-pose/raw-0.1875/edges.json": {
+      "bytes": 33097,
+      "sha256": "420654e19471b4c9c379ad31bb8ad7d12ae51540a2bb93753cb1f41355867b65"
+    },
+    "last-pose/raw-0.1875/frames.jsonl": {
+      "bytes": 395072,
+      "sha256": "5bace28400148207c363a0164e4df3e2f65ca81ad7a1c9e65bebb444d679224c"
+    },
+    "last-pose/raw-0.1875/per-scan.json": {
+      "bytes": 87304,
+      "sha256": "78dd9f13ed17525e9f952522859b993fbef0dd197c3e3fa6ae059dfa579d473b"
+    },
+    "last-pose/raw-0.1875/samples.json": {
+      "bytes": 74886,
+      "sha256": "872da3e8d0d6b3660991b1ca395fa4f9a66d79d111758aad45d50431284d2f22"
+    },
+    "last-pose/raw-0.1875/trajectory.npz": {
+      "bytes": 18593,
+      "sha256": "a93682a18bf361409cf138af1ff1aeb00c9f46f1cd913ccb8bb511a06c6f4977"
+    },
+    "last-pose/raw-legacy/edges.json": {
+      "bytes": 33035,
+      "sha256": "1fbe0a74622efb3bb6dad95404ae6dd8ae04f3f3d8ef28f071993d044a35b808"
+    },
+    "last-pose/raw-legacy/frames.jsonl": {
+      "bytes": 369082,
+      "sha256": "84d6e74772e6c423c970ac9ca6065bfd60fd3aefdc1a383e3b4ebe019cd27bd3"
+    },
+    "last-pose/raw-legacy/per-scan.json": {
+      "bytes": 81538,
+      "sha256": "2335b607ad18a958fd27c25f0d00567efaac7b1d9db0b07cac47fd2ac1e7221e"
+    },
+    "last-pose/raw-legacy/samples.json": {
+      "bytes": 74848,
+      "sha256": "bb6e7eba1e0d592ff6c3928a7a00932d250a24266793c95ccca617b16a6a2807"
+    },
+    "last-pose/raw-legacy/trajectory.npz": {
+      "bytes": 15235,
+      "sha256": "cc566168454ca32ba964cb17ee477e6fc57b41985d33e8f70874b7f9c2d99f03"
+    },
+    "oracle-controller.py": {
+      "bytes": 4612,
+      "sha256": "f19769fcd4e9d82beca7da10ae28f58467fc6b9d9fe5a031317c5f2bd7e3aca6"
+    },
+    "oracle-receipt.json": {
+      "bytes": 5816,
+      "sha256": "6dcea89bbda45cd312b48667c1182bdc4126fb16c0ec25027cce4cd6a815cca2"
+    },
+    "paired-reference.npz": {
+      "bytes": 18932,
+      "sha256": "7d602abbccfe99d6c5bd36e987c8642ef70aeec2c94efa30ca544e22370f6e94"
+    },
+    "protocol.json": {
+      "bytes": 7127,
+      "sha256": "0a2fccb1e0ea90f7292cfd1f5dff5c117319ca32e5dbb106a9e097eb3a71b0dc"
+    },
+    "README.md": {
+      "bytes": 7924,
+      "sha256": "2e4144f34bbd0876bce9cf610ee137877292f28bac1368ed671688ee97660162"
+    },
+    "reference-member.json": {
+      "bytes": 433,
+      "sha256": "4a6481101caa149f08358d4c8f6eb412fefb30e864334551973ceac51c959b10"
+    },
+    "scoring-boundary.json": {
+      "bytes": 235387,
+      "sha256": "4b6fe7efcf3d7ecbc8dc6c011b818e44e8987ee0ccef2804b922312f6dbf51fa"
+    },
+    "snapshot-catalog.json": {
+      "bytes": 266081,
+      "sha256": "563d342161b9768087fe110a4be5f5f10c7d351ab65065efd8b64a118a35fab6"
+    },
+    "source-snapshot/cloudanalyzer/tests/test_flatwall_prediction_policy.py": {
+      "bytes": 2385,
+      "sha256": "09462782f7e26ac18fbe88f1c8c0c32da026429dca872b36d317fbc1c1be506d"
+    },
+    "source-snapshot/scripts/audit_flatwall_frontend_constraints.py": {
+      "bytes": 16228,
+      "sha256": "07843420b1066a0396f4f520945d2f327f086945ef4c8dedc4af3f4d03a5980e"
+    },
+    "source-snapshot/scripts/audit_flatwall_frontend_controls.py": {
+      "bytes": 15123,
+      "sha256": "2b4417eced45d540b9cc72a7557e00e8ad8e6a45334785c11ad11690083130d7"
+    },
+    "source-snapshot/scripts/audit_flatwall_odometry_linearization.py": {
+      "bytes": 15113,
+      "sha256": "b743f3bcb4e1acac83cc212a246f4d56bba493c0e559d408203f0967f4631c48"
+    },
+    "source-snapshot/scripts/audit_flatwall_prediction_policy.py": {
+      "bytes": 17243,
+      "sha256": "c2e5cd927d767f5dc8ceba1b87ebe3292a1957c3c1383d6930cb868988614628"
+    },
+    "source-snapshot/scripts/flatwall_trajectory_reference.py": {
+      "bytes": 10609,
+      "sha256": "6ccec1362344a32f3864fc11b1d26f98f1da76d971cc2c6182397bf70e0cf957"
+    },
+    "summary.json": {
+      "bytes": 43592,
+      "sha256": "f7fd5576f3fa60633161cae74fb67075527c3dc58795e28ba87cd93312d91963"
+    },
+    "verify.py": {
+      "bytes": 16405,
+      "sha256": "350b6ddbc55ad0627f852952efdc54b040a4748306866c0fbc80045109a7fee7"
+    }
+  },
+  "dependencies": {
+    "benchmarks/slam/flatwall-frontend-controls/raw-legacy/trajectory.npz": {
+      "bytes": 18685,
+      "sha256": "3fd1223d315627987c3b7d4f1a280bd6574164f277b7f8df12de0f08a3fbc6ff"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-legacy/per-scan.json": {
+      "bytes": 81555,
+      "sha256": "60938ce71764476529d85ff3602273d075f74a0fc45e936221118914027698e4"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-legacy/samples.json": {
+      "bytes": 74805,
+      "sha256": "1d4ece803f698cfe52f0dc9717137a5987d329ee4ca8f4b18f9fa0dcea693f70"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-legacy/edges.json": {
+      "bytes": 32966,
+      "sha256": "22548eaa4f25b8a8594e86bf04c6f3d503d627628e85ec752eec0b1ab2ec0f91"
+    },
+    "benchmarks/slam/flatwall-frontend-constraints/raw-legacy/frames.jsonl": {
+      "bytes": 363500,
+      "sha256": "f20ac0175831d5784f62671586dac6d4b75ee0bbb18430241d7d01111051d29d"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-legacy/trajectory.npz": {
+      "bytes": 18697,
+      "sha256": "76d7af9f1af16cb0a414528db2355cfb9d645974a991b0f1b8ccf36558e4b1f3"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-legacy/per-scan.json": {
+      "bytes": 81445,
+      "sha256": "b09d53827368481258e2f7683052b10ad449e675f042e408bbdb778ca2cc8987"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-legacy/samples.json": {
+      "bytes": 74841,
+      "sha256": "0c375f4f19f81275ac83239a7439f78d6f8a65105ae2d506d512aff9e3ab3915"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-legacy/edges.json": {
+      "bytes": 32992,
+      "sha256": "74dec8c45197c9f6e3902fc46203090fb62fc65254d25cf0800900e79c26ab5c"
+    },
+    "benchmarks/slam/flatwall-frontend-constraints/gyro-legacy/frames.jsonl": {
+      "bytes": 363420,
+      "sha256": "385cd0e284faa8542ed3e42543e137c1e9f0c281e9d6cbddfa4276bc15de21de"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-0.1875/trajectory.npz": {
+      "bytes": 18621,
+      "sha256": "955d8577f6e00f1f0119515896931b7649a58c969cb87095b772cceefe9e48fa"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-0.1875/per-scan.json": {
+      "bytes": 87300,
+      "sha256": "2166b361e338a6e366091d397f640e04748196c6e445636d6b6491b59044866c"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-0.1875/samples.json": {
+      "bytes": 74917,
+      "sha256": "21797388564ce7def41ad1c0835b76184df7b609ff2f0423dc70a91f78ed4c70"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/raw-0.1875/edges.json": {
+      "bytes": 33076,
+      "sha256": "3912d9e045d0e1facdb6827cbf408213b2a7a7b50c9fac50dcfb620bee52e31b"
+    },
+    "benchmarks/slam/flatwall-frontend-constraints/raw-0.1875/frames.jsonl": {
+      "bytes": 388675,
+      "sha256": "7cc710ccb6611240438fc423f95cc732422954f4c264433b4ae776e03f809b6b"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-0.1875/trajectory.npz": {
+      "bytes": 18632,
+      "sha256": "d1e8096b43ffceee95691ab3ae590f5c969a1fb8390aff13d3b1a796ef54c3a5"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-0.1875/per-scan.json": {
+      "bytes": 87249,
+      "sha256": "cfc4da19e91e3afa29d0e2c9edeff2f1cdd15bcb5b2f48b98373db4d068ed30b"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-0.1875/samples.json": {
+      "bytes": 74899,
+      "sha256": "29ef6dd0595fad6884732517e477ef8c0c9dc1f26e880e30f1e6ab110ce21f09"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/gyro-0.1875/edges.json": {
+      "bytes": 33038,
+      "sha256": "ebda5e8c8c2f189fbfb1ec159f17759c3760aa1d3a0a93442f2f1c20942247ba"
+    },
+    "benchmarks/slam/flatwall-frontend-constraints/gyro-0.1875/frames.jsonl": {
+      "bytes": 389649,
+      "sha256": "e5f435ba48013e60f1c991f82dcee641fa8bd6cd5604f4f386af9108c4b56a65"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/estimates-receipt.json": {
+      "bytes": 3721,
+      "sha256": "13842814227fad998039d501c3f09703e4110e696447c1963b537a0d0f458fd2"
+    },
+    "benchmarks/slam/flatwall-frontend-controls/summary.json": {
+      "bytes": 17104,
+      "sha256": "e6ffdf84f6db6de9bd787fe2e4bacadbd223a677b5d1584e31f4008af1303611"
+    },
+    "benchmarks/slam/flatwall-frontend-constraints/summary.json": {
+      "bytes": 6883,
+      "sha256": "f4e31efe62cae5836c184fde1954d377e9b1c69c22c04f32e512e928a68e3457"
+    },
+    "benchmarks/slam/flatwall-frontend-constraints/verify.py": {
+      "bytes": 10494,
+      "sha256": "c01d3dd641e00ad8aa814d30163826d0d95a63f07848b49f58a2954307b28091"
+    },
+    "benchmarks/slam/flatwall-trajectory/protocol.json": {
+      "bytes": 7008,
+      "sha256": "ac414581f94797cde51c80d246f91d66bd76591c05405d678a4fbab32b7a9452"
+    },
+    "benchmarks/slam/flatwall-trajectory/reference-policy-deviation.json": {
+      "bytes": 3412,
+      "sha256": "30a247f16b7b31ff3950ec304aa565502c949273013e2cacf076bb78d4503a85"
+    }
+  },
+  "scope": "Published file integrity and required prior baseline files; see verifier for numerical accounting."
+}

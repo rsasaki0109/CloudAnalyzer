@@ -99,3 +99,9 @@ Standard sampling slightly reduces residuals; the fine-source case worsens.
 The API is opt-in, defaults and acceptance limits are unchanged, and no rejected
 state is adopted. This slice makes no timing, GPU or trajectory accuracy claim.
 Translation, physical sensor/clock calibration and noise remain unresolved.
+
+The later [full-cohort comparison](slam-flatwall-frontend-controls.md) retains
+all 185 poses with raw and gyro-only controls at both source sampling settings.
+Conditional trajectory errors improve with legacy sampling and worsen with
+fine sampling. This interaction and the unverified reference body/clock mapping
+preclude adopting gyro compensation or a different initialization gate here.

@@ -1,0 +1,14 @@
+{
+  "reason": "The second estimate attempt read the IMU and first LiDAR message, then failed before registration: Scan.positions is also a method. Check all native calls against the archived stub and prior working controller; correct that API call only. Preserve partial empty arrays and all earlier evidence, freeze again at new paths.",
+  "original_files": {
+    "protocol.json": "1d01b6fd7905ba11a8302d4395a22241a6edfb77a90899ffa1bc5058f1adbed6",
+    "controller-freeze.json": "510ff3e453215106a34e2fe06c60b32804ad32c7f4bb5c001ff794e933c8c5a8",
+    "estimate-01.log": "915cf81a24ac8c923f7fd5b25d2eb87530f1dd6288f52aa1dcde90e6edb2853f",
+    "estimates/failure.json": "bddacce5a9245b59b640f3bd4539d79e8ba1ec40f2ce97e9c69a124ab8798e77"
+  },
+  "original_source_sha256": "3e1b501baa01e5c90180e345813162c90702cd09eb71058764f9705c691e339c",
+  "corrected_source_sha256": "2b4417eced45d540b9cc72a7557e00e8ad8e6a45334785c11ad11690083130d7",
+  "any_new_trajectory_produced_in_failed_attempt": false,
+  "selected_reference_previously_inspected": true,
+  "estimator_settings_and_scoring_policy_changed": false
+}

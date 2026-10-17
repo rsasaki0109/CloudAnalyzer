@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\notes\freeze-slam-flatwall-frontend-controls-20261017.py", line 128, in <module>
+    main()
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\notes\freeze-slam-flatwall-frontend-controls-20261017.py", line 41, in main
+    control.verify(build)
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\audit_flatwall_frontend_controls.py", line 58, in verify
+    raise ValueError(f"frozen file changed: {name}")
+ValueError: frozen file changed: rust/crates/ca-core/src/gicp_transported.rs

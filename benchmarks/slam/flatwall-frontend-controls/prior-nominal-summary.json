@@ -1,0 +1,150 @@
+{
+  "schema": "cloudanalyzer.flatwall_trajectory_exploratory_result.v1",
+  "status": "conditional_numeric_comparison",
+  "reference_inspection": "exploratory; reference prefixes inspected before scoring policy",
+  "estimate_commit": "d3bb9106221a9348d99f97d552ea678313166027",
+  "original_estimates": 185,
+  "paired_estimates": 183,
+  "full_cohort_covered": false,
+  "coverage_counts": {
+    "interpolated": 183,
+    "after_reference": 2
+  },
+  "original_recording_excluded_scan_indices": [
+    0
+  ],
+  "interpretation": {
+    "columns": "Unix timestamp seconds, tx ty tz metres, qx qy qz qw; following TUM syntax by explicit assumption, not a claim of an author-declared format.",
+    "pose": "Assume reference-world-from-LiDAR; archive-specific body-axis/extrinsic convention remains unverified. All pose errors are conditional on this assumption.",
+    "time": "Exact decimal seconds converted to int64 nanoseconds without floating Unix seconds; fixed zero offset from estimate scan-end point time. No offset search or nearest-only association.",
+    "scale_and_extrinsic": "One fixed unit scale and identity estimate/reference body transform, both declared rather than fitted. No GT-driven clock, scale, axis or extrinsic selection."
+  },
+  "unresolved_provenance": "No located primary document explicitly specifies the archive column convention, transform direction/body axes, or numerical clock/extrinsic mapping. A TUM-like file alone is not proof of these properties.",
+  "declared_initial_state": "first IMU header, identity pose, zero world velocity/bias, gravity [0,0,-9.80665], acceleration scale9.80665, identity IMU-from-LiDAR",
+  "metrics": {
+    "origin_position_ape_m": {
+      "count": 183,
+      "rmse": 38.05736224338514,
+      "mean": 29.390336369873086,
+      "median": 23.592479414626876,
+      "p95": 88.52219217841824,
+      "max": 100.3396789935858
+    },
+    "origin_rotation_ape_deg": {
+      "count": 183,
+      "rmse": 123.18738693403047,
+      "mean": 114.00915712602853,
+      "median": 126.20460858127531,
+      "p95": 168.68692735237093,
+      "max": 175.52693668658534
+    },
+    "rigid_position_ape_m": {
+      "count": 183,
+      "rmse": 34.92924001450075,
+      "mean": 26.55978264622094,
+      "median": 15.920777967566227,
+      "p95": 85.79200463926742,
+      "max": 95.25663507979188
+    },
+    "consecutive_rpe_translation_m": {
+      "count": 182,
+      "rmse": 4.646372955642088,
+      "mean": 3.386256613368799,
+      "median": 1.9960707558580046,
+      "p95": 8.687338057330384,
+      "max": 10.490089145163326
+    },
+    "consecutive_rpe_rotation_deg": {
+      "count": 182,
+      "rmse": 31.81756602017997,
+      "mean": 24.994229641365234,
+      "median": 21.656951945985554,
+      "p95": 59.18830916857481,
+      "max": 113.24801422266547
+    }
+  },
+  "position_fit": {
+    "singular_values": {
+      "estimate": [
+        439.2745443821207,
+        175.27082093471344,
+        86.55550868034328
+      ],
+      "reference": [
+        18.894835490294405,
+        0.34986107636098496,
+        0.2523370586247015
+      ],
+      "cross_covariance": [
+        4080.7476783590105,
+        48.253602501453194,
+        1.7797785646777244
+      ]
+    },
+    "ranks": {
+      "estimate": 3,
+      "reference": 3,
+      "cross_covariance": 3
+    },
+    "scale": 1.0,
+    "relative_rank_threshold": 1e-10,
+    "status": "identified",
+    "world_alignment": [
+      [
+        0.21577390454045112,
+        -0.8986098451949636,
+        -0.38202351791225003,
+        -4.602614118780773
+      ],
+      [
+        -0.6924016252829762,
+        -0.4166742054881998,
+        0.5890353094562921,
+        0.6416206444535502
+      ],
+      [
+        -0.68849227404878,
+        0.13741525606518515,
+        -0.7121063375477558,
+        -13.111838922662107
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "origin_world_alignment": [
+    [
+      0.7892221750307413,
+      -0.6140918257765546,
+      0.004425828076654731,
+      -0.459233263242985
+    ],
+    [
+      0.5794167373869974,
+      0.7470075362657805,
+      0.32596930100538085,
+      -1.3649132808664552
+    ],
+    [
+      -0.20348121012897932,
+      -0.254697801868306,
+      0.9453699946835101,
+      -0.3912124869980593
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "consecutive_path_lengths": {
+    "estimate_m": 618.9796027868588,
+    "reference_m": 4.081171827162172
+  },
+  "scope": "Arithmetic under declared reference body/clock/layout assumptions on an uncalibrated frozen frontend. No validated physical accuracy, improvement, GLIM comparison, runtime or adoption claim."
+}

@@ -50,3 +50,8 @@ The frontend input is an uncalibrated nominal IMU state. Therefore these
 conditional arithmetic results establish neither calibrated physical accuracy
 nor equivalence to GLIM. They identify a large baseline problem to investigate
 before making estimator or performance claims.
+
+The [full-cohort frontend controls](slam-flatwall-frontend-controls.md) apply this
+same conditional scoring policy to raw and gyro-only point compensation under
+both existing source sampling settings. All estimates are frozen before the
+new scoring stage; all conditions and registration failures remain visible.

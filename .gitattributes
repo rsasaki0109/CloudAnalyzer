@@ -79,3 +79,10 @@ benchmarks/slam/flatwall-trajectory/** text eol=lf
 benchmarks/slam/flatwall-trajectory/*.png binary
 cloudanalyzer/tests/test_flatwall_trajectory_reference.py text eol=lf
 cloudanalyzer/tests/test_flatwall_trajectory_packet.py text eol=lf
+scripts/audit_flatwall_frontend_controls.py text eol=lf
+cloudanalyzer/tests/test_flatwall_frontend_controls.py text eol=lf
+cloudanalyzer/tests/test_flatwall_frontend_controls_packet.py text eol=lf
+benchmarks/slam/flatwall-frontend-controls/** text eol=lf
+benchmarks/slam/flatwall-frontend-controls/*.png binary
+benchmarks/slam/flatwall-frontend-controls/**/*.npz binary
+benchmarks/slam/flatwall-frontend-controls/history/*.log binary

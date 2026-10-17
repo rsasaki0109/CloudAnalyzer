@@ -68,3 +68,7 @@ accepted physical state. It measures no GPU or runtime performance. The useful
 next question is why local registration and prediction produce large adjacent
 errors under these declared models; sampling, compensation and calibration
 must remain visible in that investigation.
+
+The [constraint and prediction audit](slam-flatwall-frontend-constraints.md)
+captures every original scan under all four settings and checks that diagnostics
+preserve the frozen estimates before examining support and local conditioning.

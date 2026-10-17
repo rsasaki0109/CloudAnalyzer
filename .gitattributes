@@ -86,3 +86,9 @@ benchmarks/slam/flatwall-frontend-controls/** text eol=lf
 benchmarks/slam/flatwall-frontend-controls/*.png binary
 benchmarks/slam/flatwall-frontend-controls/**/*.npz binary
 benchmarks/slam/flatwall-frontend-controls/history/*.log binary
+scripts/audit_flatwall_frontend_constraints.py text eol=lf
+cloudanalyzer/tests/test_flatwall_frontend_constraints.py text eol=lf
+cloudanalyzer/tests/test_flatwall_frontend_constraints_packet.py text eol=lf
+benchmarks/slam/flatwall-frontend-constraints/** text eol=lf
+benchmarks/slam/flatwall-frontend-constraints/*.png binary
+benchmarks/slam/flatwall-frontend-constraints/**/*.npz binary

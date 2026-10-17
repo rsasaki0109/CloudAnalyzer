@@ -72,3 +72,7 @@ documents four unchanged 64-scan sequences, independent map/matching/matrix
 checks and their limits. The recording and prior evidence are described in
 [IMU rotation compensation](slam-imu-rotation.md) and
 [startup residual decomposition](slam-startup-residuals.md).
+
+The later [full-cohort constraint audit](slam-flatwall-frontend-constraints.md)
+extends the independent replay to all four 185-scan controls, preserving their
+prior pose bits and reports and recording prediction-only propagation explicitly.

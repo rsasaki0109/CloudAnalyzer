@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\audit_flatwall_frontend_controls.py", line 275, in <module>
+    main()
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\audit_flatwall_frontend_controls.py", line 266, in main
+    result = estimate(args.protocol, args.controller_freeze, args.out)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\audit_flatwall_frontend_controls.py", line 141, in estimate
+    xyz, stamps = scan.positions.astype(np.float64), scan.point_times_ns(unit="ns", origin="header")
+                  ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'builtin_function_or_method' object has no attribute 'astype'

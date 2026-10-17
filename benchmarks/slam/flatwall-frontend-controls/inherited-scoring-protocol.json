@@ -1,0 +1,120 @@
+{
+  "schema": "cloudanalyzer.flatwall_trajectory_exploratory.v1",
+  "frozen_at_utc": "2026-10-17T04:54:34.777292+00:00",
+  "estimate_commit": "d3bb9106221a9348d99f97d552ea678313166027",
+  "reference_inspection": "Reference prefixes of all eight members already read before a scoring policy; explicitly exploratory, reference-inspected evaluation. Complete selected reference has not yet been parsed.",
+  "input_artifacts": {
+    "reference_archive": {
+      "path": "notes/slam-flatwall-inputs-20261016/gt.tar.gz",
+      "bytes": 213710,
+      "sha256": "b2c457f95fdae05af07732a60294762c55567e21e6548977b235ebf415d6a9d9"
+    },
+    "recording": {
+      "path": "notes/slam-flatwall-inputs-20261016/flatwall_01.bag",
+      "bytes": 184597802,
+      "sha256": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6"
+    },
+    "estimate": {
+      "path": "notes/slam-gicp-transported-20261017/integration/trajectory.npz",
+      "bytes": 36107,
+      "sha256": "277f1974f93581f4900c23e6945896f4b62d74ae3a9756240fec378ce5afd7be"
+    },
+    "estimate_receipt": {
+      "path": "notes/slam-gicp-transported-20261017/integration/receipt.json",
+      "bytes": 4240,
+      "sha256": "52594d095c80f70f923cf18fad6b7f9df3b032b955e014ae9e51b9ebbc138e75"
+    },
+    "exposure_record": {
+      "path": "notes/slam-gicp-transported-20261017/reference-inventory/boundary-deviation.json",
+      "bytes": 3412,
+      "sha256": "30a247f16b7b31ff3950ec304aa565502c949273013e2cacf076bb78d4503a85"
+    },
+    "estimate_schema": {
+      "path": "notes/slam-gicp-transported-20261017/estimate-schema.json",
+      "bytes": 2081,
+      "sha256": "f13f5e399e0eeef9b4a6185a1c0f7e18cf80c3bcf8d4e8bfa87304501e04d489"
+    }
+  },
+  "primary_sources": {
+    "flatwall-author": {
+      "url": "https://staff.aist.go.jp/k.koide/projects/glimsupp/flatwall.html",
+      "resolved_url": "https://staff.aist.go.jp/k.koide/projects/glimsupp/flatwall.html",
+      "bytes": 17777,
+      "sha256": "15320dfad4676a0742efde4538e4bc46e5ff47517d76930ab492715d46aef061"
+    },
+    "glim-paper-v1": {
+      "url": "https://arxiv.org/html/2407.10344v1",
+      "resolved_url": "https://arxiv.org/html/2407.10344v1",
+      "bytes": 467695,
+      "sha256": "5ddd412cf847e95d8d8fd65a1536b4aed4c39cf400844d38f31c563f4b357d04"
+    },
+    "tum-format": {
+      "url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats",
+      "resolved_url": "https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats",
+      "bytes": 217154,
+      "sha256": "d686174593d1d2a4fa9ef39aaf90f5e858b6941cf8c74915928cb824a8354b59"
+    }
+  },
+  "confirmed_provenance": "Author dataset page calls this a LiDAR ground truth trajectory; paper VI-A describes batch tag/IMU camera trajectory estimation, PTP host synchronization and calibrated LiDAR-camera transform.",
+  "unresolved_provenance": "No located primary document explicitly specifies the archive column convention, transform direction/body axes, or numerical clock/extrinsic mapping. A TUM-like file alone is not proof of these properties.",
+  "conditional_interpretation": {
+    "columns": "Unix timestamp seconds, tx ty tz metres, qx qy qz qw; following TUM syntax by explicit assumption, not a claim of an author-declared format.",
+    "pose": "Assume reference-world-from-LiDAR; archive-specific body-axis/extrinsic convention remains unverified. All pose errors are conditional on this assumption.",
+    "time": "Exact decimal seconds converted to int64 nanoseconds without floating Unix seconds; fixed zero offset from estimate scan-end point time. No offset search or nearest-only association.",
+    "scale_and_extrinsic": "One fixed unit scale and identity estimate/reference body transform, both declared rather than fitted. No GT-driven clock, scale, axis or extrinsic selection."
+  },
+  "cohort": "All 185 saved estimates in chronological order, original scan indices 1..185. No new state estimation or parameter tuning. Process only literal gt/flatwall_01.txt regular archive member; leave the other seven reference trajectories unopened.",
+  "archive": {
+    "member": "gt/flatwall_01.txt",
+    "maximum_member_bytes": 8388608,
+    "extract_to_filesystem": false,
+    "duplicate_names": "reject"
+  },
+  "validation": {
+    "quaternion_norm_atol": 1e-05,
+    "quaternion_policy": "Reject outside tolerance; normalize within tolerance and report maximum original norm discrepancy.",
+    "rotation_orthogonality_atol": 1e-06,
+    "rotation_determinant_atol": 1e-06,
+    "homogeneous_row_atol": 1e-12,
+    "timestamps": "strictly increasing int64; reject nonintegral nanoseconds, duplicates, unsorted or nonfinite rows"
+  },
+  "association": {
+    "maximum_bracket_span_ns": 100000000,
+    "position": "linear interpolation",
+    "orientation": "shortest-arc SO3 SLERP; exact timestamp uses exact row",
+    "extrapolation": false,
+    "coverage": "One row per original estimate, reason and bracket indices/span. Out-of-range or long-gap rows excluded from numerical metrics but never hidden. No edge may bridge an excluded scan."
+  },
+  "alignment": {
+    "primary": "One global least-squares proper rotation and translation fit on every paired position; unit scale, no reflection, no subsequence selection.",
+    "rank_relative_threshold": 1e-10,
+    "rank_policy": "If either centered position matrix or cross covariance has rank < 2, omit global rigid-fit metrics and expose the degeneracy. Always report singular values and initial-pose-aligned diagnostics.",
+    "secondary": "One full SE3 transform from the first paired pose; no further fit."
+  },
+  "metrics": [
+    "position APE after global rigid position fit when identifiable",
+    "position and SO3-angle APE after first-pose alignment",
+    "consecutive original-scan SE3 RPE translation norm and rotation angle; report every retained edge and elapsed time",
+    "reference and estimate path length on retained consecutive original edges"
+  ],
+  "summary": [
+    "count",
+    "rmse",
+    "mean",
+    "median",
+    "p95",
+    "max"
+  ],
+  "independent_checks": "Frozen installed evo TUM parsing and no-scale Umeyama/APE/RPE on the exact declared paired cohort; independently implement Decimal timestamp bracketing and local interpolation. TUM and evo validate arithmetic only, not missing dataset provenance.",
+  "oracle_tolerances": {
+    "position_atol_m": 2e-08,
+    "rotation_atol_deg": 1e-05
+  },
+  "packages": {
+    "numpy": "2.3.4",
+    "scipy": "1.17.1",
+    "evo": "1.37.1"
+  },
+  "reporting": "Publish all coverage, declared assumptions, exposure boundary, failures and numerical metrics. Do not compare to published GLIM ATEs with different association/alignment, claim a blind evaluation, physical calibration, improvement, GPU speed or algorithm adoption.",
+  "controller_freeze": "Freeze evaluator, oracle and installed dependency source identities after analytic unit controls pass and before the first full selected reference read. New paths for any correction; preserve all prior protocols/receipts verbatim."
+}

@@ -1,0 +1,21 @@
+{
+  "at_utc": "2026-10-17T08:36:54.628857+00:00",
+  "files_sha256": {
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/gyro-0.1875/per-scan.json": "cfc4da19e91e3afa29d0e2c9edeff2f1cdd15bcb5b2f48b98373db4d068ed30b",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/gyro-0.1875/trajectory.npz": "d1e8096b43ffceee95691ab3ae590f5c969a1fb8390aff13d3b1a796ef54c3a5",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/gyro-legacy/per-scan.json": "b09d53827368481258e2f7683052b10ad449e675f042e408bbdb778ca2cc8987",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/gyro-legacy/trajectory.npz": "76d7af9f1af16cb0a414528db2355cfb9d645974a991b0f1b8ccf36558e4b1f3",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/raw-0.1875/per-scan.json": "2166b361e338a6e366091d397f640e04748196c6e445636d6b6491b59044866c",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/raw-0.1875/trajectory.npz": "955d8577f6e00f1f0119515896931b7649a58c969cb87095b772cceefe9e48fa",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/raw-legacy/per-scan.json": "60938ce71764476529d85ff3602273d075f74a0fc45e936221118914027698e4",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/raw-legacy/trajectory.npz": "3fd1223d315627987c3b7d4f1a280bd6574164f277b7f8df12de0f08a3fbc6ff",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/estimates/receipt.json": "13842814227fad998039d501c3f09703e4110e696447c1963b537a0d0f458fd2",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/protocol.json": "d0b99bc789b23d5f9c08928118553f1b891446bfb4bb3e0d075469b928c13271",
+    "notes/slam-flatwall-frontend-controls-20261017/revision-02/controller-freeze.json": "faea8e204a70226611f3991b03b6247ebcebd22e5016ac758ab528dc1a33937e",
+    "notes/slam-flatwall-trajectory-20261017/strict-time-regression/results/paired.npz": "078986de3e2777aeae671fc48787872dbcf7fd7dc7502199956a516c9df230ce"
+  },
+  "oracle_controller_sha256": "a4887d5b5241fca2eda3a48ff4d83fa2319838fabce761e3a00e4a9a61650cb7",
+  "helper_sha256": "807123b6daa6fbef143bb4066f32d151dcf25784a5fbbe89432f2bf894b432ef",
+  "all_four_complete_estimates_frozen_before_this_scoring": true,
+  "reference_previously_inspected": true
+}

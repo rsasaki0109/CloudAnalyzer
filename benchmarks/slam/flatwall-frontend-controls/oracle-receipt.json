@@ -1,0 +1,81 @@
+{
+  "at_utc": "2026-10-17T08:36:58.601782+00:00",
+  "controls": {
+    "raw-legacy": {
+      "paired_estimates": 183,
+      "consecutive_edges": 182,
+      "maximum_abs_differences": {
+        "world_alignment_matrix": 2.1760371282653068e-14,
+        "origin_position_ape_m": 0.0,
+        "origin_rotation_ape_deg": 4.263256414560601e-14,
+        "rigid_position_ape_m": 8.43769498715119e-15,
+        "consecutive_rpe_translation_m": 1.5543122344752192e-15,
+        "consecutive_rpe_rotation_deg": 2.1316282072803006e-14
+      },
+      "prior_exact_pairing_reproduced": true
+    },
+    "gyro-legacy": {
+      "paired_estimates": 183,
+      "consecutive_edges": 182,
+      "maximum_abs_differences": {
+        "world_alignment_matrix": 4.463096558993129e-14,
+        "origin_position_ape_m": 0.0,
+        "origin_rotation_ape_deg": 5.684341886080802e-14,
+        "rigid_position_ape_m": 6.217248937900877e-15,
+        "consecutive_rpe_translation_m": 8.049116928532385e-16,
+        "consecutive_rpe_rotation_deg": 8.881784197001252e-15
+      },
+      "prior_exact_pairing_reproduced": true
+    },
+    "raw-0.1875": {
+      "paired_estimates": 183,
+      "consecutive_edges": 182,
+      "maximum_abs_differences": {
+        "world_alignment_matrix": 5.592748486549226e-14,
+        "origin_position_ape_m": 0.0,
+        "origin_rotation_ape_deg": 7.105427357601002e-14,
+        "rigid_position_ape_m": 2.3092638912203256e-14,
+        "consecutive_rpe_translation_m": 5.551115123125783e-16,
+        "consecutive_rpe_rotation_deg": 7.105427357601002e-15
+      },
+      "prior_exact_pairing_reproduced": true
+    },
+    "gyro-0.1875": {
+      "paired_estimates": 183,
+      "consecutive_edges": 182,
+      "maximum_abs_differences": {
+        "world_alignment_matrix": 6.439293542825908e-15,
+        "origin_position_ape_m": 0.0,
+        "origin_rotation_ape_deg": 5.684341886080802e-14,
+        "rigid_position_ape_m": 5.773159728050814e-15,
+        "consecutive_rpe_translation_m": 6.661338147750939e-16,
+        "consecutive_rpe_rotation_deg": 4.263256414560601e-14
+      },
+      "prior_exact_pairing_reproduced": true
+    },
+    "nominal-imu-legacy": {
+      "paired_estimates": 183,
+      "consecutive_edges": 182,
+      "maximum_abs_differences": {
+        "world_alignment_matrix": 2.1316282072803006e-14,
+        "origin_position_ape_m": 0.0,
+        "origin_rotation_ape_deg": 5.684341886080802e-14,
+        "rigid_position_ape_m": 5.684341886080802e-14,
+        "consecutive_rpe_translation_m": 1.0658141036401503e-14,
+        "consecutive_rpe_rotation_deg": 4.263256414560601e-14
+      },
+      "prior_exact_pairing_reproduced": true
+    }
+  },
+  "scoring_boundary_sha256": "8410d58db96077c7e32c4e4c32f9e2798fb63750eb086d4b85da986ddfe9674b",
+  "methods": "Installed evo APE/RPE and no-scale Umeyama on the exact paired arrays; all reference matrices/indices/times must equal the previous independently audited pairing bit for bit. No new independent raw-reference association claim.",
+  "physical_provenance_certified": false,
+  "input_hashes_unchanged": true,
+  "outputs_sha256": {
+    "gyro-0.1875.npz": "b1a0f2b035c7c1301fe1b3e744973d18280ac9c645793da28901e4fc13df8253",
+    "gyro-legacy.npz": "9b2bd00a2c6102ad2d0fa1e2db2280110aec7c480f88f80904146cc1a360d625",
+    "nominal-imu-legacy.npz": "0125841d98ab3988ca1efdf8fb9004956cfcf0b267e412fd169698ff9cab78ac",
+    "raw-0.1875.npz": "c965e92542c489a5ab925e70aea3c81140b9f8ae1f9f8430b7c890c7a1ab824f",
+    "raw-legacy.npz": "cf49591e2e454759f69c8f189094838e0d246e6bfe30425fd8f29f85eaa31a8e"
+  }
+}

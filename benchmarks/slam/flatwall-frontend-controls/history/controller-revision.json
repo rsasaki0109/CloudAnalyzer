@@ -1,0 +1,15 @@
+{
+  "reason": "The first estimate attempt read the IMU series then stopped before LiDAR iteration: timestamps_ns is a method. Correct only that API call, retain all earlier files, freeze corrected sources and all estimates at new paths before scoring.",
+  "original_files": {
+    "protocol.json": "b554f5c8344b41dc5e56a5f8e2d43615e3277c013de3bccb56168a31d7f75465",
+    "controller-freeze.json": "c4906da94c43031d01e9273b5f4a8c6b329581a1f32a2cada55f2f8da5bce31d",
+    "freeze-01.log": "e09fbd8329eff89f1b20c54ef46f09f6e32a327faba2f9cfcb2faa99dbfacc8f",
+    "freeze-02.log": "6e27c3e3a8c3c48e35696ad6b001385166963118b22dc3867c846bd80cc8b557",
+    "estimate-01.log": "9ebee107f65c801a91fa787c48dcc46a60bb158bd546ef519605962c843c009c"
+  },
+  "original_source_sha256": "a4170e8f6054efef025495f60f1c73f8e72a805538bc92879a5eb4054fb40676",
+  "corrected_source_sha256": "3e1b501baa01e5c90180e345813162c90702cd09eb71058764f9705c691e339c",
+  "any_new_trajectory_produced_in_failed_attempt": false,
+  "selected_reference_previously_inspected": true,
+  "estimator_settings_and_scoring_policy_changed": false
+}

@@ -103,3 +103,12 @@ cloudanalyzer/tests/test_flatwall_recording_inputs.py text eol=lf
 cloudanalyzer/tests/test_flatwall_recording_inputs_packet.py text eol=lf
 benchmarks/slam/flatwall-recording-inputs/** text eol=lf
 benchmarks/slam/flatwall-recording-inputs/**/*.npz binary
+scripts/audit_flatwall_recording_prediction.py text eol=lf
+scripts/flatwall_selected_reference.py text eol=lf
+cloudanalyzer/tests/test_flatwall_recording_prediction.py text eol=lf
+cloudanalyzer/tests/test_flatwall_recording_prediction_packet.py text eol=lf
+benchmarks/slam/flatwall02-prediction/** text eol=lf
+benchmarks/slam/flatwall02-prediction/**/*.npz binary
+benchmarks/slam/flatwall02-prediction/paired-reference.npz binary
+benchmarks/slam/flatwall02-prediction/reference-source.txt binary
+benchmarks/slam/flatwall02-prediction/*.png binary

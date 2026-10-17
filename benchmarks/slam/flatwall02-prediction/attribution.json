@@ -1,0 +1,13 @@
+{
+  "creator": "Kenji Koide, AIST",
+  "dataset": "LiDAR Degeneration Test Dataset (Flatwall experiment), v2",
+  "source": "https://zenodo.org/records/7641866",
+  "doi": "10.5281/zenodo.7641866",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "reference_source": "reference-source.txt is the unmodified selected original gt/flatwall_02.txt member, copied only after all eight estimates were closed.",
+  "reference_member_sha256": "14dca34383b6ac8feae895201a118a1b589fba493011899a4cf655bea00a0e52",
+  "derivatives": "paired-reference.npz contains interpolated reference poses and exact integer times/indices. Estimates, diagnostics, errors and plots are derived from the original real recording.",
+  "exposure": "All eight member prefixes were historically exposed; full 01 was previously scored. All eight new 02 estimates closed before full 02 parsing. This remains exploratory, never blind or held out.",
+  "physical_provenance_certified": false
+}

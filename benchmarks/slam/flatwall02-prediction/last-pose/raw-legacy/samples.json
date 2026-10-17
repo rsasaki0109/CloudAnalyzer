@@ -1,0 +1,1922 @@
+[
+  {
+    "cohort_index": 0,
+    "scan_index": 1,
+    "timestamp_ns": 1656505449999131830,
+    "left": 8,
+    "right": 9,
+    "bracket_span_ns": 36598921,
+    "status": "interpolated",
+    "fraction": 0.37975879124961087,
+    "errors": {
+      "origin_position_ape_m": 0.0,
+      "origin_rotation_ape_deg": 0.0,
+      "rigid_position_ape_m": 1.0634902482423432
+    }
+  },
+  {
+    "cohort_index": 1,
+    "scan_index": 2,
+    "timestamp_ns": 1656505450099676487,
+    "left": 12,
+    "right": 13,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.2537975840073932,
+    "errors": {
+      "origin_position_ape_m": 0.039978354265448074,
+      "origin_rotation_ape_deg": 1.3527640665860323,
+      "rigid_position_ape_m": 1.0490795622122622
+    }
+  },
+  {
+    "cohort_index": 2,
+    "scan_index": 3,
+    "timestamp_ns": 1656505450199503678,
+    "left": 16,
+    "right": 17,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.35441807805130693,
+    "errors": {
+      "origin_position_ape_m": 0.041474565552527945,
+      "origin_rotation_ape_deg": 0.6661765637262764,
+      "rigid_position_ape_m": 1.0534762010196124
+    }
+  },
+  {
+    "cohort_index": 3,
+    "scan_index": 4,
+    "timestamp_ns": 1656505450299354298,
+    "left": 20,
+    "right": 21,
+    "bracket_span_ns": 18301011,
+    "status": "interpolated",
+    "fraction": 0.1503378146704573,
+    "errors": {
+      "origin_position_ape_m": 0.05264335276848454,
+      "origin_rotation_ape_deg": 0.7009153516897191,
+      "rigid_position_ape_m": 1.0238840836674388
+    }
+  },
+  {
+    "cohort_index": 4,
+    "scan_index": 5,
+    "timestamp_ns": 1656505450399192295,
+    "left": 23,
+    "right": 24,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.8028324666234268,
+    "errors": {
+      "origin_position_ape_m": 0.08221203953492211,
+      "origin_rotation_ape_deg": 1.0501008514442154,
+      "rigid_position_ape_m": 0.9963429604852412
+    }
+  },
+  {
+    "cohort_index": 5,
+    "scan_index": 6,
+    "timestamp_ns": 1656505450499811043,
+    "left": 28,
+    "right": 29,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.051859405573790734,
+    "errors": {
+      "origin_position_ape_m": 0.024660644031233758,
+      "origin_rotation_ape_deg": 0.8681165921760684,
+      "rigid_position_ape_m": 1.0507441859741102
+    }
+  },
+  {
+    "cohort_index": 6,
+    "scan_index": 7,
+    "timestamp_ns": 1656505450599641274,
+    "left": 31,
+    "right": 32,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.7793107927018565,
+    "errors": {
+      "origin_position_ape_m": 0.05289210048527128,
+      "origin_rotation_ape_deg": 0.9498463685375595,
+      "rigid_position_ape_m": 1.0640055505718153
+    }
+  },
+  {
+    "cohort_index": 7,
+    "scan_index": 8,
+    "timestamp_ns": 1656505450699481586,
+    "left": 36,
+    "right": 37,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.007063653863912429,
+    "errors": {
+      "origin_position_ape_m": 0.050614217049419104,
+      "origin_rotation_ape_deg": 0.8631969093943682,
+      "rigid_position_ape_m": 1.0416759676182186
+    }
+  },
+  {
+    "cohort_index": 8,
+    "scan_index": 9,
+    "timestamp_ns": 1656505450799322285,
+    "left": 39,
+    "right": 40,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.734801057427978,
+    "errors": {
+      "origin_position_ape_m": 0.02587954207734816,
+      "origin_rotation_ape_deg": 0.5534317602917429,
+      "rigid_position_ape_m": 1.0899947976950153
+    }
+  },
+  {
+    "cohort_index": 9,
+    "scan_index": 10,
+    "timestamp_ns": 1656505450899158413,
+    "left": 43,
+    "right": 44,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.9248922327237677,
+    "errors": {
+      "origin_position_ape_m": 0.03242994738965511,
+      "origin_rotation_ape_deg": 0.41024152971777555,
+      "rigid_position_ape_m": 1.0647884322755417
+    }
+  },
+  {
+    "cohort_index": 10,
+    "scan_index": 11,
+    "timestamp_ns": 1656505450999799289,
+    "left": 47,
+    "right": 48,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.4240900912026167,
+    "errors": {
+      "origin_position_ape_m": 0.01547509842407474,
+      "origin_rotation_ape_deg": 1.5402388295596718,
+      "rigid_position_ape_m": 1.0686325660666347
+    }
+  },
+  {
+    "cohort_index": 11,
+    "scan_index": 12,
+    "timestamp_ns": 1656505451099612095,
+    "left": 51,
+    "right": 52,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.8780928484274911,
+    "errors": {
+      "origin_position_ape_m": 0.050258920783591385,
+      "origin_rotation_ape_deg": 0.7685781003893498,
+      "rigid_position_ape_m": 1.1045958629539623
+    }
+  },
+  {
+    "cohort_index": 12,
+    "scan_index": 13,
+    "timestamp_ns": 1656505451199466300,
+    "left": 55,
+    "right": 56,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.33431865235853103,
+    "errors": {
+      "origin_position_ape_m": 0.021719121322922127,
+      "origin_rotation_ape_deg": 0.5425441884744897,
+      "rigid_position_ape_m": 1.0686966599976748
+    }
+  },
+  {
+    "cohort_index": 13,
+    "scan_index": 14,
+    "timestamp_ns": 1656505451299317205,
+    "left": 59,
+    "right": 60,
+    "bracket_span_ns": 36598921,
+    "status": "interpolated",
+    "fraction": 0.3966291519905737,
+    "errors": {
+      "origin_position_ape_m": 0.024478881718802144,
+      "origin_rotation_ape_deg": 0.4485312300962373,
+      "rigid_position_ape_m": 1.0594988356758441
+    }
+  },
+  {
+    "cohort_index": 14,
+    "scan_index": 15,
+    "timestamp_ns": 1656505451399154164,
+    "left": 63,
+    "right": 64,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.2488653040187418,
+    "errors": {
+      "origin_position_ape_m": 0.044707695069365526,
+      "origin_rotation_ape_deg": 0.44435297400747376,
+      "rigid_position_ape_m": 1.0535067249042467
+    }
+  },
+  {
+    "cohort_index": 15,
+    "scan_index": 16,
+    "timestamp_ns": 1656505451499802423,
+    "left": 67,
+    "right": 68,
+    "bracket_span_ns": 36600113,
+    "status": "interpolated",
+    "fraction": 0.37438313373513354,
+    "errors": {
+      "origin_position_ape_m": 0.06711106569113412,
+      "origin_rotation_ape_deg": 0.6606529815882418,
+      "rigid_position_ape_m": 1.0320887383824016
+    }
+  },
+  {
+    "cohort_index": 16,
+    "scan_index": 17,
+    "timestamp_ns": 1656505451599639471,
+    "left": 71,
+    "right": 72,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.204338828252766,
+    "errors": {
+      "origin_position_ape_m": 0.08665102364618078,
+      "origin_rotation_ape_deg": 0.8512363721022478,
+      "rigid_position_ape_m": 1.0089592951655841
+    }
+  },
+  {
+    "cohort_index": 17,
+    "scan_index": 18,
+    "timestamp_ns": 1656505451699496434,
+    "left": 75,
+    "right": 76,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.33050198478825366,
+    "errors": {
+      "origin_position_ape_m": 0.053726868657219644,
+      "origin_rotation_ape_deg": 0.7639029735008875,
+      "rigid_position_ape_m": 1.1355178374878132
+    }
+  },
+  {
+    "cohort_index": 18,
+    "scan_index": 19,
+    "timestamp_ns": 1656505451799327671,
+    "left": 79,
+    "right": 80,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.11626773163972831,
+    "errors": {
+      "origin_position_ape_m": 0.18596439694738398,
+      "origin_rotation_ape_deg": 2.253043370659454,
+      "rigid_position_ape_m": 1.0759351919483031
+    }
+  },
+  {
+    "cohort_index": 19,
+    "scan_index": 20,
+    "timestamp_ns": 1656505451899157438,
+    "left": 83,
+    "right": 84,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.2857231069778244,
+    "errors": {
+      "origin_position_ape_m": 0.09502799193670507,
+      "origin_rotation_ape_deg": 2.6711954607641766,
+      "rigid_position_ape_m": 1.0563670816793982
+    }
+  },
+  {
+    "cohort_index": 20,
+    "scan_index": 21,
+    "timestamp_ns": 1656505451999794857,
+    "left": 87,
+    "right": 88,
+    "bracket_span_ns": 18299818,
+    "status": "interpolated",
+    "fraction": 0.07075196048397858,
+    "errors": {
+      "origin_position_ape_m": 0.25062040751060544,
+      "origin_rotation_ape_deg": 2.1995979814884636,
+      "rigid_position_ape_m": 1.1729070914805915
+    }
+  },
+  {
+    "cohort_index": 21,
+    "scan_index": 22,
+    "timestamp_ns": 1656505452099686893,
+    "left": 90,
+    "right": 91,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.7646691962745774,
+    "errors": {
+      "origin_position_ape_m": 0.4571592340954744,
+      "origin_rotation_ape_deg": 3.612919104646762,
+      "rigid_position_ape_m": 1.1929536192274353
+    }
+  },
+  {
+    "cohort_index": 22,
+    "scan_index": 23,
+    "timestamp_ns": 1656505452199525639,
+    "left": 94,
+    "right": 95,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.9850068764816895,
+    "errors": {
+      "origin_position_ape_m": 0.6431781832053464,
+      "origin_rotation_ape_deg": 8.252476802181333,
+      "rigid_position_ape_m": 1.262573304571948
+    }
+  },
+  {
+    "cohort_index": 23,
+    "scan_index": 24,
+    "timestamp_ns": 1656505452299381436,
+    "left": 98,
+    "right": 99,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.7230312227841189,
+    "errors": {
+      "origin_position_ape_m": 0.5821545020753238,
+      "origin_rotation_ape_deg": 8.129832200343106,
+      "rigid_position_ape_m": 1.2344257572957469
+    }
+  },
+  {
+    "cohort_index": 24,
+    "scan_index": 25,
+    "timestamp_ns": 1656505452399221174,
+    "left": 102,
+    "right": 103,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.9014847267992313,
+    "errors": {
+      "origin_position_ape_m": 0.7626116173008272,
+      "origin_rotation_ape_deg": 13.520468740671257,
+      "rigid_position_ape_m": 1.126575237412771
+    }
+  },
+  {
+    "cohort_index": 25,
+    "scan_index": 26,
+    "timestamp_ns": 1656505452499478859,
+    "left": 106,
+    "right": 107,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.6898786818356287,
+    "errors": {
+      "origin_position_ape_m": 0.8984307710064259,
+      "origin_rotation_ape_deg": 16.293404927163174,
+      "rigid_position_ape_m": 1.1237148974069173
+    }
+  },
+  {
+    "cohort_index": 26,
+    "scan_index": 27,
+    "timestamp_ns": 1656505452599332635,
+    "left": 110,
+    "right": 111,
+    "bracket_span_ns": 18301011,
+    "status": "interpolated",
+    "fraction": 0.835998787170829,
+    "errors": {
+      "origin_position_ape_m": 0.9029428657742207,
+      "origin_rotation_ape_deg": 16.698981720735723,
+      "rigid_position_ape_m": 1.1109436490494078
+    }
+  },
+  {
+    "cohort_index": 27,
+    "scan_index": 28,
+    "timestamp_ns": 1656505452699161779,
+    "left": 114,
+    "right": 115,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.6454210997097974,
+    "errors": {
+      "origin_position_ape_m": 0.9093499492368871,
+      "origin_rotation_ape_deg": 17.7223155029312,
+      "rigid_position_ape_m": 1.0954085421867612
+    }
+  },
+  {
+    "cohort_index": 28,
+    "scan_index": 29,
+    "timestamp_ns": 1656505452799793065,
+    "left": 118,
+    "right": 119,
+    "bracket_span_ns": 18301011,
+    "status": "interpolated",
+    "fraction": 0.7895290593508741,
+    "errors": {
+      "origin_position_ape_m": 0.9200257059906277,
+      "origin_rotation_ape_deg": 18.856673880368547,
+      "rigid_position_ape_m": 1.076750605663567
+    }
+  },
+  {
+    "cohort_index": 29,
+    "scan_index": 30,
+    "timestamp_ns": 1656505452899638423,
+    "left": 122,
+    "right": 123,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.24525843109205447,
+    "errors": {
+      "origin_position_ape_m": 0.9350935604552154,
+      "origin_rotation_ape_deg": 19.641955592882532,
+      "rigid_position_ape_m": 1.0553571226337564
+    }
+  },
+  {
+    "cohort_index": 30,
+    "scan_index": 31,
+    "timestamp_ns": 1656505452999486637,
+    "left": 126,
+    "right": 127,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.3505719083263711,
+    "errors": {
+      "origin_position_ape_m": 0.9556154985423989,
+      "origin_rotation_ape_deg": 20.115125991033633,
+      "rigid_position_ape_m": 1.0295318181896476
+    }
+  },
+  {
+    "cohort_index": 31,
+    "scan_index": 32,
+    "timestamp_ns": 1656505453099309721,
+    "left": 130,
+    "right": 131,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.15565605395549206,
+    "errors": {
+      "origin_position_ape_m": 0.9821936550307991,
+      "origin_rotation_ape_deg": 20.53563053682234,
+      "rigid_position_ape_m": 0.9975347665126827
+    }
+  },
+  {
+    "cohort_index": 32,
+    "scan_index": 33,
+    "timestamp_ns": 1656505453199151467,
+    "left": 134,
+    "right": 135,
+    "bracket_span_ns": 36600828,
+    "status": "interpolated",
+    "fraction": 0.305603987975354,
+    "errors": {
+      "origin_position_ape_m": 1.0135307368675837,
+      "origin_rotation_ape_deg": 21.02587412203131,
+      "rigid_position_ape_m": 0.9605458672876606
+    }
+  },
+  {
+    "cohort_index": 33,
+    "scan_index": 34,
+    "timestamp_ns": 1656505453299779484,
+    "left": 138,
+    "right": 139,
+    "bracket_span_ns": 18300057,
+    "status": "interpolated",
+    "fraction": 0.11166932430866199,
+    "errors": {
+      "origin_position_ape_m": 1.0462931046883548,
+      "origin_rotation_ape_deg": 21.191137964425454,
+      "rigid_position_ape_m": 0.9236412843986666
+    }
+  },
+  {
+    "cohort_index": 34,
+    "scan_index": 35,
+    "timestamp_ns": 1656505453399614883,
+    "left": 142,
+    "right": 143,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.28360379054856855,
+    "errors": {
+      "origin_position_ape_m": 1.080123090112833,
+      "origin_rotation_ape_deg": 21.053861229570607,
+      "rigid_position_ape_m": 0.8881809896143654
+    }
+  },
+  {
+    "cohort_index": 35,
+    "scan_index": 36,
+    "timestamp_ns": 1656505453499457387,
+    "left": 146,
+    "right": 147,
+    "bracket_span_ns": 18299102,
+    "status": "interpolated",
+    "fraction": 0.02308883791128111,
+    "errors": {
+      "origin_position_ape_m": 1.116055904303548,
+      "origin_rotation_ape_deg": 21.463022303567605,
+      "rigid_position_ape_m": 0.8515330473550952
+    }
+  },
+  {
+    "cohort_index": 36,
+    "scan_index": 37,
+    "timestamp_ns": 1656505453599297052,
+    "left": 150,
+    "right": 151,
+    "bracket_span_ns": 36600113,
+    "status": "interpolated",
+    "fraction": 0.23942767608395088,
+    "errors": {
+      "origin_position_ape_m": 1.1517121077729104,
+      "origin_rotation_ape_deg": 21.914834604113153,
+      "rigid_position_ape_m": 0.8144020086227575
+    }
+  },
+  {
+    "cohort_index": 37,
+    "scan_index": 38,
+    "timestamp_ns": 1656505453699143753,
+    "left": 153,
+    "right": 154,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.9349554449450865,
+    "errors": {
+      "origin_position_ape_m": 1.1874455696601656,
+      "origin_rotation_ape_deg": 22.966884854179067,
+      "rigid_position_ape_m": 0.7763862244433886
+    }
+  },
+  {
+    "cohort_index": 38,
+    "scan_index": 39,
+    "timestamp_ns": 1656505453799781609,
+    "left": 157,
+    "right": 158,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.7171746820767744,
+    "errors": {
+      "origin_position_ape_m": 1.223300838417841,
+      "origin_rotation_ape_deg": 24.08049912402998,
+      "rigid_position_ape_m": 0.7378926909689885
+    }
+  },
+  {
+    "cohort_index": 39,
+    "scan_index": 40,
+    "timestamp_ns": 1656505453899614864,
+    "left": 161,
+    "right": 162,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.889724119051353,
+    "errors": {
+      "origin_position_ape_m": 1.2561373024907698,
+      "origin_rotation_ape_deg": 25.18886728510161,
+      "rigid_position_ape_m": 0.7013304961588441
+    }
+  },
+  {
+    "cohort_index": 40,
+    "scan_index": 41,
+    "timestamp_ns": 1656505453999452171,
+    "left": 165,
+    "right": 166,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.6726829988540398,
+    "errors": {
+      "origin_position_ape_m": 1.2854939256765348,
+      "origin_rotation_ape_deg": 26.30715822998237,
+      "rigid_position_ape_m": 0.6673176051688564
+    }
+  },
+  {
+    "cohort_index": 41,
+    "scan_index": 42,
+    "timestamp_ns": 1656505454099232215,
+    "left": 169,
+    "right": 170,
+    "bracket_span_ns": 18300057,
+    "status": "interpolated",
+    "fraction": 0.797879973816475,
+    "errors": {
+      "origin_position_ape_m": 1.314122850756923,
+      "origin_rotation_ape_deg": 27.722157051005134,
+      "rigid_position_ape_m": 0.6356143391412157
+    }
+  },
+  {
+    "cohort_index": 42,
+    "scan_index": 43,
+    "timestamp_ns": 1656505454199487003,
+    "left": 173,
+    "right": 174,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.6381440646996746,
+    "errors": {
+      "origin_position_ape_m": 1.343503199464672,
+      "origin_rotation_ape_deg": 28.93977558722077,
+      "rigid_position_ape_m": 0.6055988945356162
+    }
+  },
+  {
+    "cohort_index": 43,
+    "scan_index": 44,
+    "timestamp_ns": 1656505454299321160,
+    "left": 177,
+    "right": 178,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.7325943212970213,
+    "errors": {
+      "origin_position_ape_m": 1.376053807004476,
+      "origin_rotation_ape_deg": 30.34389473440371,
+      "rigid_position_ape_m": 0.574366537788579
+    }
+  },
+  {
+    "cohort_index": 44,
+    "scan_index": 45,
+    "timestamp_ns": 1656505454399158597,
+    "left": 181,
+    "right": 182,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.5939454161273067,
+    "errors": {
+      "origin_position_ape_m": 1.4129438751112595,
+      "origin_rotation_ape_deg": 32.29267593266026,
+      "rigid_position_ape_m": 0.5395286672305568
+    }
+  },
+  {
+    "cohort_index": 45,
+    "scan_index": 46,
+    "timestamp_ns": 1656505454499807293,
+    "left": 185,
+    "right": 186,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.6875681178251911,
+    "errors": {
+      "origin_position_ape_m": 1.4475509872244603,
+      "origin_rotation_ape_deg": 34.863323633389655,
+      "rigid_position_ape_m": 0.5040594603870082
+    }
+  },
+  {
+    "cohort_index": 46,
+    "scan_index": 47,
+    "timestamp_ns": 1656505454599642377,
+    "left": 189,
+    "right": 190,
+    "bracket_span_ns": 18301011,
+    "status": "interpolated",
+    "fraction": 0.14274910823232662,
+    "errors": {
+      "origin_position_ape_m": 1.4760895767670068,
+      "origin_rotation_ape_deg": 36.775782409359174,
+      "rigid_position_ape_m": 0.47271038930502085
+    }
+  },
+  {
+    "cohort_index": 47,
+    "scan_index": 48,
+    "timestamp_ns": 1656505454699475798,
+    "left": 193,
+    "right": 194,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.29891309277466105,
+    "errors": {
+      "origin_position_ape_m": 1.5016848920391555,
+      "origin_rotation_ape_deg": 38.54559165865094,
+      "rigid_position_ape_m": 0.4455137185142267
+    }
+  },
+  {
+    "cohort_index": 48,
+    "scan_index": 49,
+    "timestamp_ns": 1656505454799310225,
+    "left": 197,
+    "right": 198,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.05295822471000235,
+    "errors": {
+      "origin_position_ape_m": 1.5267658577006311,
+      "origin_rotation_ape_deg": 39.96235002912702,
+      "rigid_position_ape_m": 0.4201342681593227
+    }
+  },
+  {
+    "cohort_index": 49,
+    "scan_index": 50,
+    "timestamp_ns": 1656505454899149584,
+    "left": 201,
+    "right": 202,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.2541798785968643,
+    "errors": {
+      "origin_position_ape_m": 1.5550823641250162,
+      "origin_rotation_ape_deg": 41.19216996819399,
+      "rigid_position_ape_m": 0.3941674549647971
+    }
+  },
+  {
+    "cohort_index": 50,
+    "scan_index": 51,
+    "timestamp_ns": 1656505454999792849,
+    "left": 205,
+    "right": 206,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.007701214304565704,
+    "errors": {
+      "origin_position_ape_m": 1.589729171794305,
+      "origin_rotation_ape_deg": 42.1330510146479,
+      "rigid_position_ape_m": 0.36551199969987686
+    }
+  },
+  {
+    "cohort_index": 51,
+    "scan_index": 52,
+    "timestamp_ns": 1656505455099559483,
+    "left": 209,
+    "right": 210,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.22956446119640392,
+    "errors": {
+      "origin_position_ape_m": 1.6286399259179827,
+      "origin_rotation_ape_deg": 42.54830359488637,
+      "rigid_position_ape_m": 0.3342198576696032
+    }
+  },
+  {
+    "cohort_index": 52,
+    "scan_index": 53,
+    "timestamp_ns": 1656505455199385667,
+    "left": 212,
+    "right": 213,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.913810603895632,
+    "errors": {
+      "origin_position_ape_m": 1.6712488526140685,
+      "origin_rotation_ape_deg": 42.418502539388236,
+      "rigid_position_ape_m": 0.301275197634074
+    }
+  },
+  {
+    "cohort_index": 53,
+    "scan_index": 54,
+    "timestamp_ns": 1656505455299225363,
+    "left": 217,
+    "right": 218,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.18670413491849358,
+    "errors": {
+      "origin_position_ape_m": 1.8706333225663627,
+      "origin_rotation_ape_deg": 33.78490449618874,
+      "rigid_position_ape_m": 0.5946110087404961
+    }
+  },
+  {
+    "cohort_index": 54,
+    "scan_index": 55,
+    "timestamp_ns": 1656505455399466506,
+    "left": 220,
+    "right": 221,
+    "bracket_span_ns": 18300057,
+    "status": "interpolated",
+    "fraction": 0.8510600267529221,
+    "errors": {
+      "origin_position_ape_m": 1.919958034265368,
+      "origin_rotation_ape_deg": 33.99016528085996,
+      "rigid_position_ape_m": 0.5400756696245611
+    }
+  },
+  {
+    "cohort_index": 55,
+    "scan_index": 56,
+    "timestamp_ns": 1656505455499302094,
+    "left": 224,
+    "right": 225,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.653280673772793,
+    "errors": {
+      "origin_position_ape_m": 1.9703950286243885,
+      "origin_rotation_ape_deg": 35.052354070828436,
+      "rigid_position_ape_m": 0.48472118698888217
+    }
+  },
+  {
+    "cohort_index": 56,
+    "scan_index": 57,
+    "timestamp_ns": 1656505455599133709,
+    "left": 228,
+    "right": 229,
+    "bracket_span_ns": 18300057,
+    "status": "interpolated",
+    "fraction": 0.7618415614771036,
+    "errors": {
+      "origin_position_ape_m": 2.0196773565502975,
+      "origin_rotation_ape_deg": 36.33317848851988,
+      "rigid_position_ape_m": 0.4313897232538434
+    }
+  },
+  {
+    "cohort_index": 57,
+    "scan_index": 58,
+    "timestamp_ns": 1656505455699771873,
+    "left": 232,
+    "right": 233,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.630599547965657,
+    "errors": {
+      "origin_position_ape_m": 2.0680516166033183,
+      "origin_rotation_ape_deg": 37.56431419391998,
+      "rigid_position_ape_m": 0.3805899438180565
+    }
+  },
+  {
+    "cohort_index": 58,
+    "scan_index": 59,
+    "timestamp_ns": 1656505455799631364,
+    "left": 236,
+    "right": 237,
+    "bracket_span_ns": 18299818,
+    "status": "interpolated",
+    "fraction": 0.717999217259975,
+    "errors": {
+      "origin_position_ape_m": 2.116065617355457,
+      "origin_rotation_ape_deg": 39.14639462304451,
+      "rigid_position_ape_m": 0.33103753049526996
+    }
+  },
+  {
+    "cohort_index": 59,
+    "scan_index": 60,
+    "timestamp_ns": 1656505455899472402,
+    "left": 240,
+    "right": 241,
+    "bracket_span_ns": 36600113,
+    "status": "interpolated",
+    "fraction": 0.5868967399089724,
+    "errors": {
+      "origin_position_ape_m": 2.163244028226455,
+      "origin_rotation_ape_deg": 40.378583871941146,
+      "rigid_position_ape_m": 0.2831885720730768
+    }
+  },
+  {
+    "cohort_index": 60,
+    "scan_index": 61,
+    "timestamp_ns": 1656505455999302213,
+    "left": 244,
+    "right": 245,
+    "bracket_span_ns": 18300057,
+    "status": "interpolated",
+    "fraction": 0.6289706092172281,
+    "errors": {
+      "origin_position_ape_m": 2.209068407611925,
+      "origin_rotation_ape_deg": 41.93336677104693,
+      "rigid_position_ape_m": 0.23748352043319337
+    }
+  },
+  {
+    "cohort_index": 61,
+    "scan_index": 62,
+    "timestamp_ns": 1656505456099189201,
+    "left": 248,
+    "right": 249,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.5436396311091125,
+    "errors": {
+      "origin_position_ape_m": 2.255669811942502,
+      "origin_rotation_ape_deg": 43.14214472529537,
+      "rigid_position_ape_m": 0.1932731544241304
+    }
+  },
+  {
+    "cohort_index": 62,
+    "scan_index": 63,
+    "timestamp_ns": 1656505456199826955,
+    "left": 252,
+    "right": 253,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.586612084684331,
+    "errors": {
+      "origin_position_ape_m": 2.3056242072203323,
+      "origin_rotation_ape_deg": 44.104261690059296,
+      "rigid_position_ape_m": 0.15008740753179206
+    }
+  },
+  {
+    "cohort_index": 63,
+    "scan_index": 64,
+    "timestamp_ns": 1656505456299662715,
+    "left": 256,
+    "right": 257,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.037357009257958984,
+    "errors": {
+      "origin_position_ape_m": 2.3568999726304725,
+      "origin_rotation_ape_deg": 44.27920940518338,
+      "rigid_position_ape_m": 0.1152517720041267
+    }
+  },
+  {
+    "cohort_index": 64,
+    "scan_index": 65,
+    "timestamp_ns": 1656505456399506610,
+    "left": 260,
+    "right": 261,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.2465031984573529,
+    "errors": {
+      "origin_position_ape_m": 2.409543483011304,
+      "origin_rotation_ape_deg": 44.29992742365156,
+      "rigid_position_ape_m": 0.09834328311111892
+    }
+  },
+  {
+    "cohort_index": 65,
+    "scan_index": 66,
+    "timestamp_ns": 1656505456499338549,
+    "left": 263,
+    "right": 264,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.9740077733414714,
+    "errors": {
+      "origin_position_ape_m": 2.4626201932866993,
+      "origin_rotation_ape_deg": 46.18039946820024,
+      "rigid_position_ape_m": 0.10719445155338546
+    }
+  },
+  {
+    "cohort_index": 66,
+    "scan_index": 67,
+    "timestamp_ns": 1656505456599175531,
+    "left": 268,
+    "right": 269,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.20164359781236119,
+    "errors": {
+      "origin_position_ape_m": 2.5170268084102423,
+      "origin_rotation_ape_deg": 49.63731355320204,
+      "rigid_position_ape_m": 0.13358240070499944
+    }
+  },
+  {
+    "cohort_index": 67,
+    "scan_index": 68,
+    "timestamp_ns": 1656505456699822105,
+    "left": 271,
+    "right": 272,
+    "bracket_span_ns": 36602974,
+    "status": "interpolated",
+    "fraction": 0.9513734321151063,
+    "errors": {
+      "origin_position_ape_m": 2.9695585901638992,
+      "origin_rotation_ape_deg": 48.892696107823426,
+      "rigid_position_ape_m": 0.3640319929176262
+    }
+  },
+  {
+    "cohort_index": 68,
+    "scan_index": 69,
+    "timestamp_ns": 1656505456799664147,
+    "left": 276,
+    "right": 277,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.1791462329128283,
+    "errors": {
+      "origin_position_ape_m": 3.0518857307864993,
+      "origin_rotation_ape_deg": 52.48329223751376,
+      "rigid_position_ape_m": 0.36452065943800827
+    }
+  },
+  {
+    "cohort_index": 69,
+    "scan_index": 70,
+    "timestamp_ns": 1656505456899504383,
+    "left": 279,
+    "right": 280,
+    "bracket_span_ns": 18301011,
+    "status": "interpolated",
+    "fraction": 0.8137419293393136,
+    "errors": {
+      "origin_position_ape_m": 3.142124463879622,
+      "origin_rotation_ape_deg": 52.060827765806735,
+      "rigid_position_ape_m": 0.3624426543823554
+    }
+  },
+  {
+    "cohort_index": 70,
+    "scan_index": 71,
+    "timestamp_ns": 1656505456999340489,
+    "left": 284,
+    "right": 285,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.1344893806407406,
+    "errors": {
+      "origin_position_ape_m": 2.9887576657574426,
+      "origin_rotation_ape_deg": 53.68795681425769,
+      "rigid_position_ape_m": 0.207232888653044
+    }
+  },
+  {
+    "cohort_index": 71,
+    "scan_index": 72,
+    "timestamp_ns": 1656505457099166671,
+    "left": 287,
+    "right": 288,
+    "bracket_span_ns": 18301011,
+    "status": "interpolated",
+    "fraction": 0.7236602939586234,
+    "errors": {
+      "origin_position_ape_m": 3.105898089070525,
+      "origin_rotation_ape_deg": 51.78072723511676,
+      "rigid_position_ape_m": 0.34274268398820035
+    }
+  },
+  {
+    "cohort_index": 72,
+    "scan_index": 73,
+    "timestamp_ns": 1656505457199792592,
+    "left": 291,
+    "right": 292,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.611020511982672,
+    "errors": {
+      "origin_position_ape_m": 3.1404144523273696,
+      "origin_rotation_ape_deg": 52.58066249189485,
+      "rigid_position_ape_m": 0.39270247475820164
+    }
+  },
+  {
+    "cohort_index": 73,
+    "scan_index": 74,
+    "timestamp_ns": 1656505457299639068,
+    "left": 295,
+    "right": 296,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.6814756195281588,
+    "errors": {
+      "origin_position_ape_m": 3.187003753590054,
+      "origin_rotation_ape_deg": 54.87559598867465,
+      "rigid_position_ape_m": 0.7563919843764194
+    }
+  },
+  {
+    "cohort_index": 74,
+    "scan_index": 75,
+    "timestamp_ns": 1656505457399475165,
+    "left": 299,
+    "right": 300,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.568527870655296,
+    "errors": {
+      "origin_position_ape_m": 3.241335919820134,
+      "origin_rotation_ape_deg": 52.18229330860238,
+      "rigid_position_ape_m": 0.6558120904878408
+    }
+  },
+  {
+    "cohort_index": 75,
+    "scan_index": 76,
+    "timestamp_ns": 1656505457499307201,
+    "left": 303,
+    "right": 304,
+    "bracket_span_ns": 18299103,
+    "status": "interpolated",
+    "fraction": 0.5923909494361554,
+    "errors": {
+      "origin_position_ape_m": 3.262898513108943,
+      "origin_rotation_ape_deg": 51.1908167327543,
+      "rigid_position_ape_m": 0.696630789012627
+    }
+  },
+  {
+    "cohort_index": 76,
+    "scan_index": 77,
+    "timestamp_ns": 1656505457599138180,
+    "left": 307,
+    "right": 308,
+    "bracket_span_ns": 36598921,
+    "status": "interpolated",
+    "fraction": 0.5238436400898266,
+    "errors": {
+      "origin_position_ape_m": 3.3898115536630833,
+      "origin_rotation_ape_deg": 51.40417898600504,
+      "rigid_position_ape_m": 0.706505989227418
+    }
+  },
+  {
+    "cohort_index": 77,
+    "scan_index": 78,
+    "timestamp_ns": 1656505457699774940,
+    "left": 311,
+    "right": 312,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.546990839809452,
+    "errors": {
+      "origin_position_ape_m": 3.4685888144918113,
+      "origin_rotation_ape_deg": 52.59211497275977,
+      "rigid_position_ape_m": 0.7299131434352655
+    }
+  },
+  {
+    "cohort_index": 78,
+    "scan_index": 79,
+    "timestamp_ns": 1656505457799620275,
+    "left": 315,
+    "right": 316,
+    "bracket_span_ns": 36599874,
+    "status": "interpolated",
+    "fraction": 0.5015374643093033,
+    "errors": {
+      "origin_position_ape_m": 3.6304896020758184,
+      "origin_rotation_ape_deg": 51.63577961494417,
+      "rigid_position_ape_m": 0.661327441092163
+    }
+  },
+  {
+    "cohort_index": 79,
+    "scan_index": 80,
+    "timestamp_ns": 1656505457899462473,
+    "left": 319,
+    "right": 320,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.45893542620853184,
+    "errors": {
+      "origin_position_ape_m": 4.208550916768204,
+      "origin_rotation_ape_deg": 49.30757969673029,
+      "rigid_position_ape_m": 0.6695680864615008
+    }
+  },
+  {
+    "cohort_index": 80,
+    "scan_index": 81,
+    "timestamp_ns": 1656505457999302763,
+    "left": 322,
+    "right": 323,
+    "bracket_span_ns": 36600113,
+    "status": "interpolated",
+    "fraction": 0.9573686562115259,
+    "errors": {
+      "origin_position_ape_m": 4.245716624976734,
+      "origin_rotation_ape_deg": 50.01805806356854,
+      "rigid_position_ape_m": 0.6946716522947411
+    }
+  },
+  {
+    "cohort_index": 81,
+    "scan_index": 82,
+    "timestamp_ns": 1656505458099093484,
+    "left": 327,
+    "right": 328,
+    "bracket_span_ns": 36600113,
+    "status": "interpolated",
+    "fraction": 0.18392175455851734,
+    "errors": {
+      "origin_position_ape_m": 4.038175482959693,
+      "origin_rotation_ape_deg": 52.856528861925426,
+      "rigid_position_ape_m": 0.595274340298817
+    }
+  },
+  {
+    "cohort_index": 82,
+    "scan_index": 83,
+    "timestamp_ns": 1656505458199737559,
+    "left": 330,
+    "right": 331,
+    "bracket_span_ns": 36599160,
+    "status": "interpolated",
+    "fraction": 0.9337822234171494,
+    "errors": {
+      "origin_position_ape_m": 3.926127421050676,
+      "origin_rotation_ape_deg": 54.278690492012004,
+      "rigid_position_ape_m": 0.6521981579253536
+    }
+  },
+  {
+    "cohort_index": 83,
+    "scan_index": 84,
+    "timestamp_ns": 1656505458299586170,
+    "left": 335,
+    "right": 336,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.15805414132733273,
+    "errors": {
+      "origin_position_ape_m": 4.023690238474662,
+      "origin_rotation_ape_deg": 52.972539273857215,
+      "rigid_position_ape_m": 0.5983979827574577
+    }
+  },
+  {
+    "cohort_index": 84,
+    "scan_index": 85,
+    "timestamp_ns": 1656505458399431921,
+    "left": 338,
+    "right": 339,
+    "bracket_span_ns": 36601782,
+    "status": "interpolated",
+    "fraction": 0.8859353077399347,
+    "errors": {
+      "origin_position_ape_m": 4.066801939462275,
+      "origin_rotation_ape_deg": 52.55441453743753,
+      "rigid_position_ape_m": 0.5468649203149831
+    }
+  },
+  {
+    "cohort_index": 85,
+    "scan_index": 86,
+    "timestamp_ns": 1656505458499283624,
+    "left": 343,
+    "right": 344,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.11397408902639557,
+    "errors": {
+      "origin_position_ape_m": 4.077089299442425,
+      "origin_rotation_ape_deg": 53.88234299081802,
+      "rigid_position_ape_m": 0.5769636936772725
+    }
+  },
+  {
+    "cohort_index": 86,
+    "scan_index": 87,
+    "timestamp_ns": 1656505458599124210,
+    "left": 346,
+    "right": 347,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.8416823213122576,
+    "errors": {
+      "origin_position_ape_m": 4.2323630040373,
+      "origin_rotation_ape_deg": 54.322929882496325,
+      "rigid_position_ape_m": 0.4875209122100207
+    }
+  },
+  {
+    "cohort_index": 87,
+    "scan_index": 88,
+    "timestamp_ns": 1656505458699768729,
+    "left": 351,
+    "right": 352,
+    "bracket_span_ns": 36602974,
+    "status": "interpolated",
+    "fraction": 0.09137842187358874,
+    "errors": {
+      "origin_position_ape_m": 4.206295211470654,
+      "origin_rotation_ape_deg": 55.19027590451828,
+      "rigid_position_ape_m": 0.6163334947841878
+    }
+  },
+  {
+    "cohort_index": 88,
+    "scan_index": 89,
+    "timestamp_ns": 1656505458799610746,
+    "left": 354,
+    "right": 355,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.6382562492452603,
+    "errors": {
+      "origin_position_ape_m": 4.219549232571937,
+      "origin_rotation_ape_deg": 55.96747803799775,
+      "rigid_position_ape_m": 0.6917261445469183
+    }
+  },
+  {
+    "cohort_index": 89,
+    "scan_index": 90,
+    "timestamp_ns": 1656505458899461913,
+    "left": 358,
+    "right": 359,
+    "bracket_span_ns": 36602021,
+    "status": "interpolated",
+    "fraction": 0.5471515083825562,
+    "errors": {
+      "origin_position_ape_m": 4.22090367138934,
+      "origin_rotation_ape_deg": 54.85970701852036,
+      "rigid_position_ape_m": 0.6426217301236673
+    }
+  },
+  {
+    "cohort_index": 90,
+    "scan_index": 91,
+    "timestamp_ns": 1656505458999310706,
+    "left": 362,
+    "right": 363,
+    "bracket_span_ns": 18302202,
+    "status": "interpolated",
+    "fraction": 0.5501972385617862,
+    "errors": {
+      "origin_position_ape_m": 4.152270264597729,
+      "origin_rotation_ape_deg": 53.729652433483174,
+      "rigid_position_ape_m": 0.8049636075076847
+    }
+  },
+  {
+    "cohort_index": 91,
+    "scan_index": 92,
+    "timestamp_ns": 1656505459099143423,
+    "left": 366,
+    "right": 367,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.5026098013169765,
+    "errors": {
+      "origin_position_ape_m": 4.292525287600759,
+      "origin_rotation_ape_deg": 51.790682135239756,
+      "rigid_position_ape_m": 0.6376709425126724
+    }
+  },
+  {
+    "cohort_index": 92,
+    "scan_index": 93,
+    "timestamp_ns": 1656505459199782364,
+    "left": 370,
+    "right": 371,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.5043117292433587,
+    "errors": {
+      "origin_position_ape_m": 4.295950615026644,
+      "origin_rotation_ape_deg": 50.18448858414155,
+      "rigid_position_ape_m": 0.8424266493079268
+    }
+  },
+  {
+    "cohort_index": 93,
+    "scan_index": 94,
+    "timestamp_ns": 1656505459299630214,
+    "left": 374,
+    "right": 375,
+    "bracket_span_ns": 36599875,
+    "status": "interpolated",
+    "fraction": 0.4819733127503851,
+    "errors": {
+      "origin_position_ape_m": 4.256050223810601,
+      "origin_rotation_ape_deg": 51.717124203296464,
+      "rigid_position_ape_m": 0.8088279477560928
+    }
+  },
+  {
+    "cohort_index": 94,
+    "scan_index": 95,
+    "timestamp_ns": 1656505459399474806,
+    "left": 378,
+    "right": 379,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.4199902994832366,
+    "errors": {
+      "origin_position_ape_m": 4.347839507977668,
+      "origin_rotation_ape_deg": 51.53426282458428,
+      "rigid_position_ape_m": 0.7415315743390495
+    }
+  },
+  {
+    "cohort_index": 95,
+    "scan_index": 96,
+    "timestamp_ns": 1656505459499322005,
+    "left": 382,
+    "right": 383,
+    "bracket_span_ns": 36598921,
+    "status": "interpolated",
+    "fraction": 0.43807307871180134,
+    "errors": {
+      "origin_position_ape_m": 4.216581206811052,
+      "origin_rotation_ape_deg": 53.401737437169906,
+      "rigid_position_ape_m": 0.9039254054865858
+    }
+  },
+  {
+    "cohort_index": 96,
+    "scan_index": 97,
+    "timestamp_ns": 1656505459599158194,
+    "left": 386,
+    "right": 387,
+    "bracket_span_ns": 18300056,
+    "status": "interpolated",
+    "fraction": 0.331708383843197,
+    "errors": {
+      "origin_position_ape_m": 4.191935338064498,
+      "origin_rotation_ape_deg": 55.949963305696464,
+      "rigid_position_ape_m": 0.9638910716847917
+    }
+  },
+  {
+    "cohort_index": 97,
+    "scan_index": 98,
+    "timestamp_ns": 1656505459699795775,
+    "left": 389,
+    "right": 390,
+    "bracket_span_ns": 36600113,
+    "status": "interpolated",
+    "fraction": 0.915538976614635,
+    "errors": {
+      "origin_position_ape_m": 4.254894799575914,
+      "origin_rotation_ape_deg": 54.196935798792154,
+      "rigid_position_ape_m": 1.0126875938795188
+    }
+  },
+  {
+    "cohort_index": 98,
+    "scan_index": 99,
+    "timestamp_ns": 1656505459799632189,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 99,
+    "scan_index": 100,
+    "timestamp_ns": 1656505459899469782,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 100,
+    "scan_index": 101,
+    "timestamp_ns": 1656505459999301829,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 101,
+    "scan_index": 102,
+    "timestamp_ns": 1656505460099158032,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 102,
+    "scan_index": 103,
+    "timestamp_ns": 1656505460199791429,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 103,
+    "scan_index": 104,
+    "timestamp_ns": 1656505460299634750,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 104,
+    "scan_index": 105,
+    "timestamp_ns": 1656505460399486955,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 105,
+    "scan_index": 106,
+    "timestamp_ns": 1656505460499332060,
+    "left": 394,
+    "right": 395,
+    "bracket_span_ns": 713797092,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 106,
+    "scan_index": 107,
+    "timestamp_ns": 1656505460599160471,
+    "left": 398,
+    "right": 399,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.4855599226490778,
+    "errors": {
+      "origin_position_ape_m": 4.189726781104323,
+      "origin_rotation_ape_deg": 52.49930905440846,
+      "rigid_position_ape_m": 1.7072221852497251
+    }
+  },
+  {
+    "cohort_index": 107,
+    "scan_index": 108,
+    "timestamp_ns": 1656505460699810456,
+    "left": 402,
+    "right": 403,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.47076336224066323,
+    "errors": {
+      "origin_position_ape_m": 4.279041903347738,
+      "origin_rotation_ape_deg": 53.37503549950539,
+      "rigid_position_ape_m": 1.6718835671467724
+    }
+  },
+  {
+    "cohort_index": 108,
+    "scan_index": 109,
+    "timestamp_ns": 1656505460799658963,
+    "left": 406,
+    "right": 407,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.46333237892334905,
+    "errors": {
+      "origin_position_ape_m": 4.264745239108516,
+      "origin_rotation_ape_deg": 50.85736804273005,
+      "rigid_position_ape_m": 1.798007969123647
+    }
+  },
+  {
+    "cohort_index": 109,
+    "scan_index": 110,
+    "timestamp_ns": 1656505460899510452,
+    "left": 410,
+    "right": 411,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.38267702165071765,
+    "errors": {
+      "origin_position_ape_m": 4.177739011581421,
+      "origin_rotation_ape_deg": 49.671974208724365,
+      "rigid_position_ape_m": 1.9634946376953646
+    }
+  },
+  {
+    "cohort_index": 110,
+    "scan_index": 111,
+    "timestamp_ns": 1656505460999361123,
+    "left": 414,
+    "right": 415,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.41935483342176194,
+    "errors": {
+      "origin_position_ape_m": 4.178037346145192,
+      "origin_rotation_ape_deg": 48.3309028683518,
+      "rigid_position_ape_m": 2.0565228407090284
+    }
+  },
+  {
+    "cohort_index": 111,
+    "scan_index": 112,
+    "timestamp_ns": 1656505461099171450,
+    "left": 418,
+    "right": 419,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.292472765164327,
+    "errors": {
+      "origin_position_ape_m": 4.254502968407049,
+      "origin_rotation_ape_deg": 47.920477890521454,
+      "rigid_position_ape_m": 1.9416879895556558
+    }
+  },
+  {
+    "cohort_index": 112,
+    "scan_index": 113,
+    "timestamp_ns": 1656505461199804267,
+    "left": 422,
+    "right": 423,
+    "bracket_span_ns": 36602974,
+    "status": "interpolated",
+    "fraction": 0.39560482161913946,
+    "errors": {
+      "origin_position_ape_m": 4.20179565705428,
+      "origin_rotation_ape_deg": 48.02227713469242,
+      "rigid_position_ape_m": 2.0674917309567507
+    }
+  },
+  {
+    "cohort_index": 113,
+    "scan_index": 114,
+    "timestamp_ns": 1656505461299635574,
+    "left": 426,
+    "right": 427,
+    "bracket_span_ns": 18300057,
+    "status": "interpolated",
+    "fraction": 0.24976140784698103,
+    "errors": {
+      "origin_position_ape_m": 4.24440093492714,
+      "origin_rotation_ape_deg": 47.047462728693645,
+      "rigid_position_ape_m": 2.1979366002965532
+    }
+  },
+  {
+    "cohort_index": 114,
+    "scan_index": 115,
+    "timestamp_ns": 1656505461399485788,
+    "left": 429,
+    "right": 430,
+    "bracket_span_ns": 36600112,
+    "status": "interpolated",
+    "fraction": 0.8530267339072624,
+    "errors": {
+      "origin_position_ape_m": 4.167690457460008,
+      "origin_rotation_ape_deg": 48.961012574810375,
+      "rigid_position_ape_m": 2.3639923606088415
+    }
+  },
+  {
+    "cohort_index": 115,
+    "scan_index": 116,
+    "timestamp_ns": 1656505461499319089,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 116,
+    "scan_index": 117,
+    "timestamp_ns": 1656505461599160373,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 117,
+    "scan_index": 118,
+    "timestamp_ns": 1656505461699806561,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 118,
+    "scan_index": 119,
+    "timestamp_ns": 1656505461799635795,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 119,
+    "scan_index": 120,
+    "timestamp_ns": 1656505461899476572,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 120,
+    "scan_index": 121,
+    "timestamp_ns": 1656505461999314029,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 121,
+    "scan_index": 122,
+    "timestamp_ns": 1656505462099103214,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 122,
+    "scan_index": 123,
+    "timestamp_ns": 1656505462199752159,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 123,
+    "scan_index": 124,
+    "timestamp_ns": 1656505462299583869,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 124,
+    "scan_index": 125,
+    "timestamp_ns": 1656505462399429856,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 125,
+    "scan_index": 126,
+    "timestamp_ns": 1656505462499270461,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 126,
+    "scan_index": 127,
+    "timestamp_ns": 1656505462599512984,
+    "left": 434,
+    "right": 435,
+    "bracket_span_ns": 1116317987,
+    "status": "reference_gap",
+    "errors": null
+  },
+  {
+    "cohort_index": 127,
+    "scan_index": 128,
+    "timestamp_ns": 1656505462699335955,
+    "left": 438,
+    "right": 439,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.36749343342252694,
+    "errors": {
+      "origin_position_ape_m": 4.04320008880236,
+      "origin_rotation_ape_deg": 54.451901014228795,
+      "rigid_position_ape_m": 2.716212595604355
+    }
+  },
+  {
+    "cohort_index": 128,
+    "scan_index": 129,
+    "timestamp_ns": 1656505462799178712,
+    "left": 442,
+    "right": 443,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.19057412678316663,
+    "errors": {
+      "origin_position_ape_m": 3.967637967104346,
+      "origin_rotation_ape_deg": 54.67797818418262,
+      "rigid_position_ape_m": 2.82384297090556
+    }
+  },
+  {
+    "cohort_index": 129,
+    "scan_index": 130,
+    "timestamp_ns": 1656505462899809064,
+    "left": 446,
+    "right": 447,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.3445984675162737,
+    "errors": {
+      "origin_position_ape_m": 3.996389557511136,
+      "origin_rotation_ape_deg": 54.85525045338619,
+      "rigid_position_ape_m": 2.7093294114769084
+    }
+  },
+  {
+    "cohort_index": 130,
+    "scan_index": 131,
+    "timestamp_ns": 1656505462999642528,
+    "left": 450,
+    "right": 451,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.14428941353509997,
+    "errors": {
+      "origin_position_ape_m": 4.21496755774885,
+      "origin_rotation_ape_deg": 52.21329691241607,
+      "rigid_position_ape_m": 2.523454838247963
+    }
+  },
+  {
+    "cohort_index": 131,
+    "scan_index": 132,
+    "timestamp_ns": 1656505463099538845,
+    "left": 453,
+    "right": 454,
+    "bracket_span_ns": 36602020,
+    "status": "interpolated",
+    "fraction": 0.8014276807673456,
+    "errors": {
+      "origin_position_ape_m": 4.412162317405054,
+      "origin_rotation_ape_deg": 52.10379994596239,
+      "rigid_position_ape_m": 2.3480277290269354
+    }
+  },
+  {
+    "cohort_index": 132,
+    "scan_index": 133,
+    "timestamp_ns": 1656505463199384583,
+    "left": 458,
+    "right": 459,
+    "bracket_span_ns": 18301010,
+    "status": "interpolated",
+    "fraction": 0.058605454015925894,
+    "errors": {
+      "origin_position_ape_m": 4.407895829565221,
+      "origin_rotation_ape_deg": 49.26699531424685,
+      "rigid_position_ape_m": 2.3388033625728264
+    }
+  },
+  {
+    "cohort_index": 133,
+    "scan_index": 134,
+    "timestamp_ns": 1656505463299221722,
+    "left": 461,
+    "right": 462,
+    "bracket_span_ns": 36597967,
+    "status": "interpolated",
+    "fraction": 0.7602253152477021,
+    "errors": {
+      "origin_position_ape_m": 4.492146201812288,
+      "origin_rotation_ape_deg": 48.74775068713465,
+      "rigid_position_ape_m": 2.2077059722081644
+    }
+  },
+  {
+    "cohort_index": 134,
+    "scan_index": 135,
+    "timestamp_ns": 1656505463399471251,
+    "left": null,
+    "right": null,
+    "bracket_span_ns": null,
+    "status": "after_reference",
+    "errors": null
+  }
+]

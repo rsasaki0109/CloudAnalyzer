@@ -1,0 +1,477 @@
+{
+  "schema": "cloudanalyzer.flatwall_gicp_transition_analysis.v1",
+  "controller": {
+    "name": "analyze_flatwall_gicp_transitions.py",
+    "bytes": 8438,
+    "sha256": "11248c8531c0a2599ecdd9018c7b3383c191bcbe4507fb32bd157bf29f31bb3b"
+  },
+  "original_input_artifacts": {
+    "caller_shapes/raw-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 67363,
+      "sha256": "262d777a41d09d9cc10796ae203aaacbcc1909a3b280040b06fddce5c2473e6a"
+    },
+    "caller_shapes/raw-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 401998,
+      "sha256": "8a0d98291962a33387260191c9b521c712d4e02d53ab364053f178344a2b73b2"
+    },
+    "caller_shapes/raw-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 464951,
+      "sha256": "47967f4c994c25919e9423f3f0767dabb3fb65450f6ffce91037cd19f13baeda"
+    },
+    "caller_shapes/raw-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 591702,
+      "sha256": "0cc460dc3fee4f6dd34d15a2a8a4946bfe188e7a6b5a79391d93339efa31f51f"
+    },
+    "caller_shapes/raw-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 515399,
+      "sha256": "7dc6d006e2d3c2205c0ccd44ac8911cf25c0828aec1355e4fd07ceef6064496f"
+    },
+    "caller_shapes/raw-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 533752,
+      "sha256": "c55a66a7d73ceb6fb44967329b1c820caa7c5d1fe2668ce0348d5ddecb9dc8da"
+    },
+    "caller_shapes/raw-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 477129,
+      "sha256": "d170576586d592577a3b65e3ce1a5b3c856e190282ef5092c6b4552ed36a0b0f"
+    },
+    "caller_shapes/raw-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 908780,
+      "sha256": "87275aa565007eae6767f78fbc0a63f5d70a0ef74536113d46939ed825d8e0d6"
+    },
+    "caller_shapes/raw-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 917344,
+      "sha256": "5f19896f184b62465861d0ae740497150ca77c6a87aa84c102a280281fefca1b"
+    },
+    "caller_shapes/raw-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 4341,
+      "sha256": "7225a74e9a0b2e81f270f9631d6f1745abc96fb8c7ec85f7fd56aad67cdcd5a6"
+    },
+    "caller_shapes/raw-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 6386,
+      "sha256": "3b3be5568519215d321d06f3ad2504604c87d3e73273270166f6649bbbbc9ffa"
+    },
+    "caller_shapes/raw-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 51348,
+      "sha256": "be7c9aec86b6ad9de9b84103e2a49540fabfce388234e69c1c43bac9922cb693"
+    },
+    "caller_shapes/raw-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 69643,
+      "sha256": "f3fd2cc75bc3bb6e2e8bef10c651e5e32fa06c493948337cfc50884edba7379b"
+    },
+    "caller_shapes/raw-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 102460,
+      "sha256": "67d18ec715756cdf09ea2c7a4489d1b11e4758d40c753c9f2668eecad851a980"
+    },
+    "caller_shapes/raw-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 116752,
+      "sha256": "8716e5bba4da9c7d68ca857805ee37c6613a93c1b98f5b2ea8c576688925928f"
+    },
+    "caller_shapes/raw-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 109922,
+      "sha256": "f24cea75adc15623f4d2fb6c85299980e909fd8739b15f6e497852e24a96be61"
+    },
+    "caller_shapes/raw-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 129632,
+      "sha256": "b31b747651f64e1d53fc849f77f81c750280636f6fb5ef9c40f6527784bd159f"
+    },
+    "caller_shapes/raw-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 117983,
+      "sha256": "fc23f29a8550a8ce9a03f788dbc89ea388858149f69fac7366ac5d98e547e387"
+    },
+    "caller_shapes/raw-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 133797,
+      "sha256": "79623fa9f2106a060d1b139b58914f9ab29d1a31d13d085643b4f7d376b8d949"
+    },
+    "caller_shapes/raw-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 4340,
+      "sha256": "8d33bacfa6686b280ee02a71702c70f2780b4b91208391f35ef6dd1d2fa65e88"
+    },
+    "caller_shapes/rotation-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 82017,
+      "sha256": "10ef0b034516ccabafae2cabab1fcf09667c4a45642de48a8277adbf631c66f2"
+    },
+    "caller_shapes/rotation-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 605830,
+      "sha256": "648a285d95c3fd59a6dcfcd399513c3c21cf874d516784394064eb79bfd45cb6"
+    },
+    "caller_shapes/rotation-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 483451,
+      "sha256": "b62c9d0c45550625ff30591a6b2c192bbf31536b623dd2310b8f3017fd9dd9ae"
+    },
+    "caller_shapes/rotation-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 540801,
+      "sha256": "5aba31984d1a74a3aae4c9a310bd4de55c7b08d7ef2ca3a230008b63d0c28bdd"
+    },
+    "caller_shapes/rotation-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 718157,
+      "sha256": "567044e686c7572223616cf68c158cb29b710a403ff10b229f345ccce22905bb"
+    },
+    "caller_shapes/rotation-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 483203,
+      "sha256": "c39890e420942f3c216cbb778016fadaef49a97550bc749d86dac4404502e179"
+    },
+    "caller_shapes/rotation-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 1448707,
+      "sha256": "674e9f1448d0224d9c31e0d5735ea1c251e34d3240fe19d6adebdcfc1605338f"
+    },
+    "caller_shapes/rotation-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 836331,
+      "sha256": "796ea3f2a58c2bc4b24f70f443a3d94359491c3215459224d9af777f16bf056f"
+    },
+    "caller_shapes/rotation-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 920415,
+      "sha256": "2b60d6fdb19e2d4dea04943735705b10eb10cab3daffe1f8bf6c730b816da7ac"
+    },
+    "caller_shapes/rotation-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 4392,
+      "sha256": "62954d483a5db72aa2cf6128b1dc385d94fbc56d18f103e3d88ed65d454c8a03"
+    },
+    "caller_shapes/rotation-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 6746,
+      "sha256": "81225ac7e4633616634085d551939c79ec02721d71baa601393f1dcc4f1a3aa1"
+    },
+    "caller_shapes/rotation-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 73023,
+      "sha256": "be35254a5a4186f69a576ff639841c17a1fe9782308b263fa3d284a519e8f7c5"
+    },
+    "caller_shapes/rotation-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 62213,
+      "sha256": "354def5c050913e4560717dc329815baf012ac99a7a885103e451efac7e9edac"
+    },
+    "caller_shapes/rotation-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 104262,
+      "sha256": "b6faa72180f57ad3c924f6b88dd5240d228b86521d1e4eee343aeb23db8bf28c"
+    },
+    "caller_shapes/rotation-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 109297,
+      "sha256": "b026c1d439825e6a57c2d747d72270fa9c2f1e0cc172aae7d76819e0b7dddbbe"
+    },
+    "caller_shapes/rotation-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 121235,
+      "sha256": "85797d0d4bc1333fbbf554ecb54274fcce842abd314c1b1ef19b173de4302b11"
+    },
+    "caller_shapes/rotation-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 132838,
+      "sha256": "430fcc3ff07f22ca5139b36e00925ecb8c90e90e0abf63563c8a648ef2a6a168"
+    },
+    "caller_shapes/rotation-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 137384,
+      "sha256": "2aefd81e1c3e8bdbe479c838f39fe458e65b44d1f33dc6368345323d257a8a1f"
+    },
+    "caller_shapes/rotation-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 214091,
+      "sha256": "7c1d193a782824d913010018b21e703667302b3e6c34a587e5e73b7845639a20"
+    },
+    "caller_shapes/rotation-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 4392,
+      "sha256": "17b764019a8fb8f151c25483ddcc1afa18877c1bf359be802293d57d81afd662"
+    },
+    "frames.json": {
+      "name": "frames.json",
+      "bytes": 34909,
+      "sha256": "96f29cc5ec58229a7d67853827f484c13341fcd45252cd1499cebb62a060ec53"
+    },
+    "native_shapes/raw-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 67266,
+      "sha256": "7d28fed77e4dbbfb905216742ea297432f0e0effc09e8f6b52956a836aed7762"
+    },
+    "native_shapes/raw-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 401133,
+      "sha256": "6f5542bef4746b747ac992814d9a3f202554b09003cf1747b2f29f7fb72a9f49"
+    },
+    "native_shapes/raw-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 463549,
+      "sha256": "b0e094be60fc462d604c3a8d7be45ad33305cfb6ba99bc2575186d087e37a47c"
+    },
+    "native_shapes/raw-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 590753,
+      "sha256": "a11fc79b191bbec90af0ba31050ec8ce5806f95385df0207c7cf47d054aa3713"
+    },
+    "native_shapes/raw-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 512699,
+      "sha256": "d73f1cbeb73b070fd66b24abf04d89c860d4dd38a44f22a130eb977b9b9a5383"
+    },
+    "native_shapes/raw-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 532671,
+      "sha256": "0f7a290477c4f70b26c9ac894e4747f52eaa5d11c2456e91f17c6ee2274180ea"
+    },
+    "native_shapes/raw-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 474524,
+      "sha256": "a5c57fdb5bb413554c81312ce4c712b2050c7e20f1aa931d75eb800d356bf1e2"
+    },
+    "native_shapes/raw-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 907489,
+      "sha256": "deab8df9cc2360ce1f0fdcf67f79131aba855d65ea2daca444b37451f0b02d44"
+    },
+    "native_shapes/raw-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 913363,
+      "sha256": "8a3c6434b8752f312f3d9e67d3fb8943e5776a9c9b08c942a564b0b84f6dd9af"
+    },
+    "native_shapes/raw-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 4341,
+      "sha256": "b9cf9262cb062fff5b562fd0c3c46104f22cad398628b6bb9aabfe5bebf4d04b"
+    },
+    "native_shapes/raw-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 6384,
+      "sha256": "3e927fca1e8e3459c1a527635fa1a457295eb64e7e2b084b21a401ed5f50f845"
+    },
+    "native_shapes/raw-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 51165,
+      "sha256": "9c6469e24290033331a4bdf443e2fe685fb9a54ab990e71afc2a1995cea78ff8"
+    },
+    "native_shapes/raw-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 69566,
+      "sha256": "a214b9777e5acc9086bec63609cef1e5e61b78ab54687bfad16c4c2bde5a253d"
+    },
+    "native_shapes/raw-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 102222,
+      "sha256": "e7078e81b283dd5c218c67119d80472f7a384a44e94a7e2d111df362734b1428"
+    },
+    "native_shapes/raw-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 116082,
+      "sha256": "c1bdfd1e43b0d67941646703bdd678e7218915bbb8f26d2192bb9bca20d4de96"
+    },
+    "native_shapes/raw-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 109401,
+      "sha256": "85cec7dd4e539d2cb1e5b266e5124bc9c89453dbf81b870355f313d89c17a27e"
+    },
+    "native_shapes/raw-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 129306,
+      "sha256": "a4c18599324410dc6a9d7e3e510f6e29b02d7bc6b0ecbfcf56ab0e3ef6896a31"
+    },
+    "native_shapes/raw-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 117702,
+      "sha256": "330a5cac5899b58db6918fbdc837ed1f3ac6356fa5151fd9dfffd7688958f91e"
+    },
+    "native_shapes/raw-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 133585,
+      "sha256": "e9b4653716e0fe61d9035c043be1b4b01b3be1687b9d7ea6dbe7107978755681"
+    },
+    "native_shapes/raw-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 4340,
+      "sha256": "aff30acffa7816e09fa4ba55e86b6995e09373c7b3cfc4d4f1a477d802def10d"
+    },
+    "native_shapes/rotation-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 82023,
+      "sha256": "f86db857ab491db61d354f8c7df933a501eb73db5438137303278a1dcc95de1c"
+    },
+    "native_shapes/rotation-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 604707,
+      "sha256": "32b32f1e4d26342d2c1eb4d13f9adebe2c2fc912d5e9ec286f76202ff8f0458b"
+    },
+    "native_shapes/rotation-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 482815,
+      "sha256": "11f9533b1d4ab1ec986cd9ff01eddcff45268b90abe14d9106a757810d8a9e18"
+    },
+    "native_shapes/rotation-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 539068,
+      "sha256": "a1c0ad5e9f7891de7a41d911923435ac7a83ad2ff47f70e53c1d7b07e4003a78"
+    },
+    "native_shapes/rotation-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 715644,
+      "sha256": "77621b8a6eb3c35675881536f10bb9a80c1b9c07d39f3b274adfda7afc9320bd"
+    },
+    "native_shapes/rotation-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 481704,
+      "sha256": "a0c6599f8e5b2c843bf30583d9848ca3f6215729ec8e2419904ec46b67dff43b"
+    },
+    "native_shapes/rotation-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 1440651,
+      "sha256": "9cb169b58f5fdb14e3ca4d14434b7dfdce2d5bcdb4029118ecedbeded6c052b8"
+    },
+    "native_shapes/rotation-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 835941,
+      "sha256": "acd82fc34e9cb547caf12065a084827c806a7fcf5d922f05ee5548508c642fcb"
+    },
+    "native_shapes/rotation-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 917360,
+      "sha256": "0c27288d29a074164c6fa0edabb926454370296720ff9a189dedba85812d20fa"
+    },
+    "native_shapes/rotation-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 4393,
+      "sha256": "d04287cfdc48c8ba8c2d88357772b14bab8a894a6bddcbcfcb89c8ad514b3ee0"
+    },
+    "native_shapes/rotation-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 6680,
+      "sha256": "d57424e3bf7fe5d3ce1ed0a68edbe26fa8bc3840a8f8ad4c0ef92a431792815f"
+    },
+    "native_shapes/rotation-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 73110,
+      "sha256": "77240ccb88a0feb0a9afa7ac80e13fe4b7a2a74ef94e0338fe6248f12b3d7bd8"
+    },
+    "native_shapes/rotation-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 62343,
+      "sha256": "a7f83f985295b9bb94fc5b85425bb8d8102f2c34977efe016fe36810d1ebe18f"
+    },
+    "native_shapes/rotation-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 104008,
+      "sha256": "e669f8361529440f47987cd861c50f08b3bc917fff6d00ac5471331742991878"
+    },
+    "native_shapes/rotation-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 108919,
+      "sha256": "f047bf4d771e8e5c2593d5d6ddb57ada61722e99e654a52b2e59e9f184103fd4"
+    },
+    "native_shapes/rotation-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 121081,
+      "sha256": "39389a8fcdda93bbf45d5cf3125eed4895ed831e6dfc945b23840c705a6878b7"
+    },
+    "native_shapes/rotation-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 132646,
+      "sha256": "31e41480d829b4c9728fd2ddab598fba0f5cc98c9049a7f67b49617d7f8810e2"
+    },
+    "native_shapes/rotation-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 137259,
+      "sha256": "7880d1eece96cbfad976ddce7449e566e10551c9846dd21616f14f5de01d4828"
+    },
+    "native_shapes/rotation-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 214003,
+      "sha256": "c2efcdfe452136b6e5cd57a33c37da5e4b0223bf8cc40e280ad346bfd8339992"
+    },
+    "native_shapes/rotation-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 4391,
+      "sha256": "c4c143dcccb40e052f53435c641e550e70197dbfd10ce8064ff2c5ba6b2f1054"
+    },
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 30738,
+      "sha256": "cff40d45db370acbb2aae481ed8052ad5c1304050adcc6cbac689ca08d26b257"
+    },
+    "receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1276,
+      "sha256": "dcd7556625e27c55ec71ea15c19709dddce6f22d3141fc89f93da934aca54a85"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 17010,
+      "sha256": "71647e2a9318c9372dc69389a14565507648f16afe66f7999a42548e59a41ad1"
+    }
+  },
+  "audit_receipt": {
+    "name": "receipt.json",
+    "bytes": 1664,
+    "sha256": "6e00a75f557de45b8191bdff15fe9e867b000e5c46b9e2f17f7ec42a8318f435"
+  },
+  "audit_outputs": {
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 21518,
+      "sha256": "3069740803c0d57ad6d36f3909edd25d53f376c26e590211d2fdb4947f8d14a5"
+    },
+    "frames.json": {
+      "name": "frames.json",
+      "bytes": 25032,
+      "sha256": "c99898991202bb776dd139f7e3b72962104b2417a82980e9967037c3a9900d6e"
+    },
+    "transitions.json": {
+      "name": "transitions.json",
+      "bytes": 796209,
+      "sha256": "99387c9de6c05859fa036aac13431a61e7151ec42c234a3bc83902cba1703f59"
+    },
+    "limited-tails.json": {
+      "name": "limited-tails.json",
+      "bytes": 116322,
+      "sha256": "2a5b7b6ef3d25edf9cd73a2dab8188401e23d44bad725261ae27f87428b1da5a"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 3748,
+      "sha256": "ec0dade9f7f34249a3884787956ef41b3ca35925706005a07adbb313e177c25c"
+    }
+  },
+  "reference_dependencies": {
+    "audit_flatwall_gicp_shapes.py": {
+      "name": "audit_flatwall_gicp_shapes.py",
+      "bytes": 13141,
+      "sha256": "6fee93af62896bfaf210bcd490f84e665403fb70633118e2db46fa4273966be3"
+    },
+    "audit_flatwall_raw_point_time.py": {
+      "name": "audit_flatwall_raw_point_time.py",
+      "bytes": 11352,
+      "sha256": "1e8e6b21f136b570fd236b41b8e1f32508c59f8d3061b799e1ddd11a2eaaf544"
+    }
+  },
+  "population": "All686 verified transitions and last-ten transitions of all ten limited histories (five unique real problems, two shape variants).",
+  "recurrence": "For last-ten captured baseline poses/ordered source-target IDs, report lags1..5: exact ID/pose repeats and translation/rotation ranges. Compare combined shapes only when ordered correspondence IDs match. No approximate-cycle threshold or convergence decision. Principal rotation angle uses atan2 of skew norm and half trace-minus-one.",
+  "effects": "Raw strict signs, signed sums/means/min/max of every declared accounting term, without selecting a significance threshold. Assignment includes target point and target shape; decompositions are order-dependent. Signed tail sums need not span a whole recurrence period. No causal or physical-accuracy claim."
+}

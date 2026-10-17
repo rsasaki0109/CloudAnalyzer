@@ -1,0 +1,136 @@
+[
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 6,
+      "max_iterations": 2
+    },
+    "accepted_transitions": 92,
+    "refreshed_increases": 45,
+    "common_increases": 45,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 1.7337242752546445e-12,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 0.0
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-legacy",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 8
+    },
+    "accepted_transitions": 55,
+    "refreshed_increases": 11,
+    "common_increases": 11,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 3.219646771412954e-14,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 0.0
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 6,
+      "max_iterations": 2
+    },
+    "accepted_transitions": 115,
+    "refreshed_increases": 51,
+    "common_increases": 51,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 9.094947017729282e-13,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 1.4210854715202004e-14
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 7,
+      "max_iterations": 1
+    },
+    "accepted_transitions": 81,
+    "refreshed_increases": 32,
+    "common_increases": 32,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 1.9539925233402755e-14,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 4.440892098500626e-16
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 6,
+      "max_iterations": 2
+    },
+    "accepted_transitions": 92,
+    "refreshed_increases": 45,
+    "common_increases": 45,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 2.3874235921539366e-12,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 0.0
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-legacy",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 8
+    },
+    "accepted_transitions": 55,
+    "refreshed_increases": 11,
+    "common_increases": 11,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 1.9539925233402755e-14,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 0.0
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 6,
+      "max_iterations": 2
+    },
+    "accepted_transitions": 115,
+    "refreshed_increases": 51,
+    "common_increases": 51,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 8.100187187665142e-13,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 0.0
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "frames": 9,
+    "statuses": {
+      "insufficient_correspondences": 1,
+      "converged_step": 7,
+      "max_iterations": 1
+    },
+    "accepted_transitions": 81,
+    "refreshed_increases": 32,
+    "common_increases": 32,
+    "support_changed_transitions": 0,
+    "max_native_cost_error": 3.197442310920451e-14,
+    "max_native_shape_error": 4.440892098500626e-16,
+    "max_accounting_error": 0.0
+  }
+]

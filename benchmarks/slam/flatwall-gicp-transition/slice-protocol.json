@@ -1,0 +1,21 @@
+{
+  "at_utc": "2026-10-17T01:40:34.145466+00:00",
+  "base": "7aa575681d9ed76877994f20f2c984333eaae82e",
+  "slice": "Independent fixed-support outer-transition cost diagnostic. Existing registration/odometry/solver/termination/gates/defaults unchanged. No new accepted pose or physical accuracy/speed claim.",
+  "inputs": "All72 PR300 verified stored histories (36 fixed real problems, original and native shape variants), including all five limited problems per variant. Analyze every accepted transition; include converged and empty-map populations. Candidate poses and associations are the captured original states, not a newly run optimizer.",
+  "cube": "For common matched source IDs in original source order, compute F(a,r,p)=.5*sum residual(p,target_id(a)).T*[Ct(target_id(a))+R(r)*Cs*R(r).T]^-1*residual. a selects baseline/next target ID including its point and world shape; r selects baseline/accepted source-shape rotation; p selects baseline/accepted residual pose. Evaluate all2x2x2 cells independently in NumPy. Off-diagonal combinations are declared counterfactual diagnostics on actual recorded inputs/poses, not new estimator states. Weights must be the original unit weights; no robust weight approximation.",
+  "support": "Common IDs are intersection of baseline and next/final matched source IDs. Report added and removed source IDs separately. Removed cost uses baseline matching/metric/pose; added cost uses next matching/metric/accepted pose. Do not compare changing-support sums as if one objective. Empty common support has zero cube and no per-point or recurrence conclusion.",
+  "decomposition": "On common support: motion=F(0,0,1)-F(0,0,0); source_metric=F(0,1,1)-F(0,0,1); assignment=F(1,1,1)-F(0,1,1). Full refreshed delta=sum(common effects)+added_cost-removed_cost. Report assignment-first decomposition and assignment/source-metric interaction from the cube as order-dependent alternatives. Assignments include target-shape changes, not just target-coordinate changes.",
+  "checks": "For every cube cell, independently compare combined shapes and per-point/total costs with unchanged native gicp_linearization and gicp_frozen_cost. Compare full baseline, frozen accepted, and refreshed accepted cost with captured values. Verify decomposition accounting, input immutability, all frozen complete native package/source/controller identities, exact pose/history linkage and original unit weights. No native recompilation; reuse the verified PR300 complete private package and assert current native build inputs agree with the original sources under LF normalization.",
+  "numeric": {
+    "cost_atol": 2e-06,
+    "cost_rtol": 1e-09,
+    "combined_shape_atol": 2e-12,
+    "combined_shape_rtol": 1e-12,
+    "accounting_atol": 2e-08,
+    "accounting_rtol": 1e-10
+  },
+  "unit_controls": "Closed-form isotropic and anisotropic rotated shapes, target point/shape switch, support addition/removal/empty intersection, common input-order preservation, valid slight asymmetry, invalid/nonfinite/SPD/pose/ID inputs and arithmetic overflow. Synthetic controls are unit tests only.",
+  "reporting": "Preserve every transition, aggregate by family/case and convergence status, report last-ten limited-transition effects and exact source/target correspondence recurrence separately from pose recurrence. Summaries describe observed cost effects; no causal proof or proposed step/acceptance criterion. Five limited cases remain max_iterations. No post-hoc row/threshold selection.",
+  "preservation": "Prior successful protocols/controllers/source/native snapshots/receipts and failed attempts remain verbatim. Fresh study/output paths only. Complete private package copy; never overwrite installed extension. New public controller/packet use LF checkout rules."
+}

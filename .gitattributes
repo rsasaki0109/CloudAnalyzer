@@ -63,3 +63,6 @@ scripts/audit_flatwall_gicp_shapes.py text eol=lf
 benchmarks/slam/flatwall-gicp-shapes/** text eol=lf
 scripts/audit_flatwall_gicp_target.py text eol=lf
 benchmarks/slam/flatwall-gicp-target/** text eol=lf
+scripts/audit_flatwall_gicp_transition.py text eol=lf
+benchmarks/slam/flatwall-gicp-transition/** text eol=lf
+scripts/analyze_flatwall_gicp_transitions.py text eol=lf

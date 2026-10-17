@@ -1,0 +1,48 @@
+{
+  "schema": "cloudanalyzer.flatwall_gicp_transition.v1",
+  "controller": {
+    "name": "audit_flatwall_gicp_transition.py",
+    "bytes": 17658,
+    "sha256": "aad0b6cd8fbf2e97ab976c5d7000d5682d806b309c1ad1320b7726830b9d5845"
+  },
+  "native": {
+    "name": "_core.pyd",
+    "bytes": 7813120,
+    "sha256": "9e47d88a73e12b097e0242afda72e38a4a01068bbdca1acebaa684fb274b3eed"
+  },
+  "histories": 72,
+  "accepted_transitions": 686,
+  "native_cube_cost_checks": 5488,
+  "native_combined_shape_checks": 2744,
+  "limited_tail_transitions": 100,
+  "original_input_artifacts_unchanged": 84,
+  "original_poses_and_statuses_unchanged": true,
+  "outputs": {
+    "protocol.json": {
+      "name": "protocol.json",
+      "bytes": 21518,
+      "sha256": "3069740803c0d57ad6d36f3909edd25d53f376c26e590211d2fdb4947f8d14a5"
+    },
+    "frames.json": {
+      "name": "frames.json",
+      "bytes": 25032,
+      "sha256": "c99898991202bb776dd139f7e3b72962104b2417a82980e9967037c3a9900d6e"
+    },
+    "transitions.json": {
+      "name": "transitions.json",
+      "bytes": 796209,
+      "sha256": "99387c9de6c05859fa036aac13431a61e7151ec42c234a3bc83902cba1703f59"
+    },
+    "limited-tails.json": {
+      "name": "limited-tails.json",
+      "bytes": 116322,
+      "sha256": "2a5b7b6ef3d25edf9cd73a2dab8188401e23d44bad725261ae27f87428b1da5a"
+    },
+    "summary.json": {
+      "name": "summary.json",
+      "bytes": 3748,
+      "sha256": "ec0dade9f7f34249a3884787956ef41b3ca35925706005a07adbb313e177c25c"
+    }
+  },
+  "scope": "Fixed-support costs at captured poses with explicit support accounting; no new optimizer, accepted pose, acceptance rule, physical accuracy or speed result."
+}

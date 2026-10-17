@@ -1,0 +1,846 @@
+[
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 60,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 3,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388791349460816,
+          0.0011216055450835442
+        ],
+        "rotation_range": [
+          0.0004578147955602042,
+          0.0009158203623495936
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.000538879017423286,
+          0.0011216084998837326
+        ],
+        "rotation_range": [
+          0.0004578147356631945,
+          0.000915820464139762
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 10,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          4.7522862813452725e-15,
+          3.748308421189494e-08
+        ],
+        "rotation_range": [
+          1.4118898759639144e-15,
+          1.300294728010035e-08
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.3322676295501878e-15,
+          1.1874775385223302e-08
+        ]
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388791349639646,
+          0.0011216055446453118
+        ],
+        "rotation_range": [
+          0.0004578147955688677,
+          0.0009158203623333412
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388546380013895,
+          0.0011222370074958448
+        ],
+        "rotation_range": [
+          0.00045780239506297446,
+          0.0009158418463349413
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "raw-fine",
+    "row": 63,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 2,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0007211437197030807,
+          0.001604500641301746
+        ],
+        "rotation_range": [
+          0.0005954625301884064,
+          0.0011716716639903603
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 9,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          4.126394483754026e-09,
+          0.0030091622940189413
+        ],
+        "rotation_range": [
+          1.383649371963158e-09,
+          0.0012357760253635715
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.1721292825228602e-09,
+          0.0005986261520984915
+        ]
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0008118792301575809,
+          0.006430236923835553
+        ],
+        "rotation_range": [
+          0.0005111925111297368,
+          0.0023973387003049344
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 7,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          6.696836006286085e-08,
+          0.005934860033023264
+        ],
+        "rotation_range": [
+          3.3379148065193246e-08,
+          0.0026475336327851746
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          2.985375613384633e-08,
+          0.0006212546330477409
+        ]
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0008159125323467251,
+          0.01357222137687096
+        ],
+        "rotation_range": [
+          0.0005088020774222192,
+          0.004181087466285503
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 49,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 7,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          2.519295770401083e-05,
+          0.0005334450723526664
+        ],
+        "rotation_range": [
+          4.882797160441289e-05,
+          0.0006154753604309572
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00010934395292797593,
+          0.000548110045134267
+        ],
+        "rotation_range": [
+          8.160577976441543e-05,
+          0.0003484891739696768
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00013399628518365295,
+          0.0009507717472247149
+        ],
+        "rotation_range": [
+          0.00015678186502012076,
+          0.0006064406905302028
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00013399628518336637,
+          0.0009507717472246093
+        ],
+        "rotation_range": [
+          0.00015678186502022387,
+          0.0006064406905299354
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00010934395292809478,
+          0.0005481100451343506
+        ],
+        "rotation_range": [
+          8.160577976441682e-05,
+          0.00034848917396975934
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-fine",
+    "row": 63,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 5,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.003918678349267909,
+          0.008455014072868186
+        ],
+        "rotation_range": [
+          0.002358695490096175,
+          0.004195836652094339
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0031271051890603605,
+          0.006042107013254258
+        ],
+        "rotation_range": [
+          0.001237231988350735,
+          0.004954722988269828
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.003127105187923629,
+          0.0060421070146539
+        ],
+        "rotation_range": [
+          0.0012372319860433564,
+          0.004954727900505335
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.003918678349440656,
+          0.008455013996299249
+        ],
+        "rotation_range": [
+          0.002358695490665994,
+          0.004195836652028461
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 10,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          1.5543122344752192e-15,
+          8.965030276148185e-07
+        ],
+        "rotation_range": [
+          9.448473886419772e-16,
+          4.6664084163434465e-07
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.1102230246251565e-15,
+          4.539044651252766e-07
+        ]
+      }
+    }
+  },
+  {
+    "family": "caller_shapes",
+    "case": "rotation-legacy",
+    "row": 63,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 2,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 3,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0041151411165971635,
+          0.03294914029871377
+        ],
+        "rotation_range": [
+          0.0018474623704970554,
+          0.020083100286038928
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.003211915954386635,
+          0.0032119165636492752
+        ]
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 4,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.004115132426823627,
+          0.0329491455786665
+        ],
+        "rotation_range": [
+          0.0018474625742548583,
+          0.02008309912055208
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.0032119165690611684,
+          0.003211924489266993
+        ]
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 10,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          4.699575717472434e-11,
+          1.4643348114070204e-07
+        ],
+        "rotation_range": [
+          1.9053129508295625e-11,
+          5.9367743792228883e-08
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.6731283025706034e-11,
+          5.213258269520793e-08
+        ]
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 3,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0041151412433166,
+          0.03294914025863369
+        ],
+        "rotation_range": [
+          0.0018474569212713647,
+          0.020083117309656263
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.0032118990908545086,
+          0.003211916484601618
+        ]
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 4,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.004114987251769335,
+          0.032949225954038215
+        ],
+        "rotation_range": [
+          0.0018474627691337832,
+          0.020083110690668385
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.003211916609068277,
+          0.003212049150101315
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 60,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 3,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388791349463742,
+          0.0011216055450825478
+        ],
+        "rotation_range": [
+          0.0004578147955606808,
+          0.0009158203623490079
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388790174225029,
+          0.0011216084998838729
+        ],
+        "rotation_range": [
+          0.00045781473566277334,
+          0.000915820464139532
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 10,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          4.581688119224519e-15,
+          3.748308594245542e-08
+        ],
+        "rotation_range": [
+          1.496193178011453e-15,
+          1.3002948529477869e-08
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.3322676295501878e-15,
+          1.1874777161580141e-08
+        ]
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388791349639575,
+          0.0011216055446447292
+        ],
+        "rotation_range": [
+          0.00045781479556950943,
+          0.0009158203623336977
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0005388546379997228,
+          0.0011222370074951827
+        ],
+        "rotation_range": [
+          0.00045780239506115213,
+          0.0009158418463342278
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "raw-fine",
+    "row": 63,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 2,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0007211437197026111,
+          0.0016045006413019942
+        ],
+        "rotation_range": [
+          0.0005954625301878653,
+          0.001171671663990484
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 9,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          4.126394194846214e-09,
+          0.0030091622940180396
+        ],
+        "rotation_range": [
+          1.3836493421309234e-09,
+          0.0012357760253630108
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.1721290604782553e-09,
+          0.0005986261520991576
+        ]
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0008118792301562763,
+          0.006430236923835666
+        ],
+        "rotation_range": [
+          0.0005111925111294187,
+          0.0023973387003049292
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 7,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          6.696836051926723e-08,
+          0.005934860033022587
+        ],
+        "rotation_range": [
+          3.3379147996849605e-08,
+          0.002647533632784582
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          2.985375613384633e-08,
+          0.0006212546330477409
+        ]
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.000815912532346133,
+          0.013572221376870367
+        ],
+        "rotation_range": [
+          0.0005088020774215127,
+          0.004181087466285105
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 49,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 7,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          2.5192957703954934e-05,
+          0.0005334450723532622
+        ],
+        "rotation_range": [
+          4.882797160440585e-05,
+          0.0006154753604305331
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00010934395292750992,
+          0.0005481100451348587
+        ],
+        "rotation_range": [
+          8.160577976438073e-05,
+          0.00034848917396972573
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0001339962851831906,
+          0.0009507717472255445
+        ],
+        "rotation_range": [
+          0.00015678186502025637,
+          0.0006064406905299366
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00013399628518324464,
+          0.0009507717472251865
+        ],
+        "rotation_range": [
+          0.00015678186502027133,
+          0.0006064406905298917
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0001093439529274289,
+          0.00054811004513477
+        ],
+        "rotation_range": [
+          8.16057797645586e-05,
+          0.00034848917396968724
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-fine",
+    "row": 63,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 5,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.003918678349267884,
+          0.008455014072869456
+        ],
+        "rotation_range": [
+          0.0023586954900954218,
+          0.004195836652094066
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0031271051890598154,
+          0.006042107013256271
+        ],
+        "rotation_range": [
+          0.001237231988350378,
+          0.004954722988269668
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0031271051879244063,
+          0.006042107014656024
+        ],
+        "rotation_range": [
+          0.0012372319860440347,
+          0.0049547279005071896
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 0,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.003918678349440975,
+          0.008455013996299564
+        ],
+        "rotation_range": [
+          0.002358695490664317,
+          0.004195836652029153
+        ],
+        "same_ids_combined_shape_max_difference_range": null
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 10,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          1.8343894894033213e-15,
+          8.965030279712807e-07
+        ],
+        "rotation_range": [
+          1.2426810021952699e-15,
+          4.66640843692832e-07
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.5543122344752192e-15,
+          4.5390446712367805e-07
+        ]
+      }
+    }
+  },
+  {
+    "family": "native_shapes",
+    "case": "rotation-legacy",
+    "row": 63,
+    "last_ten_states": 10,
+    "last_ten_unique_correspondence_sets": 2,
+    "lags": {
+      "1": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 3,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.0041151411165977,
+          0.03294914029871422
+        ],
+        "rotation_range": [
+          0.0018474623704970096,
+          0.020083100286038547
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.003211915954386857,
+          0.0032119165636492752
+        ]
+      },
+      "2": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 4,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.00411513242682439,
+          0.03294914557866536
+        ],
+        "rotation_range": [
+          0.0018474625742552896,
+          0.02008309912055166
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.0032119165690609464,
+          0.003211924489266771
+        ]
+      },
+      "3": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 10,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          4.699390141845914e-11,
+          1.464334813077407e-07
+        ],
+        "rotation_range": [
+          1.9052833878430334e-11,
+          5.936774377582061e-08
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          1.6730949958798647e-11,
+          5.2132582473163325e-08
+        ]
+      },
+      "4": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 3,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.004115141243317326,
+          0.03294914025863342
+        ],
+        "rotation_range": [
+          0.0018474569212713955,
+          0.020083117309655753
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.0032118990908542866,
+          0.003211916484601396
+        ]
+      },
+      "5": {
+        "comparisons": 10,
+        "equal_ordered_correspondence_sets": 4,
+        "exact_pose_bit_repeats": 0,
+        "translation_range": [
+          0.004114987251769382,
+          0.032949225954037785
+        ],
+        "rotation_range": [
+          0.0018474627691342177,
+          0.02008311069066828
+        ],
+        "same_ids_combined_shape_max_difference_range": [
+          0.003211916609068277,
+          0.003212049150101315
+        ]
+      }
+    }
+  }
+]

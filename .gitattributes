@@ -73,3 +73,9 @@ scripts/gicp_transported_reference.py text eol=lf
 scripts/gicp_transported_fixed_reference.py text eol=lf
 scripts/audit_flatwall_gicp_transported.py text eol=lf
 benchmarks/slam/flatwall-gicp-transported/** text eol=lf
+scripts/flatwall_trajectory_reference.py text eol=lf
+scripts/audit_flatwall_trajectory.py text eol=lf
+benchmarks/slam/flatwall-trajectory/** text eol=lf
+benchmarks/slam/flatwall-trajectory/*.png binary
+cloudanalyzer/tests/test_flatwall_trajectory_reference.py text eol=lf
+cloudanalyzer/tests/test_flatwall_trajectory_packet.py text eol=lf

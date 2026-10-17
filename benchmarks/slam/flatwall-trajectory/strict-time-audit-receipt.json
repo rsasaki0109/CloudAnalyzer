@@ -1,0 +1,38 @@
+{
+  "protocol_sha256": "ac414581f94797cde51c80d246f91d66bd76591c05405d678a4fbab32b7a9452",
+  "controller_freeze_sha256": "d42740d3a44a8cac99c31dc702b67262f2361950bc9aa39d3ad76b8c351c3243",
+  "input_files_sha256": {
+    "notes/slam-flatwall-inputs-20261016/gt.tar.gz": "b2c457f95fdae05af07732a60294762c55567e21e6548977b235ebf415d6a9d9",
+    "notes/slam-flatwall-inputs-20261016/flatwall_01.bag": "4721e667166e11b948aea83b221f99ca0fec21fabdce5b292662a4b442efbab6",
+    "notes/slam-gicp-transported-20261017/integration/trajectory.npz": "277f1974f93581f4900c23e6945896f4b62d74ae3a9756240fec378ce5afd7be",
+    "notes/slam-gicp-transported-20261017/integration/receipt.json": "52594d095c80f70f923cf18fad6b7f9df3b032b955e014ae9e51b9ebbc138e75",
+    "notes/slam-gicp-transported-20261017/reference-inventory/boundary-deviation.json": "30a247f16b7b31ff3950ec304aa565502c949273013e2cacf076bb78d4503a85",
+    "notes/slam-gicp-transported-20261017/estimate-schema.json": "f13f5e399e0eeef9b4a6185a1c0f7e18cf80c3bcf8d4e8bfa87304501e04d489",
+    "scripts/flatwall_trajectory_reference.py": "6ccec1362344a32f3864fc11b1d26f98f1da76d971cc2c6182397bf70e0cf957",
+    "scripts/audit_flatwall_trajectory.py": "b8e72c3bdaa2e508566d492ac0b0184e572667cb8d3c4b42611492e6f1f4b430",
+    "cloudanalyzer/tests/test_flatwall_trajectory_reference.py": "ec85d19d2936ba6760f90d9e288c39ad92661f165c16d3d87273de060adcbad6",
+    "notes/slam-gicp-transported-20261017/integration/per-scan.json": "4c3144b2c059318d563e8a05584d9010b5655828ef88a50e68ea1c45fa65f0f7",
+    "notes/slam-gicp-transported-20261017/integration/map_points.npy": "931cf73cab1214886ca4085a94f71330a4117e2265bababaa04137721ef772a6"
+  },
+  "output_files_sha256": {
+    "edges.json": "26d96bf2aa712a6b7fb3d926e65e3756553b9f9aa813d5b5d747e8829ac9465d",
+    "errors.npz": "a07f7173f027ee9bc9867011b62aec633d258ab84767a302936745dac289fedd",
+    "inputs.json": "a0ca6a3cda05ed9a34e2f7fa6cac23d6ba8ac2c525d1a8d964f45fdfc09e8ef1",
+    "paired.npz": "078986de3e2777aeae671fc48787872dbcf7fd7dc7502199956a516c9df230ce",
+    "protocol.json": "ac414581f94797cde51c80d246f91d66bd76591c05405d678a4fbab32b7a9452",
+    "reference-member.json": "4a6481101caa149f08358d4c8f6eb412fefb30e864334551973ceac51c959b10",
+    "samples.json": "0cd32ffa3430c0a9f045b0f02efa5dc53b109254c1939a4df85d7df8d23b6c05",
+    "summary.json": "6eb67a3d7166dc8e3a3cfb50631afb963e2de9c1bc23bcf1b2e59d7581f77bcf"
+  },
+  "input_hashes_unchanged": true,
+  "reference_member": {
+    "member": "gt/flatwall_01.txt",
+    "bytes": 149166,
+    "sha256": "978d0b51cb53ca75fafee7b1a112c7c54b68f3c5617d0263cd2084065c242298",
+    "rows": 729,
+    "first_timestamp_ns": 1656505431190762997,
+    "last_timestamp_ns": 1656505449692433119,
+    "maximum_original_quaternion_norm_error": 7.295077660840477e-07,
+    "interpretation": "Assumed TUM syntax and reference-world-from-LiDAR; archive-specific axes and clock mapping unverified."
+  }
+}

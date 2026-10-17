@@ -1,0 +1,113 @@
+{
+  "files": {
+    "baseline-receipt.json": {
+      "bytes": 3721,
+      "sha256": "13842814227fad998039d501c3f09703e4110e696447c1963b537a0d0f458fd2"
+    },
+    "controller-freeze.json": {
+      "bytes": 48224,
+      "sha256": "58776a68a58edccc9cb83b1eafc118ff55d7b8f6a49e2fd9f74f9e5ced62ba16"
+    },
+    "diagnostics.png": {
+      "bytes": 378490,
+      "sha256": "4bf52e33584b1abadabc16852b164e2adc6787dd86bf4c4e32ac19835a9a6d14"
+    },
+    "gyro-0.1875/baseline-per-scan.json": {
+      "bytes": 87249,
+      "sha256": "cfc4da19e91e3afa29d0e2c9edeff2f1cdd15bcb5b2f48b98373db4d068ed30b"
+    },
+    "gyro-0.1875/baseline-trajectory.npz": {
+      "bytes": 18632,
+      "sha256": "d1e8096b43ffceee95691ab3ae590f5c969a1fb8390aff13d3b1a796ef54c3a5"
+    },
+    "gyro-0.1875/frames.jsonl": {
+      "bytes": 389649,
+      "sha256": "e5f435ba48013e60f1c991f82dcee641fa8bd6cd5604f4f386af9108c4b56a65"
+    },
+    "gyro-legacy/baseline-per-scan.json": {
+      "bytes": 81445,
+      "sha256": "b09d53827368481258e2f7683052b10ad449e675f042e408bbdb778ca2cc8987"
+    },
+    "gyro-legacy/baseline-trajectory.npz": {
+      "bytes": 18697,
+      "sha256": "76d7af9f1af16cb0a414528db2355cfb9d645974a991b0f1b8ccf36558e4b1f3"
+    },
+    "gyro-legacy/frames.jsonl": {
+      "bytes": 363420,
+      "sha256": "385cd0e284faa8542ed3e42543e137c1e9f0c281e9d6cbddfa4276bc15de21de"
+    },
+    "native-source-comparison.json": {
+      "bytes": 33788,
+      "sha256": "7acf991df9cb7fb9b4ba2e6a4a4faac13f795c0e07c47afe6dc25690f8c79956"
+    },
+    "protocol.json": {
+      "bytes": 6271,
+      "sha256": "5f792959553e579c53e177504ca8f7b68e353b75a0c9efb0acff0f482665b730"
+    },
+    "raw-0.1875/baseline-per-scan.json": {
+      "bytes": 87300,
+      "sha256": "2166b361e338a6e366091d397f640e04748196c6e445636d6b6491b59044866c"
+    },
+    "raw-0.1875/baseline-trajectory.npz": {
+      "bytes": 18621,
+      "sha256": "955d8577f6e00f1f0119515896931b7649a58c969cb87095b772cceefe9e48fa"
+    },
+    "raw-0.1875/frames.jsonl": {
+      "bytes": 388675,
+      "sha256": "7cc710ccb6611240438fc423f95cc732422954f4c264433b4ae776e03f809b6b"
+    },
+    "raw-legacy/baseline-per-scan.json": {
+      "bytes": 81555,
+      "sha256": "60938ce71764476529d85ff3602273d075f74a0fc45e936221118914027698e4"
+    },
+    "raw-legacy/baseline-trajectory.npz": {
+      "bytes": 18685,
+      "sha256": "3fd1223d315627987c3b7d4f1a280bd6574164f277b7f8df12de0f08a3fbc6ff"
+    },
+    "raw-legacy/frames.jsonl": {
+      "bytes": 363500,
+      "sha256": "f20ac0175831d5784f62671586dac6d4b75ee0bbb18430241d7d01111051d29d"
+    },
+    "README.md": {
+      "bytes": 7137,
+      "sha256": "e0864278bbdca6581dac305dae4324d8f32c596db5777102161af7770d8b64b9"
+    },
+    "receipt.json": {
+      "bytes": 151346,
+      "sha256": "7bf69c69f52770d65cc7edf35faabbdc66a089efb65948eabb2b5935418e5d4f"
+    },
+    "snapshot-catalog.json": {
+      "bytes": 266079,
+      "sha256": "ca4bfee70e8b3442f2d6b48bc20c0323423f86f5443b5bda9340cb6241cef2a1"
+    },
+    "source-snapshot/cloudanalyzer/tests/test_flatwall_frontend_constraints.py": {
+      "bytes": 3483,
+      "sha256": "23af9a95c184004e53dc9d60acc8e2945eea81de28a4f340d736d65c8af5a1bd"
+    },
+    "source-snapshot/scripts/audit_flatwall_frontend_constraints.py": {
+      "bytes": 16228,
+      "sha256": "07843420b1066a0396f4f520945d2f327f086945ef4c8dedc4af3f4d03a5980e"
+    },
+    "source-snapshot/scripts/audit_flatwall_frontend_controls.py": {
+      "bytes": 15123,
+      "sha256": "2b4417eced45d540b9cc72a7557e00e8ad8e6a45334785c11ad11690083130d7"
+    },
+    "source-snapshot/scripts/audit_flatwall_odometry_linearization.py": {
+      "bytes": 15113,
+      "sha256": "b743f3bcb4e1acac83cc212a246f4d56bba493c0e559d408203f0967f4631c48"
+    },
+    "source-snapshot/scripts/flatwall_trajectory_reference.py": {
+      "bytes": 10609,
+      "sha256": "6ccec1362344a32f3864fc11b1d26f98f1da76d971cc2c6182397bf70e0cf957"
+    },
+    "summary.json": {
+      "bytes": 6883,
+      "sha256": "f4e31efe62cae5836c184fde1954d377e9b1c69c22c04f32e512e928a68e3457"
+    },
+    "verify.py": {
+      "bytes": 10494,
+      "sha256": "c01d3dd641e00ad8aa814d30163826d0d95a63f07848b49f58a2954307b28091"
+    }
+  },
+  "scope": "File integrity; see verifier and README for diagnostic limits."
+}

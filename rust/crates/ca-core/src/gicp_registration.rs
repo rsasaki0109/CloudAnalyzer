@@ -194,6 +194,66 @@ pub struct Registration {
     pub history: Vec<Iteration>,
 }
 
+/// Owned, immutable world-frame target for repeated GICP registration.
+///
+/// All rows are validated once, including unmatched rows. Original shape
+/// coefficients are retained: the factor still canonicalizes each matched
+/// shape exactly as in [`register`]. No support filtering or shape fallback is
+/// performed. Point IDs and exact tree traversal ties retain input order.
+#[derive(Debug)]
+pub struct PreparedTarget {
+    points: Vec<[f64; 3]>,
+    shapes: Vec<Matrix3>,
+    tree: Option<KdTree>,
+}
+
+impl PreparedTarget {
+    pub fn new(target: &[[f64; 3]], target_shapes: &[Matrix3]) -> Result<Self, GicpError> {
+        validate_rows(target, target_shapes, "invalid target point or shape")?;
+        validate_target_capacity(target.len())?;
+        Ok(Self {
+            points: target.to_vec(),
+            shapes: target_shapes.to_vec(),
+            tree: KdTree::new(target),
+        })
+    }
+
+    pub fn len(&self) -> usize {
+        self.points.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.points.is_empty()
+    }
+
+    /// Source points/shapes use sensor axes; target points/shapes use world axes.
+    /// Every call validates its pose, parameters and source rows, then borrows
+    /// the prepared target. Shared calls have no mutable target scratch state.
+    pub fn register(
+        &self,
+        source: &[[f64; 3]],
+        source_shapes: &[Matrix3],
+        initial_pose: Rigid,
+        center_world: [f64; 3],
+        params: RegistrationParams,
+    ) -> Result<Registration, GicpError> {
+        validate_common(&initial_pose, &center_world, params)?;
+        validate_rows(source, source_shapes, "invalid source point or shape")?;
+        Ok(register_problem(
+            Problem {
+                source,
+                target: &self.points,
+                source_shapes,
+                target_shapes: &self.shapes,
+                tree: self.tree.as_ref(),
+                params,
+            },
+            initial_pose,
+            center_world,
+        ))
+    }
+}
+
 struct Matches {
     source: Vec<usize>,
     target: Vec<usize>,
@@ -206,7 +266,7 @@ struct Problem<'a> {
     target: &'a [[f64; 3]],
     source_shapes: &'a [Matrix3],
     target_shapes: &'a [Matrix3],
-    tree: Option<KdTree>,
+    tree: Option<&'a KdTree>,
     params: RegistrationParams,
 }
 
@@ -338,7 +398,31 @@ pub fn register(
     center_world: [f64; 3],
     params: RegistrationParams,
 ) -> Result<Registration, GicpError> {
-    if !gicp::proper_pose(&initial_pose) || !center_world.iter().all(|v| v.is_finite()) {
+    validate_common(&initial_pose, &center_world, params)?;
+    validate_rows(source, source_shapes, "invalid source point or shape")?;
+    validate_rows(target, target_shapes, "invalid target point or shape")?;
+    validate_target_capacity(target.len())?;
+    let tree = KdTree::new(target);
+    Ok(register_problem(
+        Problem {
+            source,
+            target,
+            source_shapes,
+            target_shapes,
+            tree: tree.as_ref(),
+            params,
+        },
+        initial_pose,
+        center_world,
+    ))
+}
+
+fn validate_common(
+    initial_pose: &Rigid,
+    center_world: &[f64; 3],
+    params: RegistrationParams,
+) -> Result<(), GicpError> {
+    if !gicp::proper_pose(initial_pose) || !center_world.iter().all(|v| v.is_finite()) {
         return Err(error(
             None,
             "initial_pose must be proper rigid and center_world finite",
@@ -363,30 +447,38 @@ pub fn register(
             "iterations, distances and tolerances must be finite and positive",
         ));
     }
-    for (points, shapes, reason) in [
-        (source, source_shapes, "invalid source point or shape"),
-        (target, target_shapes, "invalid target point or shape"),
-    ] {
-        if points.len() != shapes.len() {
-            return Err(error(None, "each point needs one shape"));
-        }
-        for (i, (point, shape)) in points.iter().zip(shapes).enumerate() {
-            if !point.iter().all(|v| v.is_finite()) || gicp::canonical_shape(shape).is_none() {
-                return Err(error(Some(i), reason));
-            }
+    Ok(())
+}
+
+fn validate_rows(
+    points: &[[f64; 3]],
+    shapes: &[Matrix3],
+    reason: &'static str,
+) -> Result<(), GicpError> {
+    if points.len() != shapes.len() {
+        return Err(error(None, "each point needs one shape"));
+    }
+    for (i, (point, shape)) in points.iter().zip(shapes).enumerate() {
+        if !point.iter().all(|v| v.is_finite()) || gicp::canonical_shape(shape).is_none() {
+            return Err(error(Some(i), reason));
         }
     }
-    if target.len() > u32::MAX as usize {
+    Ok(())
+}
+
+fn validate_target_capacity(count: usize) -> Result<(), GicpError> {
+    if count > u32::MAX as usize {
         return Err(error(None, "target exceeds tree index capacity"));
     }
-    let problem = Problem {
-        source,
-        target,
-        source_shapes,
-        target_shapes,
-        tree: KdTree::new(target),
-        params,
-    };
+    Ok(())
+}
+
+fn register_problem(
+    problem: Problem<'_>,
+    initial_pose: Rigid,
+    center_world: [f64; 3],
+) -> Registration {
+    let params = problem.params;
     let mut result = Registration {
         pose: initial_pose,
         termination: Termination::MaxIterations,
@@ -524,7 +616,7 @@ pub fn register(
             result.failure_reason = Some(e.reason);
         }
     }
-    Ok(result)
+    result
 }
 
 #[cfg(test)]
@@ -726,5 +818,136 @@ mod tests {
             assert!((a - b).abs() < 1e-14);
         }
         assert!(gicp::proper_pose(&updated));
+    }
+
+    #[test]
+    fn prepared_target_owns_inputs_and_preserves_all_history_on_reuse() {
+        let source = points();
+        let mut target: Vec<_> = source.iter().map(|p| [p[0] + 0.1, p[1], p[2]]).collect();
+        let cs = vec![ID; source.len()];
+        let mut ct = cs.clone();
+        ct[0][0][1] = 2e-14;
+        let params = RegistrationParams {
+            capture_history: true,
+            ..Default::default()
+        };
+        let expected =
+            register(&source, &target, &cs, &ct, Rigid::IDENTITY, [0.; 3], params).unwrap();
+        let prepared = PreparedTarget::new(&target, &ct).unwrap();
+        assert_eq!(prepared.len(), target.len());
+        assert!(!prepared.is_empty());
+        target.fill([f64::NAN; 3]);
+        ct.fill([[0.; 3]; 3]);
+        for parallel in [false, true, false] {
+            let actual = prepared
+                .register(
+                    &source,
+                    &cs,
+                    Rigid::IDENTITY,
+                    [0.; 3],
+                    RegistrationParams { parallel, ..params },
+                )
+                .unwrap();
+            assert_eq!(actual, expected);
+        }
+    }
+
+    #[test]
+    fn prepared_target_validates_constructor_and_per_call_first_errors() {
+        let source = points();
+        let mut shapes = vec![ID; source.len()];
+        shapes[2][0][0] = 0.;
+        assert_eq!(
+            PreparedTarget::new(&source, &shapes).unwrap_err(),
+            error(Some(2), "invalid target point or shape")
+        );
+        assert_eq!(
+            PreparedTarget::new(&source, &[]).unwrap_err(),
+            error(None, "each point needs one shape")
+        );
+        let empty = PreparedTarget::new(&[], &[]).unwrap();
+        assert!(empty.is_empty());
+        let result = empty
+            .register(&[], &[], Rigid::IDENTITY, [0.; 3], Default::default())
+            .unwrap();
+        assert_eq!(result, run(&[], &[], Default::default()));
+        let err = empty
+            .register(
+                &source,
+                &shapes,
+                Rigid::IDENTITY,
+                [0.; 3],
+                Default::default(),
+            )
+            .unwrap_err();
+        assert_eq!(err, error(Some(2), "invalid source point or shape"));
+        let mut pose = Rigid::IDENTITY;
+        pose.translation[0] = f64::NAN;
+        assert_eq!(
+            empty
+                .register(&source, &shapes, pose, [0.; 3], Default::default())
+                .unwrap_err()
+                .index,
+            None
+        );
+        #[cfg(target_pointer_width = "64")]
+        assert!(validate_target_capacity(u32::MAX as usize + 1).is_err());
+    }
+
+    #[test]
+    fn prepared_target_shared_threads_and_traversal_ties_are_identical() {
+        fn send_sync<T: Send + Sync>() {}
+        send_sync::<PreparedTarget>();
+        let source = [[0., 0., 0.], [0., 2., 0.], [0., 0., 3.]];
+        let target = [[1., 0., 0.], [-1., 0., 0.], [0., 2., 0.], [0., 0., 3.]];
+        let prepared = PreparedTarget::new(&target, &[ID; 4]).unwrap();
+        let params = RegistrationParams {
+            max_correspondence_distance: 2.,
+            capture_history: true,
+            ..Default::default()
+        };
+        let expected = register(
+            &source,
+            &target,
+            &[ID; 3],
+            &[ID; 4],
+            Rigid::IDENTITY,
+            [0.; 3],
+            params,
+        )
+        .unwrap();
+        std::thread::scope(|scope| {
+            let handles: Vec<_> = (0..4)
+                .map(|_| {
+                    scope.spawn(|| {
+                        prepared
+                            .register(&source, &[ID; 3], Rigid::IDENTITY, [0.; 3], params)
+                            .unwrap()
+                    })
+                })
+                .collect();
+            for handle in handles {
+                assert_eq!(handle.join().unwrap(), expected);
+            }
+        });
+        let strict = RegistrationParams {
+            max_correspondence_distance: 1.,
+            ..params
+        };
+        assert_eq!(
+            prepared
+                .register(&source, &[ID; 3], Rigid::IDENTITY, [0.; 3], strict)
+                .unwrap(),
+            register(
+                &source,
+                &target,
+                &[ID; 3],
+                &[ID; 4],
+                Rigid::IDENTITY,
+                [0.; 3],
+                strict
+            )
+            .unwrap()
+        );
     }
 }

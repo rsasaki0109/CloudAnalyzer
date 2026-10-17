@@ -1,0 +1,32 @@
+{
+  "at_utc": "2026-10-17T00:51:53.023665+00:00",
+  "base": "e0c1645db8be907e10facf50b7da2cace3d9cbb6",
+  "api": "Rust PreparedTarget::new(target, target_shapes), len/is_empty, register(source, source_shapes, initial_pose, center_world, params). Python GicpTarget(target, target_shapes), len(target), target.register(source, source_shapes, initial_pose, center_world, *, same registration options). Explicit world-frame SPD target shapes; no automatic estimation/filtering/fallback.",
+  "ownership": "Constructor validates all target rows in original order, copies original f64 point/shape coefficients, builds the same exact KdTree, and owns all storage. Original coefficients are retained so canonicalization inside the unchanged factor follows the standalone API exactly. No target mutation/accessor, borrowed Python memory, target recopy/rebuild per register call, pickling contract or implicit map updates. Send+Sync core target and frozen Python class allow shared read-only use with the GIL released.",
+  "validation": "Standalone registration retains original common-parameter then source then target then index-capacity validation order/messages. Prepared constructor checks target row count then every target finite point/SPD shape then u32 tree capacity. Prepared calls validate common pose/center/parameters then every source row. Target errors happen at construction even if later unmatched; source/pose failures remain per call. Empty target/source are valid and keep existing explicit termination. Wrong array layouts/shapes/dtypes follow existing PyO3 conversions.",
+  "invariants": "Share a borrowed Problem and the exact original iteration body. Preserve source and target row IDs including traversal tie policy, strict correspondence threshold, source-frame shapes, fixed center, frozen inner metrics/weights, solver, trial schedule, convergence/failure statuses, final rematch, diagnostics, output ownership, ordered parallel arithmetic and defaults. No target matrix pre-rounding, float32, nearest hints, tolerance/gate change, frontend adoption or rejected-state adoption.",
+  "controls": "Core and Python complete bit comparisons for cold/prepared/reused serial/parallel, anisotropic and slightly asymmetric valid shapes, duplicate/equidistant targets, strided/reversed inputs, changed/deleted constructor arrays, output mutation isolation, shared thread use, empty/unsupported/limit/nonfinite/singular cases, common/source/target first errors and invalid SPD/nonfinite even unmatched.",
+  "real": "All 36 immutable PR297 source/target/explicit shape/prediction/center snapshots: four cases x rows [0,1,2,9,17,33,49,60,63]. Check all outputs, history and trial values bit-identical to frozen PR297 results and current standalone register, serial and parallel, repeated use and constructor mutation isolation. Independently rerun existing NumPy/SciPy oracle on all 36 inputs with original parameters. Recheck native-shape API/registration and legacy motion/frontend results using a complete private native package.",
+  "preservation": "Prior evidence and successful controllers/native/source snapshots remain byte-identical. Private native package per build, never overwrite installed extension. Preserve failed attempts and give retries fresh output paths. Public controller and packet use LF attributes before publication.",
+  "timing_plan": {
+    "input": "32 nonempty PR297 real fixed-map inputs (rows [1,2,9,17,33,49,60,63] in four cases). Fixed source/target per registration problem; repeated identical source queries study reuse only, not real sequential-map lifetime.",
+    "modes": [
+      "standalone",
+      "prepared_cold",
+      "prepared_warm"
+    ],
+    "reuse_counts": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "paired_repetitions": 9,
+    "warm_calls_per_mode_batch": 2,
+    "threads": "Rayon=4, OpenBLAS=1; all registrations serial, history disabled",
+    "measurement": "Freeze detailed controller/input hashes before timing. Counterbalance mode order. Each standalone sample calls the complete API reuse_count times. Cold constructs one target then registers reuse_count times, including constructor/object destruction. Warm uses an already prepared target and registers reuse_count times. Include output destruction and Python array copy/validation in timed API. Also measure constructor separately. Report total and marginal costs and all predeclared reuse counts; no chosen-after-results threshold. No local build/tests/hashing during windows.",
+    "scope": "Host-local, prewarmed fixed real inputs and explicit precomputed shapes. Excludes PCA, bag I/O, motion correction, map insertion, initialization and dynamic-map update. No whole-SLAM/GPU/accuracy or automatic-default claim."
+  },
+  "scope": "Opt-in immutable target caching; no physical SOTA or frontend adoption claim. Keep five real iteration-limited cases explicit."
+}

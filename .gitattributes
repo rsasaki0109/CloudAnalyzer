@@ -92,3 +92,9 @@ cloudanalyzer/tests/test_flatwall_frontend_constraints_packet.py text eol=lf
 benchmarks/slam/flatwall-frontend-constraints/** text eol=lf
 benchmarks/slam/flatwall-frontend-constraints/*.png binary
 benchmarks/slam/flatwall-frontend-constraints/**/*.npz binary
+scripts/audit_flatwall_prediction_policy.py text eol=lf
+cloudanalyzer/tests/test_flatwall_prediction_policy.py text eol=lf
+cloudanalyzer/tests/test_flatwall_prediction_policy_packet.py text eol=lf
+benchmarks/slam/flatwall-prediction-policy/** text eol=lf
+benchmarks/slam/flatwall-prediction-policy/*.png binary
+benchmarks/slam/flatwall-prediction-policy/**/*.npz binary

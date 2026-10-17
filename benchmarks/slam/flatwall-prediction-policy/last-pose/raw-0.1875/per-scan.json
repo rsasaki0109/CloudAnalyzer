@@ -1,0 +1,3327 @@
+[
+  {
+    "scan_index": 1,
+    "reference_ns": 1656505431399296429,
+    "input_points": 24000,
+    "registration": {
+      "termination": "empty_map",
+      "iterations": 0,
+      "input_points": 24000,
+      "registration_points": 1090,
+      "threshold_m": 6.0,
+      "correspondences": null
+    }
+  },
+  {
+    "scan_index": 2,
+    "reference_ns": 1656505431499131643,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 1063,
+      "threshold_m": 6.0,
+      "correspondences": {
+        "matched_points": 1063,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22285712483212242,
+        "max_residual_m": 0.6822771307679638
+      }
+    }
+  },
+  {
+    "scan_index": 3,
+    "reference_ns": 1656505431599756808,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 21,
+      "input_points": 24000,
+      "registration_points": 1023,
+      "threshold_m": 5.122290996262565,
+      "correspondences": {
+        "matched_points": 1023,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.169749815101071,
+        "max_residual_m": 0.4873276799689864
+      }
+    }
+  },
+  {
+    "scan_index": 4,
+    "reference_ns": 1656505431699599819,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1005,
+      "threshold_m": 5.402845094043945,
+      "correspondences": {
+        "matched_points": 1005,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1512967967271884,
+        "max_residual_m": 0.4499355201686913
+      }
+    }
+  },
+  {
+    "scan_index": 5,
+    "reference_ns": 1656505431799448941,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 1034,
+      "threshold_m": 4.8716744567592025,
+      "correspondences": {
+        "matched_points": 1034,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14330649206664853,
+        "max_residual_m": 0.4510059982176464
+      }
+    }
+  },
+  {
+    "scan_index": 6,
+    "reference_ns": 1656505431899306290,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 996,
+      "threshold_m": 4.780004255155864,
+      "correspondences": {
+        "matched_points": 996,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14291951939400627,
+        "max_residual_m": 0.42472785744939673
+      }
+    }
+  },
+  {
+    "scan_index": 7,
+    "reference_ns": 1656505431999131279,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 9,
+      "input_points": 24000,
+      "registration_points": 1009,
+      "threshold_m": 4.687680768796386,
+      "correspondences": {
+        "matched_points": 1009,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1411222668042307,
+        "max_residual_m": 0.44529483314018736
+      }
+    }
+  },
+  {
+    "scan_index": 8,
+    "reference_ns": 1656505432099718075,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 19,
+      "input_points": 24000,
+      "registration_points": 1029,
+      "threshold_m": 4.366747206896964,
+      "correspondences": {
+        "matched_points": 1029,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14379544026618377,
+        "max_residual_m": 0.42262851886698666
+      }
+    }
+  },
+  {
+    "scan_index": 9,
+    "reference_ns": 1656505432199552418,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1056,
+      "threshold_m": 4.403297812916283,
+      "correspondences": {
+        "matched_points": 1056,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.13835986840189307,
+        "max_residual_m": 0.4093188899770138
+      }
+    }
+  },
+  {
+    "scan_index": 10,
+    "reference_ns": 1656505432299395794,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 1080,
+      "threshold_m": 4.4344515153194415,
+      "correspondences": {
+        "matched_points": 1080,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14156252874251854,
+        "max_residual_m": 0.3925346646346374
+      }
+    }
+  },
+  {
+    "scan_index": 11,
+    "reference_ns": 1656505432399231841,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 1069,
+      "threshold_m": 4.529685982649066,
+      "correspondences": {
+        "matched_points": 1069,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1481428437235032,
+        "max_residual_m": 0.5863165349625621
+      }
+    }
+  },
+  {
+    "scan_index": 12,
+    "reference_ns": 1656505432499480018,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1051,
+      "threshold_m": 4.3306333032986455,
+      "correspondences": {
+        "matched_points": 1051,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14436762250431984,
+        "max_residual_m": 0.5854391159100285
+      }
+    }
+  },
+  {
+    "scan_index": 13,
+    "reference_ns": 1656505432599313147,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1041,
+      "threshold_m": 4.165798188192544,
+      "correspondences": {
+        "matched_points": 1041,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14225202595395403,
+        "max_residual_m": 0.5221569517036917
+      }
+    }
+  },
+  {
+    "scan_index": 14,
+    "reference_ns": 1656505432699153280,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 1086,
+      "threshold_m": 4.014744938762824,
+      "correspondences": {
+        "matched_points": 1086,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14079223692085954,
+        "max_residual_m": 0.5822704686996634
+      }
+    }
+  },
+  {
+    "scan_index": 15,
+    "reference_ns": 1656505432799793472,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 1024,
+      "threshold_m": 3.935436463605561,
+      "correspondences": {
+        "matched_points": 1024,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.13878124433362532,
+        "max_residual_m": 0.4830369412384966
+      }
+    }
+  },
+  {
+    "scan_index": 16,
+    "reference_ns": 1656505432899638643,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1015,
+      "threshold_m": 3.835817122101194,
+      "correspondences": {
+        "matched_points": 1015,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1423786338033348,
+        "max_residual_m": 0.5564615709419968
+      }
+    }
+  },
+  {
+    "scan_index": 17,
+    "reference_ns": 1656505432999473474,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 1034,
+      "threshold_m": 3.783744093788909,
+      "correspondences": {
+        "matched_points": 1034,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1342567658517499,
+        "max_residual_m": 0.4629936132936722
+      }
+    }
+  },
+  {
+    "scan_index": 18,
+    "reference_ns": 1656505433099308782,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 1023,
+      "threshold_m": 3.7245527424080755,
+      "correspondences": {
+        "matched_points": 1023,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14049066375738894,
+        "max_residual_m": 0.5902223580556607
+      }
+    }
+  },
+  {
+    "scan_index": 19,
+    "reference_ns": 1656505433199152127,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 1043,
+      "threshold_m": 3.6623241053909084,
+      "correspondences": {
+        "matched_points": 1043,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.13836124118857687,
+        "max_residual_m": 0.5825660789761032
+      }
+    }
+  },
+  {
+    "scan_index": 20,
+    "reference_ns": 1656505433299792972,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 1032,
+      "threshold_m": 3.707374683103937,
+      "correspondences": {
+        "matched_points": 1032,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14318618685912074,
+        "max_residual_m": 0.5738677366030855
+      }
+    }
+  },
+  {
+    "scan_index": 21,
+    "reference_ns": 1656505433399616646,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 1053,
+      "threshold_m": 3.7018496313074722,
+      "correspondences": {
+        "matched_points": 1053,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14205699365634636,
+        "max_residual_m": 0.5664286188969109
+      }
+    }
+  },
+  {
+    "scan_index": 22,
+    "reference_ns": 1656505433499452887,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 9,
+      "input_points": 24000,
+      "registration_points": 1013,
+      "threshold_m": 3.6351585813432212,
+      "correspondences": {
+        "matched_points": 1013,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14219641041489425,
+        "max_residual_m": 0.6051775432749235
+      }
+    }
+  },
+  {
+    "scan_index": 23,
+    "reference_ns": 1656505433599285254,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 25,
+      "input_points": 24000,
+      "registration_points": 1029,
+      "threshold_m": 3.5613686918127354,
+      "correspondences": {
+        "matched_points": 1029,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.146745371738641,
+        "max_residual_m": 0.6122918530214907
+      }
+    }
+  },
+  {
+    "scan_index": 24,
+    "reference_ns": 1656505433699131384,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 994,
+      "threshold_m": 3.5119911408955695,
+      "correspondences": {
+        "matched_points": 994,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14212165329928325,
+        "max_residual_m": 0.5668878354488098
+      }
+    }
+  },
+  {
+    "scan_index": 25,
+    "reference_ns": 1656505433799767711,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 987,
+      "threshold_m": 3.4482719924644885,
+      "correspondences": {
+        "matched_points": 987,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1449548912242217,
+        "max_residual_m": 0.5756728992908764
+      }
+    }
+  },
+  {
+    "scan_index": 26,
+    "reference_ns": 1656505433899599335,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1064,
+      "threshold_m": 3.402004054370908,
+      "correspondences": {
+        "matched_points": 1064,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14182247960095412,
+        "max_residual_m": 0.5764881427494677
+      }
+    }
+  },
+  {
+    "scan_index": 27,
+    "reference_ns": 1656505433999446424,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 1047,
+      "threshold_m": 3.3516181799311644,
+      "correspondences": {
+        "matched_points": 1047,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14476579985655696,
+        "max_residual_m": 0.5799411061654672
+      }
+    }
+  },
+  {
+    "scan_index": 28,
+    "reference_ns": 1656505434099243597,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 35,
+      "input_points": 24000,
+      "registration_points": 1034,
+      "threshold_m": 3.4009019454337475,
+      "correspondences": {
+        "matched_points": 1034,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1392334602431735,
+        "max_residual_m": 0.5768384295544594
+      }
+    }
+  },
+  {
+    "scan_index": 29,
+    "reference_ns": 1656505434199479230,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 10,
+      "input_points": 24000,
+      "registration_points": 1011,
+      "threshold_m": 3.5984025130985255,
+      "correspondences": {
+        "matched_points": 1011,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14048728966999333,
+        "max_residual_m": 0.5693133626757434
+      }
+    }
+  },
+  {
+    "scan_index": 30,
+    "reference_ns": 1656505434299323008,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1018,
+      "threshold_m": 3.6469165790727534,
+      "correspondences": {
+        "matched_points": 1018,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1400189701779796,
+        "max_residual_m": 0.5631424873847157
+      }
+    }
+  },
+  {
+    "scan_index": 31,
+    "reference_ns": 1656505434399155346,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 22,
+      "input_points": 24000,
+      "registration_points": 1070,
+      "threshold_m": 3.6213305886409533,
+      "correspondences": {
+        "matched_points": 1070,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14217878191574032,
+        "max_residual_m": 0.5770475868198416
+      }
+    }
+  },
+  {
+    "scan_index": 32,
+    "reference_ns": 1656505434499778439,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 1053,
+      "threshold_m": 3.5991479292673727,
+      "correspondences": {
+        "matched_points": 1053,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14295206588777776,
+        "max_residual_m": 0.5806588245274218
+      }
+    }
+  },
+  {
+    "scan_index": 33,
+    "reference_ns": 1656505434599615049,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 1084,
+      "threshold_m": 3.5529584374152074,
+      "correspondences": {
+        "matched_points": 1084,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.13860517467091207,
+        "max_residual_m": 0.5895736558095067
+      }
+    }
+  },
+  {
+    "scan_index": 34,
+    "reference_ns": 1656505434699443761,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 1052,
+      "threshold_m": 3.5289905988020496,
+      "correspondences": {
+        "matched_points": 1052,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14261091910700596,
+        "max_residual_m": 0.5540303804590836
+      }
+    }
+  },
+  {
+    "scan_index": 35,
+    "reference_ns": 1656505434799277035,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 1076,
+      "threshold_m": 3.5163104673665786,
+      "correspondences": {
+        "matched_points": 1076,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14283574616521313,
+        "max_residual_m": 0.5878117275521534
+      }
+    }
+  },
+  {
+    "scan_index": 36,
+    "reference_ns": 1656505434899118845,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 9,
+      "input_points": 24000,
+      "registration_points": 1025,
+      "threshold_m": 3.4911869578707493,
+      "correspondences": {
+        "matched_points": 1025,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1385547998003769,
+        "max_residual_m": 0.5743727391868998
+      }
+    }
+  },
+  {
+    "scan_index": 37,
+    "reference_ns": 1656505434999741665,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 1004,
+      "threshold_m": 3.4515868959564826,
+      "correspondences": {
+        "matched_points": 1004,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14169523650326588,
+        "max_residual_m": 0.5755372006855847
+      }
+    }
+  },
+  {
+    "scan_index": 38,
+    "reference_ns": 1656505435099546389,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 1055,
+      "threshold_m": 3.489968812110325,
+      "correspondences": {
+        "matched_points": 1055,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.13918071142860514,
+        "max_residual_m": 0.5934646231647484
+      }
+    }
+  },
+  {
+    "scan_index": 39,
+    "reference_ns": 1656505435199377591,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 7,
+      "input_points": 24000,
+      "registration_points": 1068,
+      "threshold_m": 3.4714937738343474,
+      "correspondences": {
+        "matched_points": 1068,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14622867504917095,
+        "max_residual_m": 0.5751730533069728
+      }
+    }
+  },
+  {
+    "scan_index": 40,
+    "reference_ns": 1656505435299223732,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1068,
+      "threshold_m": 3.4264310693879843,
+      "correspondences": {
+        "matched_points": 1068,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.13738264720720933,
+        "max_residual_m": 0.598548044673003
+      }
+    }
+  },
+  {
+    "scan_index": 41,
+    "reference_ns": 1656505435399455987,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1014,
+      "threshold_m": 3.4694282082295578,
+      "correspondences": {
+        "matched_points": 1014,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1419929416982263,
+        "max_residual_m": 0.5463179459485664
+      }
+    }
+  },
+  {
+    "scan_index": 42,
+    "reference_ns": 1656505435499283342,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1028,
+      "threshold_m": 3.4909208880456415,
+      "correspondences": {
+        "matched_points": 1028,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14225758953914053,
+        "max_residual_m": 0.5656686226998854
+      }
+    }
+  },
+  {
+    "scan_index": 43,
+    "reference_ns": 1656505435599129813,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 24,
+      "input_points": 24000,
+      "registration_points": 1075,
+      "threshold_m": 3.4750875309055167,
+      "correspondences": {
+        "matched_points": 1075,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1441449267832363,
+        "max_residual_m": 0.5692057500643509
+      }
+    }
+  },
+  {
+    "scan_index": 44,
+    "reference_ns": 1656505435699773608,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1064,
+      "threshold_m": 3.4735281173380574,
+      "correspondences": {
+        "matched_points": 1064,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1393021046420919,
+        "max_residual_m": 0.5517852698338215
+      }
+    }
+  },
+  {
+    "scan_index": 45,
+    "reference_ns": 1656505435799613818,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 1056,
+      "threshold_m": 3.4457630545059854,
+      "correspondences": {
+        "matched_points": 1056,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1458745732811958,
+        "max_residual_m": 0.5757010448187929
+      }
+    }
+  },
+  {
+    "scan_index": 46,
+    "reference_ns": 1656505435899460599,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 21,
+      "input_points": 24000,
+      "registration_points": 1018,
+      "threshold_m": 3.4614813248667553,
+      "correspondences": {
+        "matched_points": 1018,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1439670542580303,
+        "max_residual_m": 0.5928644074146167
+      }
+    }
+  },
+  {
+    "scan_index": 47,
+    "reference_ns": 1656505435999312754,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 944,
+      "threshold_m": 3.538588360951028,
+      "correspondences": {
+        "matched_points": 944,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1492330266247407,
+        "max_residual_m": 0.5531248904134426
+      }
+    }
+  },
+  {
+    "scan_index": 48,
+    "reference_ns": 1656505436099193452,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 848,
+      "threshold_m": 3.693994969798413,
+      "correspondences": {
+        "matched_points": 848,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.14589564787696396,
+        "max_residual_m": 0.6155813028769771
+      }
+    }
+  },
+  {
+    "scan_index": 49,
+    "reference_ns": 1656505436199826229,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 791,
+      "threshold_m": 3.7592050267223414,
+      "correspondences": {
+        "matched_points": 791,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.15648095249611366,
+        "max_residual_m": 0.6584907770666428
+      }
+    }
+  },
+  {
+    "scan_index": 50,
+    "reference_ns": 1656505436299656703,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 722,
+      "threshold_m": 3.8501998455354975,
+      "correspondences": {
+        "matched_points": 722,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.15350939873381922,
+        "max_residual_m": 0.6013026821612495
+      }
+    }
+  },
+  {
+    "scan_index": 51,
+    "reference_ns": 1656505436399506432,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 665,
+      "threshold_m": 3.920718578140139,
+      "correspondences": {
+        "matched_points": 665,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1548036492546681,
+        "max_residual_m": 0.658927162645741
+      }
+    }
+  },
+  {
+    "scan_index": 52,
+    "reference_ns": 1656505436499333267,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 639,
+      "threshold_m": 4.099786705029408,
+      "correspondences": {
+        "matched_points": 639,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16299519532997306,
+        "max_residual_m": 0.45482228792820495
+      }
+    }
+  },
+  {
+    "scan_index": 53,
+    "reference_ns": 1656505436599173348,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 603,
+      "threshold_m": 4.362376261073838,
+      "correspondences": {
+        "matched_points": 603,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17055286197115974,
+        "max_residual_m": 0.5322012381978717
+      }
+    }
+  },
+  {
+    "scan_index": 54,
+    "reference_ns": 1656505436699811029,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 577,
+      "threshold_m": 4.389414338381041,
+      "correspondences": {
+        "matched_points": 577,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17181153944371197,
+        "max_residual_m": 0.524433093529383
+      }
+    }
+  },
+  {
+    "scan_index": 55,
+    "reference_ns": 1656505436799633108,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 548,
+      "threshold_m": 4.599837280535107,
+      "correspondences": {
+        "matched_points": 548,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18590990916016858,
+        "max_residual_m": 0.5822898591574738
+      }
+    }
+  },
+  {
+    "scan_index": 56,
+    "reference_ns": 1656505436899468911,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 550,
+      "threshold_m": 4.839329222326159,
+      "correspondences": {
+        "matched_points": 550,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19484851574939466,
+        "max_residual_m": 0.5322702160801084
+      }
+    }
+  },
+  {
+    "scan_index": 57,
+    "reference_ns": 1656505436999309385,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 550,
+      "threshold_m": 5.141994791682439,
+      "correspondences": {
+        "matched_points": 550,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1977344313259771,
+        "max_residual_m": 0.5382582300574965
+      }
+    }
+  },
+  {
+    "scan_index": 58,
+    "reference_ns": 1656505437099149224,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 528,
+      "threshold_m": 5.167121366209431,
+      "correspondences": {
+        "matched_points": 528,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19975440816672885,
+        "max_residual_m": 0.5336061028532364
+      }
+    }
+  },
+  {
+    "scan_index": 59,
+    "reference_ns": 1656505437199779337,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 26,
+      "input_points": 24000,
+      "registration_points": 511,
+      "threshold_m": 5.22278294272906,
+      "correspondences": {
+        "matched_points": 511,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19655253216977708,
+        "max_residual_m": 0.600514135390729
+      }
+    }
+  },
+  {
+    "scan_index": 60,
+    "reference_ns": 1656505437299631773,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 464,
+      "threshold_m": 5.629697002475822,
+      "correspondences": {
+        "matched_points": 464,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19875049303431672,
+        "max_residual_m": 0.5821219395139846
+      }
+    }
+  },
+  {
+    "scan_index": 61,
+    "reference_ns": 1656505437399479978,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 416,
+      "threshold_m": 5.789244561016383,
+      "correspondences": {
+        "matched_points": 416,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20607683459280182,
+        "max_residual_m": 0.5038511599606031
+      }
+    }
+  },
+  {
+    "scan_index": 62,
+    "reference_ns": 1656505437499324366,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 31,
+      "input_points": 24000,
+      "registration_points": 396,
+      "threshold_m": 5.779727390675985,
+      "correspondences": {
+        "matched_points": 396,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20318598284559575,
+        "max_residual_m": 0.702607138920544
+      }
+    }
+  },
+  {
+    "scan_index": 63,
+    "reference_ns": 1656505437599161606,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 397,
+      "threshold_m": 5.910580522872511,
+      "correspondences": {
+        "matched_points": 397,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1953875227205337,
+        "max_residual_m": 0.5355723930594144
+      }
+    }
+  },
+  {
+    "scan_index": 64,
+    "reference_ns": 1656505437699811394,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 38,
+      "input_points": 24000,
+      "registration_points": 418,
+      "threshold_m": 5.880266550358765,
+      "correspondences": {
+        "matched_points": 418,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1912743926798014,
+        "max_residual_m": 0.4521763034093175
+      }
+    }
+  },
+  {
+    "scan_index": 65,
+    "reference_ns": 1656505437799653363,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 35,
+      "input_points": 24000,
+      "registration_points": 411,
+      "threshold_m": 5.903716336171113,
+      "correspondences": {
+        "matched_points": 411,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17851014960411857,
+        "max_residual_m": 0.4713526403620298
+      }
+    }
+  },
+  {
+    "scan_index": 66,
+    "reference_ns": 1656505437899497128,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 28,
+      "input_points": 24000,
+      "registration_points": 402,
+      "threshold_m": 6.143020380476498,
+      "correspondences": {
+        "matched_points": 402,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18850038456779275,
+        "max_residual_m": 0.5209177602811582
+      }
+    }
+  },
+  {
+    "scan_index": 67,
+    "reference_ns": 1656505437999333823,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 32,
+      "input_points": 24000,
+      "registration_points": 385,
+      "threshold_m": 6.240403687152215,
+      "correspondences": {
+        "matched_points": 385,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18597001198080856,
+        "max_residual_m": 0.5275573599466358
+      }
+    }
+  },
+  {
+    "scan_index": 68,
+    "reference_ns": 1656505438099122646,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 25,
+      "input_points": 24000,
+      "registration_points": 371,
+      "threshold_m": 6.295681726487764,
+      "correspondences": {
+        "matched_points": 371,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17693768885973796,
+        "max_residual_m": 0.48985475701537057
+      }
+    }
+  },
+  {
+    "scan_index": 69,
+    "reference_ns": 1656505438199765794,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 353,
+      "threshold_m": 6.403804928478557,
+      "correspondences": {
+        "matched_points": 353,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17625562241470305,
+        "max_residual_m": 0.6713351797966338
+      }
+    }
+  },
+  {
+    "scan_index": 70,
+    "reference_ns": 1656505438299604002,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 360,
+      "threshold_m": 6.466692313380422,
+      "correspondences": {
+        "matched_points": 360,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1827428288472622,
+        "max_residual_m": 0.5301195751296841
+      }
+    }
+  },
+  {
+    "scan_index": 71,
+    "reference_ns": 1656505438399450299,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 10,
+      "input_points": 24000,
+      "registration_points": 344,
+      "threshold_m": 6.75958080038404,
+      "correspondences": {
+        "matched_points": 344,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20715307727638052,
+        "max_residual_m": 0.7189679277799246
+      }
+    }
+  },
+  {
+    "scan_index": 72,
+    "reference_ns": 1656505438499289165,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 320,
+      "threshold_m": 6.734287653092874,
+      "correspondences": {
+        "matched_points": 320,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18388777095040054,
+        "max_residual_m": 0.6349874116876172
+      }
+    }
+  },
+  {
+    "scan_index": 73,
+    "reference_ns": 1656505438599135015,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 56,
+      "input_points": 24000,
+      "registration_points": 330,
+      "threshold_m": 7.213326068624216,
+      "correspondences": {
+        "matched_points": 330,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19487294113949558,
+        "max_residual_m": 0.7828253049293538
+      }
+    }
+  },
+  {
+    "scan_index": 74,
+    "reference_ns": 1656505438699775929,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 26,
+      "input_points": 24000,
+      "registration_points": 314,
+      "threshold_m": 8.182217196752784,
+      "correspondences": {
+        "matched_points": 314,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18591510472093492,
+        "max_residual_m": 0.7756092679653238
+      }
+    }
+  },
+  {
+    "scan_index": 75,
+    "reference_ns": 1656505438799632220,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 325,
+      "threshold_m": 8.598990233480471,
+      "correspondences": {
+        "matched_points": 325,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18207685610246818,
+        "max_residual_m": 0.7635424441226621
+      }
+    }
+  },
+  {
+    "scan_index": 76,
+    "reference_ns": 1656505438899483912,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 22,
+      "input_points": 24000,
+      "registration_points": 327,
+      "threshold_m": 8.680249501232463,
+      "correspondences": {
+        "matched_points": 327,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18650984240157725,
+        "max_residual_m": 0.6947688344579926
+      }
+    }
+  },
+  {
+    "scan_index": 77,
+    "reference_ns": 1656505438999337524,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 19,
+      "input_points": 24000,
+      "registration_points": 312,
+      "threshold_m": 8.76882357159255,
+      "correspondences": {
+        "matched_points": 312,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17414029723389338,
+        "max_residual_m": 0.6105766019625374
+      }
+    }
+  },
+  {
+    "scan_index": 78,
+    "reference_ns": 1656505439099154121,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 308,
+      "threshold_m": 8.833827079251662,
+      "correspondences": {
+        "matched_points": 308,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17458420929897572,
+        "max_residual_m": 0.6606327021556436
+      }
+    }
+  },
+  {
+    "scan_index": 79,
+    "reference_ns": 1656505439199801519,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 23,
+      "input_points": 24000,
+      "registration_points": 316,
+      "threshold_m": 8.914311154257938,
+      "correspondences": {
+        "matched_points": 316,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17377653860221337,
+        "max_residual_m": 0.5979856552286703
+      }
+    }
+  },
+  {
+    "scan_index": 80,
+    "reference_ns": 1656505439299632428,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 317,
+      "threshold_m": 8.989651330249007,
+      "correspondences": {
+        "matched_points": 317,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1775830847525921,
+        "max_residual_m": 0.6754516017533727
+      }
+    }
+  },
+  {
+    "scan_index": 81,
+    "reference_ns": 1656505439399471172,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 7,
+      "input_points": 24000,
+      "registration_points": 310,
+      "threshold_m": 8.947115039598115,
+      "correspondences": {
+        "matched_points": 310,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17112571079912361,
+        "max_residual_m": 0.6735873824380487
+      }
+    }
+  },
+  {
+    "scan_index": 82,
+    "reference_ns": 1656505439499316086,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 22,
+      "input_points": 24000,
+      "registration_points": 314,
+      "threshold_m": 8.931670945029346,
+      "correspondences": {
+        "matched_points": 314,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1691178483043859,
+        "max_residual_m": 0.6768009529847467
+      }
+    }
+  },
+  {
+    "scan_index": 83,
+    "reference_ns": 1656505439599149534,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 10,
+      "input_points": 24000,
+      "registration_points": 320,
+      "threshold_m": 8.927251746748354,
+      "correspondences": {
+        "matched_points": 320,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16877776246344145,
+        "max_residual_m": 0.6939996934317513
+      }
+    }
+  },
+  {
+    "scan_index": 84,
+    "reference_ns": 1656505439699797332,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 321,
+      "threshold_m": 8.921066474261035,
+      "correspondences": {
+        "matched_points": 321,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17163962556348386,
+        "max_residual_m": 0.7262027292739117
+      }
+    }
+  },
+  {
+    "scan_index": 85,
+    "reference_ns": 1656505439799637916,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 315,
+      "threshold_m": 8.923933196590003,
+      "correspondences": {
+        "matched_points": 315,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17303986036377217,
+        "max_residual_m": 0.744230122248972
+      }
+    }
+  },
+  {
+    "scan_index": 86,
+    "reference_ns": 1656505439899476199,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 324,
+      "threshold_m": 8.988098085966673,
+      "correspondences": {
+        "matched_points": 324,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16869471436437888,
+        "max_residual_m": 0.5152613292442245
+      }
+    }
+  },
+  {
+    "scan_index": 87,
+    "reference_ns": 1656505439999328234,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 34,
+      "input_points": 24000,
+      "registration_points": 328,
+      "threshold_m": 9.105844515644861,
+      "correspondences": {
+        "matched_points": 328,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16798508632838757,
+        "max_residual_m": 0.5637563415803359
+      }
+    }
+  },
+  {
+    "scan_index": 88,
+    "reference_ns": 1656505440099192220,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 348,
+      "threshold_m": 9.33485615649473,
+      "correspondences": {
+        "matched_points": 348,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17266610933908727,
+        "max_residual_m": 0.4934991752579113
+      }
+    }
+  },
+  {
+    "scan_index": 89,
+    "reference_ns": 1656505440199843883,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 341,
+      "threshold_m": 9.390924889874245,
+      "correspondences": {
+        "matched_points": 341,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16722526506734053,
+        "max_residual_m": 0.45177773104102287
+      }
+    }
+  },
+  {
+    "scan_index": 90,
+    "reference_ns": 1656505440299685345,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 355,
+      "threshold_m": 9.375959902884576,
+      "correspondences": {
+        "matched_points": 355,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17097949691656103,
+        "max_residual_m": 0.4153033288158957
+      }
+    }
+  },
+  {
+    "scan_index": 91,
+    "reference_ns": 1656505440399522001,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 345,
+      "threshold_m": 9.603201702096403,
+      "correspondences": {
+        "matched_points": 345,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1704829903641854,
+        "max_residual_m": 0.45584740786563177
+      }
+    }
+  },
+  {
+    "scan_index": 92,
+    "reference_ns": 1656505440499355783,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 352,
+      "threshold_m": 9.559327987096234,
+      "correspondences": {
+        "matched_points": 352,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16604657724675706,
+        "max_residual_m": 0.4517621820422974
+      }
+    }
+  },
+  {
+    "scan_index": 93,
+    "reference_ns": 1656505440599192894,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 353,
+      "threshold_m": 9.544989552667078,
+      "correspondences": {
+        "matched_points": 353,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16992340655815255,
+        "max_residual_m": 0.4675152933530222
+      }
+    }
+  },
+  {
+    "scan_index": 94,
+    "reference_ns": 1656505440699828704,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 23,
+      "input_points": 24000,
+      "registration_points": 339,
+      "threshold_m": 9.540184893288307,
+      "correspondences": {
+        "matched_points": 339,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17013424251024553,
+        "max_residual_m": 0.4211574913253068
+      }
+    }
+  },
+  {
+    "scan_index": 95,
+    "reference_ns": 1656505440799676788,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 28,
+      "input_points": 24000,
+      "registration_points": 338,
+      "threshold_m": 9.627477639353074,
+      "correspondences": {
+        "matched_points": 338,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16575745987321902,
+        "max_residual_m": 0.47381984112306136
+      }
+    }
+  },
+  {
+    "scan_index": 96,
+    "reference_ns": 1656505440899517436,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 23,
+      "input_points": 24000,
+      "registration_points": 332,
+      "threshold_m": 9.776302157073292,
+      "correspondences": {
+        "matched_points": 332,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16079094390628812,
+        "max_residual_m": 0.36732072430512963
+      }
+    }
+  },
+  {
+    "scan_index": 97,
+    "reference_ns": 1656505440999357219,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 333,
+      "threshold_m": 9.812723543260848,
+      "correspondences": {
+        "matched_points": 333,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16568339711182895,
+        "max_residual_m": 0.4182725031882517
+      }
+    }
+  },
+  {
+    "scan_index": 98,
+    "reference_ns": 1656505441099124229,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 10,
+      "input_points": 24000,
+      "registration_points": 347,
+      "threshold_m": 9.797383784890862,
+      "correspondences": {
+        "matched_points": 347,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17261275424437897,
+        "max_residual_m": 0.44423724393572017
+      }
+    }
+  },
+  {
+    "scan_index": 99,
+    "reference_ns": 1656505441199764747,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 21,
+      "input_points": 24000,
+      "registration_points": 361,
+      "threshold_m": 9.777353407947842,
+      "correspondences": {
+        "matched_points": 361,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1723319930582211,
+        "max_residual_m": 0.4446657717404354
+      }
+    }
+  },
+  {
+    "scan_index": 100,
+    "reference_ns": 1656505441299612775,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 393,
+      "threshold_m": 9.817532694919311,
+      "correspondences": {
+        "matched_points": 393,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18547537306174827,
+        "max_residual_m": 0.4548939532952062
+      }
+    }
+  },
+  {
+    "scan_index": 101,
+    "reference_ns": 1656505441399443145,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 393,
+      "threshold_m": 9.9792243536637,
+      "correspondences": {
+        "matched_points": 393,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19380317617697482,
+        "max_residual_m": 0.6275984242035465
+      }
+    }
+  },
+  {
+    "scan_index": 102,
+    "reference_ns": 1656505441499295052,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 7,
+      "input_points": 24000,
+      "registration_points": 387,
+      "threshold_m": 10.024064337150142,
+      "correspondences": {
+        "matched_points": 387,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18590353952594182,
+        "max_residual_m": 0.48218606655544644
+      }
+    }
+  },
+  {
+    "scan_index": 103,
+    "reference_ns": 1656505441599118159,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 25,
+      "input_points": 24000,
+      "registration_points": 393,
+      "threshold_m": 9.981351007656997,
+      "correspondences": {
+        "matched_points": 393,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18333114880947812,
+        "max_residual_m": 0.4994772693661701
+      }
+    }
+  },
+  {
+    "scan_index": 104,
+    "reference_ns": 1656505441699758844,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 19,
+      "input_points": 24000,
+      "registration_points": 384,
+      "threshold_m": 10.081681410840325,
+      "correspondences": {
+        "matched_points": 384,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17548675824952756,
+        "max_residual_m": 0.4342151866998509
+      }
+    }
+  },
+  {
+    "scan_index": 105,
+    "reference_ns": 1656505441799613676,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 366,
+      "threshold_m": 10.158959033140873,
+      "correspondences": {
+        "matched_points": 366,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17083859577660473,
+        "max_residual_m": 0.43604557650549547
+      }
+    }
+  },
+  {
+    "scan_index": 106,
+    "reference_ns": 1656505441899444857,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 349,
+      "threshold_m": 10.225089266549249,
+      "correspondences": {
+        "matched_points": 349,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1681656966074841,
+        "max_residual_m": 0.43852859206986644
+      }
+    }
+  },
+  {
+    "scan_index": 107,
+    "reference_ns": 1656505441999290523,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 28,
+      "input_points": 24000,
+      "registration_points": 360,
+      "threshold_m": 10.486961560269505,
+      "correspondences": {
+        "matched_points": 360,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.16933177245810713,
+        "max_residual_m": 0.3965191242034318
+      }
+    }
+  },
+  {
+    "scan_index": 108,
+    "reference_ns": 1656505442099076983,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 367,
+      "threshold_m": 10.485390784445705,
+      "correspondences": {
+        "matched_points": 367,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1658669918837735,
+        "max_residual_m": 0.4222832191480599
+      }
+    }
+  },
+  {
+    "scan_index": 109,
+    "reference_ns": 1656505442199709646,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 25,
+      "input_points": 24000,
+      "registration_points": 377,
+      "threshold_m": 10.490641821897977,
+      "correspondences": {
+        "matched_points": 377,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17330234506529765,
+        "max_residual_m": 0.9489131659079739
+      }
+    }
+  },
+  {
+    "scan_index": 110,
+    "reference_ns": 1656505442299556297,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 54,
+      "input_points": 24000,
+      "registration_points": 398,
+      "threshold_m": 10.554999614713267,
+      "correspondences": {
+        "matched_points": 398,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.17602329218032062,
+        "max_residual_m": 0.4181278116833318
+      }
+    }
+  },
+  {
+    "scan_index": 111,
+    "reference_ns": 1656505442399391740,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 444,
+      "threshold_m": 11.586945863233188,
+      "correspondences": {
+        "matched_points": 444,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1965591293315455,
+        "max_residual_m": 0.5169186003604039
+      }
+    }
+  },
+  {
+    "scan_index": 112,
+    "reference_ns": 1656505442499238611,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 472,
+      "threshold_m": 11.67843135275767,
+      "correspondences": {
+        "matched_points": 472,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22375179884242613,
+        "max_residual_m": 0.7007952799437468
+      }
+    }
+  },
+  {
+    "scan_index": 113,
+    "reference_ns": 1656505442599483259,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 21,
+      "input_points": 24000,
+      "registration_points": 482,
+      "threshold_m": 11.709930963086421,
+      "correspondences": {
+        "matched_points": 482,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.23686246888416143,
+        "max_residual_m": 0.809576828732991
+      }
+    }
+  },
+  {
+    "scan_index": 114,
+    "reference_ns": 1656505442699316496,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 24,
+      "input_points": 24000,
+      "registration_points": 483,
+      "threshold_m": 11.896393633497055,
+      "correspondences": {
+        "matched_points": 483,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.213983847025311,
+        "max_residual_m": 0.6392599758032915
+      }
+    }
+  },
+  {
+    "scan_index": 115,
+    "reference_ns": 1656505442799148661,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 461,
+      "threshold_m": 11.873293992181749,
+      "correspondences": {
+        "matched_points": 461,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20930698837958617,
+        "max_residual_m": 0.5459447675242327
+      }
+    }
+  },
+  {
+    "scan_index": 116,
+    "reference_ns": 1656505442899791637,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 448,
+      "threshold_m": 11.830786015951528,
+      "correspondences": {
+        "matched_points": 448,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1972368237325732,
+        "max_residual_m": 0.5348362818128203
+      }
+    }
+  },
+  {
+    "scan_index": 117,
+    "reference_ns": 1656505442999631992,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 19,
+      "input_points": 24000,
+      "registration_points": 404,
+      "threshold_m": 11.877393863436417,
+      "correspondences": {
+        "matched_points": 404,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18398369212261956,
+        "max_residual_m": 0.48666693845601644
+      }
+    }
+  },
+  {
+    "scan_index": 118,
+    "reference_ns": 1656505443099471395,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 401,
+      "threshold_m": 12.35799181426691,
+      "correspondences": {
+        "matched_points": 401,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19307750086613315,
+        "max_residual_m": 0.5074526646877667
+      }
+    }
+  },
+  {
+    "scan_index": 119,
+    "reference_ns": 1656505443199316914,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 397,
+      "threshold_m": 12.334266189681884,
+      "correspondences": {
+        "matched_points": 397,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1924530306508387,
+        "max_residual_m": 0.5028757970850315
+      }
+    }
+  },
+  {
+    "scan_index": 120,
+    "reference_ns": 1656505443299163261,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 402,
+      "threshold_m": 12.29825945851346,
+      "correspondences": {
+        "matched_points": 402,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.18965511425700812,
+        "max_residual_m": 0.5276553727730167
+      }
+    }
+  },
+  {
+    "scan_index": 121,
+    "reference_ns": 1656505443399810382,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 29,
+      "input_points": 24000,
+      "registration_points": 419,
+      "threshold_m": 12.279840876061517,
+      "correspondences": {
+        "matched_points": 419,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20128787109474147,
+        "max_residual_m": 0.5884071633078103
+      }
+    }
+  },
+  {
+    "scan_index": 122,
+    "reference_ns": 1656505443499652852,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 27,
+      "input_points": 24000,
+      "registration_points": 437,
+      "threshold_m": 12.264565489869273,
+      "correspondences": {
+        "matched_points": 437,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20777855878233237,
+        "max_residual_m": 0.5707145913977476
+      }
+    }
+  },
+  {
+    "scan_index": 123,
+    "reference_ns": 1656505443599471584,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 41,
+      "input_points": 24000,
+      "registration_points": 464,
+      "threshold_m": 12.333001816877399,
+      "correspondences": {
+        "matched_points": 464,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.21060934270026324,
+        "max_residual_m": 0.5901793642237764
+      }
+    }
+  },
+  {
+    "scan_index": 124,
+    "reference_ns": 1656505443699311432,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 493,
+      "threshold_m": 12.762882943418226,
+      "correspondences": {
+        "matched_points": 493,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22433764777733056,
+        "max_residual_m": 0.6759978950687366
+      }
+    }
+  },
+  {
+    "scan_index": 125,
+    "reference_ns": 1656505443799144944,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 9,
+      "input_points": 24000,
+      "registration_points": 490,
+      "threshold_m": 12.732493175147072,
+      "correspondences": {
+        "matched_points": 490,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.23491236682667915,
+        "max_residual_m": 0.6528289883781285
+      }
+    }
+  },
+  {
+    "scan_index": 126,
+    "reference_ns": 1656505443899786562,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 10,
+      "input_points": 24000,
+      "registration_points": 515,
+      "threshold_m": 12.683700340856516,
+      "correspondences": {
+        "matched_points": 515,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.23047874697614104,
+        "max_residual_m": 0.6852355793501981
+      }
+    }
+  },
+  {
+    "scan_index": 127,
+    "reference_ns": 1656505443999626137,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 517,
+      "threshold_m": 12.636484748784067,
+      "correspondences": {
+        "matched_points": 517,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2235033257199731,
+        "max_residual_m": 0.5528346142786564
+      }
+    }
+  },
+  {
+    "scan_index": 128,
+    "reference_ns": 1656505444099415685,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 495,
+      "threshold_m": 12.600051432026353,
+      "correspondences": {
+        "matched_points": 495,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2151791431411383,
+        "max_residual_m": 0.6349561070631994
+      }
+    }
+  },
+  {
+    "scan_index": 129,
+    "reference_ns": 1656505444199265342,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 38,
+      "input_points": 24000,
+      "registration_points": 482,
+      "threshold_m": 12.562893573624446,
+      "correspondences": {
+        "matched_points": 482,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.21453707965164345,
+        "max_residual_m": 0.6305514632796614
+      }
+    }
+  },
+  {
+    "scan_index": 130,
+    "reference_ns": 1656505444299511859,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 454,
+      "threshold_m": 12.788781295264451,
+      "correspondences": {
+        "matched_points": 454,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20901036623850638,
+        "max_residual_m": 0.541264406023769
+      }
+    }
+  },
+  {
+    "scan_index": 131,
+    "reference_ns": 1656505444399359431,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 436,
+      "threshold_m": 12.811458282428429,
+      "correspondences": {
+        "matched_points": 436,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.201964391931589,
+        "max_residual_m": 0.5622762898940514
+      }
+    }
+  },
+  {
+    "scan_index": 132,
+    "reference_ns": 1656505444499201608,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 435,
+      "threshold_m": 12.778153906574214,
+      "correspondences": {
+        "matched_points": 435,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20583592624790564,
+        "max_residual_m": 0.51341002807811
+      }
+    }
+  },
+  {
+    "scan_index": 133,
+    "reference_ns": 1656505444599441053,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 10,
+      "input_points": 24000,
+      "registration_points": 462,
+      "threshold_m": 12.735581904402466,
+      "correspondences": {
+        "matched_points": 462,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20445331797242614,
+        "max_residual_m": 0.5427541196109928
+      }
+    }
+  },
+  {
+    "scan_index": 134,
+    "reference_ns": 1656505444699272113,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 494,
+      "threshold_m": 12.72245901439164,
+      "correspondences": {
+        "matched_points": 494,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2130559151079612,
+        "max_residual_m": 0.6028214767307597
+      }
+    }
+  },
+  {
+    "scan_index": 135,
+    "reference_ns": 1656505444799509187,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 22,
+      "input_points": 24000,
+      "registration_points": 534,
+      "threshold_m": 12.678174882562196,
+      "correspondences": {
+        "matched_points": 534,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22728770325059316,
+        "max_residual_m": 0.6678223482025606
+      }
+    }
+  },
+  {
+    "scan_index": 136,
+    "reference_ns": 1656505444899341150,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 34,
+      "input_points": 24000,
+      "registration_points": 665,
+      "threshold_m": 12.849181823954432,
+      "correspondences": {
+        "matched_points": 665,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2627157190053382,
+        "max_residual_m": 0.8962694243113928
+      }
+    }
+  },
+  {
+    "scan_index": 137,
+    "reference_ns": 1656505444999159172,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 31,
+      "input_points": 24000,
+      "registration_points": 793,
+      "threshold_m": 12.899772523091507,
+      "correspondences": {
+        "matched_points": 793,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.30136327270522556,
+        "max_residual_m": 0.9980344263223137
+      }
+    }
+  },
+  {
+    "scan_index": 138,
+    "reference_ns": 1656505445099831752,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 157,
+      "input_points": 24000,
+      "registration_points": 942,
+      "threshold_m": 12.969680622708907,
+      "correspondences": {
+        "matched_points": 942,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2727433506479348,
+        "max_residual_m": 0.7684711470887328
+      }
+    }
+  },
+  {
+    "scan_index": 139,
+    "reference_ns": 1656505445199667382,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 56,
+      "input_points": 24000,
+      "registration_points": 1074,
+      "threshold_m": 13.216689438402685,
+      "correspondences": {
+        "matched_points": 1074,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.3134488940473544,
+        "max_residual_m": 1.544827919119629
+      }
+    }
+  },
+  {
+    "scan_index": 140,
+    "reference_ns": 1656505445299530497,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1160,
+      "threshold_m": 13.259359726371002,
+      "correspondences": {
+        "matched_points": 1160,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2863790880633575,
+        "max_residual_m": 0.7449320347404588
+      }
+    }
+  },
+  {
+    "scan_index": 141,
+    "reference_ns": 1656505445399380287,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 1157,
+      "threshold_m": 13.225604543325874,
+      "correspondences": {
+        "matched_points": 1157,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.26403129993446345,
+        "max_residual_m": 1.1126066473426888
+      }
+    }
+  },
+  {
+    "scan_index": 142,
+    "reference_ns": 1656505445499212312,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 94,
+      "input_points": 24000,
+      "registration_points": 1096,
+      "threshold_m": 13.183486999664268,
+      "correspondences": {
+        "matched_points": 1096,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22697385722524924,
+        "max_residual_m": 0.6385140586742103
+      }
+    }
+  },
+  {
+    "scan_index": 143,
+    "reference_ns": 1656505445599451996,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 19,
+      "input_points": 24000,
+      "registration_points": 1009,
+      "threshold_m": 13.172199999423157,
+      "correspondences": {
+        "matched_points": 1009,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22449842715713614,
+        "max_residual_m": 0.6181108715735385
+      }
+    }
+  },
+  {
+    "scan_index": 144,
+    "reference_ns": 1656505445699286600,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 49,
+      "input_points": 24000,
+      "registration_points": 1044,
+      "threshold_m": 13.127648937932655,
+      "correspondences": {
+        "matched_points": 1044,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22036941973819865,
+        "max_residual_m": 0.6215184448396573
+      }
+    }
+  },
+  {
+    "scan_index": 145,
+    "reference_ns": 1656505445799126444,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 1129,
+      "threshold_m": 13.107677668422966,
+      "correspondences": {
+        "matched_points": 1129,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.219135670501856,
+        "max_residual_m": 0.6214158530660002
+      }
+    }
+  },
+  {
+    "scan_index": 146,
+    "reference_ns": 1656505445899791489,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 24,
+      "input_points": 24000,
+      "registration_points": 1125,
+      "threshold_m": 13.06408374752695,
+      "correspondences": {
+        "matched_points": 1125,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2162240284231779,
+        "max_residual_m": 0.6306632461915718
+      }
+    }
+  },
+  {
+    "scan_index": 147,
+    "reference_ns": 1656505445999609225,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1252,
+      "threshold_m": 13.02148529321698,
+      "correspondences": {
+        "matched_points": 1252,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2190446661992023,
+        "max_residual_m": 0.6098484799237294
+      }
+    }
+  },
+  {
+    "scan_index": 148,
+    "reference_ns": 1656505446099361355,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 29,
+      "input_points": 24000,
+      "registration_points": 1309,
+      "threshold_m": 12.990513740590323,
+      "correspondences": {
+        "matched_points": 1305,
+        "matched_fraction": 0.9969442322383499,
+        "rmse_m": 0.2666663877723082,
+        "max_residual_m": 2.829764255852261
+      }
+    }
+  },
+  {
+    "scan_index": 149,
+    "reference_ns": 1656505446199190153,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 23,
+      "input_points": 24000,
+      "registration_points": 1501,
+      "threshold_m": 12.962680945723957,
+      "correspondences": {
+        "matched_points": 1501,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.27764432286775836,
+        "max_residual_m": 1.350566608765504
+      }
+    }
+  },
+  {
+    "scan_index": 150,
+    "reference_ns": 1656505446299831708,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 36,
+      "input_points": 24000,
+      "registration_points": 1694,
+      "threshold_m": 12.935012320165887,
+      "correspondences": {
+        "matched_points": 1642,
+        "matched_fraction": 0.9693034238488784,
+        "rmse_m": 0.3248526139143823,
+        "max_residual_m": 2.8068997118771053
+      }
+    }
+  },
+  {
+    "scan_index": 151,
+    "reference_ns": 1656505446399665812,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 43,
+      "input_points": 24000,
+      "registration_points": 1853,
+      "threshold_m": 12.917453300424011,
+      "correspondences": {
+        "matched_points": 1840,
+        "matched_fraction": 0.992984349703184,
+        "rmse_m": 0.317930744062197,
+        "max_residual_m": 2.120472784213657
+      }
+    }
+  },
+  {
+    "scan_index": 152,
+    "reference_ns": 1656505446499495522,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 34,
+      "input_points": 24000,
+      "registration_points": 1976,
+      "threshold_m": 12.885819001603965,
+      "correspondences": {
+        "matched_points": 1966,
+        "matched_fraction": 0.9949392712550608,
+        "rmse_m": 0.3025536062231716,
+        "max_residual_m": 1.4673873726553466
+      }
+    }
+  },
+  {
+    "scan_index": 153,
+    "reference_ns": 1656505446599335051,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 24,
+      "input_points": 24000,
+      "registration_points": 2206,
+      "threshold_m": 12.85520661758305,
+      "correspondences": {
+        "matched_points": 2117,
+        "matched_fraction": 0.9596554850407978,
+        "rmse_m": 0.27457964438249394,
+        "max_residual_m": 1.9905351897889085
+      }
+    }
+  },
+  {
+    "scan_index": 154,
+    "reference_ns": 1656505446699156638,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 67,
+      "input_points": 24000,
+      "registration_points": 2113,
+      "threshold_m": 12.832469173942865,
+      "correspondences": {
+        "matched_points": 2113,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.268060928944701,
+        "max_residual_m": 1.4908899393637032
+      }
+    }
+  },
+  {
+    "scan_index": 155,
+    "reference_ns": 1656505446799801326,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 60,
+      "input_points": 24000,
+      "registration_points": 2109,
+      "threshold_m": 12.840499002390935,
+      "correspondences": {
+        "matched_points": 2108,
+        "matched_fraction": 0.9995258416311048,
+        "rmse_m": 0.2845061469520579,
+        "max_residual_m": 1.4465625497166192
+      }
+    }
+  },
+  {
+    "scan_index": 156,
+    "reference_ns": 1656505446899643371,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 21,
+      "input_points": 24000,
+      "registration_points": 2274,
+      "threshold_m": 12.933249537285828,
+      "correspondences": {
+        "matched_points": 2270,
+        "matched_fraction": 0.9982409850483729,
+        "rmse_m": 0.2669951509925195,
+        "max_residual_m": 1.9306557361443177
+      }
+    }
+  },
+  {
+    "scan_index": 157,
+    "reference_ns": 1656505446999486807,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 61,
+      "input_points": 24000,
+      "registration_points": 2360,
+      "threshold_m": 12.946274205901858,
+      "correspondences": {
+        "matched_points": 2360,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.22125287336438365,
+        "max_residual_m": 0.9005036458594021
+      }
+    }
+  },
+  {
+    "scan_index": 158,
+    "reference_ns": 1656505447099210043,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 49,
+      "input_points": 24000,
+      "registration_points": 2069,
+      "threshold_m": 12.973654045064677,
+      "correspondences": {
+        "matched_points": 2069,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20741364836097342,
+        "max_residual_m": 0.580379993713609
+      }
+    }
+  },
+  {
+    "scan_index": 159,
+    "reference_ns": 1656505447199445579,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 30,
+      "input_points": 24000,
+      "registration_points": 1707,
+      "threshold_m": 12.98237632300446,
+      "correspondences": {
+        "matched_points": 1707,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20971514255559026,
+        "max_residual_m": 0.5876428226530769
+      }
+    }
+  },
+  {
+    "scan_index": 160,
+    "reference_ns": 1656505447299276291,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 67,
+      "input_points": 24000,
+      "registration_points": 1293,
+      "threshold_m": 12.985442838984302,
+      "correspondences": {
+        "matched_points": 1293,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20154697116628834,
+        "max_residual_m": 0.7920442386867889
+      }
+    }
+  },
+  {
+    "scan_index": 161,
+    "reference_ns": 1656505447399508424,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 11,
+      "input_points": 24000,
+      "registration_points": 1057,
+      "threshold_m": 12.98909032336307,
+      "correspondences": {
+        "matched_points": 1057,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.206970394839538,
+        "max_residual_m": 0.8046127914157292
+      }
+    }
+  },
+  {
+    "scan_index": 162,
+    "reference_ns": 1656505447499360118,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 24,
+      "input_points": 24000,
+      "registration_points": 955,
+      "threshold_m": 12.985053936039812,
+      "correspondences": {
+        "matched_points": 955,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20415647021060448,
+        "max_residual_m": 0.8759063392699645
+      }
+    }
+  },
+  {
+    "scan_index": 163,
+    "reference_ns": 1656505447599184454,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 17,
+      "input_points": 24000,
+      "registration_points": 958,
+      "threshold_m": 12.955676626852078,
+      "correspondences": {
+        "matched_points": 958,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20576541688981506,
+        "max_residual_m": 0.79732605924435
+      }
+    }
+  },
+  {
+    "scan_index": 164,
+    "reference_ns": 1656505447699819101,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 15,
+      "input_points": 24000,
+      "registration_points": 952,
+      "threshold_m": 12.918911193025302,
+      "correspondences": {
+        "matched_points": 952,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20596734489953455,
+        "max_residual_m": 0.852980313372716
+      }
+    }
+  },
+  {
+    "scan_index": 165,
+    "reference_ns": 1656505447799648508,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 20,
+      "input_points": 24000,
+      "registration_points": 1013,
+      "threshold_m": 12.879453014350933,
+      "correspondences": {
+        "matched_points": 1013,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20873852492320494,
+        "max_residual_m": 0.8246933099166595
+      }
+    }
+  },
+  {
+    "scan_index": 166,
+    "reference_ns": 1656505447899488625,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 26,
+      "input_points": 24000,
+      "registration_points": 1197,
+      "threshold_m": 12.847269575501556,
+      "correspondences": {
+        "matched_points": 1197,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20722767616160243,
+        "max_residual_m": 0.728825057429604
+      }
+    }
+  },
+  {
+    "scan_index": 167,
+    "reference_ns": 1656505447999341470,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 45,
+      "input_points": 24000,
+      "registration_points": 1290,
+      "threshold_m": 12.818619702357818,
+      "correspondences": {
+        "matched_points": 1290,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20331155104725604,
+        "max_residual_m": 0.7496204381246743
+      }
+    }
+  },
+  {
+    "scan_index": 168,
+    "reference_ns": 1656505448099296187,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 36,
+      "input_points": 24000,
+      "registration_points": 1302,
+      "threshold_m": 12.808075273522128,
+      "correspondences": {
+        "matched_points": 1302,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.202363053509591,
+        "max_residual_m": 0.8137763549387887
+      }
+    }
+  },
+  {
+    "scan_index": 169,
+    "reference_ns": 1656505448199125971,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 16,
+      "input_points": 24000,
+      "registration_points": 1282,
+      "threshold_m": 12.801603885530046,
+      "correspondences": {
+        "matched_points": 1282,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20271283258727224,
+        "max_residual_m": 0.738654335757811
+      }
+    }
+  },
+  {
+    "scan_index": 170,
+    "reference_ns": 1656505448299769160,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1302,
+      "threshold_m": 12.768814667942891,
+      "correspondences": {
+        "matched_points": 1302,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1962135590710755,
+        "max_residual_m": 0.7182481203379285
+      }
+    }
+  },
+  {
+    "scan_index": 171,
+    "reference_ns": 1656505448399601006,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1165,
+      "threshold_m": 12.733567961092296,
+      "correspondences": {
+        "matched_points": 1165,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.2133864877297954,
+        "max_residual_m": 0.8740365386609592
+      }
+    }
+  },
+  {
+    "scan_index": 172,
+    "reference_ns": 1656505448499434924,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 53,
+      "input_points": 24000,
+      "registration_points": 1083,
+      "threshold_m": 12.70508496639502,
+      "correspondences": {
+        "matched_points": 1083,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19781426219966144,
+        "max_residual_m": 0.8991913720753816
+      }
+    }
+  },
+  {
+    "scan_index": 173,
+    "reference_ns": 1656505448599269574,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 1089,
+      "threshold_m": 12.67351166001608,
+      "correspondences": {
+        "matched_points": 1089,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20044947661292004,
+        "max_residual_m": 0.8675920983399266
+      }
+    }
+  },
+  {
+    "scan_index": 174,
+    "reference_ns": 1656505448699513126,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 1039,
+      "threshold_m": 12.637244983974615,
+      "correspondences": {
+        "matched_points": 1039,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19819881980302675,
+        "max_residual_m": 0.6406904111246093
+      }
+    }
+  },
+  {
+    "scan_index": 175,
+    "reference_ns": 1656505448799340123,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 39,
+      "input_points": 24000,
+      "registration_points": 994,
+      "threshold_m": 12.603091836456281,
+      "correspondences": {
+        "matched_points": 994,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.20103735418825613,
+        "max_residual_m": 0.8225302549907664
+      }
+    }
+  },
+  {
+    "scan_index": 176,
+    "reference_ns": 1656505448899180596,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 38,
+      "input_points": 24000,
+      "registration_points": 940,
+      "threshold_m": 12.583847048106977,
+      "correspondences": {
+        "matched_points": 940,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1981300345828485,
+        "max_residual_m": 0.7947286540141756
+      }
+    }
+  },
+  {
+    "scan_index": 177,
+    "reference_ns": 1656505448999829861,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 28,
+      "input_points": 24000,
+      "registration_points": 979,
+      "threshold_m": 12.55601755850314,
+      "correspondences": {
+        "matched_points": 979,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1975404641568242,
+        "max_residual_m": 0.5738541327677253
+      }
+    }
+  },
+  {
+    "scan_index": 178,
+    "reference_ns": 1656505449099770028,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 37,
+      "input_points": 24000,
+      "registration_points": 962,
+      "threshold_m": 12.522149023551819,
+      "correspondences": {
+        "matched_points": 962,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19821809077975794,
+        "max_residual_m": 0.632117216722733
+      }
+    }
+  },
+  {
+    "scan_index": 179,
+    "reference_ns": 1656505449199605710,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 965,
+      "threshold_m": 12.48922786472723,
+      "correspondences": {
+        "matched_points": 965,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1964006931473988,
+        "max_residual_m": 0.7384855298950386
+      }
+    }
+  },
+  {
+    "scan_index": 180,
+    "reference_ns": 1656505449299446606,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 27,
+      "input_points": 24000,
+      "registration_points": 1036,
+      "threshold_m": 12.454199313999641,
+      "correspondences": {
+        "matched_points": 1036,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19975642089565135,
+        "max_residual_m": 0.6669634518303316
+      }
+    }
+  },
+  {
+    "scan_index": 181,
+    "reference_ns": 1656505449399284526,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 8,
+      "input_points": 24000,
+      "registration_points": 1038,
+      "threshold_m": 12.423107424496223,
+      "correspondences": {
+        "matched_points": 1038,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19857600224936114,
+        "max_residual_m": 0.6363196962280662
+      }
+    }
+  },
+  {
+    "scan_index": 182,
+    "reference_ns": 1656505449499135827,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 12,
+      "input_points": 24000,
+      "registration_points": 1036,
+      "threshold_m": 12.389175623158774,
+      "correspondences": {
+        "matched_points": 1036,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19356948141909058,
+        "max_residual_m": 0.5485300307435657
+      }
+    }
+  },
+  {
+    "scan_index": 183,
+    "reference_ns": 1656505449599775456,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 14,
+      "input_points": 24000,
+      "registration_points": 1025,
+      "threshold_m": 12.357170173310443,
+      "correspondences": {
+        "matched_points": 1025,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.19769374462986025,
+        "max_residual_m": 0.5403567012505239
+      }
+    }
+  },
+  {
+    "scan_index": 184,
+    "reference_ns": 1656505449699617857,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 18,
+      "input_points": 24000,
+      "registration_points": 1020,
+      "threshold_m": 12.323254188586036,
+      "correspondences": {
+        "matched_points": 1020,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1930915003036053,
+        "max_residual_m": 0.7854405194100343
+      }
+    }
+  },
+  {
+    "scan_index": 185,
+    "reference_ns": 1656505449799455247,
+    "input_points": 24000,
+    "registration": {
+      "termination": "converged",
+      "iterations": 13,
+      "input_points": 24000,
+      "registration_points": 989,
+      "threshold_m": 12.293862113868176,
+      "correspondences": {
+        "matched_points": 989,
+        "matched_fraction": 1.0,
+        "rmse_m": 0.1940007999667446,
+        "max_residual_m": 0.6028218056725908
+      }
+    }
+  }
+]

@@ -20,6 +20,9 @@ See [registration semantics and termination](../../../docs/slam-gicp-registratio
 `gicp_shapes` prepares f64 normalized surface shapes with explicit unsupported
 rows and optional exact neighborhoods. See [shape preparation](../../../docs/slam-gicp-shapes.md).
 
+`GicpTarget(target, target_shapes)` owns a validated immutable target and exact
+search tree for repeated registrations. See [target reuse](../../../docs/slam-gicp-target.md).
+
 ```python
 import cloudanalyzer_core as cc
 import numpy as np

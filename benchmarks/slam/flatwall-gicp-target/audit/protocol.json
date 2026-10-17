@@ -1,0 +1,719 @@
+{
+  "schema": "cloudanalyzer.flatwall_gicp_target.v1",
+  "slice": {
+    "at_utc": "2026-10-17T00:51:53.023665+00:00",
+    "base": "e0c1645db8be907e10facf50b7da2cace3d9cbb6",
+    "api": "Rust PreparedTarget::new(target, target_shapes), len/is_empty, register(source, source_shapes, initial_pose, center_world, params). Python GicpTarget(target, target_shapes), len(target), target.register(source, source_shapes, initial_pose, center_world, *, same registration options). Explicit world-frame SPD target shapes; no automatic estimation/filtering/fallback.",
+    "ownership": "Constructor validates all target rows in original order, copies original f64 point/shape coefficients, builds the same exact KdTree, and owns all storage. Original coefficients are retained so canonicalization inside the unchanged factor follows the standalone API exactly. No target mutation/accessor, borrowed Python memory, target recopy/rebuild per register call, pickling contract or implicit map updates. Send+Sync core target and frozen Python class allow shared read-only use with the GIL released.",
+    "validation": "Standalone registration retains original common-parameter then source then target then index-capacity validation order/messages. Prepared constructor checks target row count then every target finite point/SPD shape then u32 tree capacity. Prepared calls validate common pose/center/parameters then every source row. Target errors happen at construction even if later unmatched; source/pose failures remain per call. Empty target/source are valid and keep existing explicit termination. Wrong array layouts/shapes/dtypes follow existing PyO3 conversions.",
+    "invariants": "Share a borrowed Problem and the exact original iteration body. Preserve source and target row IDs including traversal tie policy, strict correspondence threshold, source-frame shapes, fixed center, frozen inner metrics/weights, solver, trial schedule, convergence/failure statuses, final rematch, diagnostics, output ownership, ordered parallel arithmetic and defaults. No target matrix pre-rounding, float32, nearest hints, tolerance/gate change, frontend adoption or rejected-state adoption.",
+    "controls": "Core and Python complete bit comparisons for cold/prepared/reused serial/parallel, anisotropic and slightly asymmetric valid shapes, duplicate/equidistant targets, strided/reversed inputs, changed/deleted constructor arrays, output mutation isolation, shared thread use, empty/unsupported/limit/nonfinite/singular cases, common/source/target first errors and invalid SPD/nonfinite even unmatched.",
+    "real": "All 36 immutable PR297 source/target/explicit shape/prediction/center snapshots: four cases x rows [0,1,2,9,17,33,49,60,63]. Check all outputs, history and trial values bit-identical to frozen PR297 results and current standalone register, serial and parallel, repeated use and constructor mutation isolation. Independently rerun existing NumPy/SciPy oracle on all 36 inputs with original parameters. Recheck native-shape API/registration and legacy motion/frontend results using a complete private native package.",
+    "preservation": "Prior evidence and successful controllers/native/source snapshots remain byte-identical. Private native package per build, never overwrite installed extension. Preserve failed attempts and give retries fresh output paths. Public controller and packet use LF attributes before publication.",
+    "timing_plan": {
+      "input": "32 nonempty PR297 real fixed-map inputs (rows [1,2,9,17,33,49,60,63] in four cases). Fixed source/target per registration problem; repeated identical source queries study reuse only, not real sequential-map lifetime.",
+      "modes": [
+        "standalone",
+        "prepared_cold",
+        "prepared_warm"
+      ],
+      "reuse_counts": [
+        1,
+        2,
+        4,
+        8,
+        16
+      ],
+      "paired_repetitions": 9,
+      "warm_calls_per_mode_batch": 2,
+      "threads": "Rayon=4, OpenBLAS=1; all registrations serial, history disabled",
+      "measurement": "Freeze detailed controller/input hashes before timing. Counterbalance mode order. Each standalone sample calls the complete API reuse_count times. Cold constructs one target then registers reuse_count times, including constructor/object destruction. Warm uses an already prepared target and registers reuse_count times. Include output destruction and Python array copy/validation in timed API. Also measure constructor separately. Report total and marginal costs and all predeclared reuse counts; no chosen-after-results threshold. No local build/tests/hashing during windows.",
+      "scope": "Host-local, prewarmed fixed real inputs and explicit precomputed shapes. Excludes PCA, bag I/O, motion correction, map insertion, initialization and dynamic-map update. No whole-SLAM/GPU/accuracy or automatic-default claim."
+    },
+    "scope": "Opt-in immutable target caching; no physical SOTA or frontend adoption claim. Keep five real iteration-limited cases explicit."
+  },
+  "input_artifacts": {
+    "caller_shapes/frames.json": {
+      "name": "frames.json",
+      "bytes": 122666,
+      "sha256": "c613446a8b5196a7ab9f32ccb512f91fc82c4c6d49e052f3ca9071eee740a347"
+    },
+    "caller_shapes/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 54864,
+      "sha256": "0432a98596f88f998fb0c45ca84c91d5f5732384f7f41b5d288b3570f7875868"
+    },
+    "caller_shapes/raw-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 69504,
+      "sha256": "f93f7405c813b3d7dba89e6634d3c2feb4e998311c7ec938c578e721ed7e62ca"
+    },
+    "caller_shapes/raw-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 404449,
+      "sha256": "9760bcad490cb23a6663e9fc07d29f743b43c6fa32b4c21d890f6b663e8adebc"
+    },
+    "caller_shapes/raw-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 467661,
+      "sha256": "35df8b9da5f33940eff929921151052f1722f8d4e8b1fc0c459b0cd1b68eb02e"
+    },
+    "caller_shapes/raw-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 595319,
+      "sha256": "a96be37fcfc5f0e7f25faf1c521fe53f390637828deabd733ff5cd4858f54c54"
+    },
+    "caller_shapes/raw-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 519184,
+      "sha256": "adddd4bead3a3827c0e56575782b1a524e9c9eeabdbdcf602b8b8c1e4d8b3b45"
+    },
+    "caller_shapes/raw-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 537723,
+      "sha256": "017bf2638dba9ebebdefc54f70c9f2fcfb8fd5daf4b8983afac71353fa516781"
+    },
+    "caller_shapes/raw-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 480658,
+      "sha256": "9ebedac1bc67e760f0713b4c3f50301579bb705216e47a5addd6cb7e2a21e746"
+    },
+    "caller_shapes/raw-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 911911,
+      "sha256": "0dbe81a5128acbf44808e2ae0c4f1365ff1c26ff3b2b60a039ff4b2b5d1cf911"
+    },
+    "caller_shapes/raw-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 920521,
+      "sha256": "bf9e03210a226b4c83e5001c683856c4b3cb4e85e8301baac1b8d28852b33b1f"
+    },
+    "caller_shapes/raw-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 32097,
+      "sha256": "77b2f072ecefb6bd96b00c3fb3f62c128cdc2c36d5429f8a9d2438d6d0d1782b"
+    },
+    "caller_shapes/raw-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 6893,
+      "sha256": "fc1899d4d2a16aa30358b835c1f4300c3b693784f48ceec2c9680d48af00ddd8"
+    },
+    "caller_shapes/raw-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 52210,
+      "sha256": "a6a6cb1425ec273513140ab328745316debc4153b711d16cae944454a973383e"
+    },
+    "caller_shapes/raw-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 70823,
+      "sha256": "78f66f35978502fd0521419a53696c230f6a9c372505619348dd886c5a48071a"
+    },
+    "caller_shapes/raw-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 104516,
+      "sha256": "aa55e85929ec76a33ccd291032f14b30993ea943139d6919d8f3f62f7f62c977"
+    },
+    "caller_shapes/raw-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 119065,
+      "sha256": "17e50524e63d8a380e3d1097be14f2319f92a3435603acf9a2873e055010d127"
+    },
+    "caller_shapes/raw-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 112377,
+      "sha256": "6ff075911805b42c1d483d199d490f6e1e3a2b6b5a212153b765647dfed6c4ab"
+    },
+    "caller_shapes/raw-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 132131,
+      "sha256": "5971101b708b8f9a406ae467e088143879a01692dac29711013df6bf35372746"
+    },
+    "caller_shapes/raw-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 120571,
+      "sha256": "495ca568f4d3464bb0707dca6c4ea4cf5bf331ac951cf02cc4eef4d4df245ca3"
+    },
+    "caller_shapes/raw-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 136400,
+      "sha256": "178106004dcb08d1891903f72515e35e0b6fe841d55b0294c92b1fabcb84b6e0"
+    },
+    "caller_shapes/raw-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 22652,
+      "sha256": "4e48dfe664cc6c47dadb89bb0ae22bdb62162d218d21c1888624028a50d16f67"
+    },
+    "caller_shapes/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1271,
+      "sha256": "99d0b6da1712b7aea75bd1df1934623553c716b48d1f1eeba74c146134b0894f"
+    },
+    "caller_shapes/rotation-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 84166,
+      "sha256": "3eafb3c87a245b589f60e68deb30ee70e096579f4bbe52e5187c74084e605093"
+    },
+    "caller_shapes/rotation-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 608276,
+      "sha256": "34b82577e670763e8212357b3e0c0e2d3f664ac30b5f36be32855bc585f34b64"
+    },
+    "caller_shapes/rotation-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 486177,
+      "sha256": "da13ff861ca2f535a5c0c5fdccbc273832b8652c1f406f0a4bfb04c640f99dcc"
+    },
+    "caller_shapes/rotation-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 544404,
+      "sha256": "81918c254edb3662747e607dd551e80aa9d2bf244e9e2d797a252970dc02e398"
+    },
+    "caller_shapes/rotation-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 721933,
+      "sha256": "c07c9844da1ca75390566f4152e6a09e2d5c007ff965e1e396b56a6147ebf941"
+    },
+    "caller_shapes/rotation-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 487173,
+      "sha256": "0ef6a3ce50b9df3c939d734d3f7f774af1e9dfda3536ebdc14da947f784fa625"
+    },
+    "caller_shapes/rotation-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 1452212,
+      "sha256": "cfa800066ccc614d7620cd0ed863bb0133b7e370ad943dbb29f951b04e0a006f"
+    },
+    "caller_shapes/rotation-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 839463,
+      "sha256": "cda0a446735c0dd230caa5022bfccf24b17ac04fd07ef6156f8d79a6f05e97df"
+    },
+    "caller_shapes/rotation-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 923575,
+      "sha256": "fad7ff429e02eaa5d0b32c8df211e9d071f0293304bdc9d7487e9dded3a29482"
+    },
+    "caller_shapes/rotation-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 38413,
+      "sha256": "7f7ba5b06028169d204dace80a03a8e8cfc6071d0f140f7823f3472e33bd3b39"
+    },
+    "caller_shapes/rotation-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 7253,
+      "sha256": "6568e6ec572a9e43062ea3e8b6fad520c75050a7f91d6986578e37cab79894b9"
+    },
+    "caller_shapes/rotation-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 73889,
+      "sha256": "9f24d41cd93d931a364367108bcd0d52a5b7d60031b0265a59a80a52ae9b5071"
+    },
+    "caller_shapes/rotation-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 63399,
+      "sha256": "304e64fbb97940d0f7712c5c842ab03a50ba661282387dd6b88c1423942ba72f"
+    },
+    "caller_shapes/rotation-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 106313,
+      "sha256": "08e0087a76caeba17f5872f61b13c909f4b91bda3894fc406dc142460c949f8d"
+    },
+    "caller_shapes/rotation-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 111627,
+      "sha256": "74d97b4a20d8858054876dfb72c5137e262a97faf9070199b59885380d6d7336"
+    },
+    "caller_shapes/rotation-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 123701,
+      "sha256": "c4fee2594258d3d13493ea3d65aa36982775573ecfa6f58f03fd29ca7a796deb"
+    },
+    "caller_shapes/rotation-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 135359,
+      "sha256": "6e4f5d2ceece5640db1834a634dc0bf71536524aec57402664da8ff7e7a94414"
+    },
+    "caller_shapes/rotation-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 140038,
+      "sha256": "d4c9733dcb8fffa3c075bf2724457e08f161a21fe0629f791318f5e3edfef39b"
+    },
+    "caller_shapes/rotation-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 216803,
+      "sha256": "0370d84c1286fdb9907956902ccabecc7edcaa1469041526342ad691de9a1685"
+    },
+    "caller_shapes/rotation-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 29513,
+      "sha256": "483a75ce3c54ba33d32df3cf091076e8ce285892c69405db30c77b9e53e1c56e"
+    },
+    "caller_shapes/summary.json": {
+      "name": "summary.json",
+      "bytes": 8634,
+      "sha256": "07421e2966226b7c3318e12bfc9900ce6b4995f391537c06dc47c8549b9ab48c"
+    },
+    "native_shapes/frames.json": {
+      "name": "frames.json",
+      "bytes": 49837,
+      "sha256": "57334c060873fee664d7f9b3b5213f62e3682ac3661518e6db768df8259ce660"
+    },
+    "native_shapes/protocol.json": {
+      "name": "protocol.json",
+      "bytes": 14516,
+      "sha256": "c18432d25c6022a3cc3f07cb5246f72437b6e962a0ec8e4a0d5d222fbea16981"
+    },
+    "native_shapes/raw-fine/frame-00-shapes.npz": {
+      "name": "frame-00-shapes.npz",
+      "bytes": 223942,
+      "sha256": "719c13a0edccf4d2ff67712f6b198c4bbb7d078c1026a1d325797de187d7d248"
+    },
+    "native_shapes/raw-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 69407,
+      "sha256": "d96506616bffbf0c41f443ccf187853e0b348d7a244b7ae2d473c394805e8c44"
+    },
+    "native_shapes/raw-fine/frame-01-shapes.npz": {
+      "name": "frame-01-shapes.npz",
+      "bytes": 254218,
+      "sha256": "2686df4426c2cce39b90c5467925a2a3bbe410d3b5e0dc5780533e9b6f12b9ce"
+    },
+    "native_shapes/raw-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 403584,
+      "sha256": "fa1214d8609ed3f3662ac00a790cf32d89ead47124def7aa16a9bcea7eb10d4c"
+    },
+    "native_shapes/raw-fine/frame-02-shapes.npz": {
+      "name": "frame-02-shapes.npz",
+      "bytes": 285841,
+      "sha256": "6445d0517fb0a3a98085625bbb347b5d8fe47f3180676206d66f228eceb791ce"
+    },
+    "native_shapes/raw-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 466259,
+      "sha256": "7502ff478d681c744cece9870286922be5e2323fed11c67b435a0b9bcc993f94"
+    },
+    "native_shapes/raw-fine/frame-09-shapes.npz": {
+      "name": "frame-09-shapes.npz",
+      "bytes": 403779,
+      "sha256": "691c104359a07c1eb15e2436ea7a784450344c7d672df8cffdd7a74adec62de6"
+    },
+    "native_shapes/raw-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 594370,
+      "sha256": "bd45c6b65cde09cc6493cc2cb69f97c240a43aeb95d7149b9ab8c56c802bcb31"
+    },
+    "native_shapes/raw-fine/frame-17-shapes.npz": {
+      "name": "frame-17-shapes.npz",
+      "bytes": 423986,
+      "sha256": "1dd5c14e6dcbf9cfcaa58cb0038f410c06c0815b7a8feb1d829f21b8b8b2131a"
+    },
+    "native_shapes/raw-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 516484,
+      "sha256": "12838a2051ccdd6e8d9b5d4d3d678edc95c0a2f6eac6902456b801b7ebd5c058"
+    },
+    "native_shapes/raw-fine/frame-33-shapes.npz": {
+      "name": "frame-33-shapes.npz",
+      "bytes": 448108,
+      "sha256": "9eb7092f96ed9bea1353082bc05977aed10b5e1cecd90986ff8e05604deae231"
+    },
+    "native_shapes/raw-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 536642,
+      "sha256": "5898822a34b6aee65c677f59215aa9326a9ed7f21a8b2997ece7a3657ca4f19c"
+    },
+    "native_shapes/raw-fine/frame-49-shapes.npz": {
+      "name": "frame-49-shapes.npz",
+      "bytes": 383180,
+      "sha256": "5baaa52f5fffedcf033b6cf7f924d8ff27ff9331fbcdf4b1768d9d782698c8ec"
+    },
+    "native_shapes/raw-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 478053,
+      "sha256": "1566e317b76d2b39d1b9ddd41b570b10d981156512423226f0c42d00d4a0eddb"
+    },
+    "native_shapes/raw-fine/frame-60-shapes.npz": {
+      "name": "frame-60-shapes.npz",
+      "bytes": 329607,
+      "sha256": "0e9661aa52886edb4f099faf61e2e4b8700bf60fb3a5e342553ea86856b2f17e"
+    },
+    "native_shapes/raw-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 910620,
+      "sha256": "5e27f21838ce8b199cd4092f1568cd139e088a3a29b104f7068ee002fe9dd6d2"
+    },
+    "native_shapes/raw-fine/frame-63-shapes.npz": {
+      "name": "frame-63-shapes.npz",
+      "bytes": 336292,
+      "sha256": "9ff7009c92ddafa51e893beb5b436633e25a29448b1e72ad79b123df86835e00"
+    },
+    "native_shapes/raw-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 916540,
+      "sha256": "6a7550506eca383cbc82a7ed798b4365ffc1ceff2260a04370413135df42db0c"
+    },
+    "native_shapes/raw-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 12463,
+      "sha256": "69ae878e8ac3c707b38e49a66c02e7b965795f1ae7c20b1261cb60f35a02842c"
+    },
+    "native_shapes/raw-legacy/frame-00-shapes.npz": {
+      "name": "frame-00-shapes.npz",
+      "bytes": 7771,
+      "sha256": "674e5d979e992e22ef609285f4abc9857cad611c4dd4f4e48dbaa40dfe97724d"
+    },
+    "native_shapes/raw-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 6891,
+      "sha256": "b0a26ff1a9f62e8e7ba4cec759e79c554b5f6871441fead614c3fd3f713613b0"
+    },
+    "native_shapes/raw-legacy/frame-01-shapes.npz": {
+      "name": "frame-01-shapes.npz",
+      "bytes": 46421,
+      "sha256": "4b2b7fb5249aaaedeb614a4c437fa98270fd5a9cc70217aa656f82be59c7a6be"
+    },
+    "native_shapes/raw-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 52027,
+      "sha256": "9a1c2f2302706a8a533597c43ba505607dca4b8ee218d63d167ed304dc690bb6"
+    },
+    "native_shapes/raw-legacy/frame-02-shapes.npz": {
+      "name": "frame-02-shapes.npz",
+      "bytes": 86816,
+      "sha256": "be0ea925d92b64b6a9e1675ae69d85d9f590cebb6760e4a6f0d7934a62f522c6"
+    },
+    "native_shapes/raw-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 70746,
+      "sha256": "93c039bda7cfcd07634376dea116252e2b91e8e2c1f7144e6a4c033b6707ff87"
+    },
+    "native_shapes/raw-legacy/frame-09-shapes.npz": {
+      "name": "frame-09-shapes.npz",
+      "bytes": 199852,
+      "sha256": "e115ac71f57e3155555d322e0cdb34d5538ac0e1cd14b1cb611451105f325806"
+    },
+    "native_shapes/raw-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 104278,
+      "sha256": "73d3735773040a6874ee16c878c80fb9e56996b08461bf07d611757934d2d2aa"
+    },
+    "native_shapes/raw-legacy/frame-17-shapes.npz": {
+      "name": "frame-17-shapes.npz",
+      "bytes": 233110,
+      "sha256": "ed3b944efa88f051afb71df6e1d38a79e1ff4e3d8fec26b2a7a958f1d6e65acb"
+    },
+    "native_shapes/raw-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 118395,
+      "sha256": "b5847bfe7b3bb161722a832c3c82d09b5b67208138a8821ec3043042577dc4c5"
+    },
+    "native_shapes/raw-legacy/frame-33-shapes.npz": {
+      "name": "frame-33-shapes.npz",
+      "bytes": 254473,
+      "sha256": "690ee2d6f1cc0fa8062043cb3bef32cfc559da5f017ad72231ba79423747ea36"
+    },
+    "native_shapes/raw-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 111856,
+      "sha256": "fcdf0e7cd82fbc55104d00095f17e40f389b2718ca62333142adccfabdb76483"
+    },
+    "native_shapes/raw-legacy/frame-49-shapes.npz": {
+      "name": "frame-49-shapes.npz",
+      "bytes": 259668,
+      "sha256": "139cdba220e5eb180fbeb435691aec930a1397b2d7725aa95cc485622801c9d7"
+    },
+    "native_shapes/raw-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 131805,
+      "sha256": "b354d8523a3528f13883e51e3336217cf748112d1ab7c1961efdc2132e64393f"
+    },
+    "native_shapes/raw-legacy/frame-60-shapes.npz": {
+      "name": "frame-60-shapes.npz",
+      "bytes": 274593,
+      "sha256": "590af1a0152df9efd78d9ddbb6fb0b1cac279eab869161ba9ea458c925d90553"
+    },
+    "native_shapes/raw-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 120290,
+      "sha256": "e5bf4c84feebbf7d949144844992b151a38afc8c838e21e08b9d272dddb5f2f1"
+    },
+    "native_shapes/raw-legacy/frame-63-shapes.npz": {
+      "name": "frame-63-shapes.npz",
+      "bytes": 277265,
+      "sha256": "bd3eb91174e559de505512a880b2f06734425c38383098522cbc5c2564dd2322"
+    },
+    "native_shapes/raw-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 136188,
+      "sha256": "a698e2b2f9083ff31cfa2fb6de179cd91bd4e8e296d957d04b6bbafad3ab4466"
+    },
+    "native_shapes/raw-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 12423,
+      "sha256": "ba1237b84ce5abb637d72044ab80892b2290f7246b9f091d483ab71fcb873e7d"
+    },
+    "native_shapes/receipt.json": {
+      "name": "receipt.json",
+      "bytes": 1300,
+      "sha256": "69335ba7c3d38044dc38f778ea2f937d82b3d8fb0fcc8b1da013646f7ade8b03"
+    },
+    "native_shapes/rotation-fine/frame-00-shapes.npz": {
+      "name": "frame-00-shapes.npz",
+      "bytes": 233467,
+      "sha256": "b8471c9a80caee3c0b4d6022009b4fe6291a36d25e3ce616153de73b11510e12"
+    },
+    "native_shapes/rotation-fine/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 84172,
+      "sha256": "a01bc1a3932b280b088efe33d834eaf5ce26b212d331f3b2e2d9c0d9e11543ac"
+    },
+    "native_shapes/rotation-fine/frame-01-shapes.npz": {
+      "name": "frame-01-shapes.npz",
+      "bytes": 260442,
+      "sha256": "85e29fa8e61fd6eba86f0594c4f7e4c6f2cf57c572c8aaeb60fd9829072f789f"
+    },
+    "native_shapes/rotation-fine/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 607153,
+      "sha256": "2c1f828eb4fd92dd6315c0cf475a9fa93c3d34b53fb0a44ae03c96798eb5064e"
+    },
+    "native_shapes/rotation-fine/frame-02-shapes.npz": {
+      "name": "frame-02-shapes.npz",
+      "bytes": 294191,
+      "sha256": "0ac1c7de17322977b0d827844cf718355ffd567dd58c010e04a32e5fe895e5fb"
+    },
+    "native_shapes/rotation-fine/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 485541,
+      "sha256": "e5ce28876215c9b8c64836d06983e0a35f4372ff867dc33ca571dd32759f9996"
+    },
+    "native_shapes/rotation-fine/frame-09-shapes.npz": {
+      "name": "frame-09-shapes.npz",
+      "bytes": 408226,
+      "sha256": "b0809224a2d85e2be4059dbc5dc4111d00d71e620f00d691805aad51b9e7cbb3"
+    },
+    "native_shapes/rotation-fine/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 542671,
+      "sha256": "54b451611410ceb215b79c564ec09256995832880b75004ebd6f7a9d839a8ed7"
+    },
+    "native_shapes/rotation-fine/frame-17-shapes.npz": {
+      "name": "frame-17-shapes.npz",
+      "bytes": 430594,
+      "sha256": "532729fe0242ea3510480ebbfbc08d61f5d775224a8c23350bebfba29614589e"
+    },
+    "native_shapes/rotation-fine/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 719420,
+      "sha256": "72f9533dd1b374c0e988e6d57fe6d8fbe7b041061cc43368796e69f8e91bad36"
+    },
+    "native_shapes/rotation-fine/frame-33-shapes.npz": {
+      "name": "frame-33-shapes.npz",
+      "bytes": 453919,
+      "sha256": "9c1604fda67f5a81c34fee32cc3bac09444c5626960d85875668c54dbbd11940"
+    },
+    "native_shapes/rotation-fine/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 485674,
+      "sha256": "257eac51b528fa9a60c87fe400a4a38a327f2af4edba31ca960d1b70372f1c08"
+    },
+    "native_shapes/rotation-fine/frame-49-shapes.npz": {
+      "name": "frame-49-shapes.npz",
+      "bytes": 384945,
+      "sha256": "8a54ab4348dd550fa4c0cf0c6fdff4bdb71a5aca7d2856de04f362c47748ece1"
+    },
+    "native_shapes/rotation-fine/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 1444156,
+      "sha256": "4bf69ed7c9407f2b0b518ee3f45dfd172864c14f853eda789fe785f6edc692fa"
+    },
+    "native_shapes/rotation-fine/frame-60-shapes.npz": {
+      "name": "frame-60-shapes.npz",
+      "bytes": 331016,
+      "sha256": "9d6ab9ba2d1ba8e45e580653150ac0d0661f72428bef42cf512a67d384103995"
+    },
+    "native_shapes/rotation-fine/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 839073,
+      "sha256": "8a5ab26f09263202144708a695c9f007b6a44ad8939aa383f45c8944d4b455cf"
+    },
+    "native_shapes/rotation-fine/frame-63-shapes.npz": {
+      "name": "frame-63-shapes.npz",
+      "bytes": 335468,
+      "sha256": "13dc419a3d63bfcc788b32724581394316822c340485ab8b56f2abe348960976"
+    },
+    "native_shapes/rotation-fine/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 920520,
+      "sha256": "8881f9db3aad51cf308dc6b906b4ca9b5cd96be745be6b537ba83e2992b4d90f"
+    },
+    "native_shapes/rotation-fine/frames.json": {
+      "name": "frames.json",
+      "bytes": 12478,
+      "sha256": "5c4863fc635199c8756bbe3eb5da169af254886f57126590feaed2a06cc2ccaa"
+    },
+    "native_shapes/rotation-legacy/frame-00-shapes.npz": {
+      "name": "frame-00-shapes.npz",
+      "bytes": 7802,
+      "sha256": "168af73b88a21e2b369f5e310818111596082be1d38d53511bc9f7693c7ea7a3"
+    },
+    "native_shapes/rotation-legacy/frame-00.npz": {
+      "name": "frame-00.npz",
+      "bytes": 7187,
+      "sha256": "33b1c5fe420d924ff3236a9152477994b605395fef2d6879ac83b6504d3599a4"
+    },
+    "native_shapes/rotation-legacy/frame-01-shapes.npz": {
+      "name": "frame-01-shapes.npz",
+      "bytes": 47494,
+      "sha256": "489b410e3019503d4e9cd7718045b09fd8f47bc4e22055dc7b0ff197273ace81"
+    },
+    "native_shapes/rotation-legacy/frame-01.npz": {
+      "name": "frame-01.npz",
+      "bytes": 73976,
+      "sha256": "27babb6216f09f22abf340291d5e4afc8085e4285db80c754ebc358cf20c4a4a"
+    },
+    "native_shapes/rotation-legacy/frame-02-shapes.npz": {
+      "name": "frame-02-shapes.npz",
+      "bytes": 87338,
+      "sha256": "e7a010d943beb1340c11323f707623beef8c2d9d9e2daa8a7b50c9a9abbd5e38"
+    },
+    "native_shapes/rotation-legacy/frame-02.npz": {
+      "name": "frame-02.npz",
+      "bytes": 63529,
+      "sha256": "525c9da570f97cf95945a76849e6ac306530d46b0de82e151ad0d6e3b5a6f29b"
+    },
+    "native_shapes/rotation-legacy/frame-09-shapes.npz": {
+      "name": "frame-09-shapes.npz",
+      "bytes": 199981,
+      "sha256": "75754ea24cc3d3631914cbcee211727e68c402392cefcb7b6ef0efa8ed9d63ed"
+    },
+    "native_shapes/rotation-legacy/frame-09.npz": {
+      "name": "frame-09.npz",
+      "bytes": 106059,
+      "sha256": "659d9eb02216256b394cb4e499b0eaf8d8ae2e010185752cc71d140743e53a42"
+    },
+    "native_shapes/rotation-legacy/frame-17-shapes.npz": {
+      "name": "frame-17-shapes.npz",
+      "bytes": 235883,
+      "sha256": "fd49d582275d3c5792bbf08a8dd5981fe4e5e8d442582fa4b411d3a94df371ed"
+    },
+    "native_shapes/rotation-legacy/frame-17.npz": {
+      "name": "frame-17.npz",
+      "bytes": 111249,
+      "sha256": "27aca963785b00b737d5570054703d9cfeead250649077df90f0266107134b23"
+    },
+    "native_shapes/rotation-legacy/frame-33-shapes.npz": {
+      "name": "frame-33-shapes.npz",
+      "bytes": 255182,
+      "sha256": "292f27f0d53dd820f95a31c9364a00659739fc6b13b10127c365b8844216d350"
+    },
+    "native_shapes/rotation-legacy/frame-33.npz": {
+      "name": "frame-33.npz",
+      "bytes": 123547,
+      "sha256": "2efed45782c8ab351eb902d12f98f8eb6c0e01d4c02cfd953b5b7bd8a3fb9dbe"
+    },
+    "native_shapes/rotation-legacy/frame-49-shapes.npz": {
+      "name": "frame-49-shapes.npz",
+      "bytes": 262425,
+      "sha256": "c83df0b6ce7777096a0983c05a76faea67b3c9f4d7316cdefe47631115ed5c8f"
+    },
+    "native_shapes/rotation-legacy/frame-49.npz": {
+      "name": "frame-49.npz",
+      "bytes": 135167,
+      "sha256": "5fa94d347bbaf23198883fe4448294021cfdd99bc25f337c6d7a22c7106c847d"
+    },
+    "native_shapes/rotation-legacy/frame-60-shapes.npz": {
+      "name": "frame-60-shapes.npz",
+      "bytes": 282667,
+      "sha256": "cad7cc7d05056f4b2a8e68c95d9b2e361b1dbf51cac34360c9a6dfbed69ba1ca"
+    },
+    "native_shapes/rotation-legacy/frame-60.npz": {
+      "name": "frame-60.npz",
+      "bytes": 139913,
+      "sha256": "bd68e2f4c036fb754b2b3ff200292395ec56c09e5b0280e41cd3b6cb854998b6"
+    },
+    "native_shapes/rotation-legacy/frame-63-shapes.npz": {
+      "name": "frame-63-shapes.npz",
+      "bytes": 290556,
+      "sha256": "3b025d4ceccbfddccb4e3c304329f0528f28c1e563fafc05f5fadd5048611736"
+    },
+    "native_shapes/rotation-legacy/frame-63.npz": {
+      "name": "frame-63.npz",
+      "bytes": 216715,
+      "sha256": "76526a0c73a4d544c3c7d48c8584093b91d31deb4b446607df021ad19290ded3"
+    },
+    "native_shapes/rotation-legacy/frames.json": {
+      "name": "frames.json",
+      "bytes": 12482,
+      "sha256": "87dbc4e177b776ecb62e9c391a02e5d588960d5c6daa4a9b2e77eb6c341b7fea"
+    },
+    "native_shapes/summary.json": {
+      "name": "summary.json",
+      "bytes": 16656,
+      "sha256": "1b7c208bfc2acc0dad1ec6f3b1b3347318748e0e8ab72dbbb6785e6c882f90ee"
+    }
+  },
+  "controller": {
+    "name": "audit_flatwall_gicp_target.py",
+    "bytes": 7453,
+    "sha256": "5b6985b501504d51523737a17f15532930a0c5228285db69ecc5fa2984fd7f93"
+  },
+  "native": {
+    "name": "_core.pyd",
+    "bytes": 7813120,
+    "sha256": "9e47d88a73e12b097e0242afda72e38a4a01068bbdca1acebaa684fb274b3eed"
+  },
+  "build_inputs": {
+    "name": "native-build-inputs.json",
+    "bytes": 13286,
+    "sha256": "e4ac48f3ac83cb6380f9e0392bcac1e8b8e3fbac863e253fe2f90088ca8d22b6"
+  },
+  "slice_protocol": {
+    "name": "protocol.json",
+    "bytes": 4894,
+    "sha256": "b5b73d2fc8936ef81e2a7919987484a5f09cf818eabbcc0b738b0bd5c50f3230"
+  },
+  "cases": [
+    "raw-legacy",
+    "raw-fine",
+    "rotation-legacy",
+    "rotation-fine"
+  ],
+  "rows": [
+    0,
+    1,
+    2,
+    9,
+    17,
+    33,
+    49,
+    60,
+    63
+  ],
+  "families": [
+    "caller_shapes",
+    "native_shapes"
+  ],
+  "reference_dependencies": {
+    "audit_flatwall_gicp_linearization.py": {
+      "name": "audit_flatwall_gicp_linearization.py",
+      "bytes": 12452,
+      "sha256": "383b9744d1a5fd999b752da89b0a807251829163d8c5ca9baf9e9848f4b50fff"
+    },
+    "audit_flatwall_gicp_registration.py": {
+      "name": "audit_flatwall_gicp_registration.py",
+      "bytes": 16064,
+      "sha256": "de2ee1700149741eb3f9cac40bf54a5738de15c7e3ba3f3b194b042730239370"
+    },
+    "audit_flatwall_gicp_shapes.py": {
+      "name": "audit_flatwall_gicp_shapes.py",
+      "bytes": 13141,
+      "sha256": "6fee93af62896bfaf210bcd490f84e665403fb70633118e2db46fa4273966be3"
+    }
+  },
+  "versions": {
+    "numpy": "2.3.4",
+    "scipy": "1.17.1"
+  }
+}

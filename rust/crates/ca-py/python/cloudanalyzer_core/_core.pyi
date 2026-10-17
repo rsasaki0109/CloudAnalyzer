@@ -141,6 +141,29 @@ def gicp_register(
     ...
 
 def read(path: str, keep_every: int = 1) -> PointData: ...
+
+class GicpTarget:
+    """Immutable copied world-frame target, explicit SPD shapes and exact tree.
+
+    Validate every target row at construction. Preserve original point IDs;
+    no implicit shape estimation, support filtering or map updates. Safe for
+    shared read-only registration; inputs and returned arrays own storage.
+    """
+    def __init__(self, target: npt.NDArray[np.float64], target_shapes: npt.NDArray[np.float64]) -> None: ...
+    def __len__(self) -> int: ...
+    def register(
+        self, source: npt.NDArray[np.float64], source_shapes: npt.NDArray[np.float64],
+        initial_pose: npt.NDArray[np.float64], center_world: npt.NDArray[np.float64], *,
+        max_correspondence_distance: float, max_iterations: int = 30,
+        translation_tolerance: float = 1e-4, rotation_tolerance: float = 1e-5,
+        robust_scale: float | None = None, parallel: bool = False,
+        capture_history: bool = False,
+    ) -> GicpRegistration:
+        """Same registration results/options as gicp_register, reusing the target.
+        Pose, parameters and all source rows are validated each call. Source
+        points/shapes use sensor axes. Copies inputs before releasing the GIL.
+        """
+        ...
 def discover_vector_map_features(cloud: str, vector_map: str | None = None, options: str = "{}", confirmations: str | None = None) -> str: ...
 def measure_vector_map_crosswalk(
     cloud: str, vector_map: str, options: str, preview_only: bool = True

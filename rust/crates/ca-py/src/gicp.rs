@@ -265,6 +265,77 @@ pub(crate) fn gicp_frozen_cost<'py>(
     Ok(out)
 }
 
+/// Immutable copied world-frame points/shapes and an exact target search tree.
+#[pyclass(frozen, module = "cloudanalyzer_core._core")]
+pub(crate) struct GicpTarget {
+    inner: ca_core::gicp_registration::PreparedTarget,
+}
+
+#[pymethods]
+impl GicpTarget {
+    #[new]
+    fn new(
+        py: Python<'_>,
+        target: PyReadonlyArray2<f64>,
+        target_shapes: PyReadonlyArray3<f64>,
+    ) -> PyResult<Self> {
+        let target = crate::points(&target)?;
+        let target_shapes = shapes(&target_shapes, target.len(), "target_shapes")?;
+        let inner = py
+            .detach(|| ca_core::gicp_registration::PreparedTarget::new(&target, &target_shapes))
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        Ok(Self { inner })
+    }
+
+    fn __len__(&self) -> usize {
+        self.inner.len()
+    }
+
+    /// Register sensor-frame source points/shapes against this fixed target.
+    #[pyo3(signature = (source, source_shapes, initial_pose, center_world, *, max_correspondence_distance, max_iterations=30, translation_tolerance=1e-4, rotation_tolerance=1e-5, robust_scale=None, parallel=false, capture_history=false))]
+    #[allow(clippy::too_many_arguments)]
+    fn register<'py>(
+        &self,
+        py: Python<'py>,
+        source: PyReadonlyArray2<f64>,
+        source_shapes: PyReadonlyArray3<f64>,
+        initial_pose: PyReadonlyArray2<f64>,
+        center_world: PyReadonlyArray1<f64>,
+        max_correspondence_distance: f64,
+        max_iterations: usize,
+        translation_tolerance: f64,
+        rotation_tolerance: f64,
+        robust_scale: Option<f64>,
+        parallel: bool,
+        capture_history: bool,
+    ) -> PyResult<Bound<'py, PyDict>> {
+        let source = crate::points(&source)?;
+        let source_shapes = shapes(&source_shapes, source.len(), "source_shapes")?;
+        let pose = rigid(&initial_pose)?;
+        if center_world.shape() != [3] {
+            return Err(PyValueError::new_err("center_world needs shape (3,)"));
+        }
+        let c = center_world.as_array();
+        let center = [c[0], c[1], c[2]];
+        let params = ca_core::gicp_registration::RegistrationParams {
+            max_correspondence_distance,
+            max_iterations,
+            translation_tolerance,
+            rotation_tolerance,
+            robust_scale,
+            parallel,
+            capture_history,
+        };
+        let result = py
+            .detach(|| {
+                self.inner
+                    .register(&source, &source_shapes, pose, center, params)
+            })
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        registration_dict(py, result)
+    }
+}
+
 /// Iterative global nearest-neighbor GICP on explicit source/world SPD shapes.
 /// Returns the last accepted pose and an explicit termination reason.
 #[pyfunction]
@@ -318,6 +389,13 @@ pub(crate) fn gicp_register<'py>(
             )
         })
         .map_err(|e| PyValueError::new_err(e.to_string()))?;
+    registration_dict(py, result)
+}
+
+fn registration_dict<'py>(
+    py: Python<'py>,
+    result: ca_core::gicp_registration::Registration,
+) -> PyResult<Bound<'py, PyDict>> {
     let out = PyDict::new(py);
     out.set_item("pose", pose_array(py, result.pose))?;
     out.set_item("termination", result.termination.as_str())?;

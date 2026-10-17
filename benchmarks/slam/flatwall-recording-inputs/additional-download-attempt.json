@@ -1,0 +1,9 @@
+{
+  "reason": "A second official download URL was tried while the first slow transfer was still running. The first transfer completed and is the inspected original. The second timeout and partial bytes remain preserved privately.",
+  "url": "https://zenodo.org/records/7641866/files/flatwall_02.bag?download=1",
+  "curl_exit_code": 28,
+  "curl_log_sha256": "c8db233c77e4f38cda9ea03d79052aafe5de5f3941d73442c3d717c852b3b520",
+  "partial_bytes": 23493096,
+  "partial_sha256": "164ed631407644d9cba9a11c54a5a3c87ad4e326df92ee8497c9c2f4be1bfe38",
+  "partial_used_in_inspection": false
+}

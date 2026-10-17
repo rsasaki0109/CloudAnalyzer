@@ -1,0 +1,48 @@
+{
+  "connections": [
+    {
+      "id": 0,
+      "topic": "/livox/imu",
+      "msgtype": "sensor_msgs/msg/Imu",
+      "messages": 2775,
+      "message_definition_sha256": "462e9edb6e5da000f1fc4343ce3dca95b13db0d8abe4bdb31877ffaa59fc3034",
+      "digest": "6a62c6daae103f4ff57a132d6f95cec2",
+      "callerid": "/play_1657168619585820016",
+      "latching": 0
+    },
+    {
+      "id": 1,
+      "topic": "/livox/lidar",
+      "msgtype": "livox_ros_driver/msg/CustomMsg",
+      "messages": 137,
+      "message_definition_sha256": "701a51da458e34dfcc5aeaa419419e4047ffbd7026f37b0c0812cdadad1fed78",
+      "digest": "e4d6829bdfe657cb6c21a746c86b21a6",
+      "callerid": "/play_1657168619585820016",
+      "latching": 0
+    },
+    {
+      "id": 2,
+      "topic": "/livox/points",
+      "msgtype": "sensor_msgs/msg/PointCloud2",
+      "messages": 137,
+      "message_definition_sha256": "a4af0bb9b1cfefb988b772d6968cd94beacb0fbb7759a8f691008b12f11c1c12",
+      "digest": "1158d486dd51d683ce2f1be655c3c181",
+      "callerid": "/play_1657168619585820016",
+      "latching": 0
+    }
+  ],
+  "recorded_start_ns": 1656505449899144357,
+  "recorded_end_exclusive_ns": 1656505463497284495,
+  "imu_frame_ids": [
+    "livox_frame"
+  ],
+  "imu_frame_counts": {
+    "livox_frame": 2775
+  },
+  "tf_or_calibration_topics_present": false,
+  "recording_producer_build_identified": false,
+  "native_raw_imu_and_points_match_independent": true,
+  "all_custom_points_and_offsets_match_pointcloud2": true,
+  "complete_points_and_offsets_sha256": "dec0b618cccb7eb701e8e9f82a1e9688197e6ff82ca0355c9c889bcfde245eb4",
+  "reference_archive_read_in_this_stage": false
+}

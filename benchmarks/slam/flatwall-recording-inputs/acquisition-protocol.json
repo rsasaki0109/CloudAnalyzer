@@ -1,0 +1,21 @@
+{
+  "schema": "cloudanalyzer.flatwall_input_acquisition.v1",
+  "frozen_at_utc": "2026-10-17T11:06:01.484629+00:00",
+  "recording": "flatwall_02.bag",
+  "selection": "Next ordinal after 01, fixed in the previous next-step plan before full selected reference parsing; not selected by score.",
+  "source": "https://zenodo.org/records/7641866",
+  "doi": "10.5281/zenodo.7641866",
+  "version": "v2",
+  "content_url": "https://zenodo.org/api/records/7641866/files/flatwall_02.bag/content",
+  "expected_bytes": 135975445,
+  "expected_md5": "234a60eef9d90ec069a2cbe6042f6cf9",
+  "upstream_metadata": "notes/slam-flatwall-inputs-20261016/zenodo-metadata.json",
+  "upstream_metadata_sha256": "601e8ba654e2f1bf85f90e425a68c0f1b43ad158f5436eb01f394644bfc92199",
+  "next_step_plan_sha256": "5c639b76d2bbef7bb208e270699e0e1c879b6d3b4ea4a5b2e27ad621888ffba7",
+  "reference_exposure": "All eight member prefixes were exposed previously. Any later comparison remains exploratory; no blind/held-out claim.",
+  "boundary": "Do not open or parse the reference archive in acquisition or input inspection. No estimator, parameter search, clock/extrinsic fitting or score in this stage.",
+  "coverage": "Use every original scan in chronological order; report exact header/point/IMU times and coverage before defining a new estimator cohort. Preserve uncovered scans as labelled exclusions.",
+  "overwrite_policy": "Exclusive creation only. Preserve failed/partial downloads under distinct attempt paths.",
+  "source_policy": "Save author pages/paper, manufacturer SDK/driver and author configuration evidence with retrieval time, byte hash and immutable repository commit where available. A generic SDK/config is not proof of the recording producer build or calibration.",
+  "helper_sha256": "944f5e0887f1893a91e29823717119b1ad05b04008d97977977c97b495f26677"
+}

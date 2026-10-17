@@ -118,3 +118,9 @@ cloudanalyzer/tests/test_flatwall_plane_objective.py text eol=lf
 cloudanalyzer/tests/test_flatwall_plane_objective_packet.py text eol=lf
 benchmarks/slam/flatwall-plane-objective/** text eol=lf
 benchmarks/slam/flatwall-plane-objective/**/*.npz binary
+scripts/flatwall_correspondence_consistency.py text eol=lf
+scripts/audit_flatwall_correspondence_consistency.py text eol=lf
+cloudanalyzer/tests/test_flatwall_correspondence_consistency.py text eol=lf
+cloudanalyzer/tests/test_flatwall_correspondence_consistency_packet.py text eol=lf
+benchmarks/slam/flatwall-correspondence-consistency/** text eol=lf
+benchmarks/slam/flatwall-correspondence-consistency/**/*.npz binary

@@ -1,0 +1,14 @@
+{
+  "creator": "Kenji Koide (AIST)",
+  "source": "https://zenodo.org/records/7641866",
+  "source_version": 2,
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "recordings": [
+    "flatwall_01.bag",
+    "flatwall_02.bag"
+  ],
+  "changes": "Derived map samples, point neighborhoods, normals and fixed-match objective diagnostics from previously captured CloudAnalyzer estimates. No new trajectory or accuracy score.",
+  "raw_recordings_redistributed": false,
+  "selected_ground_truth_poses_used": false
+}

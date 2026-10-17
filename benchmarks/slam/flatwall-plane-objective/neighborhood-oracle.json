@@ -1,0 +1,518 @@
+{
+  "samples": [
+    {
+      "case": "flatwall_01/repeat-motion/raw-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/raw-legacy",
+      "scan_index": 93,
+      "selected_match_rows": [],
+      "exhaustive_neighborhoods_checked": 0,
+      "no_matches": true
+    },
+    {
+      "case": "flatwall_01/repeat-motion/raw-legacy",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        13,
+        25
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-legacy",
+      "scan_index": 93,
+      "selected_match_rows": [],
+      "exhaustive_neighborhoods_checked": 0,
+      "no_matches": true
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-legacy",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        12,
+        24
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/raw-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        531,
+        1062
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/raw-0.1875",
+      "scan_index": 93,
+      "selected_match_rows": [
+        0,
+        176,
+        352
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/raw-0.1875",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        494,
+        988
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        528,
+        1055
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-0.1875",
+      "scan_index": 93,
+      "selected_match_rows": [
+        0,
+        171,
+        342
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-0.1875",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        491,
+        982
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-legacy",
+      "scan_index": 93,
+      "selected_match_rows": [],
+      "exhaustive_neighborhoods_checked": 0,
+      "no_matches": true
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-legacy",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        13,
+        25
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-legacy",
+      "scan_index": 93,
+      "selected_match_rows": [],
+      "exhaustive_neighborhoods_checked": 0,
+      "no_matches": true
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-legacy",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        12,
+        24
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        531,
+        1062
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-0.1875",
+      "scan_index": 93,
+      "selected_match_rows": [
+        0,
+        176,
+        352
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-0.1875",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        494,
+        988
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        528,
+        1055
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-0.1875",
+      "scan_index": 93,
+      "selected_match_rows": [
+        0,
+        171,
+        342
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-0.1875",
+      "scan_index": 185,
+      "selected_match_rows": [
+        0,
+        491,
+        982
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        13,
+        26
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-legacy",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        6,
+        12
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-legacy",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        13,
+        26
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-legacy",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        7,
+        13
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-legacy",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        480,
+        959
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-0.1875",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        227,
+        453
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-0.1875",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        554,
+        1108
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        480,
+        959
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-0.1875",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        226,
+        452
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-0.1875",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        540,
+        1079
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        13,
+        26
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-legacy",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        6,
+        12
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-legacy",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-legacy",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        13,
+        26
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-legacy",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        7,
+        13
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-legacy",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        16,
+        31
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        480,
+        959
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-0.1875",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        227,
+        453
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-0.1875",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        554,
+        1108
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-0.1875",
+      "scan_index": 2,
+      "selected_match_rows": [
+        0,
+        480,
+        959
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-0.1875",
+      "scan_index": 68,
+      "selected_match_rows": [
+        0,
+        226,
+        452
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-0.1875",
+      "scan_index": 135,
+      "selected_match_rows": [
+        0,
+        540,
+        1079
+      ],
+      "exhaustive_neighborhoods_checked": 3,
+      "no_matches": false
+    }
+  ],
+  "selected_rule": "Cohort ordinal 1, floor(N/2), N-1; match rows 0, floor(M/2), M-1, without replacement. Empty samples remain explicit.",
+  "queries_checked": 132
+}

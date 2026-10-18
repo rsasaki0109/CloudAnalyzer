@@ -1,0 +1,575 @@
+{
+  "base": "fb3efa6efba864aa515bbec0ccf655642161200e",
+  "original_manifest_sha256": "88fa767aad2da950a5cb550a2c12bf427d6de4d2a9446383a522a3a8fbf5e1dd",
+  "original_paths": 17097,
+  "prior_live_native_sources": 113,
+  "files": {
+    "rust/Cargo.lock": {
+      "sha256": "a1dde16d86a3500d0123af8f41e46364cedd5702bb904e272eace4b56bd79257",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/Cargo.lock",
+      "origin": "unchanged live input"
+    },
+    "rust/Cargo.toml": {
+      "sha256": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/Cargo.toml",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/Cargo.toml": {
+      "sha256": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/Cargo.toml",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/bag.rs": {
+      "sha256": "94d807b20f02cf9fb1ed7c63158ef139a43973306f2ed7636a3bbb40c14d30b9",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/bag.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/cluster.rs": {
+      "sha256": "1eb48ac7f5831c2db32306c8f3d78e3f51958e589c8f98744e5a19186ed6ab2b",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/cluster.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/delaunay.rs": {
+      "sha256": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/delaunay.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/distance.rs": {
+      "sha256": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/distance.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/dynamic.rs": {
+      "sha256": "5872d51f2e566774d45aee94b971d6e8ffbd5b31b4461dba5b2d9bb0013fec27",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/dynamic.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/filter.rs": {
+      "sha256": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/filter.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/geotiff.rs": {
+      "sha256": "36785efa8d8864e8e40d9ca068c592e225e7b7d49c98cf6fee187aae12bb6ac9",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/geotiff.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/gicp.rs": {
+      "sha256": "4ee7e1122c0e96facf911f6a6989825712a44099ac15cdf0ef3b4179d3ac8c96",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/gicp.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/gicp_cycle.rs": {
+      "sha256": "5543daad13bb4bcce754ec5a4cdfeeb46f8f5590ced06ba8b183021281b95250",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/gicp_cycle.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/gicp_registration.rs": {
+      "sha256": "ce661ea78e2f34d4eb6f9eb6c87e60cf28a76f5d384915d45e77331e44b2a311",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/gicp_registration.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/gicp_shapes.rs": {
+      "sha256": "805b1c5fb24a895bcacb6dd6ae678c8ced61af9b334249548063a83ffece2ec0",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/gicp_shapes.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/gicp_transported.rs": {
+      "sha256": "46408f6c1c079b51ca8f166b4f0b6214d2f89fc77292e09141dccca7b68eb4f9",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/gicp_transported.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/ground.rs": {
+      "sha256": "3f0db870f9ebc017573561ca5328bdda1b6fc885c786619349333708175c9665",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/ground.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/icp.rs": {
+      "sha256": "8c0e8b13718719468492e6e4f5e0dc2c00cdbcb7a0164f3406ec714002dceb7e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/icp.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/imu.rs": {
+      "sha256": "5f18d02ffdc8a1ff762af3df040161cf06a893538b4572352a238f8a3900f3c4",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/imu.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/imu_factor.rs": {
+      "sha256": "0f458a52bee55703a915aa73ca3c110094a6b3c7f8b824cdc27a1e31cd519d96",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/imu_factor.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/imu_initialization.rs": {
+      "sha256": "9d1e7cb43070cb254c2b3a5b1f0d733484c941abee529a6b580801841746c571",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/imu_initialization.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/imu_rotation.rs": {
+      "sha256": "f36f28c8072054f34c2ae8b9d870251d9d6c4b0c50e95a63be7cbd536bf37acc",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/imu_rotation.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/imu_trajectory.rs": {
+      "sha256": "9b9b27dca63090e455b169d481fed0643695bd3039aa6bc76827936299f60350",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/imu_trajectory.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/imu_window.rs": {
+      "sha256": "53ee0a293706bbf6d7d0531af21ea069f6cf1869d68bec921108a3faf2e07e1c",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/imu_window.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/copc.rs": {
+      "sha256": "ee83822f3d0843d033f63fda4036400e5ae2ab356f9c63b0d6a3bdcadd41a597",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/copc.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/copc_query.rs": {
+      "sha256": "6f365ca5f7370e59c066b5202500755fb5c1f09213571abdbc9b29f15b9b1820",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/copc_query.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/e57.rs": {
+      "sha256": "22c5a8dc7b942944f03ae976e357bd7c693c7e78a83bc72a4d684fc746568993",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/e57.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/kitti.rs": {
+      "sha256": "e4fddf18e105cd617ee0c8660dc1bda77cd9c61ea1b506cc299dfb4419249f86",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/kitti.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/las.rs": {
+      "sha256": "97ee86bc57ab5924e1c37c277f7d7c10d96f41c8052487dfa22e63cb0830fc2e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/las.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/las_chunks.rs": {
+      "sha256": "6f7e26401e17b781cb9728228d3113f456ddc59833215c676f152c935f29503c",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/las_chunks.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/las_write.rs": {
+      "sha256": "7104b0ef630e845251dd2bb9f275c4f3166a591c3edf92dcec8d99eb312135b4",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/las_write.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/mod.rs": {
+      "sha256": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/mod.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/obj.rs": {
+      "sha256": "b19e1f672498b26a3abbf76d327b206af9989c4d2dcd803165f671a30d18769c",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/obj.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/pcd.rs": {
+      "sha256": "3d60a5fcebb829a67df3a6f5864141da7ce053e04bc848281bd75391e0e5c74b",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/pcd.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/ply.rs": {
+      "sha256": "2c8698ea790484c1db0c1d0c9678427b25c573c55774db52b8654d657bb3067e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/ply.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/scalar.rs": {
+      "sha256": "04e1bb7994af83fb59d7fa7f12ab9ee23586ec674d286b57eaeef72e0c8887f2",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/scalar.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/splat.rs": {
+      "sha256": "53acdec7392c65a66e2069c2935d3fa61e3f962ad79cba7b767cf85e0733d9a8",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/splat.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/stl.rs": {
+      "sha256": "95bbedf1b3608a38d7aff62f117f6c005aa0a279b4e7d16eebb0cbd412999c30",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/stl.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/stream.rs": {
+      "sha256": "ac65258ad1d96de66f0ee6c3fdcc2d641797461273cd10bb1acb497cf0d1db85",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/stream.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/write.rs": {
+      "sha256": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/write.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/io/xyz.rs": {
+      "sha256": "49286f55ddfb0faaa6a9e36726109782bb4046e9e99204e8f37a1f0284247b77",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/io/xyz.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/kdtree.rs": {
+      "sha256": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/kdtree.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/lib.rs": {
+      "sha256": "e08fefad6ac8a670f12072fa73dc9ee8eeeee482ee4d9f0ec584ff056fb0d948",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/lib.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/loop_search.rs": {
+      "sha256": "30e3772b49765c6f1c716513694dd1ec5e18e66e1dc730755dee7e9cff6701bf",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/loop_search.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/m3c2.rs": {
+      "sha256": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/m3c2.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/map_quality.rs": {
+      "sha256": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/map_quality.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/merge.rs": {
+      "sha256": "61c3fb9548c15efc35ab57dc80798147a40bfff2be1909a8748f11396420d4c9",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/merge.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/mesh.rs": {
+      "sha256": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/mesh.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/normal_pair.rs": {
+      "sha256": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/normal_pair.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/normals.rs": {
+      "sha256": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/normals.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/octree.rs": {
+      "sha256": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/octree.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/odometry.rs": {
+      "sha256": "6c92da2000719d5cdfc1d5f2e00ae8502c2a70be077899fabef42ba50e3b080a",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/odometry.rs",
+      "origin": "exact prior digest recovered from base Git blob with recorded checkout newline encoding"
+    },
+    "rust/crates/ca-core/src/odometry_linearization.rs": {
+      "sha256": "4ce3b62161af16d9dcfe9266d81afa3c8fd61388d5579fa85ae282f5cf198115",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/odometry_linearization.rs",
+      "origin": "exact prior digest recovered from base Git blob with recorded checkout newline encoding"
+    },
+    "rust/crates/ca-core/src/point_time.rs": {
+      "sha256": "1145e025fbaa1f50cb152ff58889c00b6cd440e3bb45064ca51511018dde0a43",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/point_time.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/pose_graph.rs": {
+      "sha256": "22169e673aed0c829261cb4e76f8cd968c03dad68d7f8a5554eabe9391b241a4",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/pose_graph.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/profile.rs": {
+      "sha256": "ce48f96d92b747f9225222dcaf1370b49b8d029c1fae4e82d77a89bb68daaa3a",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/profile.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/raster.rs": {
+      "sha256": "92d88d8fb601f1baea5d75a0fd69716bf77436ae8a1b15f55f691bbf698ca5fd",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/raster.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/rosbag2.rs": {
+      "sha256": "5c0ea9f979843bfef084f4a9c691bcdb219b5a588e9b42b8524c3a8ea5c66c44",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/rosbag2.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/segment.rs": {
+      "sha256": "15f816f744ce2edd33940c067e34a18c21d6b3292c9d106c910625a5f8d7bfd1",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/segment.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/shapes.rs": {
+      "sha256": "e5932e31c68774383f4f7333e9aac2c75e7a930251a46b0cc7b766a46a530da1",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/shapes.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/trajectory.rs": {
+      "sha256": "8fecd20a9260be103603efa5858221c56450332a49ea7ebf48163036d82a1310",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/trajectory.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map.rs": {
+      "sha256": "b03e6c83ba296a4f45346c99dd8c7c828bf76722e562c80c02025b65713f09ed",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/corridors.rs": {
+      "sha256": "2343a077c3b09a67ffa1477c94bba21774d20d0cc4e6f2b5ffb5823b0fcc9dc1",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/corridors.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/crosswalks.rs": {
+      "sha256": "71c70574450653a2e078424a7f5c839faf98c7802fe7f5b3a4baa65c4e114aba",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/crosswalks.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/discovery.rs": {
+      "sha256": "23b3db8aa9d758850efb5b5e644315b03c74a919a245085f066f089e4c1585e2",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/discovery.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/discovery_tests.rs": {
+      "sha256": "cbea4ddfb6a1afc3e18a073d6683203815a83169f1ff75a099c2f9c0e670bc6e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/discovery_tests.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/evidence.rs": {
+      "sha256": "cd1189bb39b42ecc3eb3c8356069adb8e0779b4d317dd2b6b3e69a5b22c236fc",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/evidence.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/feature_editing.rs": {
+      "sha256": "725cff8a25e095a4a24ed146ef4c807ee7f00146fd6e3a17b9f5ad5e9497f6b4",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/feature_editing.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/fitting.rs": {
+      "sha256": "b2d3a1e2f130a5d296e8c5954a70de8617d1e72e6194efe0c84fdddb33bcecf4",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/fitting.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/integration.rs": {
+      "sha256": "662970db0abd31ee42f5faff24162c7544f171891cc416bcaf0f9de241400c3f",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/integration.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/junctions.rs": {
+      "sha256": "85da61860390a38c2470a4e00270a6227707ea059b1a8842c7b0ca70d259516c",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/junctions.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": {
+      "sha256": "37db6fa0394d90e067b1486782ed779faebd08ff5b65ccb0707ac977191e509d",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/lane_edge_inference.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": {
+      "sha256": "e09c1a1aba04fb5e6abb3a607821b8ffb3aa7b78f1532eb2a493db3bf27fcfb7",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/paint_corridor.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/paint_divider.rs": {
+      "sha256": "d145c696082084e6c8c8eb56c81c112890879d8f2f9261543002f31ac9dbf9da",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/paint_divider.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/quality.rs": {
+      "sha256": "58b15c3fa53dc22bb1bb71c36aa95badecb47c6ef0d62f0e2b928390517095c2",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/quality.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/relation_proposals.rs": {
+      "sha256": "db316733520608c28fbced25503fc83cb3e33ef9f7b9c6cece5d30a83d5dc176",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/relation_proposals.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/relations.rs": {
+      "sha256": "1fa302063cb4958915ea8311d24027ab98544886422ce0955b230c97f466d38f",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/relations.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/segmentation.rs": {
+      "sha256": "5cdc6641848bcc40c759d4b07e5033cb78ca73bf55b27e4a92796051439ab092",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/segmentation.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/signals.rs": {
+      "sha256": "48f4c5926203aadb1c8de504fb489f760ab9679af91a087345c06221450d38fd",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/signals.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/surface.rs": {
+      "sha256": "c20bd0ccbf7a3e59d34d9d8522655a0cb4ec4629f40f650f341f999007825c8d",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/surface.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/vector_map/trace_alignment.rs": {
+      "sha256": "2c58685ce97e4b6a2ae44bbf80aafb3927d203d414c72eb0f4e5782e64cf6415",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/vector_map/trace_alignment.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-core/src/volume.rs": {
+      "sha256": "6842e46cefa1145d750515430a6e4c472996fea20c0bacd4a348b9b432a8990e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-core/src/volume.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/Cargo.lock": {
+      "sha256": "47b5a2a1afe85975ac43106b78eec0c463499e19023215feba1ed23511e82500",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/Cargo.lock",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/Cargo.toml": {
+      "sha256": "feca0ceb6f21f22ea88da4eaf42bb359a1a8336ef48aa3fa50b3b07da205ab3c",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/Cargo.toml",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": {
+      "sha256": "3ebd63190251c5902ce36b38991b5d7af02a8b5617d27c64dad5a59e518ea159",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/python/cloudanalyzer_core/__init__.py",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": {
+      "sha256": "1afc609401c53232e2c5e455c2417012766126e828ec7c4f56469404c7d0be45",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi",
+      "origin": "exact prior digest recovered from base Git blob with recorded checkout newline encoding"
+    },
+    "rust/crates/ca-py/src/bag.rs": {
+      "sha256": "45c1de2796cc8ac11c7daa6febdee1e7c117b6e06cf05b2a00799533f0e61be5",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/bag.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/copc_spatial.rs": {
+      "sha256": "59706c27a423fe8ea8934261448a077e0f12f95ee98ba91a79d5e503f64e3e82",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/copc_spatial.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/gicp.rs": {
+      "sha256": "f27d372490bc579931d5070212aa3d10611888b78faa5d3282026c1ac6ed1989",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/gicp.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/imu.rs": {
+      "sha256": "6bd03661bca6081ec5ca5c033469cc210ed825aac0aeed8cf80e0c5e41838a3d",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/imu.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/imu_odometry.rs": {
+      "sha256": "cd2e84ac73c4167e011e4f3f6c77979d33565de7846654dac05ebe847207b268",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/imu_odometry.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/imu_rotation.rs": {
+      "sha256": "8af87851d8b055a1a2591c615cbf9c9b8de78a90cb45d976134dfe644dde117e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/imu_rotation.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/imu_window.rs": {
+      "sha256": "d82292228622a9e81f3ce77aa5fd3e3311550ef07c093c1ba8567c2fbd53fa15",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/imu_window.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/lib.rs": {
+      "sha256": "185dcbe77304a0462a6fad7e861920a913340a9dd5a011a3e67da30f2c164168",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/lib.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/odometry.rs": {
+      "sha256": "c5128a35e6b69e140ab398266462b306c2e9134d271e8ebd57341b8984bc2fea",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/odometry.rs",
+      "origin": "exact prior digest recovered from base Git blob with recorded checkout newline encoding"
+    },
+    "rust/crates/ca-py/src/odometry_linearization.rs": {
+      "sha256": "9586e2366ac2ba60f668741326bc6e5bac2ad903fe3d72f85a5f583fe267e202",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/odometry_linearization.rs",
+      "origin": "exact prior digest recovered from base Git blob with recorded checkout newline encoding"
+    },
+    "rust/crates/ca-py/src/pose_graph.rs": {
+      "sha256": "1012735872a674f604b30b4fd21b9fc32dad6540c2552a05eaf26d78a09c3b85",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/pose_graph.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/vector_map.rs": {
+      "sha256": "e9c06155aa46555e4a2c63b5b9e9cbcb9bf3135bc25d6eb732f31c3f9c0c4b4f",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/vector_map.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/src/vector_map/corridor_lanes.rs": {
+      "sha256": "c72de64e984be2ecfde9f84f7d20c5881645a20deca981c46caebb4b3ec0d72f",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/src/vector_map/corridor_lanes.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/Cargo.toml": {
+      "sha256": "82a346878a6ce6a20b073fa49d6765bb9c7846b54eba95476d81da52a38c1939",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/Cargo.toml",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/bag.rs": {
+      "sha256": "91989769e283c218c381fbc4806c6d3f1045522ec881b64ee08558cec3319fb6",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/bag.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/copc_box.rs": {
+      "sha256": "367ef8f9a51257095a4c67141124709a017b55085d95b4dc7abfcfe8d36735cb",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/copc_box.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/gpu_c2c.rs": {
+      "sha256": "cba040f776927c8970a08c0e2f0674d4121548d086658efb6ea77daaa368327e",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/gpu_c2c.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/lib.rs": {
+      "sha256": "6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/lib.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/m3c2.rs": {
+      "sha256": "9825189b37efb4e6255f9b676ef0e1719b2a9afafb2c55b7b8576b4c72849bf9",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/m3c2.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/odometry.rs": {
+      "sha256": "df10df35841a4bb21ba15128ddb398056ef735640cb85d7b7aedfd3366af0a53",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/odometry.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/pose_graph.rs": {
+      "sha256": "2d5b27ad056a3d023bd1b450d702fc7f853b98c50bc64d75cd61d10a042caba1",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/pose_graph.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/pose_graph_project_tests.rs": {
+      "sha256": "198a2ba47ab6c3d7684814927c9826a4bd597d131ffae8c0cd52a3ca7ea521c8",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/pose_graph_project_tests.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-wasm/src/vector_map.rs": {
+      "sha256": "87bdc480ecca784320f2630ddc4c061aa5c689127937a1be8e4fe15655977a7d",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-wasm/src/vector_map.rs",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/python/cloudanalyzer_core/_copc.py": {
+      "sha256": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/python/cloudanalyzer_core/_copc.py",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py": {
+      "sha256": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/python/cloudanalyzer_core/_ranges.py",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py": {
+      "sha256": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/python/cloudanalyzer_core/_spatial.py",
+      "origin": "unchanged live input"
+    },
+    "rust/crates/ca-py/python/cloudanalyzer_core/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/crates/ca-py/python/cloudanalyzer_core/py.typed",
+      "origin": "unchanged live input"
+    },
+    "rust/.cargo/config.toml": {
+      "sha256": "3b43347dddc646a4ea83635dd27d62ce8910afb663321db67518f670946d12ab",
+      "preserved_as": "notes/slam-flatwall-target-balance-20261018/prior-live-source-snapshot/rust/.cargo/config.toml",
+      "origin": "unchanged live input"
+    }
+  },
+  "historical_artifacts_unchanged": true,
+  "development_sources_intentionally_updated": true
+}

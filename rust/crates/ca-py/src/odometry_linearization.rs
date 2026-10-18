@@ -32,6 +32,7 @@ pub(crate) fn to_dict<'py>(
     }
     result.set_item("map_points", snapshot.map_points)?;
     result.set_item("alignment_eligible", snapshot.alignment_eligible)?;
+    result.set_item("target_balance", snapshot.target_balance)?;
     result.set_item("finite", snapshot.finite)?;
     result.set_item("weighted_rms_radius_m", snapshot.weighted_rms_radius_m)?;
     for (name, rows) in [
@@ -56,6 +57,19 @@ pub(crate) fn to_dict<'py>(
         snapshot.squared_distances.clone().into_pyarray(py),
     )?;
     result.set_item("weights", snapshot.weights.clone().into_pyarray(py))?;
+    result.set_item(
+        "robust_weights",
+        snapshot.robust_weights.clone().into_pyarray(py),
+    )?;
+    result.set_item(
+        "target_multiplicity",
+        snapshot
+            .target_multiplicity
+            .iter()
+            .map(|&n| n as i64)
+            .collect::<Vec<_>>()
+            .into_pyarray(py),
+    )?;
     result.set_item(
         "normal_matrix",
         Array2::from_shape_vec(

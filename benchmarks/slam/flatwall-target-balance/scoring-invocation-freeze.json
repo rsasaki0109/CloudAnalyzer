@@ -1,0 +1,13 @@
+{
+  "schema": "cloudanalyzer.flatwall_target_balance_score_invocation.v1",
+  "source_files_sha256": {
+    "scripts/run_flatwall_target_balance.py": "becf45e227496c150d590c109abd57ff510f16021821f22c8e8298fac707a9f0",
+    "notes/freeze-slam-flatwall-target-balance-score-20261018.py": "0dab3bbaded9462aab1762a9ead30757a0b8da13650084f1c20be3827a3ee6cc"
+  },
+  "controller_freeze_sha256": "e5fba5017fa5a802de34813a9256e3a7c9e2d56b9d19ba078cbf516b9fe9bbad",
+  "estimates_receipt_sha256": "8d62eb9fc5f31d4e32446124c8aca7575d1d605366adb47e02dc739daf269d49",
+  "failed_invocation_log_sha256": "cb6a043c8524a6515e8ed96367f92adf5c6ff76fe7c03f443a4643f359df3caf",
+  "failure_before_reference_read": true,
+  "change": "Normalize command-line filesystem paths before calling the unchanged frozen controller. No estimator or scoring arithmetic change.",
+  "fresh_output": "notes/slam-flatwall-target-balance-20261018/results-02"
+}

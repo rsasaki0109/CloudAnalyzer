@@ -124,3 +124,18 @@ cloudanalyzer/tests/test_flatwall_correspondence_consistency.py text eol=lf
 cloudanalyzer/tests/test_flatwall_correspondence_consistency_packet.py text eol=lf
 benchmarks/slam/flatwall-correspondence-consistency/** text eol=lf
 benchmarks/slam/flatwall-correspondence-consistency/**/*.npz binary
+rust/crates/ca-core/src/odometry.rs text eol=lf
+rust/crates/ca-core/src/odometry_linearization.rs text eol=lf
+rust/crates/ca-core/src/odometry_target_balance.rs text eol=lf
+rust/crates/ca-py/src/odometry.rs text eol=lf
+rust/crates/ca-py/src/odometry_linearization.rs text eol=lf
+rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi text eol=lf
+rust/crates/ca-py/tests/test_odometry_target_balance.py text eol=lf
+scripts/audit_flatwall_target_balance.py text eol=lf
+scripts/flatwall_target_balance.py text eol=lf
+scripts/run_flatwall_target_balance.py text eol=lf
+cloudanalyzer/tests/test_flatwall_target_balance_packet.py text eol=lf
+benchmarks/slam/flatwall-target-balance/** text eol=lf
+benchmarks/slam/flatwall-target-balance/**/*.npz binary
+benchmarks/slam/flatwall-target-balance/**/reference-source.txt binary
+benchmarks/slam/flatwall-target-balance/*.png binary

@@ -1,0 +1,478 @@
+{
+  "summary": {
+    "cases": 16,
+    "position_improved": 11,
+    "position_regressed": 5,
+    "position_equal": 0,
+    "rpe_translation_improved": 12,
+    "rpe_translation_regressed": 4,
+    "fine_gyro_cases": 4,
+    "fine_gyro_position_improved": 4
+  },
+  "cases": [
+    {
+      "case": "flatwall_01/repeat-motion/raw-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 3.206249796395917,
+          "balanced": 1.9182722343142427,
+          "delta": -1.2879775620816742,
+          "percent_change": -40.17084269383704
+        },
+        "origin_position_ape_m": {
+          "default": 7.250963976328305,
+          "balanced": 3.9586659180258397,
+          "delta": -3.2922980583024652,
+          "percent_change": -45.404970553578686
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.33093992106714554,
+          "balanced": 0.2768788445690374,
+          "delta": -0.05406107649810815,
+          "percent_change": -16.335616544472288
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 9.040502691968841,
+          "balanced": 8.147280057811095,
+          "delta": -0.8932226341577465,
+          "percent_change": -9.880231936120582
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 2.2890947462359446,
+          "balanced": 2.72759902229647,
+          "delta": 0.43850427606052556,
+          "percent_change": 19.15623094157971
+        },
+        "origin_position_ape_m": {
+          "default": 3.8833156282903314,
+          "balanced": 4.838782866446336,
+          "delta": 0.9554672381560048,
+          "percent_change": 24.604418739371404
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.27559330370727136,
+          "balanced": 0.3378805218569548,
+          "delta": 0.06228721814968341,
+          "percent_change": 22.601136280090248
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 7.331932243998003,
+          "balanced": 9.004285578625028,
+          "delta": 1.672353334627025,
+          "percent_change": 22.809176066732356
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/repeat-motion/raw-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 0.715796023055954,
+          "balanced": 0.7288214107566914,
+          "delta": 0.013025387700737356,
+          "percent_change": 1.819706631664138
+        },
+        "origin_position_ape_m": {
+          "default": 3.6967756089876955,
+          "balanced": 3.662327153871505,
+          "delta": -0.034448455116190324,
+          "percent_change": -0.9318513959148171
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.13842888038486897,
+          "balanced": 0.10831311521919473,
+          "delta": -0.03011576516567424,
+          "percent_change": -21.755406156536434
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 4.282594620656812,
+          "balanced": 2.060349689817398,
+          "delta": -2.222244930839414,
+          "percent_change": -51.89015369609261
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/repeat-motion/gyro-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.483598865085861,
+          "balanced": 0.6820602155984126,
+          "delta": -0.8015386494874484,
+          "percent_change": -54.02664213018663
+        },
+        "origin_position_ape_m": {
+          "default": 2.920571004253355,
+          "balanced": 3.633399097495379,
+          "delta": 0.7128280932420243,
+          "percent_change": 24.40714819820856
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.5695638102312909,
+          "balanced": 0.1118388676334658,
+          "delta": -0.4577249425978251,
+          "percent_change": -80.36411976595744
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 23.65695461871857,
+          "balanced": 2.14309906653833,
+          "delta": -21.51385555218024,
+          "percent_change": -90.9409342788247
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 0.7838529388242347,
+          "balanced": 0.8350899324022005,
+          "delta": 0.05123699357796585,
+          "percent_change": 6.536556927989634
+        },
+        "origin_position_ape_m": {
+          "default": 3.1191374161015397,
+          "balanced": 2.9845331838296674,
+          "delta": -0.13460423227187235,
+          "percent_change": -4.315431297672923
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.16648888862915165,
+          "balanced": 0.19204065605970969,
+          "delta": 0.025551767430558037,
+          "percent_change": 15.347431075399713
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 4.033874470773796,
+          "balanced": 4.608574511320121,
+          "delta": 0.5747000405463254,
+          "percent_change": 14.246849888615493
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.0756171060681787,
+          "balanced": 0.9812054612964907,
+          "delta": -0.09441164477168806,
+          "percent_change": -8.77743987512446
+        },
+        "origin_position_ape_m": {
+          "default": 2.2510543614292122,
+          "balanced": 2.897859784767793,
+          "delta": 0.6468054233385807,
+          "percent_change": 28.7334430665601
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.16861412589839972,
+          "balanced": 0.15348030516990294,
+          "delta": -0.015133820728496783,
+          "percent_change": -8.975416886255326
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 4.736594946760765,
+          "balanced": 3.8938030661145686,
+          "delta": -0.8427918806461965,
+          "percent_change": -17.793201447857815
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/last-pose/raw-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 0.7143409497597644,
+          "balanced": 0.6090484622556105,
+          "delta": -0.10529248750415388,
+          "percent_change": -14.739808426153386
+        },
+        "origin_position_ape_m": {
+          "default": 4.865942807568413,
+          "balanced": 3.5989534633092117,
+          "delta": -1.2669893442592008,
+          "percent_change": -26.037900451450952
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.16221319888091495,
+          "balanced": 0.09618291864007274,
+          "delta": -0.06603028024084222,
+          "percent_change": -40.70586160458916
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 2.6228290410934516,
+          "balanced": 2.0059143910777695,
+          "delta": -0.6169146500156821,
+          "percent_change": -23.520963065076167
+        }
+      }
+    },
+    {
+      "case": "flatwall_01/last-pose/gyro-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.7784265523865108,
+          "balanced": 0.6324973199903028,
+          "delta": -1.145929232396208,
+          "percent_change": -64.43500468762456
+        },
+        "origin_position_ape_m": {
+          "default": 6.303636692816478,
+          "balanced": 3.520144266271568,
+          "delta": -2.78349242654491,
+          "percent_change": -44.1569297563886
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.197195685150449,
+          "balanced": 0.10299938502235831,
+          "delta": -0.09419630012809069,
+          "percent_change": -47.7679316645414
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 2.689693202082092,
+          "balanced": 1.7307911956774602,
+          "delta": -0.9589020064046319,
+          "percent_change": -35.65098077588721
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 2.3498074637984705,
+          "balanced": 2.3463283357874354,
+          "delta": -0.0034791280110351153,
+          "percent_change": -0.14806013108031818
+        },
+        "origin_position_ape_m": {
+          "default": 4.748808535394135,
+          "balanced": 5.121270451414919,
+          "delta": 0.37246191602078405,
+          "percent_change": 7.843270859305575
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.4911642201620212,
+          "balanced": 0.9872273928000963,
+          "delta": 0.4960631726380751,
+          "percent_change": 100.99741639862079
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 17.980887715684027,
+          "balanced": 23.677128174625665,
+          "delta": 5.696240458941638,
+          "percent_change": 31.67941732917352
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 2.944726357919946,
+          "balanced": 2.31773407440957,
+          "delta": -0.6269922835103761,
+          "percent_change": -21.29203896396207
+        },
+        "origin_position_ape_m": {
+          "default": 5.614771980880671,
+          "balanced": 4.056386967727134,
+          "delta": -1.5583850131535373,
+          "percent_change": -27.75508993882787
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.3340666354677598,
+          "balanced": 0.2560580890311497,
+          "delta": -0.0780085464366101,
+          "percent_change": -23.351193490898186
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 7.891425575067738,
+          "balanced": 5.642207363402018,
+          "delta": -2.2492182116657204,
+          "percent_change": -28.502051882386457
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/repeat-motion/raw-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 0.9437760207208042,
+          "balanced": 0.9570183120924928,
+          "delta": 0.01324229137168853,
+          "percent_change": 1.40311801539255
+        },
+        "origin_position_ape_m": {
+          "default": 3.23654663078211,
+          "balanced": 4.713139801519932,
+          "delta": 1.4765931707378224,
+          "percent_change": 45.62249023988276
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.11843633127676341,
+          "balanced": 0.16200062008457508,
+          "delta": 0.04356428880781167,
+          "percent_change": 36.78287594539731
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 4.240806091810064,
+          "balanced": 4.211226273010524,
+          "delta": -0.029579818799539304,
+          "percent_change": -0.6975046290530588
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/repeat-motion/gyro-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.2412841241837431,
+          "balanced": 0.6653835808540097,
+          "delta": -0.5759005433297334,
+          "percent_change": -46.39554571830524
+        },
+        "origin_position_ape_m": {
+          "default": 2.502036510567924,
+          "balanced": 4.499570852606333,
+          "delta": 1.9975343420384095,
+          "percent_change": 79.8363386625801
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.15630577742474597,
+          "balanced": 0.13745635023123265,
+          "delta": -0.01884942719351332,
+          "percent_change": -12.059328518799282
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 5.35929780508241,
+          "balanced": 5.956264206839272,
+          "delta": 0.5969664017568617,
+          "percent_change": 11.138892136032029
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.1160254432965284,
+          "balanced": 0.9340798805066137,
+          "delta": -0.1819455627899147,
+          "percent_change": -16.30299415508681
+        },
+        "origin_position_ape_m": {
+          "default": 2.740426443203013,
+          "balanced": 2.82659362715576,
+          "delta": 0.08616718395274692,
+          "percent_change": 3.144298368834692
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.15136059150459885,
+          "balanced": 0.15104950343526605,
+          "delta": -0.0003110880693328044,
+          "percent_change": -0.2055277838441537
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 3.3576722250314535,
+          "balanced": 3.224720534325839,
+          "delta": -0.1329516907056143,
+          "percent_change": -3.9596387555181582
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-legacy",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.073579397648487,
+          "balanced": 1.207521240422934,
+          "delta": 0.13394184277444698,
+          "percent_change": 12.476193476497992
+        },
+        "origin_position_ape_m": {
+          "default": 2.941642725601735,
+          "balanced": 2.4878798579936614,
+          "delta": -0.4537628676080736,
+          "percent_change": -15.425492146237882
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.15030469546178526,
+          "balanced": 0.15028130382098093,
+          "delta": -2.3391640804337754e-05,
+          "percent_change": -0.015562814410069473
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 3.5740584880380206,
+          "balanced": 3.047267612793331,
+          "delta": -0.5267908752446897,
+          "percent_change": -14.739290837231696
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/last-pose/raw-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.6366500882904267,
+          "balanced": 1.0509729382943562,
+          "delta": -0.5856771499960705,
+          "percent_change": -35.78511706236752
+        },
+        "origin_position_ape_m": {
+          "default": 5.980249826328751,
+          "balanced": 3.4652895003760382,
+          "delta": -2.5149603259527127,
+          "percent_change": -42.054435834441314
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.23347766378528023,
+          "balanced": 0.1091898058144214,
+          "delta": -0.12428785797085883,
+          "percent_change": -53.23329690550666
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 2.8683509603453734,
+          "balanced": 2.522708453050946,
+          "delta": -0.3456425072944276,
+          "percent_change": -12.050216729852659
+        }
+      }
+    },
+    {
+      "case": "flatwall_02/last-pose/gyro-0.1875",
+      "metrics": {
+        "rigid_position_ape_m": {
+          "default": 1.7449214365829084,
+          "balanced": 1.1948471539305168,
+          "delta": -0.5500742826523917,
+          "percent_change": -31.5243008149184
+        },
+        "origin_position_ape_m": {
+          "default": 6.158628507792508,
+          "balanced": 3.085007897762642,
+          "delta": -3.0736206100298658,
+          "percent_change": -49.90755013296899
+        },
+        "consecutive_rpe_translation_m": {
+          "default": 0.24492821601264952,
+          "balanced": 0.09842749064858286,
+          "delta": -0.14650072536406666,
+          "percent_change": -59.81373961279353
+        },
+        "consecutive_rpe_rotation_deg": {
+          "default": 2.9055210296524345,
+          "balanced": 2.2891748410479256,
+          "delta": -0.616346188604509,
+          "percent_change": -21.212931598648172
+        }
+      }
+    }
+  ]
+}

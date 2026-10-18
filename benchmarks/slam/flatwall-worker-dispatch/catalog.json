@@ -1,0 +1,30 @@
+[
+  {
+    "index": 0,
+    "implementation": "baseline",
+    "file": "time/run-00-baseline-threads-4.json.gz",
+    "invocation": "time/run-00-baseline-threads-4-invocation.json",
+    "original_output_sha256": "84b9ff1554eb936eb0a4363ea9bd503062576c0ed7a137a9d1d87ce6ea89ca64"
+  },
+  {
+    "index": 1,
+    "implementation": "candidate",
+    "file": "time/run-01-candidate-threads-4.json.gz",
+    "invocation": "time/run-01-candidate-threads-4-invocation.json",
+    "original_output_sha256": "fe0b8ba369d984562e4d8f62fee94c8e55d59adc3d9fc1945159c6086341aee9"
+  },
+  {
+    "index": 2,
+    "implementation": "candidate",
+    "file": "time/run-02-candidate-threads-4.json.gz",
+    "invocation": "time/run-02-candidate-threads-4-invocation.json",
+    "original_output_sha256": "6020aa8911aea5ccbabd2366400c660b992843adedca31561bc7586dc0a5ed02"
+  },
+  {
+    "index": 3,
+    "implementation": "baseline",
+    "file": "time/run-03-baseline-threads-4.json.gz",
+    "invocation": "time/run-03-baseline-threads-4-invocation.json",
+    "original_output_sha256": "a4a341aa02418f414e1155450f06d406cd88ba1b5740ae678b5f7d5da864bc0a"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "index": 1,
+  "implementation": "candidate",
+  "threads": 4,
+  "command": [
+    "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-repeat-workers-20261018\\build-candidate\\audit_odometry_steps.exe",
+    "time",
+    "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-flatwall-target-balance-dynamics-20261018\\prepared-01\\input.json",
+    "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-repeat-workers-20261018\\time-01\\run-01-candidate-threads-4"
+  ],
+  "binary_sha256": "0bfa983a8bd046324271e1f4cd88ef75204c130bfc4f81529c5e5f8b66d8ddbf",
+  "environment": {
+    "RAYON_NUM_THREADS": "4"
+  }
+}

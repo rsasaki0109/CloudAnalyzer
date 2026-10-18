@@ -162,3 +162,13 @@ benchmarks/slam/flatwall-count-lookup/zero-duration-diagnostic-01.json binary
 scripts/flatwall_count_comparison.py text eol=lf
 cloudanalyzer/tests/test_flatwall_count_lookup_packet.py text eol=lf
 docs/slam-flatwall-count-lookup.md text eol=lf
+
+benchmarks/slam/flatwall-worker-dispatch/** text eol=lf
+benchmarks/slam/flatwall-worker-dispatch/**/*.gz binary
+benchmarks/slam/flatwall-worker-dispatch/**/*.log binary
+benchmarks/slam/flatwall-worker-dispatch/**/*.jsonl binary
+benchmarks/slam/flatwall-worker-dispatch/controller.py binary
+benchmarks/slam/flatwall-worker-dispatch/analysis-source.py binary
+benchmarks/slam/flatwall-worker-dispatch/native-validation/controller.py binary
+cloudanalyzer/tests/test_flatwall_worker_dispatch_packet.py text eol=lf
+docs/slam-flatwall-worker-dispatch.md text eol=lf

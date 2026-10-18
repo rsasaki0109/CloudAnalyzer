@@ -1,0 +1,26 @@
+{
+  "base": "1a31df6d63063f210d98293b9a8cde09f3c25a95",
+  "previous_ledgers": {
+    "merge-integrity-inputs.json": {
+      "sha256": "ced5566935a53b52610c9b33232036eef5fbb2d589a8865eb8f54d003bff2d29",
+      "files": 26525
+    },
+    "merge-final-integrity-inputs.json": {
+      "sha256": "6efaf1e7a2aef0544c6738001cdb16099259461307c8f49cd2d14180ae5c25b5",
+      "files": 739
+    }
+  },
+  "previous_completion_sha256": "6874505b2eb0f82b30ff2492cda125ce896c8b40ff1e715f9a8cb0c719a3207b",
+  "original_odometry_sha256": "352f9d894a0ce45abf3ab9bf0fa99804bb75ea20310ebe22423f65c61e167bdb",
+  "real_replay_inputs_sha256": {
+    "notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/flatwall_01-gyro.f64": "0436382019159be027e3fda1eecd701fba956e5c890554318142ba503af90e3f",
+    "notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/flatwall_01-raw.f64": "eda42a713ad9a3878658785f14acce3035b80ae7cb25e8192cdd6478980c4f1e",
+    "notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/flatwall_02-gyro.f64": "c5f611331a904141a16ee51e87bacf5bd92518a102af444ea5057d18a637762b",
+    "notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/flatwall_02-raw.f64": "fdbbeb867b3acb794cb880cbf176697e6685a1b994b17e8acafe2b0cbf24fa6c",
+    "notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/input.json": "0a2e3291bf24ff08f763b5f54db5982c9187ab4c161e22feec0d5dc6548215d7",
+    "notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/receipt.json": "160a4990440687d47f2b6d894ecd8feafded8ef2cd5947e5bcd1e2d7bb1f1cbe"
+  },
+  "previous_outputs_rewritten": false,
+  "installed_extension_replaced": false,
+  "controller_sha256": "2f09ef419a24b86dbbeeab47046e7c6d832971b00b8e23fa378e9a41eccab731"
+}

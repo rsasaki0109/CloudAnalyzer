@@ -1,0 +1,29 @@
+{
+  "schema": "cloudanalyzer.gated_workers.v1",
+  "base": "1a31df6d63063f210d98293b9a8cde09f3c25a95",
+  "frozen_at_utc": "2026-10-18T06:41:27.701452+00:00",
+  "candidate": "Keep pool entry out of line to preserve the compact caller-side path. Keep the first iteration on the caller. Only after a nonterminating step, move the remaining automatic ICP iterations into the current Rayon pool once when alignment is active, the captured policy is target-balanced or the source has more than the existing 256-point chunk, and the caller is not already a Rayon worker.",
+  "gate": "needs_alignment && (registration.target_balance || registration.source.len() > 256) && iterations > 0 && termination.is_none() && current_thread_index().is_none()",
+  "arithmetic": "Keep begin/finish on the caller; preserve correspondence search/order, exact counts, all weights, 256-point chunks, reductions, solver, stopping, map updates, diagnostics and defaults.",
+  "selection": "All 16 previous real recording cases, both default and balanced modes, all frames; raw and gyro, both motion policies, both sampling modes.",
+  "replay_process_order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "replay_threads": 4,
+  "replay_rounds": {
+    "warmup": 1,
+    "measured": 3
+  },
+  "replay_scope": "Complete native automatic register windows on preloaded real scans, including begin, gate, worker dispatch, all ICP iterations, solve and finish/map insertion. Input loading, output and checks are outside clocks.",
+  "replay_summary": "Per case/mode/implementation median of six complete measured recording totals, then sum of case medians and candidate/baseline ratio. Preserve every recording and per-frame timing; include all subgroups and regressions.",
+  "validation": "Check every output pose and learned threshold against original reference bits and both binaries; iterations and termination must match. No trajectory tolerance can substitute for strict independent original-bit checks.",
+  "baseline_reuse": "Reuse the preserved PR315 candidate executables only after confirming every one of the 84 normalized source files, toolchain versions and original build commands match the new baseline. Retain the original receipts and executable bytes.",
+  "limitations": "One host, four Rayon workers, uncontrolled CPU placement/frequency. Native registration timing is not whole application throughput or GPU performance. No accuracy improvement is claimed.",
+  "private_probe_analysis_sha256": "4a5d0eda38c6f20f538742738e982b69766b92a19e9671948babb7c367c2ff82",
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "raw_bags_redistributed": false
+}

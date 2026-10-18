@@ -1,0 +1,9 @@
+{
+  "at_utc": "2026-10-18T06:41:13.737375+00:00",
+  "prior_attempt_integrity_sha256": "0412324f92bdf431f81f5d2cd8dcc6f76c0d5b8c04b51a376ec7451ee14142b0",
+  "prior_attempt_files": 481,
+  "prior_summary_sha256": "4a5d0eda38c6f20f538742738e982b69766b92a19e9671948babb7c367c2ff82",
+  "decision": "Pool entry before the first iteration still penalized legacy default timing. Keep the first iteration on the caller and migrate only when step says another iteration is needed, with the same size/policy and existing-pool guards.",
+  "selection": "All 16 original cases, both modes, same ABBA and warmup/recording summaries; adaptive development on reused data, no blind claim.",
+  "earlier_artifacts_rewritten": false
+}

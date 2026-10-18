@@ -15,6 +15,11 @@ use std::hash::{BuildHasherDefault, Hasher};
 #[path = "odometry_target_balance.rs"]
 pub(crate) mod target_balance;
 
+// Real fixed-state timing is opt-in and excluded from library builds.
+#[cfg(all(test, feature = "parallel"))]
+#[path = "odometry_profile.rs"]
+mod profile;
+
 /// A fast hash for voxel keys (FxHash's step): the map is looked up millions
 /// of times a scan, where the default hasher's resistance to attacks is not needed.
 #[derive(Default)]

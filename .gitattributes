@@ -142,3 +142,14 @@ benchmarks/slam/flatwall-target-balance/*.png binary
 benchmarks/slam/flatwall-balance-dynamics/** text eol=lf
 benchmarks/slam/flatwall-balance-dynamics/**/*.npz binary
 benchmarks/slam/flatwall-balance-dynamics/*.png binary
+benchmarks/slam/flatwall-balance-stages/** text eol=lf
+benchmarks/slam/flatwall-balance-stages/**/*.gz binary
+benchmarks/slam/flatwall-balance-stages/history/** binary
+benchmarks/slam/flatwall-balance-stages/*.log binary
+benchmarks/slam/flatwall-balance-stages/preflight.json binary
+rust/crates/ca-core/src/odometry_profile.rs text eol=lf
+scripts/prepare_flatwall_balance_stages.py text eol=lf
+scripts/run_flatwall_balance_stages.py text eol=lf
+scripts/flatwall_balance_stages.py text eol=lf
+scripts/analyze_flatwall_balance_stages.py text eol=lf
+cloudanalyzer/tests/test_flatwall_balance_stages_packet.py text eol=lf

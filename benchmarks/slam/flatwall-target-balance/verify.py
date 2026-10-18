@@ -109,7 +109,8 @@ def verify(folder=None):
         for name,digest in mapping.items():
             if sha(base/name)!=digest:raise ValueError('file hash differs: '+name)
     for name,digest in manifest['normalized_native_sources_sha256'].items():
-        if hashlib.sha256((root/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest()!=digest:raise ValueError('normalized native source differs')
+        source=manifest.get('native_source_aliases',{}).get(name,name)
+        if hashlib.sha256((root/source).read_bytes().replace(b'\r\n',b'\n')).hexdigest()!=digest:raise ValueError('normalized native source differs')
     source=root/'benchmarks/slam/flatwall02-prediction/verify.py'
     spec=importlib.util.spec_from_file_location('flatwall_target_reference_oracle',source)
     oracle=importlib.util.module_from_spec(spec);spec.loader.exec_module(oracle)

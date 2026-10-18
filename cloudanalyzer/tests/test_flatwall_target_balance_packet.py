@@ -20,7 +20,7 @@ def copy_packet(tmp_path):
     target=tmp_path/'checkout/benchmarks/slam/flatwall-target-balance'
     shutil.copytree(PACKET,target,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     manifest=packet.read(PACKET/'manifest.json')
-    for name in manifest['dependencies']|manifest['checkout_sources_sha256']|manifest['normalized_native_sources_sha256']:
+    for name in manifest['dependencies']|manifest['checkout_sources_sha256']|manifest['normalized_native_sources_sha256']|dict.fromkeys(manifest.get('native_source_aliases',{}).values()):
         destination=target.parents[2]/name;destination.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(ROOT/name,destination)
     return target
@@ -108,7 +108,10 @@ def test_changed_original_sample_bytes_are_detected(tmp_path):
 
 def test_native_checkout_newlines_do_not_change_source_identity(tmp_path):
     target=copy_packet(tmp_path)
-    for name in packet.read(target/'manifest.json')['normalized_native_sources_sha256']:
+    manifest=packet.read(target/'manifest.json')
+    aliases=manifest.get('native_source_aliases',{})
+    for name in manifest['normalized_native_sources_sha256']:
+        if name in aliases:continue  # Exact-byte archives are not development checkouts.
         path=target.parents[2]/name
         data=path.read_bytes().replace(b'\r\n',b'\n')
         path.write_bytes(data.replace(b'\n',b'\r\n'))
@@ -120,3 +123,10 @@ def test_native_source_content_changes_are_rejected(tmp_path):
     path=target.parents[2]/'rust/crates/ca-core/src/odometry_target_balance.rs'
     with path.open('ab') as f:f.write(b'\n// changed source content\n')
     with pytest.raises(ValueError,match='normalized native source'):packet.verify(target)
+
+
+def test_archived_executed_native_source_is_still_hash_checked(tmp_path):
+    target=copy_packet(tmp_path)
+    alias=packet.read(target/'manifest.json')['native_source_aliases']['rust/crates/ca-core/src/odometry.rs']
+    with (target.parents[2]/alias).open('ab') as stream:stream.write(b'\n// changed historical source\n')
+    with pytest.raises(ValueError,match='hash'):packet.verify(target)

@@ -1,0 +1,7 @@
+{
+  "binary_sha256": "20995083c2df4511137086fb1d940c1402f2b1ffca48e2ba4b271cc1dffe365c",
+  "binary_bytes": 8695296,
+  "source_inputs_sha256": "5fd324fc0e713f0b33a0960443030434883807d40aca2c122d12c48add331478",
+  "installed_extension_replaced": false,
+  "kind": "Separate release Rust test executable; run only odometry::profile::record_fixed_states with --exact --ignored --nocapture."
+}

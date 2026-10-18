@@ -1,0 +1,39 @@
+{
+  "original_freezes_unchanged": true,
+  "aliases": {
+    "scripts\\prepare_flatwall_balance_dynamics.py": {
+      "preserved_as": "notes/slam-flatwall-target-balance-dynamics-20261018/public-source-snapshot/scripts/prepare_flatwall_balance_dynamics.py",
+      "sha256": "92fed3296abe29da8f5f2b9efc27396d39920534d5d2e22e6e64c5646d1d1a68"
+    }
+  },
+  "public_history": {
+    "rust/crates/ca-core/src/odometry.rs": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs",
+      "sha256": "7fceb9f069e738388fc0fbca393eb2e7018779c3b02f4b11dc191c2538496fa6"
+    },
+    "benchmarks/slam/flatwall-target-balance/verify.py": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/benchmarks/slam/flatwall-target-balance/verify.py",
+      "sha256": "c1589acb436f7beab493e5cc4fe4e325ba8a72d16a615e4ec9f0e7e3126d39ab"
+    },
+    "benchmarks/slam/flatwall-target-balance/manifest.json": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/benchmarks/slam/flatwall-target-balance/manifest.json",
+      "sha256": "94cedbbe384ddf2e1c243daccc887fcea28cf76fe2b608f01bca0466c5f1d64f"
+    },
+    "benchmarks/slam/flatwall-balance-dynamics/source-footprints.json": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/benchmarks/slam/flatwall-balance-dynamics/source-footprints.json",
+      "sha256": "1ae007986cefa7bf26b2d113740a9cb1dd5f6a8267c5f38c0fc420b63a4011f7"
+    },
+    "benchmarks/slam/flatwall-balance-dynamics/manifest.json": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/benchmarks/slam/flatwall-balance-dynamics/manifest.json",
+      "sha256": "0d565c968791ddc393349b4df59ef86a2395f4c6036d38a1d75adeffcfcc0735"
+    },
+    "cloudanalyzer/tests/test_flatwall_target_balance_packet.py": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/cloudanalyzer/tests/test_flatwall_target_balance_packet.py",
+      "sha256": "a0b6374cd18e2ad0606c4740645e610b7f52833a26868a1c522436847b9067ab"
+    },
+    ".gitattributes": {
+      "preserved_as": "benchmarks/slam/flatwall-balance-stages/history/.gitattributes",
+      "sha256": "e590b13addc1dbe3376ae80bcdcfba6041ae2898464bca8b69b564e9ae2eb454"
+    }
+  }
+}

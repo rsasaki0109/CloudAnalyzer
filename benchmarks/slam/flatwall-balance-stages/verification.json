@@ -1,0 +1,34 @@
+{
+  "states": 64,
+  "eligible_states": 60,
+  "per_process": [
+    {
+      "states_checked": 64,
+      "ordered_pair_rows_checked": 32166,
+      "samples_checked": 384,
+      "maximum_decomposition_abs_error": 0.0
+    },
+    {
+      "states_checked": 64,
+      "ordered_pair_rows_checked": 32166,
+      "samples_checked": 384,
+      "maximum_decomposition_abs_error": 0.0
+    },
+    {
+      "states_checked": 64,
+      "ordered_pair_rows_checked": 32166,
+      "samples_checked": 384,
+      "maximum_decomposition_abs_error": 0.0
+    },
+    {
+      "states_checked": 64,
+      "ordered_pair_rows_checked": 32166,
+      "samples_checked": 384,
+      "maximum_decomposition_abs_error": 0.0
+    }
+  ],
+  "original_pair_and_H_b_checks": true,
+  "all_fixed_searches_exhaustive": true,
+  "timing_samples_not_filtered": true,
+  "batch_outputs_scope": "Independently check 64 untimed validation outputs per process. Timed batch last-result errors are native self-checks; individual inner-loop outputs are not retained."
+}

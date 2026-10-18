@@ -230,7 +230,7 @@
     "snapshot-catalog.json": "c90fdc9df71d12c2f690e7e177a3784e124221a6b2cbbd284e421b9be20058e6",
     "source-footprints.json": "4593ecd7ce67c3c745c9e8ad065d808d568c9822128c282ccda229be2b7dd7bd",
     "summary.json": "2e2a7845186b9badf2b2b104448d8fe9140960d25e546d911c69d3affb753f27",
-    "verify.py": "c1589acb436f7beab493e5cc4fe4e325ba8a72d16a615e4ec9f0e7e3126d39ab"
+    "verify.py": "3c421f1d8e1b68a3c8964b1e62973283f38e075644caa6ced571e66e473fdf6f"
   },
   "dependencies": {
     "benchmarks/slam/flatwall-frontend-constraints/raw-legacy/frames.jsonl": "f20ac0175831d5784f62671586dac6d4b75ee0bbb18430241d7d01111051d29d",
@@ -254,7 +254,8 @@
     "benchmarks/slam/flatwall02-prediction/last-pose/gyro-0.1875/frames.jsonl": "f50a66c06d00c95914d00bddf5be87a1f1fe1b0c3edcf2bbc920d1ebd0f45171",
     "benchmarks/slam/flatwall-prediction-policy/summary.json": "f7fd5576f3fa60633161cae74fb67075527c3dc58795e28ba87cd93312d91963",
     "benchmarks/slam/flatwall02-prediction/summary.json": "ba18d436a77cafb08ca617f9b1ab76a8e2d887a1b1183b046fbc92d8dba9edbd",
-    "benchmarks/slam/flatwall02-prediction/verify.py": "9f9748d7b55ea7126ef7b5e775856a1d51ae8a04d7125cd448c85932879f53dd"
+    "benchmarks/slam/flatwall02-prediction/verify.py": "9f9748d7b55ea7126ef7b5e775856a1d51ae8a04d7125cd448c85932879f53dd",
+    "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs": "7fceb9f069e738388fc0fbca393eb2e7018779c3b02f4b11dc191c2538496fa6"
   },
   "checkout_sources_sha256": {
     "scripts/audit_flatwall_target_balance.py": "117dba1df2cc5adc441508d0e860465805c31272987dd236af1eba732317dd1a",
@@ -384,5 +385,8 @@
     "rust/crates/ca-wasm/src/pose_graph.rs": "cf43d65ab90fedc2dd1fac21e5eb96fba45ab47e9a8ef93c8dffffd4c526d1c4",
     "rust/crates/ca-wasm/src/pose_graph_project_tests.rs": "049fa4eaf339cc64494a04c89117a52eebbbfc629a2fd47f73a8acb53392cf36",
     "rust/crates/ca-wasm/src/vector_map.rs": "60fe4f91460466fe5b3dd09409301e1b75754633ddcdf2defd5bea319b1d3611"
+  },
+  "native_source_aliases": {
+    "rust/crates/ca-core/src/odometry.rs": "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs"
   }
 }

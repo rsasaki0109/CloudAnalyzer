@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\flatwall_balance_stages.py", line 69, in expected
+    np.testing.assert_allclose(h,item['expected_h'],rtol=5e-12,atol=2e-8)
+  File "C:\Users\rsasa\AppData\Local\Programs\Python\Python312\Lib\site-packages\numpy\testing\_private\utils.py", line 1718, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "C:\Users\rsasa\AppData\Local\Programs\Python\Python312\Lib\site-packages\numpy\testing\_private\utils.py", line 926, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=5e-12, atol=2e-08
+
+Mismatched elements: 24 / 36 (66.7%)
+Max absolute difference among violations: 16.63935866
+Max relative difference among violations: inf
+ ACTUAL: array([[ 3.876906,  0.      ,  0.      ,  0.      , -7.485219,  0.745941],
+       [ 0.      ,  3.876906,  0.      ,  7.485219,  0.      , -0.511182],
+       [ 0.      ,  0.      ,  3.876906, -0.745941,  0.511182,  0.      ],...
+ DESIRED: array([[0., 0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0., 0.],
+       [0., 0., 0., 0., 0., 0.],...

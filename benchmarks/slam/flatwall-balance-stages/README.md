@@ -98,6 +98,14 @@ certificate. Historical native packets now resolve the changed odometry source t
 its exact original `history/` bytes; original manifests, verifier and receipts are
 also preserved. Future core work can retain these executed archives.
 
+The independent search dependency is checked with an LF-normalized source digest;
+its exact original CRLF bytes are retained in
+`original-source-flatwall-balance-dynamics.py` and bound to the analysis input
+receipt. Both LF and CRLF development checkouts must verify, while changes to
+either the code content or the original archive remain rejected. The first Linux
+CI failure exposed an earlier raw-checkout digest; its log and original head are
+retained privately. No measurement, native source or reported timing changes.
+
 Derived from `flatwall_01.bag` and `flatwall_02.bag`, Kenji Koide (AIST),
 [Zenodo record 7641866, version 2](https://zenodo.org/records/7641866),
 licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

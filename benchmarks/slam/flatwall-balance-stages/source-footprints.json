@@ -173,7 +173,11 @@
     "scripts/prepare_flatwall_balance_stages.py": "8417ac00fbebb35c1025888c1575ae3aa7cd7fb1e4e4862f91f74318b277772c",
     "scripts/run_flatwall_balance_stages.py": "6697063cd8cc29c89053693bffcdc726cee27696f57da9d96383e3af551e8b0f",
     "scripts/flatwall_balance_stages.py": "17e6246d7357cdce6c794834ae49956b11820e4e6a3a0e77bf8f5e93a9335a0c",
-    "scripts/analyze_flatwall_balance_stages.py": "97484e31fd0574c7e3f00ceba81b3525052a314678db9ccb3fecb765edc69537"
+    "scripts/analyze_flatwall_balance_stages.py": "97484e31fd0574c7e3f00ceba81b3525052a314678db9ccb3fecb765edc69537",
+    "scripts/flatwall_balance_dynamics.py": "8ed6a1cf2b2d4a4729dfefbb49f07b35237c4286c0c11845f9f13884be4516dd"
   },
-  "source_scope": "Executed sources, archived with LF normalization for portability. Raw build source identities and exact private archives remain unchanged. Future core changes need not match these historical source bytes."
+  "source_scope": "Executed sources, archived with LF normalization for portability. Raw build source identities and exact private archives remain unchanged. Future core changes need not match these historical source bytes.",
+  "raw_dependency_source_aliases": {
+    "scripts/flatwall_balance_dynamics.py": "benchmarks/slam/flatwall-balance-stages/original-source-flatwall-balance-dynamics.py"
+  }
 }

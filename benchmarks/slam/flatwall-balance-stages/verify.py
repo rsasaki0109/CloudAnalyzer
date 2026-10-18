@@ -71,6 +71,12 @@ def verify(folder=None):
     for name,digest in footprint['normalized_checkout_sources_sha256'].items():
         if hashlib.sha256((root/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest() != digest:
             raise ValueError('normalized diagnostic source differs')
+    analysis_inputs = read(folder/'analysis-invocation.json')['inputs_sha256']
+    for name,archive in footprint.get('raw_dependency_source_aliases',{}).items():
+        if sha(root/archive) != analysis_inputs[name]:
+            raise ValueError('original dependency source changed')
+        if (root/archive).read_bytes().replace(b'\r\n',b'\n') != (root/name).read_bytes().replace(b'\r\n',b'\n'):
+            raise ValueError('dependency source content differs')
     preservation = read(folder/'source-preservation.json')
     for original,item in preservation['public_history'].items():
         if sha(root/item['preserved_as']) != item['sha256']:

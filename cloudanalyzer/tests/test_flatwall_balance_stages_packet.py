@@ -17,6 +17,18 @@ spec.loader.exec_module(packet)
 independent = packet.load_independent(ROOT)
 
 
+def copy_packet(tmp_path):
+    target = tmp_path/'checkout/benchmarks/slam/flatwall-balance-stages'
+    shutil.copytree(PACKET,target,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+    manifest = packet.read(PACKET/'manifest.json')
+    footprint = packet.read(PACKET/'source-footprints.json')
+    for name in manifest['dependencies']|footprint['normalized_checkout_sources_sha256']:
+        destination = target.parents[2]/name
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(ROOT/name,destination)
+    return target
+
+
 @pytest.fixture(scope='module')
 def fixed_states():
     return independent.expected(ROOT,packet.read(PACKET/'origins.json'))
@@ -103,14 +115,8 @@ def test_fixed_selection_cannot_replace_an_empty_state():
 
 
 def test_resigned_executed_source_change_still_fails(tmp_path):
-    target = tmp_path/'checkout/benchmarks/slam/flatwall-balance-stages'
-    shutil.copytree(PACKET,target,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+    target = copy_packet(tmp_path)
     manifest = packet.read(PACKET/'manifest.json')
-    footprint = packet.read(PACKET/'source-footprints.json')
-    for name in manifest['dependencies']|footprint['normalized_checkout_sources_sha256']:
-        destination = target.parents[2]/name
-        destination.parent.mkdir(parents=True,exist_ok=True)
-        shutil.copyfile(ROOT/name,destination)
     changed = target/'executed-source/rust/crates/ca-core/src/odometry_profile.rs'
     with changed.open('ab') as stream:
         stream.write(b'\n// changed executed profiling arithmetic\n')
@@ -118,4 +124,27 @@ def test_resigned_executed_source_change_still_fails(tmp_path):
     manifest['files_sha256'][name] = packet.sha(changed)
     (target/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     with pytest.raises(ValueError,match='normalized executed source'):
+        packet.verify(target)
+
+
+@pytest.mark.parametrize('crlf',[False,True])
+def test_search_dependency_checkout_line_endings_preserve_identity(tmp_path,crlf):
+    target = copy_packet(tmp_path)
+    source = target.parents[2]/'scripts/flatwall_balance_dynamics.py'
+    data = source.read_bytes().replace(b'\r\n',b'\n')
+    source.write_bytes(data.replace(b'\n',b'\r\n') if crlf else data)
+    assert packet.verify(target)['ordered_pair_rows_checked'] == 128664
+
+
+@pytest.mark.parametrize('archive',[False,True])
+def test_search_dependency_content_changes_are_rejected(tmp_path,archive):
+    target = copy_packet(tmp_path)
+    source = target/'original-source-flatwall-balance-dynamics.py' if archive else target.parents[2]/'scripts/flatwall_balance_dynamics.py'
+    with source.open('ab') as stream:
+        stream.write(b'\n# changed dependency source\n')
+    if archive:
+        manifest = packet.read(target/'manifest.json')
+        manifest['files_sha256'][source.name] = packet.sha(source)
+        (target/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
+    with pytest.raises(ValueError,match='original dependency source' if archive else 'normalized diagnostic source'):
         packet.verify(target)

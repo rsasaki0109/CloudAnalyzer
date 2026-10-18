@@ -110,7 +110,7 @@
     "prepared-input.json": "0d978eb9b970305e8f9b5f21712a42e320e2a686c6d6368d45d93dae021c61e5",
     "prepared-receipt.json": "9691c36b45d7e9f0dde39a02c64b634b3b3770920f9b74fa34e84acaa70482ac",
     "protocol.json": "141d5e16a8b10183b8d30d56614234a8eb2e280f94a28ae6ac6f3f2660f561ef",
-    "README.md": "3f036d98008545e7720acc5daaea6bb05a1812321471485592428d446d0d6622",
+    "README.md": "0ff605373876b06755a8a001164a36a7df64ec04e66e2ddbc3e798c4cc0f5c00",
     "run-00-threads-1.json.gz": "e2662e269d15079c3e56c9ecde0cafc8a4be1631c82c0e258e083d8e046a5ca1",
     "run-00.log": "f62b153103c9f7e85266bd42079d506f6b7f0a9980c13840e62aebb71077cac6",
     "run-01-threads-4.json.gz": "454765869911faa0d3eda6fc17829be40bdd46d00f5f3baf3726a1a23764f8e9",
@@ -119,16 +119,17 @@
     "run-02.log": "30ea5610aa07799d3c47bf3b998081def072715b336210ded8ed48b0f53bcbd3",
     "run-03-threads-1.json.gz": "35e95c21be1858f3526c53ec289a532f07dfd9b21c4359824353b9c37ab19f84",
     "run-03.log": "d621368c37f59fe36682c0594d4942dd637708ba1fe968426958b8f10dcad6ca",
-    "source-footprints.json": "05c09c70de1ca34aab825be5e822df3b39ed20bc335f58cf51db9ec5d1f34894",
+    "source-footprints.json": "7c3f7f3caba6e2e79dad32730b31b05fbac3c0ab7340020866dc6af910da9dab",
     "source-preservation.json": "857d9be5f5eec44bff26890596a2a96a97c3ba6ea6fe899560248070dd843dbc",
     "summary.json": "7342f2d500afe034d9d5939e9b5342857e3e871308b0dead1c7191d1bdc014a0",
     "timing-freeze.json": "7103749069ed9fc730322d02df317eb854490a5a8203f21dcc3a34cc13df77d6",
     "timing-invocation.json": "062170f38d4d9b486d0c21da49c1851106d1e6fb122d6dffc95dd46346d3eb98",
     "timing-receipt.json": "7dfcbf8597c1a5d95b898bc0a5e093ddd9c4b6e88959f1eb1cacbe9f773c3d71",
     "verification.json": "5a8478663e9a6cc10028a862e274ddc4f4444e8c24c0e6aa65dd1035eada6fcd",
-    "verify.py": "8039131a5b7a160244c95e9ccc09413504dd21c8573f175ee103c4606c31fe6d",
+    "verify.py": "3422437ec089c53b3022d6d3c923a84d75ab4f02f0c2713c788f7a7b03c27f48",
     "history/benchmarks/slam/flatwall-balance-dynamics/manifest.json": "0d565c968791ddc393349b4df59ef86a2395f4c6036d38a1d75adeffcfcc0735",
-    "history/benchmarks/slam/flatwall-target-balance/manifest.json": "94cedbbe384ddf2e1c243daccc887fcea28cf76fe2b608f01bca0466c5f1d64f"
+    "history/benchmarks/slam/flatwall-target-balance/manifest.json": "94cedbbe384ddf2e1c243daccc887fcea28cf76fe2b608f01bca0466c5f1d64f",
+    "original-source-flatwall-balance-dynamics.py": "b78fb09746d2a2d48dfacae7415c125e33c68f96c04c0833f47f35d6012b672e"
   },
   "dependencies": {
     "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/raw-legacy/scan-002.json": "ea7adc00aadda7c121e7f87d9b3ab5df7fef61312da0a80c26e0560840ed4be4",
@@ -237,7 +238,6 @@
     "benchmarks/slam/flatwall-balance-dynamics/flatwall_02/repeat-motion/gyro-0.1875/scan-051.npz": "751c8f4075de68300a094d0dad076acacebe200dbc5f3ecfb061c7d4fa58f44d",
     "benchmarks/slam/flatwall-target-balance/snapshot-catalog.json": "c90fdc9df71d12c2f690e7e177a3784e124221a6b2cbbd284e421b9be20058e6",
     "benchmarks/slam/flatwall-balance-dynamics/summary.json": "41953447e131826448976c8372b07b8365f0e440c6cd34fd76db42e171c54aef",
-    "scripts/flatwall_balance_dynamics.py": "b78fb09746d2a2d48dfacae7415c125e33c68f96c04c0833f47f35d6012b672e",
     "benchmarks/slam/flatwall-balance-dynamics/native-build-inputs.json": "100955f45607f241598636b1c5da1fab454adb4c82eecd3f6a3cfbbf105218ee"
   }
 }

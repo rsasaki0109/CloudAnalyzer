@@ -1,0 +1,35 @@
+{
+  "schema": "cloudanalyzer.flatwall_balance_stages.v1",
+  "frozen_at_utc": "2026-10-18T02:21:20.837940+00:00",
+  "base_commit": "7d5be708ea12c2d135020e22f789f866cf89c966",
+  "states": 64,
+  "selection": "All 48 public final states from the frozen balance trial, then steps 0 and 499 of all eight capped traces; no replacements.",
+  "process_thread_order": [
+    1,
+    4,
+    4,
+    1
+  ],
+  "warmup_rounds": 1,
+  "measured_rounds": 5,
+  "evaluations_per_sample": 32,
+  "method_order": "Rotate fused baseline, whole balanced, decomposed balanced by round plus state index.",
+  "stage_names": [
+    "search_ns",
+    "count_ns",
+    "accumulate_ns",
+    "destroy_ns"
+  ],
+  "timing_scope": "One fixed-state H/b construction only; reuse immutable source/map/pose/threshold/kernel. Native Instant clocks, within the requested local Rayon pool.",
+  "stage_scope": "Search includes transform/native 27-cell matching/ordered pair collection. Count includes temporary targets, exact multiplicities and count vector. Accumulate includes robust weights, J, H/b and parallel reduction. Destroy includes pair/count destruction.",
+  "timer_overhead": "Decomposition adds four per-evaluation clocks and stage boundaries; retain outer staged time and compare separately with whole balanced. Do not subtract overhead or infer whole-registration savings.",
+  "excluded": "Map reconstruction, state loading, validation, JSON, source hashing, builds, bag decoding, deskew, sampling, solve, insertion, UI and GPU.",
+  "validation": "Compare native/decomposed H/b, independently replay all fixed searches/counts/matrices, bind original final and attempted systems. Original sorted final maps are restored in stored order; require ordered target-coordinate parity.",
+  "source_scope": "All local ca-core src/*.rs and Cargo configurations are inventoried. Test fixtures, toolchain and dependencies are not a hermetic rebuild certificate.",
+  "prepared_receipt_sha256": "083c535266daa55d233313533058f5aa36869dd674cc3de580f0efd5b4fd8d30",
+  "production_arithmetic_changed": false,
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "reference_poses_read": false,
+  "throughput_claim": false
+}

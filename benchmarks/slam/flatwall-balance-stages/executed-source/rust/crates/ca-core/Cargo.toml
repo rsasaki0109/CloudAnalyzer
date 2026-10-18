@@ -1,0 +1,34 @@
+[package]
+name = "ca-core"
+description = "Point cloud I/O and analysis core for CloudAnalyzer Web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+# CloudCompare parity fixtures are for this repository's tests only.
+exclude = ["tests/cloudcompare"]
+
+[dependencies]
+# 2D Delaunay (sweep-hull, ~700 lines) with exact orientation predicates
+# from `robust`; both pure Rust, no other dependencies.
+delaunator = "1.1.0"
+e57 = { version = "0.11.13", default-features = false }
+laz = { version = "0.13.0", default-features = false }
+rayon = { version = "1.12.0", optional = true }
+# rosbag2's SQLite storage (native builds only; SQLite is bundled).
+rusqlite = { version = "0.40", default-features = false, features = ["bundled"], optional = true }
+thiserror = "2.0.21"
+# ROS bags: the chunk compressions, all pure Rust so that they build for the web too.
+bzip2 = "0.6"
+lz4_flex = "0.14"
+ruzstd = "0.9"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }
+
+[features]
+# Multi-threaded variants of the heavy queries (native builds only; WASM
+# uses its own worker pool).
+parallel = ["dep:rayon"]
+# rosbag2 SQLite recordings (`.db3` files and folders).
+sqlite = ["dep:rusqlite"]

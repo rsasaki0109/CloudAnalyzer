@@ -1,0 +1,43 @@
+{
+  "schema": "cloudanalyzer.flatwall_balance_stages.v1",
+  "frozen_at_utc": "2026-10-18T02:28:47.899198+00:00",
+  "base_commit": "7d5be708ea12c2d135020e22f789f866cf89c966",
+  "states": 64,
+  "selection": "All 48 public final states from the frozen balance trial, then steps 0 and 499 of all eight capped traces; no replacements.",
+  "process_thread_order": [
+    1,
+    4,
+    4,
+    1
+  ],
+  "warmup_rounds": 1,
+  "measured_rounds": 5,
+  "evaluations_per_sample": 32,
+  "method_order": "Rotate fused baseline, whole balanced, decomposed balanced by round plus state index.",
+  "stage_names": [
+    "search_ns",
+    "count_ns",
+    "accumulate_ns",
+    "destroy_ns"
+  ],
+  "timing_scope": "One fixed-state H/b construction only; reuse immutable source/map/pose/threshold/kernel. Native Instant clocks, within the requested local Rayon pool.",
+  "stage_scope": "Search includes transform/native 27-cell matching/ordered pair collection. Count includes temporary targets, exact multiplicities and count vector. Accumulate includes robust weights, J, H/b and parallel reduction. Destroy includes pair/count destruction.",
+  "timer_overhead": "Decomposition adds four per-evaluation clocks and stage boundaries; retain outer staged time and compare separately with whole balanced. Do not subtract overhead or infer whole-registration savings.",
+  "excluded": "Map reconstruction, state loading, validation, JSON, source hashing, builds, bag decoding, deskew, sampling, solve, insertion, UI and GPU.",
+  "validation": "Compare native/decomposed H/b, independently replay all fixed searches/counts/matrices, bind original final and attempted systems. Original sorted final maps are restored in stored order; require ordered target-coordinate parity.",
+  "source_scope": "All recursive local ca-core Rust sources and Cargo configurations; original build ledger plus supplement. Not a hermetic rebuild certificate.",
+  "prepared_receipt_sha256": "9691c36b45d7e9f0dde39a02c64b634b3b3770920f9b74fa34e84acaa70482ac",
+  "production_arithmetic_changed": false,
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "reference_poses_read": false,
+  "throughput_claim": false,
+  "prepared_directory": "prepared-02",
+  "eligible_states": 60,
+  "insufficient_point_controls": 4,
+  "original_preparation_preserved": true,
+  "initial_preflight_failure_preserved": true,
+  "native_executable_rebuilt_after_correction": false,
+  "correction": "Four original final snapshots retain 8 or 9 thinned diagnostic points but native begin uses an empty registration source below 10. Prepared-02 mirrors that original dispatch; no sample is replaced. Keep their empty-source timings separate from the 60 eligible-state aggregate.",
+  "earlier_protocol_sha256": "11ee87867048e735d66cec41ce93f6c8f44681274daba45a16d06b968adb3d63"
+}

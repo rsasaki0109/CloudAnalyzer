@@ -1,0 +1,9 @@
+{
+  "original_prepared_receipt_sha256": "083c535266daa55d233313533058f5aa36869dd674cc3de580f0efd5b4fd8d30",
+  "corrected_prepared_receipt_sha256": "9691c36b45d7e9f0dde39a02c64b634b3b3770920f9b74fa34e84acaa70482ac",
+  "failed_preflight_sha256": "932c610c92ecea6d624bc3afddf83ff8a4fac753de019a384e45ecd8a509dcc2",
+  "correction_before_first_timing": true,
+  "native_executable_changed": false,
+  "original_artifacts_rewritten": false,
+  "reason": "Preserve four insufficient-points frames as the original empty registration source; their diagnostic thinned arrays are not the ICP source. No state is replaced."
+}

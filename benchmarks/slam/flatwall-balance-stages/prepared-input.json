@@ -1,0 +1,392 @@
+{
+  "schema": "cloudanalyzer.odometry_fixed_states.v1",
+  "repetitions": 32,
+  "warmup_rounds": 1,
+  "measured_rounds": 5,
+  "states": [
+    {
+      "name": "flatwall_01/repeat-motion/raw-legacy/scan-002/final",
+      "file": "state-000.f64",
+      "source_points": 32,
+      "map_points": 203
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-legacy/scan-002/final",
+      "file": "state-001.f64",
+      "source_points": 32,
+      "map_points": 206
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-0.1875/scan-002/final",
+      "file": "state-002.f64",
+      "source_points": 1063,
+      "map_points": 203
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-002/final",
+      "file": "state-003.f64",
+      "source_points": 1056,
+      "map_points": 206
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-legacy/scan-002/final",
+      "file": "state-004.f64",
+      "source_points": 32,
+      "map_points": 203
+    },
+    {
+      "name": "flatwall_01/last-pose/gyro-legacy/scan-002/final",
+      "file": "state-005.f64",
+      "source_points": 32,
+      "map_points": 206
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-0.1875/scan-002/final",
+      "file": "state-006.f64",
+      "source_points": 1063,
+      "map_points": 203
+    },
+    {
+      "name": "flatwall_01/last-pose/gyro-0.1875/scan-002/final",
+      "file": "state-007.f64",
+      "source_points": 1056,
+      "map_points": 206
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-legacy/scan-093/final",
+      "file": "state-008.f64",
+      "source_points": 0,
+      "map_points": 1461
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-legacy/scan-093/final",
+      "file": "state-009.f64",
+      "source_points": 0,
+      "map_points": 1600
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-0.1875/scan-093/final",
+      "file": "state-010.f64",
+      "source_points": 353,
+      "map_points": 1424
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-093/final",
+      "file": "state-011.f64",
+      "source_points": 343,
+      "map_points": 1418
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-legacy/scan-093/final",
+      "file": "state-012.f64",
+      "source_points": 0,
+      "map_points": 1406
+    },
+    {
+      "name": "flatwall_01/last-pose/gyro-legacy/scan-093/final",
+      "file": "state-013.f64",
+      "source_points": 0,
+      "map_points": 1426
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-0.1875/scan-093/final",
+      "file": "state-014.f64",
+      "source_points": 353,
+      "map_points": 1415
+    },
+    {
+      "name": "flatwall_01/last-pose/gyro-0.1875/scan-093/final",
+      "file": "state-015.f64",
+      "source_points": 343,
+      "map_points": 1421
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-legacy/scan-185/final",
+      "file": "state-016.f64",
+      "source_points": 26,
+      "map_points": 5322
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-legacy/scan-185/final",
+      "file": "state-017.f64",
+      "source_points": 25,
+      "map_points": 5726
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-0.1875/scan-185/final",
+      "file": "state-018.f64",
+      "source_points": 989,
+      "map_points": 4617
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-185/final",
+      "file": "state-019.f64",
+      "source_points": 983,
+      "map_points": 4613
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-legacy/scan-185/final",
+      "file": "state-020.f64",
+      "source_points": 26,
+      "map_points": 4696
+    },
+    {
+      "name": "flatwall_01/last-pose/gyro-legacy/scan-185/final",
+      "file": "state-021.f64",
+      "source_points": 25,
+      "map_points": 4725
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-0.1875/scan-185/final",
+      "file": "state-022.f64",
+      "source_points": 989,
+      "map_points": 4594
+    },
+    {
+      "name": "flatwall_01/last-pose/gyro-0.1875/scan-185/final",
+      "file": "state-023.f64",
+      "source_points": 983,
+      "map_points": 4576
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-legacy/scan-002/final",
+      "file": "state-024.f64",
+      "source_points": 27,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-legacy/scan-002/final",
+      "file": "state-025.f64",
+      "source_points": 27,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-002/final",
+      "file": "state-026.f64",
+      "source_points": 960,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-002/final",
+      "file": "state-027.f64",
+      "source_points": 960,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/last-pose/raw-legacy/scan-002/final",
+      "file": "state-028.f64",
+      "source_points": 27,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/last-pose/gyro-legacy/scan-002/final",
+      "file": "state-029.f64",
+      "source_points": 27,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/last-pose/raw-0.1875/scan-002/final",
+      "file": "state-030.f64",
+      "source_points": 960,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/last-pose/gyro-0.1875/scan-002/final",
+      "file": "state-031.f64",
+      "source_points": 960,
+      "map_points": 183
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-legacy/scan-068/final",
+      "file": "state-032.f64",
+      "source_points": 13,
+      "map_points": 1499
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-legacy/scan-068/final",
+      "file": "state-033.f64",
+      "source_points": 14,
+      "map_points": 1878
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-068/final",
+      "file": "state-034.f64",
+      "source_points": 454,
+      "map_points": 1123
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-068/final",
+      "file": "state-035.f64",
+      "source_points": 453,
+      "map_points": 1090
+    },
+    {
+      "name": "flatwall_02/last-pose/raw-legacy/scan-068/final",
+      "file": "state-036.f64",
+      "source_points": 13,
+      "map_points": 1142
+    },
+    {
+      "name": "flatwall_02/last-pose/gyro-legacy/scan-068/final",
+      "file": "state-037.f64",
+      "source_points": 14,
+      "map_points": 1147
+    },
+    {
+      "name": "flatwall_02/last-pose/raw-0.1875/scan-068/final",
+      "file": "state-038.f64",
+      "source_points": 454,
+      "map_points": 1095
+    },
+    {
+      "name": "flatwall_02/last-pose/gyro-0.1875/scan-068/final",
+      "file": "state-039.f64",
+      "source_points": 453,
+      "map_points": 1133
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-legacy/scan-135/final",
+      "file": "state-040.f64",
+      "source_points": 32,
+      "map_points": 3769
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-legacy/scan-135/final",
+      "file": "state-041.f64",
+      "source_points": 32,
+      "map_points": 3242
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-135/final",
+      "file": "state-042.f64",
+      "source_points": 1109,
+      "map_points": 2280
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-135/final",
+      "file": "state-043.f64",
+      "source_points": 1080,
+      "map_points": 2462
+    },
+    {
+      "name": "flatwall_02/last-pose/raw-legacy/scan-135/final",
+      "file": "state-044.f64",
+      "source_points": 32,
+      "map_points": 2484
+    },
+    {
+      "name": "flatwall_02/last-pose/gyro-legacy/scan-135/final",
+      "file": "state-045.f64",
+      "source_points": 32,
+      "map_points": 2620
+    },
+    {
+      "name": "flatwall_02/last-pose/raw-0.1875/scan-135/final",
+      "file": "state-046.f64",
+      "source_points": 1109,
+      "map_points": 2532
+    },
+    {
+      "name": "flatwall_02/last-pose/gyro-0.1875/scan-135/final",
+      "file": "state-047.f64",
+      "source_points": 1080,
+      "map_points": 2643
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-0.1875/scan-185/step-0000",
+      "file": "state-048.f64",
+      "source_points": 989,
+      "map_points": 4617
+    },
+    {
+      "name": "flatwall_01/repeat-motion/raw-0.1875/scan-185/step-0499",
+      "file": "state-049.f64",
+      "source_points": 989,
+      "map_points": 4617
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-053/step-0000",
+      "file": "state-050.f64",
+      "source_points": 587,
+      "map_points": 1246
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-053/step-0499",
+      "file": "state-051.f64",
+      "source_points": 587,
+      "map_points": 1246
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-132/step-0000",
+      "file": "state-052.f64",
+      "source_points": 428,
+      "map_points": 1489
+    },
+    {
+      "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-132/step-0499",
+      "file": "state-053.f64",
+      "source_points": 428,
+      "map_points": 1489
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-0.1875/scan-025/step-0000",
+      "file": "state-054.f64",
+      "source_points": 987,
+      "map_points": 1160
+    },
+    {
+      "name": "flatwall_01/last-pose/raw-0.1875/scan-025/step-0499",
+      "file": "state-055.f64",
+      "source_points": 987,
+      "map_points": 1160
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-070/step-0000",
+      "file": "state-056.f64",
+      "source_points": 527,
+      "map_points": 1136
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-070/step-0499",
+      "file": "state-057.f64",
+      "source_points": 527,
+      "map_points": 1136
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-090/step-0000",
+      "file": "state-058.f64",
+      "source_points": 1548,
+      "map_points": 1802
+    },
+    {
+      "name": "flatwall_02/repeat-motion/raw-0.1875/scan-090/step-0499",
+      "file": "state-059.f64",
+      "source_points": 1548,
+      "map_points": 1802
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-022/step-0000",
+      "file": "state-060.f64",
+      "source_points": 675,
+      "map_points": 1013
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-022/step-0499",
+      "file": "state-061.f64",
+      "source_points": 675,
+      "map_points": 1013
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-051/step-0000",
+      "file": "state-062.f64",
+      "source_points": 279,
+      "map_points": 1065
+    },
+    {
+      "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-051/step-0499",
+      "file": "state-063.f64",
+      "source_points": 279,
+      "map_points": 1065
+    }
+  ]
+}

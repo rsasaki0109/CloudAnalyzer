@@ -1,0 +1,10 @@
+{
+  "controller_sha256": "b9a7a5620c6f0c40a5fff3ebbdaceae5ec65a2965b9342609bf52823288e5337",
+  "baseline_source_sha256": "306bf11fc1d42e6a1a76e764e9842920952f8469e9a2272bf0443e9330152d8c",
+  "candidate_source_sha256": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+  "only_allocation_capacities_changed": true,
+  "coordinate_keys_counts_order_and_arithmetic_identical": true,
+  "all_other_source_identical": true,
+  "upper_bound": "One distinct coordinate at most per input item; no empirical capacity threshold.",
+  "tradeoff": "Reserving for the upper bound can retain more unused capacity on duplicate-heavy inputs. This is an allocation/time tradeoff; no peak-memory improvement is claimed."
+}

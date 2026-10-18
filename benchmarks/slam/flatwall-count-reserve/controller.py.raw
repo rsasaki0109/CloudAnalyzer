@@ -1,0 +1,283 @@
+"""Freeze and compare a per-query voxel-face bound reuse on real recordings."""
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+STUDY = ROOT/'notes/slam-count-reserve-20261018'
+PREVIOUS = ROOT/'notes/slam-face-gaps-20261018'
+BASE = '7a95da1c16d6770fb5feee47bee3bc85c304ce15'
+ODOMETRY = 'rust/crates/ca-core/src/odometry_target_balance.rs'
+REPLAY = ROOT/'notes/slam-flatwall-target-balance-dynamics-20261018/prepared-01/input.json'
+FIXED = ROOT/'notes/slam-flatwall-balance-stages-20261018/prepared-02/input.json'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8-sig'))
+
+
+def save(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+
+
+def copy(source, destination):
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with destination.open('xb') as stream:
+        stream.write(source.read_bytes())
+
+
+def check(mapping):
+    def one(item):
+        name, digest = item
+        assert sha(ROOT/name) == digest, name
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for _ in pool.map(one, mapping.items()):
+            pass
+
+
+def setup():
+    assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip() == BASE
+    assert not subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip()
+    STUDY.mkdir()
+    preserved, ledgers, exceptions = {}, {}, {}
+    for name in ['merge-integrity-inputs.json', 'merge-final-integrity-inputs.json']:
+        path = PREVIOUS/name
+        ledger = read(path)
+        ledgers[name] = dict(sha256=sha(path), files=len(ledger))
+        for key, digest in ledger.items():
+            if key in preserved:
+                assert preserved[key] == digest, key
+            preserved[key] = digest
+        preserved[path.relative_to(ROOT).as_posix()] = sha(path)
+    # Git's checkout changed only the line endings of this previously sealed file.
+    key = '.gitattributes'
+    if key in preserved and sha(ROOT/key) != preserved[key]:
+        archived = PREVIOUS/'public-source-snapshot'/key
+        assert sha(archived) == preserved[key]
+        assert archived.read_bytes().replace(b'\r\n', b'\n') == (ROOT/key).read_bytes().replace(b'\r\n', b'\n')
+        exceptions[key] = dict(expected_sha256=preserved.pop(key), archive=archived.relative_to(ROOT).as_posix(),
+            reason='Verified checkout-only CRLF/LF difference; preserve the exact original bytes in their existing archive.')
+        preserved[archived.relative_to(ROOT).as_posix()] = sha(archived)
+    for path in [PREVIOUS/'completion.json', PREVIOUS/'publication.json']:
+        preserved[path.relative_to(ROOT).as_posix()] = sha(path)
+    check(preserved)
+    replay = read(PREVIOUS/'initial-preservation.json')['real_replay_inputs_sha256']
+    fixed = {p.relative_to(ROOT).as_posix():sha(p) for p in sorted(FIXED.parent.iterdir()) if p.is_file()}
+    check(replay | fixed)
+    save(STUDY/'prior-integrity.json', preserved)
+    save(STUDY/'initial-preservation.json', dict(base=BASE, previous_ledgers=ledgers,
+        previous_completion_sha256=sha(PREVIOUS/'completion.json'), preserved_files=len(preserved),
+        prior_integrity_sha256=sha(STUDY/'prior-integrity.json'), checkout_exceptions=exceptions,
+        real_replay_inputs_sha256=replay, fixed_state_inputs_sha256=fixed,
+        original_native_source_sha256=sha(ROOT/ODOMETRY), originals_will_not_be_rewritten=True))
+    save(STUDY/'protocol.json', dict(schema='cloudanalyzer.target_count_reserve.v1', base=BASE,
+        frozen_at_utc=datetime.now(timezone.utc).isoformat(),
+        candidate='Reserve the coordinate-count hash table and dense frequency vector for at most one unique key per accepted pair before counting. Preserve the exact key, one-entry lookup, dense IDs, counts, ordering and arithmetic; remove repeated growth and rehashing.',
+        invariants='Same voxel divisions, floor/casts, strict comparisons, center-first dx/dy/dz traversal, point order, nearest distance arithmetic, thresholds, exact target counts, weights, H/b chunks/reduction, solver, stopping, map updates, dispatch and defaults.',
+        selection='All 16 previous real recording cases in default and balanced modes: both recordings, both motion policies, raw and gyro, legacy and fine sampling. Reused development data; no blind holdout.',
+        replay_process_order=['baseline', 'candidate', 'candidate', 'baseline'], replay_threads=4,
+        replay_rounds=dict(warmup=1, measured=3),
+        replay_scope='Complete native automatic register calls on preloaded scans; input loading, checks and serialization excluded.',
+        replay_summary='Per case/mode/implementation median of six complete measured recording totals, then sum of case medians and candidate/baseline ratio. Retain all per-frame clocks, warmups, samples and regressions.',
+        fixed_process_order=[dict(implementation=i, threads=t) for t in [1, 4]
+            for i in ['baseline', 'candidate', 'candidate', 'baseline']],
+        fixed_scope='64 frozen real states (60 eligible plus 4 empty), 32 repetitions, one warmup and five measured blocks per process; report all stage and whole-H/b clocks.',
+        validation='Strict original trajectory pose/threshold bits and termination/iteration equality; strict baseline/candidate complete numeric frame equality. All fixed-state pair rows and matrices checked against independent originals; strict cross-binary fixed-state validation bits.',
+        builds='Reuse the preserved PR317 candidate binaries only after verifying all 84 native sources against current main, the same toolchain and commands. Preserve original inputs, build logs and receipts. Build the new candidate from a fresh snapshot.',
+        limitations='Single host, uncontrolled CPU placement/frequency. No GPU, whole-application or accuracy gain established.',
+        defaults_changed=False, installed_extension_replaced=False, raw_bags_redistributed=False))
+    print(json.dumps(dict(setup=True, preserved_files=len(preserved))), flush=True)
+
+
+def build(implementation):
+    assert implementation in ['baseline', 'candidate']
+    out = STUDY/('build-'+implementation)
+    out.mkdir()
+    paths = sorted((ROOT/'rust/crates/ca-core/src').rglob('*.rs'))
+    paths += [ROOT/p for p in ['rust/Cargo.toml', 'rust/Cargo.lock',
+        'rust/crates/ca-core/Cargo.toml', 'rust/crates/ca-core/examples/audit_odometry_steps.rs']]
+    assert len(paths) == 84
+    sources = {}
+    for path in paths:
+        name = path.relative_to(ROOT).as_posix()
+        raw = path.read_bytes()
+        sources[name] = dict(sha256=hashlib.sha256(raw).hexdigest(),
+            normalized_sha256=hashlib.sha256(raw.replace(b'\r\n', b'\n')).hexdigest())
+        copy(path, out/'source'/name)
+        if implementation == 'baseline':
+            original = subprocess.check_output(['git', 'show', BASE+':'+name], cwd=ROOT)
+            assert original.replace(b'\r\n', b'\n') == raw.replace(b'\r\n', b'\n'), name
+    if implementation == 'candidate':
+        old = read(STUDY/'build-baseline/inputs.json')['sources']
+        assert [name for name in sources if sources[name]['normalized_sha256'] != old[name]['normalized_sha256']] == [ODOMETRY]
+    env = dict(os.environ, PATH=str(Path.home()/'.cargo/bin')+os.pathsep+os.environ['PATH'])
+    cargo = str(Path.home()/'.cargo/bin/cargo.exe')
+    common = ['--release', '--offline', '--manifest-path', 'rust/Cargo.toml', '-p', 'ca-core',
+        '--features', 'parallel', '--message-format=json']
+    commands = [['build', *common, '--example', 'audit_odometry_steps'], ['test', *common, '--lib', '--no-run']]
+    versions = {name:subprocess.check_output([str(Path.home()/'.cargo/bin'/(name+'.exe')), '--version'],
+        cwd=ROOT, env=env, text=True).strip() for name in ['cargo', 'rustc']}
+    save(out/'inputs.json', dict(implementation=implementation, sources=sources, commands=commands,
+        versions=versions, protocol_sha256=sha(STUDY/'protocol.json'), controller_sha256=sha(Path(__file__))))
+    artifacts = {}
+    if implementation == 'baseline':
+        original = PREVIOUS/'build-candidate'
+        old = read(original/'inputs.json')
+        assert old['commands'] == commands and old['versions'] == versions
+        assert set(old['sources']) == set(sources)
+        for name, item in sources.items():
+            assert item['normalized_sha256'] == old['sources'][name]['normalized_sha256'], name
+            assert sha(original/'source'/name) == old['sources'][name]['sha256'], name
+        receipt = read(original/'receipt.json')
+        assert receipt['inputs_sha256'] == sha(original/'inputs.json')
+        for name, item in receipt['artifacts'].items():
+            assert sha(original/name) == item['sha256'], name
+            copy(original/name, out/name)
+        for name in ['inputs.json', 'receipt.json', 'build-00.log', 'build-01.log', 'messages-00.jsonl', 'messages-01.jsonl']:
+            copy(original/name, out/'original-build'/name)
+        for name in ['build-00.log', 'build-01.log', 'messages-00.jsonl', 'messages-01.jsonl']:
+            copy(original/name, out/name)
+        save(out/'receipt.json', dict(implementation=implementation, artifacts=receipt['artifacts'],
+            inputs_sha256=sha(out/'inputs.json'), sources_checked=84, reused_preserved_executables=True,
+            original_inputs_sha256=sha(original/'inputs.json'), original_receipt_sha256=sha(original/'receipt.json'),
+            installed_extension_replaced=False))
+        print(json.dumps(dict(baseline_reused=True, verified_sources=84)), flush=True)
+        return
+    for index, command in enumerate(commands):
+        with (out/f'messages-{index:02}.jsonl').open('xb') as stdout, (out/f'build-{index:02}.log').open('xb') as stderr:
+            result = subprocess.run([cargo, *command], cwd=ROOT, env=env, stdout=stdout, stderr=stderr)
+        assert result.returncode == 0, (out/f'build-{index:02}.log').read_text(errors='replace')[-5000:]
+        messages = [json.loads(line) for line in (out/f'messages-{index:02}.jsonl').read_text().splitlines()]
+        selected = [Path(item['executable']) for item in messages if item.get('reason') == 'compiler-artifact'
+            and item.get('executable') and ((index == 0 and item['target']['name'] == 'audit_odometry_steps')
+            or (index == 1 and item['target']['name'] == 'ca_core' and item['profile']['test']))]
+        assert len(selected) == 1
+        name = 'audit_odometry_steps.exe' if index == 0 else 'odometry-stage-profile.exe'
+        copy(selected[0], out/name)
+        artifacts[name] = dict(sha256=sha(out/name), bytes=(out/name).stat().st_size)
+        print(json.dumps(dict(built=implementation, artifact=name, **artifacts[name])), flush=True)
+    check({name:item['sha256'] for name, item in sources.items()})
+    save(out/'receipt.json', dict(implementation=implementation, artifacts=artifacts,
+        inputs_sha256=sha(out/'inputs.json'), sources_checked=84, installed_extension_replaced=False))
+
+
+def inputs():
+    initial = read(STUDY/'initial-preservation.json')
+    mapping = initial['real_replay_inputs_sha256'] | initial['fixed_state_inputs_sha256']
+    for implementation in ['baseline', 'candidate']:
+        out = STUDY/('build-'+implementation)
+        receipt = read(out/'receipt.json')
+        assert receipt['inputs_sha256'] == sha(out/'inputs.json')
+        for name, item in receipt['artifacts'].items():
+            mapping[(out/name).relative_to(ROOT).as_posix()] = item['sha256']
+        for name, item in read(out/'inputs.json')['sources'].items():
+            mapping[(out/'source'/name).relative_to(ROOT).as_posix()] = item['sha256']
+            if implementation == 'candidate':
+                assert sha(ROOT/name) == item['sha256'], name
+        for name in ['inputs.json', 'receipt.json']:
+            mapping[(out/name).relative_to(ROOT).as_posix()] = sha(out/name)
+    for path in [STUDY/'protocol.json', STUDY/'initial-preservation.json', Path(__file__)]:
+        mapping[path.relative_to(ROOT).as_posix()] = sha(path)
+    return mapping
+
+
+def run(mode):
+    assert mode in ['fixed', 'time', 'trace']
+    mapping = inputs()
+    check(mapping)
+    out = STUDY/(mode+'-01')
+    out.mkdir()
+    save(out/'invocation.json', dict(started_at_utc=datetime.now(timezone.utc).isoformat(),
+        inputs_sha256=mapping, protocol_sha256=sha(STUDY/'protocol.json'), controller_sha256=sha(Path(__file__))))
+    protocol = read(STUDY/'protocol.json')
+    if mode == 'fixed':
+        order = protocol['fixed_process_order']
+    else:
+        order = [dict(implementation=i, threads=4) for i in (protocol['replay_process_order']
+            if mode == 'time' else ['baseline', 'candidate'])]
+    for index, item in enumerate(order):
+        implementation, threads = item['implementation'], item['threads']
+        build = STUDY/('build-'+implementation)
+        stem = f'run-{index:02}-{implementation}-threads-{threads}'
+        env = dict(os.environ, RAYON_NUM_THREADS=str(threads))
+        if mode == 'fixed':
+            env.update(CA_ODOMETRY_PROFILE_INPUT=str(FIXED), CA_ODOMETRY_PROFILE_OUTPUT=str(out/(stem+'.json')),
+                CA_ODOMETRY_PROFILE_THREADS=str(threads))
+            command = [str(build/'odometry-stage-profile.exe'), 'odometry::profile::record_fixed_states', '--exact', '--ignored', '--nocapture']
+        else:
+            command = [str(build/'audit_odometry_steps.exe'), mode, str(REPLAY), str(out/stem)]
+        save(out/(stem+'-invocation.json'), dict(index=index, implementation=implementation, threads=threads,
+            command=command, binary_sha256=sha(Path(command[0])), environment={k:v for k,v in env.items()
+                if k == 'RAYON_NUM_THREADS' or k.startswith('CA_ODOMETRY_PROFILE_')}))
+        with (out/(stem+'.log')).open('xb') as stream:
+            result = subprocess.run(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT)
+        assert result.returncode == 0, (out/(stem+'.log')).read_text(errors='replace')[-6000:]
+        print(json.dumps(dict(mode=mode, index=index, **item, complete=True)), flush=True)
+    check(mapping)
+    save(out/'receipt.json', dict(closed_at_utc=datetime.now(timezone.utc).isoformat(),
+        invocation_sha256=sha(out/'invocation.json'), input_hashes_unchanged=True,
+        output_files_sha256={p.relative_to(out).as_posix():sha(p) for p in sorted(out.rglob('*')) if p.is_file()}))
+
+
+def analyze(mode):
+    out = STUDY/(mode+'-analysis-01')
+    out.mkdir()
+    spec = importlib.util.spec_from_file_location('face_gap_comparison', ROOT/'scripts/flatwall_count_comparison.py')
+    comparison = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(comparison)
+    run_root = STUDY/(mode+'-01')
+    receipt = read(run_root/'receipt.json')
+    for name, digest in receipt['output_files_sha256'].items():
+        assert sha(run_root/name) == digest, name
+    protocol = read(STUDY/'protocol.json')
+    if mode == 'time':
+        originals = comparison.original_cases(ROOT)
+        records, reports = [], []
+        for index, implementation in enumerate(protocol['replay_process_order']):
+            data = read(run_root/f'run-{index:02}-{implementation}-threads-4/runs.json')
+            reports.append(comparison.check_replay(data, originals, 'time'))
+            records.append(dict(index=index, implementation=implementation, data=data))
+        for record in records[1:]:
+            comparison.compare_replays(record['data'], records[0]['data'])
+        summary = dict(registration=comparison.summarize_time(records, [row['name'] for row in originals]),
+            time_verification=reports, replay_frames_checked=sum(r['frames'] for r in reports),
+            original_pose_and_threshold_bits_match=True)
+    else:
+        records = []
+        for index, item in enumerate(protocol['fixed_process_order']):
+            data = read(run_root/f"run-{index:02}-{item['implementation']}-threads-{item['threads']}.json")
+            records.append(dict(index=index, data=data, **item))
+        verification = comparison.check_fixed(records, ROOT)
+        summary = dict(fixed=comparison.summarize_fixed(records, read(ROOT/'benchmarks/slam/flatwall-balance-stages/origins.json')), fixed_verification=verification)
+    summary.update(schema='cloudanalyzer.target_count_reserve_summary.v1', defaults_changed=False,
+        installed_extension_replaced=False, whole_application_speedup_established=False)
+    save(out/'summary.json', summary)
+    save(out/'receipt.json', dict(summary_sha256=sha(out/'summary.json'),
+        run_receipt_sha256=sha(run_root/'receipt.json'), controller_sha256=sha(Path(__file__)),
+        analysis_source_sha256=sha(ROOT/'scripts/flatwall_count_comparison.py')))
+    print(json.dumps(summary), flush=True)
+
+
+if __name__ == '__main__':
+    mode = sys.argv[1]
+    if mode == 'setup':
+        setup()
+    elif mode.startswith('build-'):
+        build(mode.removeprefix('build-'))
+    elif mode.startswith('analyze-'):
+        analyze(mode.removeprefix('analyze-'))
+    else:
+        run(mode)

@@ -180,3 +180,11 @@ benchmarks/slam/flatwall-face-gaps/**/*.jsonl binary
 benchmarks/slam/flatwall-face-gaps/**/*.raw binary
 cloudanalyzer/tests/test_flatwall_face_gaps_packet.py text eol=lf
 docs/slam-flatwall-face-gaps.md text eol=lf
+
+benchmarks/slam/flatwall-count-reserve/** text eol=lf
+benchmarks/slam/flatwall-count-reserve/**/*.gz binary
+benchmarks/slam/flatwall-count-reserve/**/*.log binary
+benchmarks/slam/flatwall-count-reserve/**/*.jsonl binary
+benchmarks/slam/flatwall-count-reserve/**/*.raw binary
+cloudanalyzer/tests/test_flatwall_count_reserve_packet.py text eol=lf
+docs/slam-flatwall-count-reserve.md text eol=lf

@@ -1,0 +1,35 @@
+
+running 30 tests
+test odometry::profile::record_fixed_states ... ignored, explicit real-state input/output paths; release-mode native profiling only
+test odometry::target_balance::tests::coordinate_counts_are_exact_and_normalize_signed_zero ... ok
+test odometry::target_balance::tests::only_threshold_accepted_pairs_count_and_zero_support_is_explicit ... ok
+test odometry::target_balance::tests::pair_counts_preserve_order_and_distinct_nearby_coordinates ... ok
+test odometry::target_balance::tests::pending_registration_retains_its_weighting_policy ... ok
+test odometry::target_balance::tests::repeated_identical_pairs_do_not_gain_target_influence ... ok
+test odometry::target_balance::tests::resized_count_tables_match_numeric_equality_in_input_order ... ok
+test odometry::tests::a_drive_through_a_town_is_followed ... ok
+test odometry::tests::a_turn_taken_while_scanning_is_undone ... ok
+test odometry::tests::alignment_worker_gate_preserves_nested_local_pools ... ok
+test odometry::tests::alignment_worker_gate_uses_captured_policy_and_existing_chunk_boundary ... ok
+test odometry::tests::automatic_alignment_preserves_stepped_state_for_both_policies_and_sizes ... ok
+test odometry::tests::final_residuals_match_an_independent_search_before_insertion ... ok
+test odometry::tests::invalid_predictions_cannot_change_poses_map_or_threshold_history ... ok
+test odometry::tests::linearization_capture_choice_belongs_to_begin_and_empty_results_are_owned ... ok
+test odometry::tests::linearization_capture_preserves_solver_map_and_report_bits ... ok
+test odometry::tests::linearization_flags_nonfinite_weights_without_repair_or_pose_feedback ... ok
+test odometry::tests::linearization_is_recomputed_after_the_last_step_at_returned_pose ... ok
+test odometry::tests::nearest_face_bounds_match_ordered_sparse_neighborhoods ... ok
+test odometry::tests::nearest_face_bounds_preserve_boundaries_ties_and_signed_zero ... ok
+test odometry::tests::nonfinite_systems_and_updates_preserve_the_last_finite_transform ... ok
+test odometry::tests::optional_diagnostics_preserve_pose_bits_and_threshold_history ... ok
+test odometry::tests::registration_sampling_changes_are_atomic_and_only_affect_future_begins ... ok
+test odometry::tests::registration_sampling_happens_after_constant_motion_deskew ... ok
+test odometry::tests::registration_sampling_is_independent_of_map_insertion ... ok
+test odometry::tests::registration_sampling_preserves_first_source_order_and_range_filtering ... ok
+test odometry::tests::relative_prediction_composes_on_the_right_without_changing_deskew ... ok
+test odometry::tests::reports_convergence_limits_and_repeated_steps_without_mutation ... ok
+test odometry::tests::reports_distinguish_no_alignment_and_early_finish ... ok
+test odometry::tests::zero_matches_and_collinear_matches_are_not_convergence ... ok
+
+test result: ok. 29 passed; 0 failed; 1 ignored; 0 measured; 488 filtered out; finished in 3.14s
+

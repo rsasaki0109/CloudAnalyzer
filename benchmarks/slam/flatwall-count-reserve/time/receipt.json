@@ -1,0 +1,20 @@
+{
+  "closed_at_utc": "2026-10-18T10:05:29.178110+00:00",
+  "invocation_sha256": "2adb61903d1e3018d297276ab70ee46b71a76427d1a8a4776dd6d04c2f92c5e2",
+  "input_hashes_unchanged": true,
+  "output_files_sha256": {
+    "invocation.json": "2adb61903d1e3018d297276ab70ee46b71a76427d1a8a4776dd6d04c2f92c5e2",
+    "run-00-baseline-threads-4/runs.json": "9bda3d1970ab02f51eb988539af0ac362d503b6f30aa2738703de69be7c93eb1",
+    "run-00-baseline-threads-4-invocation.json": "201f02435b7b07b227643afaeb911556848127a78dd470bf922cade22d09e2b2",
+    "run-00-baseline-threads-4.log": "e8e2d2362e95da2e38ca05821ca406c7150b78bd56f84c80401fb1c71d36c0d2",
+    "run-01-candidate-threads-4/runs.json": "69187c6859c6f4690fc6783189068d33333c96cb7b6159c5ec9eed5d0760f092",
+    "run-01-candidate-threads-4-invocation.json": "79d4fd81cb516bce506be5d162b07acfb59e84ce67c4c8fe7d6420c84e0fe15c",
+    "run-01-candidate-threads-4.log": "e8e2d2362e95da2e38ca05821ca406c7150b78bd56f84c80401fb1c71d36c0d2",
+    "run-02-candidate-threads-4/runs.json": "6f089ca6b1e8ba2085e910366fac78f039d7a5068e0cf459c8451d1b374506ee",
+    "run-02-candidate-threads-4-invocation.json": "f2d575dbce6a8c78b3be04a74de9a8b9360f497c55a526b4a6d41b42c0d0518b",
+    "run-02-candidate-threads-4.log": "e8e2d2362e95da2e38ca05821ca406c7150b78bd56f84c80401fb1c71d36c0d2",
+    "run-03-baseline-threads-4/runs.json": "17dc439530625e306d0c7969656b1b2b2e4b9617455d5baf76c54b60c603e07e",
+    "run-03-baseline-threads-4-invocation.json": "397d8239870320fac7259e9461f0a7d802b0bc6a6fc5e63467fcc0ae416de8af",
+    "run-03-baseline-threads-4.log": "e8e2d2362e95da2e38ca05821ca406c7150b78bd56f84c80401fb1c71d36c0d2"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "cloudanalyzer.flatwall_balance_dynamics.v1",
+  "frozen_at_utc": "2026-10-18T00:58:39.805426+00:00",
+  "base_commit": "c73600e5afbbe539f43c3616c5c0bcad6b613291",
+  "native_command": "cargo build --release --offline --manifest-path rust/Cargo.toml -p ca-core --example audit_odometry_steps --features parallel",
+  "native_source_files": 83,
+  "native_source_scope": "All local ca-core Rust sources, the new example and Cargo configurations; preserved previous dependency archives are not a hermetic build certificate.",
+  "cases": [
+    "flatwall_01/repeat-motion/raw-legacy",
+    "flatwall_01/repeat-motion/gyro-legacy",
+    "flatwall_01/repeat-motion/raw-0.1875",
+    "flatwall_01/repeat-motion/gyro-0.1875",
+    "flatwall_01/last-pose/raw-legacy",
+    "flatwall_01/last-pose/gyro-legacy",
+    "flatwall_01/last-pose/raw-0.1875",
+    "flatwall_01/last-pose/gyro-0.1875",
+    "flatwall_02/repeat-motion/raw-legacy",
+    "flatwall_02/repeat-motion/gyro-legacy",
+    "flatwall_02/repeat-motion/raw-0.1875",
+    "flatwall_02/repeat-motion/gyro-0.1875",
+    "flatwall_02/last-pose/raw-legacy",
+    "flatwall_02/last-pose/gyro-legacy",
+    "flatwall_02/last-pose/raw-0.1875",
+    "flatwall_02/last-pose/gyro-0.1875"
+  ],
+  "trace_frames": {
+    "flatwall_01/repeat-motion/raw-0.1875": [
+      185
+    ],
+    "flatwall_01/repeat-motion/gyro-0.1875": [
+      53,
+      132
+    ],
+    "flatwall_01/last-pose/raw-0.1875": [
+      25
+    ],
+    "flatwall_02/repeat-motion/raw-0.1875": [
+      70,
+      90
+    ],
+    "flatwall_02/repeat-motion/gyro-0.1875": [
+      22,
+      51
+    ]
+  },
+  "trace_selection": "All eight previously capped frames, fixed before observing these traces. Keep all 500 attempted native systems and total transforms; retain full pair rows for the last 24 states.",
+  "observer": "Separate ordered exhaustive 27-cell search with an insertion/range mirror; no native bound pruning. The actual native equations and step drive the original solver.",
+  "replay_validation": "Every original frame: maximum pose/threshold absolute error <=2e-8 and identical iterations/termination; publish exact pose-bit agreement separately. Independent Python checks replay all selected trace systems and final search, plus captured tail pairs.",
+  "timing": {
+    "warmup_pairs": 1,
+    "measured_pairs": 3,
+    "rayon_threads": 4,
+    "diagnostics": false,
+    "capture_linearization": false,
+    "order": "Alternate baseline/balanced by round plus case index; keep all samples.",
+    "metric": "Sum of elapsed native register calls across each complete covered recording/case, on preloaded 24000-point raw/gyro scans.",
+    "includes": "Range filtering, registration sampling, ICP, threshold learning, map insertion and range pruning.",
+    "excludes": "Bag I/O, gyro deskew, preparation, state validation, hashing, serialization, builds and diagnostic observer.",
+    "limitation": "Fixed real recordings and this host only; baseline/balanced closed-loop states can differ. This is policy cost, not isolated weighting overhead, Python/UI latency, GPU speedup or general throughput."
+  },
+  "candidate_changed": false,
+  "parameter_search": false,
+  "reference_poses_read": false,
+  "defaults_changed": false,
+  "decision": "Diagnose recurrence and actual cost before any solver/default adoption; no deletion or changed stopping tolerances."
+}

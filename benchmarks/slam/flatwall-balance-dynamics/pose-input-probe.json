@@ -1,0 +1,12 @@
+{
+  "source": "rust/crates/ca-core/examples/audit_odometry_pose_inputs.rs",
+  "source_sha256": "2bd766a0575795ce9b075245f6be6bd4ad2a917af58b3fb1627e0e318b3c58e9",
+  "binary_sha256": "f9246f68e3460cfe0fd519e4a8647d429c10ff52ab5557a52f0766922e9f2e8e",
+  "expected_input_json_sha256": "0a2e3291bf24ff08f763b5f54db5982c9187ab4c161e22feec0d5dc6548215d7",
+  "exported_input_bits_json_sha256": "2eafca124c8564593d7b4476a41e76426968416fadca1a4c65575a23a128ac84",
+  "compact_input_bits_sha256": "37acaaeecdf927caf8261142c5238c019d89c1c4940b576a862b2476e005e47d",
+  "command": "cargo build --release --offline --manifest-path rust/Cargo.toml -p ca-core --example audit_odometry_pose_inputs --features parallel",
+  "estimator_inputs_changed": false,
+  "estimation_repeated": false,
+  "timings_repeated": false
+}

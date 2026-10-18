@@ -1,0 +1,19 @@
+{
+  "inputs_unchanged": true,
+  "invocation_sha256": "05b98ecd99b86833d7cfabbd78fb9a030677e776e7ed1544cdd3eb65bbae646e",
+  "output_files_sha256": {
+    "expected-input-bits.npz": "37acaaeecdf927caf8261142c5238c019d89c1c4940b576a862b2476e005e47d",
+    "flatwall_01/last-pose/raw-0.1875/scan-025.npz": "f111d35fd9dbab3721c6809a4644b0f5f2fb9b4515cd3c6038742f95f7d60d88",
+    "flatwall_01/repeat-motion/gyro-0.1875/scan-053.npz": "f7f42dc81fbacdd298b12fedfe31ffdd37b7329ff58e0d03cb5f57321f521e63",
+    "flatwall_01/repeat-motion/gyro-0.1875/scan-132.npz": "5c58f1bbc7a2afca8cca17b9ac5f3f0bbd3b6f4a103ee5e4f3fe720b193085c7",
+    "flatwall_01/repeat-motion/raw-0.1875/scan-185.npz": "5557d470b4f94eef70638c90bfbf78d592f2bdc879946d2e777f9d5f457a984b",
+    "flatwall_02/repeat-motion/gyro-0.1875/scan-022.npz": "eacfe831c5818889d9d2db8bb987aff16ea4386d087bb728f54e4f0519fafe49",
+    "flatwall_02/repeat-motion/gyro-0.1875/scan-051.npz": "751c8f4075de68300a094d0dad076acacebe200dbc5f3ecfb061c7d4fa58f44d",
+    "flatwall_02/repeat-motion/raw-0.1875/scan-070.npz": "08effb8ac432af26745d439bc0e97d243f3c9a121b876ff3756afcef021b5cee",
+    "flatwall_02/repeat-motion/raw-0.1875/scan-090.npz": "12dff1a51636b71e6e213fd4c21eefa28f7e81f205d5dc8f5ded64c812e4d6f4",
+    "invocation.json": "05b98ecd99b86833d7cfabbd78fb9a030677e776e7ed1544cdd3eb65bbae646e",
+    "summary.json": "41953447e131826448976c8372b07b8365f0e440c6cd34fd76db42e171c54aef",
+    "time-runs.npz": "719d80ae647dd73e8a7d3706a8573569ee9910522a26fcc39f72ee6840ff5b0e",
+    "trace-runs.npz": "68787ff7f1c1786cb1641a997f4c6de7fb83149a9b08abb108703c8fc72b4940"
+  }
+}

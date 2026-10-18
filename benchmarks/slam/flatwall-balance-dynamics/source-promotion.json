@@ -1,0 +1,9 @@
+{
+  "original_path": "rust/crates/ca-core/examples/audit_odometry_steps.rs",
+  "preserved_as": "benchmarks/slam/flatwall-balance-dynamics/executed-source/audit_odometry_steps.rs",
+  "executed_sha256": "682c69dbb390dad373b89b4afa180754c4650f8e13760064665a959a08462e17",
+  "current_normalized_sha256": "8f17425a04365582a1528fab0a18515578f95c438345e026defc16e5bbda24f3",
+  "change": "Clippy requires as_chunks::<24>().0.iter() instead of chunks_exact(24) in the preloaded binary input reader. Complete byte length was already asserted. No native registration, observation, ordering, timer or solver code changed.",
+  "measurements_use_preserved_executable_and_source": true,
+  "measured_executable_replaced": false
+}

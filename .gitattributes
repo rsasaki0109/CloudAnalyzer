@@ -139,3 +139,6 @@ benchmarks/slam/flatwall-target-balance/** text eol=lf
 benchmarks/slam/flatwall-target-balance/**/*.npz binary
 benchmarks/slam/flatwall-target-balance/**/reference-source.txt binary
 benchmarks/slam/flatwall-target-balance/*.png binary
+benchmarks/slam/flatwall-balance-dynamics/** text eol=lf
+benchmarks/slam/flatwall-balance-dynamics/**/*.npz binary
+benchmarks/slam/flatwall-balance-dynamics/*.png binary

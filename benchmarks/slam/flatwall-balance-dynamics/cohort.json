@@ -1,0 +1,127 @@
+[
+  {
+    "name": "flatwall_01/repeat-motion/raw-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall-frontend-constraints/raw-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/raw-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/raw-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_01/repeat-motion/gyro-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall-frontend-constraints/gyro-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/gyro-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/gyro-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_01/repeat-motion/raw-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall-frontend-constraints/raw-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/raw-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/raw-0.1875/default-replay-trajectory.npz",
+    "trace_indices": [
+      185
+    ]
+  },
+  {
+    "name": "flatwall_01/repeat-motion/gyro-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall-frontend-constraints/gyro-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/gyro-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/repeat-motion/gyro-0.1875/default-replay-trajectory.npz",
+    "trace_indices": [
+      53,
+      132
+    ]
+  },
+  {
+    "name": "flatwall_01/last-pose/raw-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall-prediction-policy/last-pose/raw-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/raw-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/raw-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_01/last-pose/gyro-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall-prediction-policy/last-pose/gyro-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/gyro-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/gyro-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_01/last-pose/raw-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall-prediction-policy/last-pose/raw-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/raw-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/raw-0.1875/default-replay-trajectory.npz",
+    "trace_indices": [
+      25
+    ]
+  },
+  {
+    "name": "flatwall_01/last-pose/gyro-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall-prediction-policy/last-pose/gyro-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/gyro-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_01/last-pose/gyro-0.1875/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_02/repeat-motion/raw-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/repeat-motion/raw-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/raw-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/raw-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_02/repeat-motion/gyro-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/repeat-motion/gyro-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/gyro-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/gyro-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_02/repeat-motion/raw-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/repeat-motion/raw-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/raw-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/raw-0.1875/default-replay-trajectory.npz",
+    "trace_indices": [
+      70,
+      90
+    ]
+  },
+  {
+    "name": "flatwall_02/repeat-motion/gyro-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/repeat-motion/gyro-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/gyro-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/repeat-motion/gyro-0.1875/default-replay-trajectory.npz",
+    "trace_indices": [
+      22,
+      51
+    ]
+  },
+  {
+    "name": "flatwall_02/last-pose/raw-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/last-pose/raw-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/raw-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/raw-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_02/last-pose/gyro-legacy",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/last-pose/gyro-legacy/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-legacy/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-legacy/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_02/last-pose/raw-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/last-pose/raw-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/raw-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/raw-0.1875/default-replay-trajectory.npz",
+    "trace_indices": []
+  },
+  {
+    "name": "flatwall_02/last-pose/gyro-0.1875",
+    "baseline_frames": "benchmarks/slam/flatwall02-prediction/last-pose/gyro-0.1875/frames.jsonl",
+    "balanced_frames": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-0.1875/frames.jsonl",
+    "baseline_trajectory": "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-0.1875/default-replay-trajectory.npz",
+    "trace_indices": []
+  }
+]

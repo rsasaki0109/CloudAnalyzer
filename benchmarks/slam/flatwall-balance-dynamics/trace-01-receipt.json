@@ -1,0 +1,17 @@
+{
+  "stage": "trace",
+  "invocation_sha256": "9d3ee408bdd42c236dc57d43b4fce43780b8c5d64963e6c0c9a947f8a8e00398",
+  "input_hashes_unchanged": true,
+  "log_sha256": "ec381c8aff03d1b1a8f3a379abb545b3d9fab7ee2e863158ef79f0429f4cf303",
+  "output_files_sha256": {
+    "flatwall_01/last-pose/raw-0.1875/scan-025.json": "f6509d390d1131d8eff1a5e1d21135e6f281d8e3b708633f7c5bbe83dcf2c83f",
+    "flatwall_01/repeat-motion/gyro-0.1875/scan-053.json": "d270f739eeb87edb572c9b13893df60d60809ba2dddc677d9da91946eb517d3b",
+    "flatwall_01/repeat-motion/gyro-0.1875/scan-132.json": "9184d625250a417da444503fe7f6c952eda3b77f6c412c7dff9871399ab86fe8",
+    "flatwall_01/repeat-motion/raw-0.1875/scan-185.json": "f6e06043c081a606a07ac3511ba29c02e9c053f6309f4337d28238407fb2f59e",
+    "flatwall_02/repeat-motion/gyro-0.1875/scan-022.json": "28835a7d540af737916bf6f727395c906d35709353f682b50fc3ded50dd57905",
+    "flatwall_02/repeat-motion/gyro-0.1875/scan-051.json": "542b7079bbf328b23cd6db7278d02e2f43ff42caa41e7697f256ddc30f708c25",
+    "flatwall_02/repeat-motion/raw-0.1875/scan-070.json": "ba37c0d0c2c6373ac23ecc6abc58962c7f5d4fe6ca28f351e94189fde29a57dd",
+    "flatwall_02/repeat-motion/raw-0.1875/scan-090.json": "8304f2654557d37e19108e9eb3217395af721fac0c430c2ef5178a5c94c0d043",
+    "runs.json": "557eb612b35b686921b6f0f4177a255e98ec71d9be02e581e66e3123139113b5"
+  }
+}

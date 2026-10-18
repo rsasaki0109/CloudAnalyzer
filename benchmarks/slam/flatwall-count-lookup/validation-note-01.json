@@ -1,0 +1,8 @@
+{
+  "original_failure": "validation-01.log",
+  "diagnostic": "zero-duration-diagnostic-01.json",
+  "states_changed": false,
+  "timings_rewritten": false,
+  "original_protocol_rewritten": false,
+  "policy": "Keep zero component-stage durations only for the four predeclared empty-source controls. Require strictly positive whole-call and staged durations and strictly positive component durations for all 60 eligible states. Retain the original 0 ns values; no imputation or rerun."
+}

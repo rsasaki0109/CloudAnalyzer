@@ -1,0 +1,19 @@
+{
+  "index": 4,
+  "implementation": "baseline",
+  "threads": 4,
+  "command": [
+    "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-single-lookup-counts-20261018\\build-baseline\\odometry-stage-profile.exe",
+    "odometry::profile::record_fixed_states",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "binary_sha256": "bf269d6668cf3e56118dea0b9d2eca39ffc19845d6059e2c5777fff55733b34d",
+  "environment": {
+    "RAYON_NUM_THREADS": "4",
+    "CA_ODOMETRY_PROFILE_INPUT": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-flatwall-balance-stages-20261018\\prepared-02\\input.json",
+    "CA_ODOMETRY_PROFILE_OUTPUT": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-single-lookup-counts-20261018\\fixed-01\\run-04-baseline-threads-4.json",
+    "CA_ODOMETRY_PROFILE_THREADS": "4"
+  }
+}

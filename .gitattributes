@@ -154,3 +154,11 @@ scripts/run_flatwall_balance_stages.py text eol=lf
 scripts/flatwall_balance_stages.py text eol=lf
 scripts/analyze_flatwall_balance_stages.py text eol=lf
 cloudanalyzer/tests/test_flatwall_balance_stages_packet.py text eol=lf
+benchmarks/slam/flatwall-count-lookup/** text eol=lf
+benchmarks/slam/flatwall-count-lookup/**/*.gz binary
+benchmarks/slam/flatwall-count-lookup/**/*.log binary
+benchmarks/slam/flatwall-count-lookup/history/** binary
+benchmarks/slam/flatwall-count-lookup/zero-duration-diagnostic-01.json binary
+scripts/flatwall_count_comparison.py text eol=lf
+cloudanalyzer/tests/test_flatwall_count_lookup_packet.py text eol=lf
+docs/slam-flatwall-count-lookup.md text eol=lf

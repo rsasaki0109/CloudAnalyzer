@@ -1,0 +1,67 @@
+{
+  "schema": "cloudanalyzer.single_lookup_counts.v1",
+  "frozen_at_utc": "2026-10-18T04:21:07.813667+00:00",
+  "base": "3de34d50808ac09a6c86a7fbf9cb5118947741aa",
+  "candidate": "Assign exact coordinate IDs with one hash lookup per accepted pair, count IDs, replace IDs in the output vector with completed frequencies; count directly from pair records.",
+  "arithmetic": "Preserve signed-zero normalization, exact coordinate bits, acceptance, pair ordering, robust weights, 256-pair chunks, H/b arithmetic, solve and registration policies.",
+  "selection": "Reuse all 16 previous closed-loop cases and all 64 previous fixed states; retain 4 alignment-ineligible empty controls separately from 60 eligible states.",
+  "replay_process_order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "replay_threads": 4,
+  "replay_rounds": {
+    "warmup": 1,
+    "measured": 3
+  },
+  "replay_control": "Run target_balance=false as an unchanged-path timing/trajectory control in both binaries.",
+  "replay_scope": "Native register calls on preloaded real scans, including sampling, ICP, solve, learned thresholds and map insertion/pruning; excludes input preparation, bag I/O, gyro deskew, checks, output and application/GPU work.",
+  "replay_summary": "For each case/mode take the median of 6 complete measured recording totals per implementation, then report candidate/baseline and sum-of-case-medians ratio. Keep per-frame and per-round measurements.",
+  "fixed_process_order": [
+    {
+      "implementation": "baseline",
+      "threads": 1
+    },
+    {
+      "implementation": "candidate",
+      "threads": 1
+    },
+    {
+      "implementation": "candidate",
+      "threads": 1
+    },
+    {
+      "implementation": "baseline",
+      "threads": 1
+    },
+    {
+      "implementation": "baseline",
+      "threads": 4
+    },
+    {
+      "implementation": "candidate",
+      "threads": 4
+    },
+    {
+      "implementation": "candidate",
+      "threads": 4
+    },
+    {
+      "implementation": "baseline",
+      "threads": 4
+    }
+  ],
+  "fixed_rounds": {
+    "warmup": 1,
+    "measured": 5,
+    "evaluations_per_block": 32
+  },
+  "validation": "Compare all actual replay poses, iterations, terminations and learned thresholds bit-for-bit between builds; compare all 64 fixed native H/b/count/pair rows with the independent published-data oracle.",
+  "trace_validation": "Replay a trace pass per implementation and compare all 4000 capped step systems/poses plus final associations; checks are outside timing runs.",
+  "limitations": "Single host, uncontrolled CPU placement/frequency. Fixed-state/profile clocks have code-layout effects. No GPU or full application throughput claim. No accuracy change is expected or inferred.",
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "raw_bags_redistributed": false
+}

@@ -95,8 +95,8 @@ fn search(state: &State) -> Vec<Pair> {
 }
 
 fn counts(pairs: &[Pair]) -> Vec<usize> {
-    // Include the production temporary target-coordinate vector and its drop.
-    target_balance::multiplicities(&pairs.iter().map(|p| p.target).collect::<Vec<_>>())
+    // Use the same direct pair counting as the production equations.
+    target_balance::multiplicities_by(pairs, |pair| pair.target)
 }
 
 fn accumulate(pairs: &[Pair], counts: &[usize], state: &State) -> (Mat6, Vec6) {

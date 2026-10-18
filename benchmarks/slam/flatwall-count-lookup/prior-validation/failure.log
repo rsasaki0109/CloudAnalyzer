@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\notes\analyze-slam-single-lookup-counts-20261018.py", line 68, in <module>
+    validation=dict(fixed=comparison.check_fixed(fixed,ROOT),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\flatwall_count_comparison.py", line 239, in check_fixed
+    reports.append(original.check_run(run['data'], expected, run['threads']))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rsasa\Workspace\CloudAnalyzer\scripts\flatwall_balance_stages.py", line 131, in check_run
+    raise ValueError('invalid native elapsed time')
+ValueError: invalid native elapsed time

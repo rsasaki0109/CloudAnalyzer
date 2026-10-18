@@ -10,14 +10,29 @@ fn coordinate_key(point: [f64; 3]) -> [u64; 3] {
 
 /// Exact numeric-coordinate equality, with signed zero normalized.
 pub(crate) fn multiplicities(targets: &[[f64; 3]]) -> Vec<usize> {
-    let mut counts: HashMap<[u64; 3], usize, BuildHasherDefault<VoxelHasher>> = HashMap::default();
-    for &point in targets {
-        *counts.entry(coordinate_key(point)).or_default() += 1;
+    multiplicities_by(targets, |point| *point)
+}
+
+/// Count targets directly from pair records, preserving their input order.
+pub(super) fn multiplicities_by<T>(items: &[T], point: impl Fn(&T) -> [f64; 3]) -> Vec<usize> {
+    let mut index: HashMap<[u64; 3], usize, BuildHasherDefault<VoxelHasher>> = HashMap::default();
+    let mut frequencies = Vec::<usize>::new();
+    let mut counts = Vec::with_capacity(items.len());
+    for item in items {
+        let next = frequencies.len();
+        let id = *index.entry(coordinate_key(point(item))).or_insert_with(|| {
+            frequencies.push(0);
+            next
+        });
+        frequencies[id] += 1;
+        counts.push(id);
     }
-    targets
-        .iter()
-        .map(|&p| counts[&coordinate_key(p)])
-        .collect()
+    // Reuse the output buffer: first coordinate IDs, then completed counts.
+    // The second pass uses dense IDs and needs no additional hash lookups.
+    for id in &mut counts {
+        *id = frequencies[*id];
+    }
+    counts
 }
 
 struct Pair {
@@ -50,7 +65,7 @@ pub(super) fn equations(
     };
     #[cfg(not(feature = "parallel"))]
     let pairs: Vec<_> = source.iter().filter_map(matched).collect();
-    let counts = multiplicities(&pairs.iter().map(|p| p.target).collect::<Vec<_>>());
+    let counts = multiplicities_by(&pairs, |pair| pair.target);
     let chunk = |(offset, pairs): (usize, &[Pair])| {
         let mut h = [[0.0; 6]; 6];
         let mut b = [0.0; 6];
@@ -147,6 +162,49 @@ mod tests {
             vec![2, 2, 1]
         );
         assert!(multiplicities(&[]).is_empty());
+    }
+
+    #[test]
+    fn pair_counts_preserve_order_and_distinct_nearby_coordinates() {
+        let close = f64::from_bits(1.0_f64.to_bits() + 1);
+        let targets = [
+            [1.0, 0.0, 0.0],
+            [-0.0, 0.0, 0.0],
+            [close, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, -0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, -0.0],
+        ];
+        let pairs: Vec<_> = targets
+            .iter()
+            .map(|&target| Pair {
+                world: [9.0; 3],
+                target,
+                distance_sq: 0.0,
+            })
+            .collect();
+        assert_eq!(
+            multiplicities_by(&pairs, |pair| pair.target),
+            [3, 3, 1, 3, 3, 3, 3]
+        );
+        assert_eq!(multiplicities(&targets), [3, 3, 1, 3, 3, 3, 3]);
+    }
+
+    #[test]
+    fn resized_count_tables_match_numeric_equality_in_input_order() {
+        let targets: Vec<_> = (0..2051)
+            .map(|i| {
+                let group = (i * 37) % 521;
+                [group as f64, (group % 17) as f64, -(group as f64)]
+            })
+            .collect();
+        // Numeric equality is an independent reference for these finite points.
+        let expected: Vec<_> = targets
+            .iter()
+            .map(|point| targets.iter().filter(|other| *other == point).count())
+            .collect();
+        assert_eq!(multiplicities(&targets), expected);
     }
 
     #[test]

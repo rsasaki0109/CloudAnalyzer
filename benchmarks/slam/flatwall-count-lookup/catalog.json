@@ -1,0 +1,220 @@
+{
+  "fixed": [
+    {
+      "index": 0,
+      "implementation": "baseline",
+      "threads": 1,
+      "file": "fixed/run-00-baseline-threads-1.json.gz",
+      "invocation": "fixed/run-00-baseline-threads-1-invocation.json",
+      "original_output_sha256": "f1862da71e9c7891cad9e4a2a095137402c7b75790dd344448087114f6838576"
+    },
+    {
+      "index": 1,
+      "implementation": "candidate",
+      "threads": 1,
+      "file": "fixed/run-01-candidate-threads-1.json.gz",
+      "invocation": "fixed/run-01-candidate-threads-1-invocation.json",
+      "original_output_sha256": "40bad8879c88555681f27abfbede6ff64f10b681acad5491556b49f1bfe70487"
+    },
+    {
+      "index": 2,
+      "implementation": "candidate",
+      "threads": 1,
+      "file": "fixed/run-02-candidate-threads-1.json.gz",
+      "invocation": "fixed/run-02-candidate-threads-1-invocation.json",
+      "original_output_sha256": "e1ecfa81867c7fd281701f1b4dd0c981a3a28650cb2888c696677f0061de10ba"
+    },
+    {
+      "index": 3,
+      "implementation": "baseline",
+      "threads": 1,
+      "file": "fixed/run-03-baseline-threads-1.json.gz",
+      "invocation": "fixed/run-03-baseline-threads-1-invocation.json",
+      "original_output_sha256": "a338396b5a377fbaf3a0a77a95c38623f6539002e99260467b7b18bf9cd68865"
+    },
+    {
+      "index": 4,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "fixed/run-04-baseline-threads-4.json.gz",
+      "invocation": "fixed/run-04-baseline-threads-4-invocation.json",
+      "original_output_sha256": "9abd062418900aacb12da501659a434e70f12aed9be7bbba7b99a40af5a2adca"
+    },
+    {
+      "index": 5,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "fixed/run-05-candidate-threads-4.json.gz",
+      "invocation": "fixed/run-05-candidate-threads-4-invocation.json",
+      "original_output_sha256": "7fc6671f2ef22406856bf8b9b7239e96638c26e812a534a4d46163c849f805c9"
+    },
+    {
+      "index": 6,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "fixed/run-06-candidate-threads-4.json.gz",
+      "invocation": "fixed/run-06-candidate-threads-4-invocation.json",
+      "original_output_sha256": "da2e68e5d42096f8a2b1f7b5ecce32abc6e3c59d427eba54b2db8188576bbe0a"
+    },
+    {
+      "index": 7,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "fixed/run-07-baseline-threads-4.json.gz",
+      "invocation": "fixed/run-07-baseline-threads-4-invocation.json",
+      "original_output_sha256": "93c4ee361f49a32517c20c88e23ea43813e92566ea7ddfd2a8de501788691efb"
+    }
+  ],
+  "trace": [
+    {
+      "index": 0,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "trace/run-00-baseline-threads-4.json.gz",
+      "invocation": "trace/run-00-baseline-threads-4-invocation.json",
+      "original_output_sha256": "91f3f35283fc27fda2db0ffb2a99822bc22876e4c77388ce2d8e4427312972b0",
+      "traces": [
+        {
+          "case": "flatwall_01/repeat-motion/raw-0.1875",
+          "scan_index": 185,
+          "file": "trace/run-00-baseline-threads-4/flatwall_01/repeat-motion/raw-0.1875/scan-185.json.gz",
+          "original_output_sha256": "f6e06043c081a606a07ac3511ba29c02e9c053f6309f4337d28238407fb2f59e"
+        },
+        {
+          "case": "flatwall_01/repeat-motion/gyro-0.1875",
+          "scan_index": 53,
+          "file": "trace/run-00-baseline-threads-4/flatwall_01/repeat-motion/gyro-0.1875/scan-053.json.gz",
+          "original_output_sha256": "d270f739eeb87edb572c9b13893df60d60809ba2dddc677d9da91946eb517d3b"
+        },
+        {
+          "case": "flatwall_01/repeat-motion/gyro-0.1875",
+          "scan_index": 132,
+          "file": "trace/run-00-baseline-threads-4/flatwall_01/repeat-motion/gyro-0.1875/scan-132.json.gz",
+          "original_output_sha256": "9184d625250a417da444503fe7f6c952eda3b77f6c412c7dff9871399ab86fe8"
+        },
+        {
+          "case": "flatwall_01/last-pose/raw-0.1875",
+          "scan_index": 25,
+          "file": "trace/run-00-baseline-threads-4/flatwall_01/last-pose/raw-0.1875/scan-025.json.gz",
+          "original_output_sha256": "f6509d390d1131d8eff1a5e1d21135e6f281d8e3b708633f7c5bbe83dcf2c83f"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/raw-0.1875",
+          "scan_index": 70,
+          "file": "trace/run-00-baseline-threads-4/flatwall_02/repeat-motion/raw-0.1875/scan-070.json.gz",
+          "original_output_sha256": "ba37c0d0c2c6373ac23ecc6abc58962c7f5d4fe6ca28f351e94189fde29a57dd"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/raw-0.1875",
+          "scan_index": 90,
+          "file": "trace/run-00-baseline-threads-4/flatwall_02/repeat-motion/raw-0.1875/scan-090.json.gz",
+          "original_output_sha256": "8304f2654557d37e19108e9eb3217395af721fac0c430c2ef5178a5c94c0d043"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/gyro-0.1875",
+          "scan_index": 22,
+          "file": "trace/run-00-baseline-threads-4/flatwall_02/repeat-motion/gyro-0.1875/scan-022.json.gz",
+          "original_output_sha256": "28835a7d540af737916bf6f727395c906d35709353f682b50fc3ded50dd57905"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/gyro-0.1875",
+          "scan_index": 51,
+          "file": "trace/run-00-baseline-threads-4/flatwall_02/repeat-motion/gyro-0.1875/scan-051.json.gz",
+          "original_output_sha256": "542b7079bbf328b23cd6db7278d02e2f43ff42caa41e7697f256ddc30f708c25"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "trace/run-01-candidate-threads-4.json.gz",
+      "invocation": "trace/run-01-candidate-threads-4-invocation.json",
+      "original_output_sha256": "96018c981824a8c490b3ba9e1caec3d745c5102b056841123b4e4545ce0bd8c2",
+      "traces": [
+        {
+          "case": "flatwall_01/repeat-motion/raw-0.1875",
+          "scan_index": 185,
+          "file": "trace/run-01-candidate-threads-4/flatwall_01/repeat-motion/raw-0.1875/scan-185.json.gz",
+          "original_output_sha256": "f6e06043c081a606a07ac3511ba29c02e9c053f6309f4337d28238407fb2f59e"
+        },
+        {
+          "case": "flatwall_01/repeat-motion/gyro-0.1875",
+          "scan_index": 53,
+          "file": "trace/run-01-candidate-threads-4/flatwall_01/repeat-motion/gyro-0.1875/scan-053.json.gz",
+          "original_output_sha256": "d270f739eeb87edb572c9b13893df60d60809ba2dddc677d9da91946eb517d3b"
+        },
+        {
+          "case": "flatwall_01/repeat-motion/gyro-0.1875",
+          "scan_index": 132,
+          "file": "trace/run-01-candidate-threads-4/flatwall_01/repeat-motion/gyro-0.1875/scan-132.json.gz",
+          "original_output_sha256": "9184d625250a417da444503fe7f6c952eda3b77f6c412c7dff9871399ab86fe8"
+        },
+        {
+          "case": "flatwall_01/last-pose/raw-0.1875",
+          "scan_index": 25,
+          "file": "trace/run-01-candidate-threads-4/flatwall_01/last-pose/raw-0.1875/scan-025.json.gz",
+          "original_output_sha256": "f6509d390d1131d8eff1a5e1d21135e6f281d8e3b708633f7c5bbe83dcf2c83f"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/raw-0.1875",
+          "scan_index": 70,
+          "file": "trace/run-01-candidate-threads-4/flatwall_02/repeat-motion/raw-0.1875/scan-070.json.gz",
+          "original_output_sha256": "ba37c0d0c2c6373ac23ecc6abc58962c7f5d4fe6ca28f351e94189fde29a57dd"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/raw-0.1875",
+          "scan_index": 90,
+          "file": "trace/run-01-candidate-threads-4/flatwall_02/repeat-motion/raw-0.1875/scan-090.json.gz",
+          "original_output_sha256": "8304f2654557d37e19108e9eb3217395af721fac0c430c2ef5178a5c94c0d043"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/gyro-0.1875",
+          "scan_index": 22,
+          "file": "trace/run-01-candidate-threads-4/flatwall_02/repeat-motion/gyro-0.1875/scan-022.json.gz",
+          "original_output_sha256": "28835a7d540af737916bf6f727395c906d35709353f682b50fc3ded50dd57905"
+        },
+        {
+          "case": "flatwall_02/repeat-motion/gyro-0.1875",
+          "scan_index": 51,
+          "file": "trace/run-01-candidate-threads-4/flatwall_02/repeat-motion/gyro-0.1875/scan-051.json.gz",
+          "original_output_sha256": "542b7079bbf328b23cd6db7278d02e2f43ff42caa41e7697f256ddc30f708c25"
+        }
+      ]
+    }
+  ],
+  "time": [
+    {
+      "index": 0,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "time/run-00-baseline-threads-4.json.gz",
+      "invocation": "time/run-00-baseline-threads-4-invocation.json",
+      "original_output_sha256": "36d4acba96f74d5cc722b56c2e93c38ce434fbc9415dbb007498e8d2730b9e23"
+    },
+    {
+      "index": 1,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "time/run-01-candidate-threads-4.json.gz",
+      "invocation": "time/run-01-candidate-threads-4-invocation.json",
+      "original_output_sha256": "45365a380f49ce841070567ab7a0814e8100fd2128e2afd6a36cfe52c794d982"
+    },
+    {
+      "index": 2,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "time/run-02-candidate-threads-4.json.gz",
+      "invocation": "time/run-02-candidate-threads-4-invocation.json",
+      "original_output_sha256": "7e57b91e5f97b502dfa8ce85d7effbc96f658392b819f763d0ff6852b4ab2c6a"
+    },
+    {
+      "index": 3,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "time/run-03-baseline-threads-4.json.gz",
+      "invocation": "time/run-03-baseline-threads-4-invocation.json",
+      "original_output_sha256": "d8bcc8c7aae957992bbedb30029d036af56099deb34ab6a785dc1a7545c614f4"
+    }
+  ]
+}

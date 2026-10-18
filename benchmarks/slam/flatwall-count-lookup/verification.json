@@ -1,0 +1,33 @@
+{
+  "fixed": {
+    "real_states": 64,
+    "eligible_states": 60,
+    "empty_source_controls": 4,
+    "validation_states": 512,
+    "ordered_pair_rows_checked": 257328,
+    "measured_blocks": 2560,
+    "warmup_blocks": 512,
+    "native_count_and_matrix_bits_identical": true,
+    "independent_original_pair_and_matrix_checks": true
+  },
+  "trace_replay": [
+    {
+      "runs": 32,
+      "frames": 5120,
+      "exact_original_pose_frames": 5120
+    },
+    {
+      "runs": 32,
+      "frames": 5120,
+      "exact_original_pose_frames": 5120
+    }
+  ],
+  "trace_systems": {
+    "traces": 8,
+    "exact_capped_step_systems_and_updates": 4000,
+    "exact_final_pairs": 6020,
+    "original_published_trace_bits_match": true
+  },
+  "defaults_changed": false,
+  "installed_extension_replaced": false
+}

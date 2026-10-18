@@ -52,7 +52,6 @@
     "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
     "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
     "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
-    "rust/crates/ca-core/src/odometry_target_balance.rs": "f961927f13fe7886b2026944e6830f11f5f60d24cf8056f29188d9d5a02fa686",
     "rust/crates/ca-core/src/point_time.rs": "dcf1421fd44d8a3964493dd09355e3c84d75bb82076013f631fd63d33f7c1616",
     "rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799",
     "rust/crates/ca-core/src/profile.rs": "59f9ad78d46326e876cb51f689910d7ca7858d24c3624d4482bdf7b807a6f31c",
@@ -82,11 +81,13 @@
     "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "41ea32508d05136f1a5383a1aec45042263e7f052492ad8b3f27e7b7c897f371",
     "rust/crates/ca-core/src/vector_map.rs": "bf394963d140a6eb0e2262a678faf9645bdce2d0cd7617904da34a43ed8fd8f2",
     "rust/crates/ca-core/src/volume.rs": "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4",
-    "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs": "7fceb9f069e738388fc0fbca393eb2e7018779c3b02f4b11dc191c2538496fa6"
+    "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs": "7fceb9f069e738388fc0fbca393eb2e7018779c3b02f4b11dc191c2538496fa6",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/odometry_target_balance.rs": "f961927f13fe7886b2026944e6830f11f5f60d24cf8056f29188d9d5a02fa686"
   },
   "native_source_aliases": {
     "rust/crates/ca-core/examples/audit_odometry_steps.rs": "benchmarks/slam/flatwall-balance-dynamics/executed-source/audit_odometry_steps.rs",
-    "rust/crates/ca-core/src/odometry.rs": "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs"
+    "rust/crates/ca-core/src/odometry.rs": "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs",
+    "rust/crates/ca-core/src/odometry_target_balance.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/odometry_target_balance.rs"
   },
   "normalized_checkout_sources_sha256": {
     "rust/crates/ca-core/examples/audit_odometry_steps.rs": "8f17425a04365582a1528fab0a18515578f95c438345e026defc16e5bbda24f3",

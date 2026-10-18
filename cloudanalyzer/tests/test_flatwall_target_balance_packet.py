@@ -120,9 +120,11 @@ def test_native_checkout_newlines_do_not_change_source_identity(tmp_path):
 
 def test_native_source_content_changes_are_rejected(tmp_path):
     target=copy_packet(tmp_path)
-    path=target.parents[2]/'rust/crates/ca-core/src/odometry_target_balance.rs'
+    name='rust/crates/ca-core/src/odometry_target_balance.rs'
+    alias=packet.read(target/'manifest.json').get('native_source_aliases',{}).get(name,name)
+    path=target.parents[2]/alias
     with path.open('ab') as f:f.write(b'\n// changed source content\n')
-    with pytest.raises(ValueError,match='normalized native source'):packet.verify(target)
+    with pytest.raises(ValueError,match='hash|normalized native source'):packet.verify(target)
 
 
 def test_archived_executed_native_source_is_still_hash_checked(tmp_path):

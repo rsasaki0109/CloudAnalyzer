@@ -1,0 +1,12 @@
+{
+  "executed_source": "rust/crates/ca-core/src/odometry_target_balance.rs",
+  "unchanged_archive": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/odometry_target_balance.rs",
+  "archive_sha256": "f961927f13fe7886b2026944e6830f11f5f60d24cf8056f29188d9d5a02fa686",
+  "original_metadata_preserved": {
+    "cloudanalyzer/tests/test_flatwall_target_balance_packet.py": "benchmarks/slam/flatwall-count-lookup/history/cloudanalyzer/tests/test_flatwall_target_balance_packet.py",
+    "benchmarks/slam/flatwall-target-balance/manifest.json": "benchmarks/slam/flatwall-count-lookup/history/benchmarks/slam/flatwall-target-balance/manifest.json",
+    "benchmarks/slam/flatwall-balance-dynamics/manifest.json": "benchmarks/slam/flatwall-count-lookup/history/benchmarks/slam/flatwall-balance-dynamics/manifest.json",
+    "benchmarks/slam/flatwall-balance-dynamics/source-footprints.json": "benchmarks/slam/flatwall-count-lookup/history/benchmarks/slam/flatwall-balance-dynamics/source-footprints.json"
+  },
+  "previous_measurements_changed": false
+}

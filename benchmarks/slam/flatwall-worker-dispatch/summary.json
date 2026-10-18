@@ -1,0 +1,1004 @@
+{
+  "schema": "cloudanalyzer.gated_workers_summary.v1",
+  "registration": {
+    "cases": [
+      {
+        "case": "flatwall_01/repeat-motion/raw-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                245405700,
+                247072300,
+                276940700,
+                242816200,
+                282105900,
+                251417400
+              ],
+              "candidate": [
+                298691800,
+                223998600,
+                251178400,
+                429608600,
+                347387500,
+                252778200
+              ]
+            },
+            "median_ns": {
+              "baseline": 249244850.0,
+              "candidate": 275735000.0
+            },
+            "candidate_over_baseline": 1.1062816343045805
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                369265600,
+                377148100,
+                333481900,
+                356071300,
+                334186000,
+                336205600
+              ],
+              "candidate": [
+                280959700,
+                250539000,
+                305419500,
+                427536500,
+                381233900,
+                310017800
+              ]
+            },
+            "median_ns": {
+              "baseline": 346138450.0,
+              "candidate": 307718650.0
+            },
+            "candidate_over_baseline": 0.8890045298348103
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/repeat-motion/gyro-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                294917700,
+                267483100,
+                275810900,
+                276776500,
+                249356500,
+                281631300
+              ],
+              "candidate": [
+                421982900,
+                223448800,
+                262455600,
+                398820400,
+                291845600,
+                258596300
+              ]
+            },
+            "median_ns": {
+              "baseline": 276293700.0,
+              "candidate": 277150600.0
+            },
+            "candidate_over_baseline": 1.0031014098403257
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                348276200,
+                388721900,
+                353869100,
+                346970200,
+                334645500,
+                351573500
+              ],
+              "candidate": [
+                315703100,
+                263525700,
+                329511800,
+                376048500,
+                367693400,
+                319946700
+              ]
+            },
+            "median_ns": {
+              "baseline": 349924850.0,
+              "candidate": 324729250.0
+            },
+            "candidate_over_baseline": 0.9279971113797719
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/repeat-motion/raw-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1770046700,
+                1646268600,
+                1578118100,
+                1720588100,
+                1651419300,
+                1775019900
+              ],
+              "candidate": [
+                1533356800,
+                1415296500,
+                1577884500,
+                2378644700,
+                1578409100,
+                1522111400
+              ]
+            },
+            "median_ns": {
+              "baseline": 1686003700.0,
+              "candidate": 1555620650.0
+            },
+            "candidate_over_baseline": 0.9226673998402257
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                2284899600,
+                2291590100,
+                2264799100,
+                2213743600,
+                2232188700,
+                2269892300
+              ],
+              "candidate": [
+                2086394800,
+                1905976700,
+                1872707100,
+                2536130400,
+                1913600900,
+                2021184800
+              ]
+            },
+            "median_ns": {
+              "baseline": 2267345700.0,
+              "candidate": 1967392850.0
+            },
+            "candidate_over_baseline": 0.8677074916277655
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/repeat-motion/gyro-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1704268600,
+                1630382000,
+                1677958000,
+                1699671800,
+                1808216600,
+                1706215400
+              ],
+              "candidate": [
+                1538237600,
+                1543181500,
+                1623088400,
+                2284343200,
+                1543329600,
+                1517577400
+              ]
+            },
+            "median_ns": {
+              "baseline": 1701970200.0,
+              "candidate": 1543255550.0
+            },
+            "candidate_over_baseline": 0.9067465164783731
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                2182352600,
+                2194441800,
+                2297063300,
+                2211659800,
+                2243271900,
+                2321822000
+              ],
+              "candidate": [
+                1865787300,
+                1984102400,
+                1898642700,
+                2256863100,
+                2150782600,
+                1977720800
+              ]
+            },
+            "median_ns": {
+              "baseline": 2227465850.0,
+              "candidate": 1980911600.0
+            },
+            "candidate_over_baseline": 0.8893117710424158
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/last-pose/raw-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                305220700,
+                225663300,
+                246063200,
+                226129800,
+                342779200,
+                270042000
+              ],
+              "candidate": [
+                223599900,
+                245042600,
+                335229000,
+                342018300,
+                284839700,
+                253220700
+              ]
+            },
+            "median_ns": {
+              "baseline": 258052600.0,
+              "candidate": 269030200.0
+            },
+            "candidate_over_baseline": 1.0425401642920862
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                344822100,
+                354984000,
+                376486200,
+                281916000,
+                409211200,
+                323423700
+              ],
+              "candidate": [
+                263517000,
+                276297200,
+                347917500,
+                370462900,
+                315688100,
+                294411200
+              ]
+            },
+            "median_ns": {
+              "baseline": 349903050.0,
+              "candidate": 305049650.0
+            },
+            "candidate_over_baseline": 0.8718119204733997
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/last-pose/gyro-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                225883000,
+                221121800,
+                279993200,
+                293807700,
+                277836300,
+                288174900
+              ],
+              "candidate": [
+                222744900,
+                284532200,
+                330400900,
+                355477400,
+                283703400,
+                230444300
+              ]
+            },
+            "median_ns": {
+              "baseline": 278914750.0,
+              "candidate": 284117800.0
+            },
+            "candidate_over_baseline": 1.0186546247554136
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                360390400,
+                403607600,
+                350681700,
+                342521400,
+                390402200,
+                314482300
+              ],
+              "candidate": [
+                271062500,
+                303198700,
+                342929600,
+                366382800,
+                318901000,
+                284816300
+              ]
+            },
+            "median_ns": {
+              "baseline": 355536050.0,
+              "candidate": 311049850.0
+            },
+            "candidate_over_baseline": 0.8748756982590091
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/last-pose/raw-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1466971400,
+                1570734800,
+                1519436500,
+                1526817600,
+                1584088300,
+                1582214700
+              ],
+              "candidate": [
+                1470302000,
+                1406169900,
+                1305873400,
+                1760084700,
+                1399410000,
+                1510294100
+              ]
+            },
+            "median_ns": {
+              "baseline": 1548776200.0,
+              "candidate": 1438235950.0
+            },
+            "candidate_over_baseline": 0.9286273575226686
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                2101489500,
+                2337603200,
+                2154773100,
+                2141593700,
+                3213286000,
+                2199703900
+              ],
+              "candidate": [
+                1914695900,
+                1995247400,
+                2016061700,
+                2176868600,
+                1967958000,
+                1883217100
+              ]
+            },
+            "median_ns": {
+              "baseline": 2177238500.0,
+              "candidate": 1981602700.0
+            },
+            "candidate_over_baseline": 0.9101449841163474
+          }
+        }
+      },
+      {
+        "case": "flatwall_01/last-pose/gyro-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1529686800,
+                1512572500,
+                1609618200,
+                1587922800,
+                2909394800,
+                1736064500
+              ],
+              "candidate": [
+                1425455300,
+                1373986600,
+                1418655100,
+                1769303700,
+                1429606200,
+                1452432400
+              ]
+            },
+            "median_ns": {
+              "baseline": 1598770500.0,
+              "candidate": 1427530750.0
+            },
+            "candidate_over_baseline": 0.8928928511002674
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                1865763600,
+                1860165700,
+                2024359500,
+                1955839700,
+                4689747100,
+                2057754500
+              ],
+              "candidate": [
+                1748084400,
+                1631706100,
+                1733735000,
+                2038746600,
+                1746635200,
+                1735325000
+              ]
+            },
+            "median_ns": {
+              "baseline": 1990099600.0,
+              "candidate": 1740980100.0
+            },
+            "candidate_over_baseline": 0.8748205868691196
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/repeat-motion/raw-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                178672800,
+                275559100,
+                181699300,
+                216646400,
+                353470000,
+                204295400
+              ],
+              "candidate": [
+                188299100,
+                151311500,
+                194697300,
+                202680100,
+                191153800,
+                224180100
+              ]
+            },
+            "median_ns": {
+              "baseline": 210470900.0,
+              "candidate": 192925550.0
+            },
+            "candidate_over_baseline": 0.9166376444439588
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                230857600,
+                275070300,
+                211472700,
+                211993400,
+                474226600,
+                261199800
+              ],
+              "candidate": [
+                219443500,
+                210177000,
+                234350100,
+                256656000,
+                235932700,
+                189667300
+              ]
+            },
+            "median_ns": {
+              "baseline": 246028700.0,
+              "candidate": 226896800.0
+            },
+            "candidate_over_baseline": 0.9222371211163576
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/repeat-motion/gyro-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                185837100,
+                243695300,
+                166475300,
+                178750700,
+                359740900,
+                211014700
+              ],
+              "candidate": [
+                188181500,
+                167071900,
+                158475300,
+                237352200,
+                204694800,
+                218354700
+              ]
+            },
+            "median_ns": {
+              "baseline": 198425900.0,
+              "candidate": 196438150.0
+            },
+            "candidate_over_baseline": 0.9899824065305991
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                250096700,
+                272843700,
+                244221400,
+                232174000,
+                466655200,
+                263435600
+              ],
+              "candidate": [
+                216522700,
+                179944800,
+                197305400,
+                281591700,
+                216824000,
+                235978700
+              ]
+            },
+            "median_ns": {
+              "baseline": 256766150.0,
+              "candidate": 216673350.0
+            },
+            "candidate_over_baseline": 0.8438548071854487
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/repeat-motion/raw-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1197897200,
+                1289301200,
+                1300054500,
+                1293591600,
+                2164073100,
+                1181955900
+              ],
+              "candidate": [
+                1192481100,
+                1121226600,
+                1125001200,
+                1230110800,
+                1178934000,
+                1190059100
+              ]
+            },
+            "median_ns": {
+              "baseline": 1291446400.0,
+              "candidate": 1184496550.0
+            },
+            "candidate_over_baseline": 0.9171859939367208
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                1831695900,
+                1975077900,
+                1860163100,
+                1882366600,
+                2922435600,
+                1966465100
+              ],
+              "candidate": [
+                1625547200,
+                1720016800,
+                1627204600,
+                1845564100,
+                1588322600,
+                1670452800
+              ]
+            },
+            "median_ns": {
+              "baseline": 1924415850.0,
+              "candidate": 1648828700.0
+            },
+            "candidate_over_baseline": 0.8567943877618759
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/repeat-motion/gyro-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1065715500,
+                1253599500,
+                1196732600,
+                1204697400,
+                1822883600,
+                1006214200
+              ],
+              "candidate": [
+                1140515600,
+                1071094900,
+                1079455000,
+                1221667400,
+                997009500,
+                1021541700
+              ]
+            },
+            "median_ns": {
+              "baseline": 1200715000.0,
+              "candidate": 1075274950.0
+            },
+            "candidate_over_baseline": 0.8955288723802068
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                1661872500,
+                1823653700,
+                1777188500,
+                1777841500,
+                2798045700,
+                1614500000
+              ],
+              "candidate": [
+                1535449800,
+                1609535400,
+                1571904700,
+                1826830700,
+                1431648600,
+                1414559000
+              ]
+            },
+            "median_ns": {
+              "baseline": 1777515000.0,
+              "candidate": 1553677250.0
+            },
+            "candidate_over_baseline": 0.8740726519888721
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/last-pose/raw-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                180118500,
+                246681100,
+                250487800,
+                206382500,
+                313195600,
+                130356000
+              ],
+              "candidate": [
+                168603800,
+                170462100,
+                243284600,
+                191361500,
+                166148600,
+                157872300
+              ]
+            },
+            "median_ns": {
+              "baseline": 226531800.0,
+              "candidate": 169532950.0
+            },
+            "candidate_over_baseline": 0.7483847742347873
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                200186100,
+                265060500,
+                286604300,
+                183309800,
+                368282900,
+                179528100
+              ],
+              "candidate": [
+                185340800,
+                199823400,
+                277550100,
+                225747100,
+                204279900,
+                199388800
+              ]
+            },
+            "median_ns": {
+              "baseline": 232623300.0,
+              "candidate": 202051650.0
+            },
+            "candidate_over_baseline": 0.8685787279262224
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/last-pose/gyro-legacy",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                150821900,
+                221779300,
+                243520200,
+                211187300,
+                325563600,
+                132232900
+              ],
+              "candidate": [
+                178078900,
+                193061400,
+                206073000,
+                196300400,
+                176005300,
+                176635800
+              ]
+            },
+            "median_ns": {
+              "baseline": 216483300.0,
+              "candidate": 185570150.0
+            },
+            "candidate_over_baseline": 0.8572030729391136
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                238836600,
+                277957400,
+                284267900,
+                229666900,
+                372764400,
+                183376000
+              ],
+              "candidate": [
+                222613800,
+                195195800,
+                234239700,
+                236888400,
+                236194600,
+                179868800
+              ]
+            },
+            "median_ns": {
+              "baseline": 258397000.0,
+              "candidate": 228426750.0
+            },
+            "candidate_over_baseline": 0.8840147137931168
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/last-pose/raw-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1207368900,
+                1211601000,
+                1254504200,
+                1237155800,
+                1523047400,
+                1012438500
+              ],
+              "candidate": [
+                1242236200,
+                1077774100,
+                1106330300,
+                1276516500,
+                1135706500,
+                1053512500
+              ]
+            },
+            "median_ns": {
+              "baseline": 1224378400.0,
+              "candidate": 1121018400.0
+            },
+            "candidate_over_baseline": 0.9155816535149591
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                1410745100,
+                1432811100,
+                1588789900,
+                1411997200,
+                1516856300,
+                1304480400
+              ],
+              "candidate": [
+                1307560700,
+                1253276600,
+                1257272500,
+                1377930000,
+                1317591300,
+                1268775600
+              ]
+            },
+            "median_ns": {
+              "baseline": 1422404150.0,
+              "candidate": 1288168150.0
+            },
+            "candidate_over_baseline": 0.9056273844532864
+          }
+        }
+      },
+      {
+        "case": "flatwall_02/last-pose/gyro-0.1875",
+        "modes": {
+          "default_control": {
+            "samples_ns": {
+              "baseline": [
+                1225363600,
+                1174318800,
+                1295029400,
+                1250734100,
+                1258729500,
+                1138413700
+              ],
+              "candidate": [
+                1117787100,
+                1131295200,
+                1103141400,
+                1178345800,
+                1208208900,
+                1063498700
+              ]
+            },
+            "median_ns": {
+              "baseline": 1238048850.0,
+              "candidate": 1124541150.0
+            },
+            "candidate_over_baseline": 0.9083172687410517
+          },
+          "balanced": {
+            "samples_ns": {
+              "baseline": [
+                1354844100,
+                1336315200,
+                1436751300,
+                1399483100,
+                1389924000,
+                1293526000
+              ],
+              "candidate": [
+                1151798600,
+                1389997600,
+                1125842900,
+                1210011200,
+                1286955600,
+                1136525300
+              ]
+            },
+            "median_ns": {
+              "baseline": 1372384050.0,
+              "candidate": 1180904900.0
+            },
+            "candidate_over_baseline": 0.8604769925736167
+          }
+        }
+      }
+    ],
+    "groups": {
+      "all": {
+        "cases": 16,
+        "modes": {
+          "default_control": {
+            "sum_case_medians_ns": {
+              "baseline": 13404527050.0,
+              "candidate": 12320474350.0
+            },
+            "candidate_over_baseline": 0.9191278665814622,
+            "case_ratio_range": [
+              0.7483847742347873,
+              1.1062816343045805
+            ],
+            "faster_cases": 12
+          },
+          "balanced": {
+            "sum_case_medians_ns": {
+              "baseline": 17554186250.0,
+              "candidate": 15465062200.0
+            },
+            "candidate_over_baseline": 0.8809899803814603,
+            "case_ratio_range": [
+              0.8438548071854487,
+              0.9279971113797719
+            ],
+            "faster_cases": 16
+          }
+        }
+      },
+      "legacy": {
+        "cases": 8,
+        "modes": {
+          "default_control": {
+            "sum_case_medians_ns": {
+              "baseline": 1914417800.0,
+              "candidate": 1850500400.0
+            },
+            "candidate_over_baseline": 0.9666126171622517,
+            "case_ratio_range": [
+              0.7483847742347873,
+              1.1062816343045805
+            ],
+            "faster_cases": 4
+          },
+          "balanced": {
+            "sum_case_medians_ns": {
+              "baseline": 2395317550.0,
+              "candidate": 2122595950.0
+            },
+            "candidate_over_baseline": 0.8861438643072607,
+            "case_ratio_range": [
+              0.8438548071854487,
+              0.9279971113797719
+            ],
+            "faster_cases": 8
+          }
+        }
+      },
+      "fine": {
+        "cases": 8,
+        "modes": {
+          "default_control": {
+            "sum_case_medians_ns": {
+              "baseline": 11490109250.0,
+              "candidate": 10469973950.0
+            },
+            "candidate_over_baseline": 0.9112162227700316,
+            "case_ratio_range": [
+              0.8928928511002674,
+              0.9286273575226686
+            ],
+            "faster_cases": 8
+          },
+          "balanced": {
+            "sum_case_medians_ns": {
+              "baseline": 15158868700.0,
+              "candidate": 13342466250.0
+            },
+            "candidate_over_baseline": 0.8801755931826232,
+            "case_ratio_range": [
+              0.8567943877618759,
+              0.9101449841163474
+            ],
+            "faster_cases": 8
+          }
+        }
+      }
+    },
+    "measured_recordings_per_case_and_implementation": 6
+  },
+  "time_verification": [
+    {
+      "runs": 128,
+      "frames": 20480,
+      "exact_original_pose_frames": 20480
+    },
+    {
+      "runs": 128,
+      "frames": 20480,
+      "exact_original_pose_frames": 20480
+    },
+    {
+      "runs": 128,
+      "frames": 20480,
+      "exact_original_pose_frames": 20480
+    },
+    {
+      "runs": 128,
+      "frames": 20480,
+      "exact_original_pose_frames": 20480
+    }
+  ],
+  "original_pose_and_threshold_bits_match": true,
+  "replay_frames_checked": 81920,
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "whole_application_speedup_established": false
+}

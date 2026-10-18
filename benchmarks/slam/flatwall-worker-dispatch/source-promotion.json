@@ -1,0 +1,12 @@
+{
+  "schema": "cloudanalyzer.worker_source_comment_promotion.v1",
+  "path": "rust/crates/ca-core/src/odometry.rs",
+  "executed_source": "benchmarks/slam/flatwall-worker-dispatch/executed-source/candidate/rust/crates/ca-core/src/odometry.rs",
+  "promoted_source": "benchmarks/slam/flatwall-worker-dispatch/promoted-source/rust/crates/ca-core/src/odometry.rs",
+  "executed_sha256": "b8f145788c22a2ee847f5a18006e65f8753ed4c3b8e2f4dc4ee739b7164b9d10",
+  "promoted_sha256": "84cca68bb7a2c1ec0b1ea3176c140483b01510bc5ca5754b520dd6d492081c06",
+  "old_comment": "    // Balanced search also splits within a chunk. Enter the pool once for an\n    // remaining ICP iterations once repeated work is needed. Keep an existing\n",
+  "new_comment": "    // Balanced search also splits within a chunk. Enter the pool once for the\n    // remaining iterations when repeated work is needed. Keep an existing\n",
+  "occurrences": 1,
+  "reason": "Correct two line comments after measurement; preserve all executed bytes and arithmetic."
+}

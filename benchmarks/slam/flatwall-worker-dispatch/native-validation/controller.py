@@ -1,0 +1,60 @@
+"""Run targeted native state tests and both feature configurations before timings."""
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+STUDY = ROOT/'notes/slam-repeat-workers-20261018'
+OUT = STUDY/'native-validation-01'
+OUT.mkdir()
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
+def save(path, value):
+    with path.open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, indent=2)
+        stream.write('\n')
+
+
+env = dict(os.environ, PATH=str(Path.home()/'.cargo/bin')+os.pathsep+os.environ['PATH'],
+    RAYON_NUM_THREADS='4')
+commands = []
+for implementation in ['baseline', 'candidate']:
+    build = STUDY/('build-'+implementation)
+    binary = build/'odometry-stage-profile.exe'
+    assert sha(binary) == read(build/'receipt.json')['artifacts'][binary.name]['sha256']
+    commands.append((implementation+'-odometry', [str(binary), 'odometry::', '--nocapture', '--test-threads=1']))
+cargo = str(Path.home()/'.cargo/bin/cargo.exe')
+for feature in ['serial', 'parallel']:
+    command = [cargo, 'clippy', '--offline', '--manifest-path', 'rust/Cargo.toml',
+        '-p', 'ca-core', '--all-targets']
+    if feature=='parallel':
+        command += ['--features', 'parallel']
+    commands.append(('clippy-'+feature, command+['--', '-D', 'warnings']))
+commands.append(('rustfmt', [str(Path.home()/'.cargo/bin/rustfmt.exe'), '--edition', '2024',
+    '--check', 'rust/crates/ca-core/src/odometry.rs']))
+save(OUT/'invocation.json', dict(started_at_utc=datetime.now(timezone.utc).isoformat(),
+    controller_sha256=sha(Path(__file__)), commands=dict(commands),
+    source_sha256=sha(ROOT/'rust/crates/ca-core/src/odometry.rs'), environment=dict(RAYON_NUM_THREADS='4'),
+    limitation='Targeted odometry release tests, serial/parallel all-target clippy and formatting. No broad Windows release-suite clean claim; the previous study retained three unchanged NaN bit-comparison failures.'))
+results = {}
+for name, command in commands:
+    log = OUT/(name+'.log')
+    with log.open('xb') as stream:
+        result = subprocess.run(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT)
+    results[name] = dict(returncode=result.returncode, log_sha256=sha(log))
+    save(OUT/(name+'-result.json'), results[name])
+    print(json.dumps(dict(check=name, **results[name])), flush=True)
+    assert result.returncode == 0, log.read_text(encoding='utf-8', errors='replace')[-6500:]
+save(OUT/'receipt.json', dict(invocation_sha256=sha(OUT/'invocation.json'), checks=results,
+    files_sha256={p.name:sha(p) for p in sorted(OUT.iterdir()) if p.is_file()}))

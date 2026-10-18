@@ -230,6 +230,19 @@ impl Registration {
         !self.source.is_empty()
     }
 
+    // The default H/b path can fold one 256-point chunk on the caller.
+    // Balanced search also splits within a chunk. Enter the pool once for the
+    // remaining iterations when repeated work is needed. Keep an existing
+    // caller's Rayon pool; completed or first-iteration work stays on the caller.
+    #[cfg(feature = "parallel")]
+    fn needs_alignment_worker(&self) -> bool {
+        self.needs_alignment()
+            && (self.target_balance || self.source.len() > 256)
+            && self.iterations > 0
+            && self.termination.is_none()
+            && rayon::current_thread_index().is_none()
+    }
+
     /// The points registered, in the world at the prediction.
     pub fn source(&self) -> &[[f64; 3]] {
         &self.source
@@ -989,11 +1002,30 @@ impl Odometry {
         Ok(self.complete(registration))
     }
 
+    // Keep pool-entry machinery out of small caller-side registrations.
+    #[cfg(feature = "parallel")]
+    #[inline(never)]
+    fn align_on_worker(&self, registration: &mut Registration) {
+        rayon::scope(|_| {
+            loop {
+                let equations = self.equations(registration);
+                if self.step(registration, equations) {
+                    break;
+                }
+            }
+        });
+    }
+
     fn complete(&mut self, mut registration: Registration) -> Rigid {
         if registration.needs_alignment() {
             loop {
                 let equations = self.equations(&registration);
                 if self.step(&mut registration, equations) {
+                    break;
+                }
+                #[cfg(feature = "parallel")]
+                if registration.needs_alignment_worker() {
+                    self.align_on_worker(&mut registration);
                     break;
                 }
             }
@@ -1020,6 +1052,172 @@ mod tests {
                 })
                 .collect(),
             ..PointCloud::default()
+        }
+    }
+
+    #[cfg(feature = "parallel")]
+    #[test]
+    fn alignment_worker_gate_uses_captured_policy_and_existing_chunk_boundary() {
+        let mut odometry = Odometry::new(OdometryParams {
+            min_range: 0.0,
+            ..OdometryParams::default()
+        });
+        let scan = sampling_cloud();
+        odometry.set_target_balance(true);
+        assert!(!odometry.begin(&scan).needs_alignment_worker()); // Empty map.
+        odometry.register(&scan);
+        let mut balanced = odometry.begin(&scan);
+        odometry.set_target_balance(false);
+        assert!(!balanced.needs_alignment_worker()); // First iteration stays here.
+        balanced.iterations = 1;
+        assert!(balanced.needs_alignment_worker()); // Choice belongs to begin.
+        balanced.termination = Some(RegistrationTermination::Converged);
+        assert!(!balanced.needs_alignment_worker());
+        balanced.termination = None;
+        balanced.source.clear();
+        assert!(!balanced.needs_alignment_worker());
+        let mut default = odometry.begin(&scan);
+        default.iterations = 1;
+        odometry.set_target_balance(true);
+        for count in [0, 10, 255, 256, 257] {
+            default.source.resize(count, [1.0, 2.0, 3.0]);
+            assert_eq!(default.needs_alignment_worker(), count > 256);
+        }
+        assert!(
+            !odometry
+                .begin(&PointCloud::default())
+                .needs_alignment_worker()
+        );
+    }
+
+    #[cfg(feature = "parallel")]
+    #[test]
+    fn alignment_worker_gate_preserves_nested_local_pools() {
+        let mut odometry = Odometry::new(OdometryParams::default());
+        let scan = sampling_cloud();
+        odometry.register(&scan);
+        let mut registration = odometry.begin(&scan);
+        registration.source.resize(257, [1.0, 2.0, 3.0]);
+        registration.iterations = 1;
+        assert!(registration.needs_alignment_worker());
+        for workers in [1, 4] {
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(workers)
+                .build()
+                .unwrap();
+            pool.install(|| {
+                assert_eq!(rayon::current_num_threads(), workers);
+                assert!(!registration.needs_alignment_worker());
+                rayon::scope(|scope| {
+                    scope.spawn(|_| {
+                        assert_eq!(rayon::current_num_threads(), workers);
+                        assert!(!registration.needs_alignment_worker());
+                    })
+                });
+            });
+        }
+    }
+
+    #[test]
+    fn automatic_alignment_preserves_stepped_state_for_both_policies_and_sizes() {
+        for dense in [false, true] {
+            for balanced in [false, true] {
+                for predicted in [false, true] {
+                    let params = OdometryParams {
+                        min_range: 0.0,
+                        max_iterations: 4,
+                        diagnostics: true,
+                        ..OdometryParams::default()
+                    };
+                    let mut automatic = Odometry::new(params);
+                    let mut stepped = Odometry::new(params);
+                    for odometry in [&mut automatic, &mut stepped] {
+                        odometry.set_target_balance(balanced);
+                        odometry.set_registration_voxel(Some(0.125)).unwrap();
+                        odometry.set_capture_linearization(true);
+                    }
+                    let mut scan = if dense {
+                        PointCloud {
+                            positions: (0..12)
+                                .flat_map(|i| {
+                                    (0..12).flat_map(move |j| {
+                                        (0..3).map(move |k| {
+                                            [
+                                                2.0 * i as f64 + 2.0,
+                                                2.0 * j as f64 - 10.0,
+                                                2.0 * k as f64 - 2.0 + 0.125 * (i % 3) as f64,
+                                            ]
+                                        })
+                                    })
+                                })
+                                .collect(),
+                            ..PointCloud::default()
+                        }
+                    } else {
+                        sampling_cloud()
+                    };
+                    for frame in 0..4 {
+                        let mut r = if predicted && frame > 0 {
+                            stepped
+                                .begin_with_prediction(&scan, &Rigid::IDENTITY)
+                                .unwrap()
+                        } else {
+                            stepped.begin(&scan)
+                        };
+                        if frame > 0 {
+                            assert_eq!(r.source().len() > 256, dense);
+                        }
+                        if r.needs_alignment() {
+                            loop {
+                                let equations = stepped.equations(&r);
+                                if stepped.step(&mut r, equations) {
+                                    break;
+                                }
+                            }
+                        }
+                        let expected = stepped.finish(r);
+                        let actual = if predicted && frame > 0 {
+                            automatic
+                                .register_with_prediction(&scan, &Rigid::IDENTITY)
+                                .unwrap()
+                        } else {
+                            automatic.register(&scan)
+                        };
+                        assert_eq!(
+                            actual.to_matrix().map(f64::to_bits),
+                            expected.to_matrix().map(f64::to_bits)
+                        );
+                        assert_eq!(automatic.last_report(), stepped.last_report());
+                        assert_eq!(automatic.map.map, stepped.map.map);
+                        assert_eq!(automatic.placed(), stepped.placed());
+                        assert_eq!(automatic.error_sum.to_bits(), stepped.error_sum.to_bits());
+                        assert_eq!(automatic.error_count, stepped.error_count);
+                        let a = automatic.last_linearization().unwrap();
+                        let b = stepped.last_linearization().unwrap();
+                        assert_eq!(
+                            a.normal_matrix.map(|row| row.map(f64::to_bits)),
+                            b.normal_matrix.map(|row| row.map(f64::to_bits))
+                        );
+                        assert_eq!(
+                            a.right_hand_side.map(f64::to_bits),
+                            b.right_hand_side.map(f64::to_bits)
+                        );
+                        assert_eq!(a.matched_source_indices, b.matched_source_indices);
+                        assert_eq!(
+                            a.weights.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                            b.weights.iter().map(|v| v.to_bits()).collect::<Vec<_>>()
+                        );
+                        assert_eq!(a.target_multiplicity, b.target_multiplicity);
+                        for point in &mut scan.positions {
+                            point[0] -= 0.03125;
+                            point[1] += 0.015625;
+                        }
+                    }
+                    let empty = PointCloud::default();
+                    assert_eq!(automatic.register(&empty), stepped.register(&empty));
+                    assert_eq!(automatic.last_report(), stepped.last_report());
+                }
+            }
         }
     }
 

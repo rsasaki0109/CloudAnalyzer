@@ -13,6 +13,8 @@ pub struct RegistrationLinearization {
     pub threshold_sq: f64,
     /// Raw legacy kernel parameter: weight = kernel² / (kernel + distance²)².
     pub kernel: f64,
+    /// Whether the solver divided robust weights by matched target multiplicity.
+    pub target_balance: bool,
     pub map_voxel: f64,
     pub map_points: usize,
     pub max_range: f64,
@@ -23,7 +25,10 @@ pub struct RegistrationLinearization {
     pub matched_source_indices: Vec<usize>,
     pub target_world: Vec<[f64; 3]>,
     pub squared_distances: Vec<f64>,
+    /// Effective weights used by this final-pose surrogate, after optional balancing.
     pub weights: Vec<f64>,
+    pub robust_weights: Vec<f64>,
+    pub target_multiplicity: Vec<usize>,
     /// Translation xyz, then rotation xyz around center_world; fixed weights.
     pub normal_matrix: [[f64; 6]; 6],
     /// -J^T W (source_world - target_world), in the same parameter order.
@@ -42,11 +47,20 @@ impl RegistrationLinearization {
     /// reduction or arithmetic. Internal callers provide corresponding rows.
     pub(crate) fn accumulate(&mut self) {
         let mut radius_sum = 0.0;
+        self.target_multiplicity =
+            crate::odometry::target_balance::multiplicities(&self.target_world);
         for (row, &index) in self.matched_source_indices.iter().enumerate() {
             let world = self.source_world[index];
             let q: [f64; 3] = std::array::from_fn(|i| world[i] - self.center_world[i]);
             let residual: [f64; 3] = std::array::from_fn(|i| world[i] - self.target_world[row][i]);
-            let w = self.kernel * self.kernel / (self.kernel + self.squared_distances[row]).powi(2);
+            let robust =
+                self.kernel * self.kernel / (self.kernel + self.squared_distances[row]).powi(2);
+            self.robust_weights.push(robust);
+            let w = if self.target_balance {
+                robust / self.target_multiplicity[row] as f64
+            } else {
+                robust
+            };
             self.weights.push(w);
             self.weight_sum += w;
             radius_sum += w * (q[0] * q[0] + q[1] * q[1] + q[2] * q[2]);

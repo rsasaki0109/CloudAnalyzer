@@ -1,0 +1,17 @@
+{
+  "creator": "Kenji Koide (AIST)",
+  "source": "https://zenodo.org/records/7641866",
+  "source_version": 2,
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "recordings": [
+    "flatwall_01.bag",
+    "flatwall_02.bag"
+  ],
+  "reference_members": [
+    "gt/flatwall_01.txt",
+    "gt/flatwall_02.txt"
+  ],
+  "changes": "Derived candidate trajectories, map/match samples and target-balanced diagnostics; selected author reference members retained verbatim.",
+  "raw_recordings_redistributed": false
+}

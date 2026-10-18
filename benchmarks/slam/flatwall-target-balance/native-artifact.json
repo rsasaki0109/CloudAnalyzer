@@ -1,0 +1,16 @@
+{
+  "binary_sha256": "68e7f5df4562794c47c46de5a782f3d0469c85ec7001bfdc4af18c5fbb5e512d",
+  "binary_bytes": 7891968,
+  "verified_build_inputs": 115,
+  "build_inputs_sha256": "c46c46888893d6542eeffcb8cb192af81884a6eb7b480e14a82c155dfd284adb",
+  "package_sha256": {
+    "__init__.py": "3ebd63190251c5902ce36b38991b5d7af02a8b5617d27c64dad5a59e518ea159",
+    "_copc.py": "2a7d898e7d977bcfbb8a1a9689c05fc3e4875e7f075024de762d62b2a3ea4ee7",
+    "_core.pyd": "68e7f5df4562794c47c46de5a782f3d0469c85ec7001bfdc4af18c5fbb5e512d",
+    "_core.pyi": "acc3d904eac9b0adb7cf13d20e8cfa142c7035c692991c7c21ca917629e74fc4",
+    "_ranges.py": "6f6b4d0e577ecba68c284a818b699d02ab91d0420e8d2d46a40c879c2f2216cc",
+    "_spatial.py": "eafa99894b7a4edb14b2e9cff4d48f0ab23deda4da6098450f0b9e864d9d1cc6",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "installed_extension_replaced": false
+}

@@ -28,7 +28,7 @@ impl LidarOdometry {
     /// are left out; the local map keeps `map_points` per voxel of
     /// `map_voxel` metres; `deskew` undoes the motion during each scan.
     #[new]
-    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false, registration_voxel=None, capture_linearization=false))]
+    #[pyo3(signature = (min_range=1.5, max_range=80.0, map_voxel=1.0, map_points=20, deskew=false, *, diagnostics=false, registration_voxel=None, capture_linearization=false, target_balance=false))]
     #[allow(clippy::too_many_arguments)]
     fn new(
         min_range: f64,
@@ -39,6 +39,7 @@ impl LidarOdometry {
         diagnostics: bool,
         registration_voxel: Option<f64>,
         capture_linearization: bool,
+        target_balance: bool,
     ) -> PyResult<Self> {
         let mut inner = Odometry::new(OdometryParams {
             min_range,
@@ -53,7 +54,14 @@ impl LidarOdometry {
             .set_registration_voxel(registration_voxel)
             .map_err(|e| PyValueError::new_err(e.to_string()))?;
         inner.set_capture_linearization(capture_linearization);
+        inner.set_target_balance(target_balance);
         Ok(LidarOdometry { inner })
+    }
+
+    /// Experimental inverse-target-multiplicity weights; false by default.
+    #[getter]
+    fn target_balance(&self) -> bool {
+        self.inner.target_balance()
     }
 
     /// Explicit independent source voxel in metres; None keeps legacy sampling.

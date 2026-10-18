@@ -702,6 +702,9 @@ class OdometryLinearization(TypedDict):
     target_world: npt.NDArray[np.float64]
     squared_distances: npt.NDArray[np.float64]
     weights: npt.NDArray[np.float64]
+    robust_weights: npt.NDArray[np.float64]
+    target_multiplicity: npt.NDArray[np.int64]
+    target_balance: bool
     normal_matrix: npt.NDArray[np.float64]
     right_hand_side: npt.NDArray[np.float64]
     weight_sum: float
@@ -753,8 +756,12 @@ class LidarOdometry:
         map_points: int = 20,
         deskew: bool = False,
         *, diagnostics: bool = False, registration_voxel: float | None = None,
-        capture_linearization: bool = False,
+        capture_linearization: bool = False, target_balance: bool = False,
     ) -> None: ...
+    @property
+    def target_balance(self) -> bool:
+        """Experimental inverse-target-multiplicity weights; off by default."""
+        ...
     @property
     def registration_voxel(self) -> float | None:
         """Independent source voxel in metres; None preserves legacy two-stage sampling."""

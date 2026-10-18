@@ -1,0 +1,191 @@
+{
+  "flatwall_01/repeat-motion/raw-legacy": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 148,
+      "insufficient_points": 36
+    },
+    "matches": 4354,
+    "unique_targets": 3986,
+    "supported_systems": 148,
+    "weak_systems": 0
+  },
+  "flatwall_01/repeat-motion/gyro-legacy": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 147,
+      "insufficient_points": 37
+    },
+    "matches": 4353,
+    "unique_targets": 3973,
+    "supported_systems": 147,
+    "weak_systems": 1
+  },
+  "flatwall_01/repeat-motion/raw-0.1875": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 183,
+      "iteration_limit": 1
+    },
+    "matches": 148297,
+    "unique_targets": 63828,
+    "supported_systems": 184,
+    "weak_systems": 0
+  },
+  "flatwall_01/repeat-motion/gyro-0.1875": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 182,
+      "iteration_limit": 2
+    },
+    "matches": 146376,
+    "unique_targets": 64224,
+    "supported_systems": 184,
+    "weak_systems": 0
+  },
+  "flatwall_01/last-pose/raw-legacy": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 148,
+      "insufficient_points": 36
+    },
+    "matches": 4357,
+    "unique_targets": 4001,
+    "supported_systems": 148,
+    "weak_systems": 0
+  },
+  "flatwall_01/last-pose/gyro-legacy": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 147,
+      "insufficient_points": 37
+    },
+    "matches": 4344,
+    "unique_targets": 3975,
+    "supported_systems": 147,
+    "weak_systems": 0
+  },
+  "flatwall_01/last-pose/raw-0.1875": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 183,
+      "iteration_limit": 1
+    },
+    "matches": 148298,
+    "unique_targets": 63920,
+    "supported_systems": 184,
+    "weak_systems": 0
+  },
+  "flatwall_01/last-pose/gyro-0.1875": {
+    "scans": 185,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 184
+    },
+    "matches": 146383,
+    "unique_targets": 63749,
+    "supported_systems": 184,
+    "weak_systems": 0
+  },
+  "flatwall_02/repeat-motion/raw-legacy": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 94,
+      "insufficient_points": 40
+    },
+    "matches": 2867,
+    "unique_targets": 2549,
+    "supported_systems": 94,
+    "weak_systems": 0
+  },
+  "flatwall_02/repeat-motion/gyro-legacy": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 93,
+      "insufficient_points": 41
+    },
+    "matches": 2841,
+    "unique_targets": 2567,
+    "supported_systems": 93,
+    "weak_systems": 0
+  },
+  "flatwall_02/repeat-motion/raw-0.1875": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 132,
+      "iteration_limit": 2
+    },
+    "matches": 111930,
+    "unique_targets": 45713,
+    "supported_systems": 134,
+    "weak_systems": 0
+  },
+  "flatwall_02/repeat-motion/gyro-0.1875": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 132,
+      "iteration_limit": 2
+    },
+    "matches": 110159,
+    "unique_targets": 49792,
+    "supported_systems": 134,
+    "weak_systems": 0
+  },
+  "flatwall_02/last-pose/raw-legacy": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 94,
+      "insufficient_points": 40
+    },
+    "matches": 2864,
+    "unique_targets": 2617,
+    "supported_systems": 94,
+    "weak_systems": 0
+  },
+  "flatwall_02/last-pose/gyro-legacy": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 93,
+      "insufficient_points": 41
+    },
+    "matches": 2837,
+    "unique_targets": 2615,
+    "supported_systems": 93,
+    "weak_systems": 0
+  },
+  "flatwall_02/last-pose/raw-0.1875": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 134
+    },
+    "matches": 111929,
+    "unique_targets": 48380,
+    "supported_systems": 134,
+    "weak_systems": 0
+  },
+  "flatwall_02/last-pose/gyro-0.1875": {
+    "scans": 135,
+    "termination_counts": {
+      "empty_map": 1,
+      "converged": 134
+    },
+    "matches": 110155,
+    "unique_targets": 47782,
+    "supported_systems": 134,
+    "weak_systems": 0
+  }
+}

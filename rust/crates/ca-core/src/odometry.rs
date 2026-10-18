@@ -12,6 +12,9 @@ use crate::odometry_linearization::RegistrationLinearization;
 use std::collections::{HashMap, HashSet};
 use std::hash::{BuildHasherDefault, Hasher};
 
+#[path = "odometry_target_balance.rs"]
+pub(crate) mod target_balance;
+
 /// A fast hash for voxel keys (FxHash's step): the map is looked up millions
 /// of times a scan, where the default hasher's resistance to attacks is not needed.
 #[derive(Default)]
@@ -100,6 +103,7 @@ pub struct Odometry {
     params: OdometryParams,
     registration_voxel: Option<f64>,
     capture_linearization: bool,
+    target_balance: bool,
     map: LocalMap,
     poses: Vec<Rigid>,
     error_sum: f64,
@@ -204,6 +208,7 @@ pub struct Registration {
     center: [f64; 3],
     threshold_sq: f64,
     kernel: f64,
+    target_balance: bool,
     iterations: usize,
     input_points: usize,
     registration_points: usize,
@@ -502,6 +507,7 @@ impl LocalMap {
             center_world: registration.center,
             threshold_sq: registration.threshold_sq,
             kernel: registration.kernel,
+            target_balance: registration.target_balance,
             map_voxel: self.voxel,
             map_points: self.max_points,
             max_range,
@@ -512,6 +518,8 @@ impl LocalMap {
             target_world: Vec::new(),
             squared_distances: Vec::new(),
             weights: Vec::new(),
+            robust_weights: Vec::new(),
+            target_multiplicity: Vec::new(),
             normal_matrix: [[0.0; 6]; 6],
             right_hand_side: [0.0; 6],
             weight_sum: 0.0,
@@ -631,6 +639,7 @@ impl Odometry {
             params,
             registration_voxel: None,
             capture_linearization: false,
+            target_balance: false,
             map: LocalMap::new(params.map_voxel, params.map_points),
             poses: Vec::new(),
             error_sum: 0.0,
@@ -682,6 +691,16 @@ impl Odometry {
 
     pub fn capture_linearization(&self) -> bool {
         self.capture_linearization
+    }
+
+    /// Experimental inverse-target-multiplicity weights, off by default.
+    /// Applies to subsequent registrations; pending registrations retain their policy.
+    pub fn set_target_balance(&mut self, enabled: bool) {
+        self.target_balance = enabled;
+    }
+
+    pub fn target_balance(&self) -> bool {
+        self.target_balance
     }
 
     /// Owned final-pose data captured before insertion; None before the first
@@ -817,6 +836,7 @@ impl Odometry {
             // Pairs within 3 sigma, weighted by a Geman-McClure kernel of sigma / 3.
             threshold_sq: (3.0 * sigma).powi(2),
             kernel: sigma / 3.0,
+            target_balance: self.target_balance,
             iterations: 0,
             input_points: scan.len(),
             registration_points,
@@ -829,6 +849,16 @@ impl Odometry {
     /// The normal equations of the registration's next step, from this map.
     pub fn equations(&self, registration: &Registration) -> (Mat6, Vec6) {
         let r = registration;
+        if r.target_balance {
+            return target_balance::equations(
+                &self.map,
+                &r.source,
+                &r.total,
+                r.center,
+                r.threshold_sq,
+                r.kernel,
+            );
+        }
         self.map
             .normal_equations(&r.source, &r.total, r.center, r.threshold_sq, r.kernel)
     }

@@ -1,0 +1,16 @@
+{
+  "implementation": "baseline",
+  "artifacts": {
+    "audit_odometry_steps.exe": {
+      "sha256": "90f234dbd11a86c2b21ac0838815e30c485e36c1e86a3225e44d99bb4ce63b9b",
+      "bytes": 622592
+    },
+    "odometry-stage-profile.exe": {
+      "sha256": "e13f7b4d943f7921efa0b9b96026f70c6890df2bae806d0f3594cc0530751636",
+      "bytes": 8753664
+    }
+  },
+  "inputs_sha256": "9ae0557950183744527a6b880b6f7268078e3d8ca7ec9a6acaf7999edd17374d",
+  "sources_checked": 84,
+  "installed_extension_replaced": false
+}

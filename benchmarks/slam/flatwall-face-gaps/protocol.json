@@ -1,0 +1,62 @@
+{
+  "schema": "cloudanalyzer.voxel_face_gaps.v1",
+  "base": "e8711e2e9cd6574571c94e9066339153a67b5c5e",
+  "frozen_at_utc": "2026-10-18T08:36:14.704473+00:00",
+  "candidate": "Compute the six squared distances to the query voxel faces once per nearest query. Reuse these values in the existing 26-neighbor traversal and retain the same three-axis ordered sum.",
+  "invariants": "Same voxel divisions, floor/casts, strict comparisons, center-first dx/dy/dz traversal, point order, nearest distance arithmetic, thresholds, exact target counts, weights, H/b chunks/reduction, solver, stopping, map updates, dispatch and defaults.",
+  "selection": "All 16 previous real recording cases in default and balanced modes: both recordings, both motion policies, raw and gyro, legacy and fine sampling. Reused development data; no blind holdout.",
+  "replay_process_order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "replay_threads": 4,
+  "replay_rounds": {
+    "warmup": 1,
+    "measured": 3
+  },
+  "replay_scope": "Complete native automatic register calls on preloaded scans; input loading, checks and serialization excluded.",
+  "replay_summary": "Per case/mode/implementation median of six complete measured recording totals, then sum of case medians and candidate/baseline ratio. Retain all per-frame clocks, warmups, samples and regressions.",
+  "fixed_process_order": [
+    {
+      "implementation": "baseline",
+      "threads": 1
+    },
+    {
+      "implementation": "candidate",
+      "threads": 1
+    },
+    {
+      "implementation": "candidate",
+      "threads": 1
+    },
+    {
+      "implementation": "baseline",
+      "threads": 1
+    },
+    {
+      "implementation": "baseline",
+      "threads": 4
+    },
+    {
+      "implementation": "candidate",
+      "threads": 4
+    },
+    {
+      "implementation": "candidate",
+      "threads": 4
+    },
+    {
+      "implementation": "baseline",
+      "threads": 4
+    }
+  ],
+  "fixed_scope": "64 frozen real states (60 eligible plus 4 empty), 32 repetitions, one warmup and five measured blocks per process; report all stage and whole-H/b clocks.",
+  "validation": "Strict original trajectory pose/threshold bits and termination/iteration equality; strict baseline/candidate complete numeric frame equality. All fixed-state pair rows and matrices checked against independent originals; strict cross-binary fixed-state validation bits.",
+  "builds": "Fresh baseline and candidate source snapshots and native release builds. Never substitute the preceding comment-promoted binary for a current-main build.",
+  "limitations": "Single host, uncontrolled CPU placement/frequency. No GPU, whole-application or accuracy gain established.",
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "raw_bags_redistributed": false
+}

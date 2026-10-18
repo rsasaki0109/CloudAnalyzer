@@ -1,0 +1,38 @@
+{
+  "invocation_sha256": "7cec5284f7819de2bcc8029097ae16f4bf62acfbf8dbd86e04b19c97beb0e0d7",
+  "checks": {
+    "baseline-odometry": {
+      "returncode": 0,
+      "log_sha256": "6c0760713aa52197e33a0a13eb6c145c256dd42c134ee6785ded3719eb26d2c7"
+    },
+    "candidate-odometry": {
+      "returncode": 0,
+      "log_sha256": "07ac9172c6e8f3590ef192faaad93b4da0a6de2229dd8586f349b073208cad24"
+    },
+    "clippy-serial": {
+      "returncode": 0,
+      "log_sha256": "7144ead130bb96c4bb31c2078c3e7d78d7afc82aab7031e857cb092b98a76613"
+    },
+    "clippy-parallel": {
+      "returncode": 0,
+      "log_sha256": "419e7ad5f9e5a4205cffbfe71953c3ae2dde8832cdbaaa7c9df805cd787e4529"
+    },
+    "rustfmt": {
+      "returncode": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "files_sha256": {
+    "baseline-odometry-result.json": "fea28a5dfa11168f33c7739df6ec612b3c84b2a523da5464bbccc6e514b8bdc0",
+    "baseline-odometry.log": "6c0760713aa52197e33a0a13eb6c145c256dd42c134ee6785ded3719eb26d2c7",
+    "candidate-odometry-result.json": "698517fd29a00c4b0f90c044c6a7e0a93a9b437cc1c147baeed31bc3457c6c1e",
+    "candidate-odometry.log": "07ac9172c6e8f3590ef192faaad93b4da0a6de2229dd8586f349b073208cad24",
+    "clippy-parallel-result.json": "c93e8e46649d32fd59ade574a3e2232f5d02e168ae4c7d265ebb8dc04f506d0b",
+    "clippy-parallel.log": "419e7ad5f9e5a4205cffbfe71953c3ae2dde8832cdbaaa7c9df805cd787e4529",
+    "clippy-serial-result.json": "bd00b9aa462e7715ca884f64bef8ef49acc01d9aedb68c812b15bbd588b7a197",
+    "clippy-serial.log": "7144ead130bb96c4bb31c2078c3e7d78d7afc82aab7031e857cb092b98a76613",
+    "invocation.json": "7cec5284f7819de2bcc8029097ae16f4bf62acfbf8dbd86e04b19c97beb0e0d7",
+    "rustfmt-result.json": "579bb46453d4d25595ed00c3bab724a759ac4d39425feec6445e259d0317e6ac",
+    "rustfmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

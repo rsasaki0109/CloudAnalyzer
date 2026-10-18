@@ -1,0 +1,58 @@
+{
+  "started_at_utc": "2026-10-18T08:47:28.129670+00:00",
+  "controller_sha256": "a61a897400768ca292214cc27520152cc5d0747fbb4c04e44e8955ee509677bf",
+  "commands": {
+    "baseline-odometry": [
+      "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-face-gaps-20261018\\build-baseline\\odometry-stage-profile.exe",
+      "odometry::",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "candidate-odometry": [
+      "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\slam-face-gaps-20261018\\build-candidate\\odometry-stage-profile.exe",
+      "odometry::",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "clippy-serial": [
+      "C:\\Users\\rsasa\\.cargo\\bin\\cargo.exe",
+      "clippy",
+      "--offline",
+      "--manifest-path",
+      "rust/Cargo.toml",
+      "-p",
+      "ca-core",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "clippy-parallel": [
+      "C:\\Users\\rsasa\\.cargo\\bin\\cargo.exe",
+      "clippy",
+      "--offline",
+      "--manifest-path",
+      "rust/Cargo.toml",
+      "-p",
+      "ca-core",
+      "--all-targets",
+      "--features",
+      "parallel",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "rustfmt": [
+      "C:\\Users\\rsasa\\.cargo\\bin\\rustfmt.exe",
+      "--edition",
+      "2024",
+      "--check",
+      "rust/crates/ca-core/src/odometry.rs"
+    ]
+  },
+  "source_sha256": "78be7042ebe829288f803dd6785941956d7c55e8b70da7a1c8a24c3919e43f1f",
+  "environment": {
+    "RAYON_NUM_THREADS": "4"
+  },
+  "limitation": "Targeted odometry release tests, serial/parallel all-target clippy and formatting. No broad Windows release-suite clean claim; the previous study retained three unchanged NaN bit-comparison failures."
+}

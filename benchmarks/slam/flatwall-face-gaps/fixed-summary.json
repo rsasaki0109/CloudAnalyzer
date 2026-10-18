@@ -1,0 +1,2525 @@
+{
+  "schema": "cloudanalyzer.voxel_face_gaps_summary.v1",
+  "fixed": {
+    "groups": {
+      "eligible": {
+        "states": 60,
+        "threads": {
+          "1": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 14753223.4375,
+                "candidate": 13408806.25
+              },
+              "candidate_over_baseline": 0.9088729867614737
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 12593045.3125,
+                "candidate": 10856839.0625
+              },
+              "candidate_over_baseline": 0.8621297544068532
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 1978117.1875,
+                "candidate": 1859542.1875
+              },
+              "candidate_over_baseline": 0.9400566352947681
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 14849345.3125,
+                "candidate": 13173439.0625
+              },
+              "candidate_over_baseline": 0.8871393846172301
+            }
+          },
+          "4": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 9226418.75,
+                "candidate": 8235037.5
+              },
+              "candidate_over_baseline": 0.8925497230439492
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 6091070.3125,
+                "candidate": 5074792.1875
+              },
+              "candidate_over_baseline": 0.8331527838523863
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 2288770.3125,
+                "candidate": 2155428.125
+              },
+              "candidate_over_baseline": 0.9417406863538212
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 9140700.0,
+                "candidate": 8138493.75
+              },
+              "candidate_over_baseline": 0.8903578227050445
+            }
+          }
+        }
+      },
+      "fine_final": {
+        "states": 24,
+        "threads": {
+          "1": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 8728540.625,
+                "candidate": 8009318.75
+              },
+              "candidate_over_baseline": 0.917601131059638
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 7404845.3125,
+                "candidate": 6507898.4375
+              },
+              "candidate_over_baseline": 0.8788702751851036
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 1131692.1875,
+                "candidate": 1068375.0
+              },
+              "candidate_over_baseline": 0.9440508751413467
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 8804840.625,
+                "candidate": 7856142.1875
+              },
+              "candidate_over_baseline": 0.8922526280820671
+            }
+          },
+          "4": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 5322209.375,
+                "candidate": 4773656.25
+              },
+              "candidate_over_baseline": 0.8969313143566435
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 3363340.625,
+                "candidate": 2837840.625
+              },
+              "candidate_over_baseline": 0.8437565329857126
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 1316484.375,
+                "candidate": 1233225.0
+              },
+              "candidate_over_baseline": 0.936756275591953
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 5200135.9375,
+                "candidate": 4735917.1875
+              },
+              "candidate_over_baseline": 0.9107294971555732
+            }
+          }
+        }
+      },
+      "legacy_final": {
+        "states": 20,
+        "threads": {
+          "1": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 243278.125,
+                "candidate": 233182.8125
+              },
+              "candidate_over_baseline": 0.9585029993962672
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 168150.0,
+                "candidate": 149579.6875
+              },
+              "candidate_over_baseline": 0.8895610318168302
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 49178.125,
+                "candidate": 49343.75
+              },
+              "candidate_over_baseline": 1.0033678591853594
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 251589.0625,
+                "candidate": 237581.25
+              },
+              "candidate_over_baseline": 0.9443226491612687
+            }
+          },
+          "4": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 312029.6875,
+                "candidate": 278946.875
+              },
+              "candidate_over_baseline": 0.8939754330267052
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 195695.3125,
+                "candidate": 169129.6875
+              },
+              "candidate_over_baseline": 0.8642500698630684
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 61873.4375,
+                "candidate": 56675.0
+              },
+              "candidate_over_baseline": 0.9159827268365363
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 302615.625,
+                "candidate": 279084.375
+              },
+              "candidate_over_baseline": 0.9222404659376064
+            }
+          }
+        }
+      },
+      "capped_steps": {
+        "states": 16,
+        "threads": {
+          "1": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 5781404.6875,
+                "candidate": 5166304.6875
+              },
+              "candidate_over_baseline": 0.8936071710513692
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 5020050.0,
+                "candidate": 4199360.9375
+              },
+              "candidate_over_baseline": 0.836517751317218
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 797246.875,
+                "candidate": 741823.4375
+              },
+              "candidate_over_baseline": 0.9304814615924334
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 5792915.625,
+                "candidate": 5079715.625
+              },
+              "candidate_over_baseline": 0.8768841035898913
+            }
+          },
+          "4": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 3592179.6875,
+                "candidate": 3182434.375
+              },
+              "candidate_over_baseline": 0.8859340711919773
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 2532034.375,
+                "candidate": 2067821.875
+              },
+              "candidate_over_baseline": 0.816664218865512
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 910412.5,
+                "candidate": 865528.125
+              },
+              "candidate_over_baseline": 0.9506988590336798
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 3637948.4375,
+                "candidate": 3123492.1875
+              },
+              "candidate_over_baseline": 0.85858616227295
+            }
+          }
+        }
+      },
+      "ineligible": {
+        "states": 4,
+        "threads": {
+          "1": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 223.4375,
+                "candidate": 204.6875
+              },
+              "candidate_over_baseline": 0.916083916083916
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 145.3125,
+                "candidate": 128.125
+              },
+              "candidate_over_baseline": 0.8817204301075269
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 176.5625,
+                "candidate": 189.0625
+              },
+              "candidate_over_baseline": 1.0707964601769913
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 1371.875,
+                "candidate": 1375.0
+              },
+              "candidate_over_baseline": 1.0022779043280183
+            }
+          },
+          "4": {
+            "balanced_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 242.1875,
+                "candidate": 239.0625
+              },
+              "candidate_over_baseline": 0.9870967741935484
+            },
+            "baseline_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 153.125,
+                "candidate": 146.875
+              },
+              "candidate_over_baseline": 0.9591836734693877
+            },
+            "count_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 218.75,
+                "candidate": 217.1875
+              },
+              "candidate_over_baseline": 0.9928571428571429
+            },
+            "staged_ns": {
+              "sum_state_medians_ns": {
+                "baseline": 1656.25,
+                "candidate": 1598.4375
+              },
+              "candidate_over_baseline": 0.9650943396226415
+            }
+          }
+        }
+      }
+    },
+    "per_state": [
+      {
+        "name": "flatwall_01/repeat-motion/raw-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 13009.375,
+              "baseline_ns": 8317.1875,
+              "count_ns": 3787.5,
+              "staged_ns": 14653.125
+            },
+            "candidate": {
+              "balanced_ns": 12967.1875,
+              "baseline_ns": 7984.375,
+              "count_ns": 3548.4375,
+              "staged_ns": 13785.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 17450.0,
+              "baseline_ns": 11270.3125,
+              "count_ns": 4143.75,
+              "staged_ns": 17043.75
+            },
+            "candidate": {
+              "balanced_ns": 15621.875,
+              "baseline_ns": 8795.3125,
+              "count_ns": 3814.0625,
+              "staged_ns": 15670.3125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 12085.9375,
+              "baseline_ns": 8800.0,
+              "count_ns": 2356.25,
+              "staged_ns": 12498.4375
+            },
+            "candidate": {
+              "balanced_ns": 11781.25,
+              "baseline_ns": 7787.5,
+              "count_ns": 2567.1875,
+              "staged_ns": 12557.8125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 19643.75,
+              "baseline_ns": 10957.8125,
+              "count_ns": 3221.875,
+              "staged_ns": 16523.4375
+            },
+            "candidate": {
+              "balanced_ns": 14979.6875,
+              "baseline_ns": 9062.5,
+              "count_ns": 2882.8125,
+              "staged_ns": 14256.25
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 405435.9375,
+              "baseline_ns": 359321.875,
+              "count_ns": 49100.0,
+              "staged_ns": 428673.4375
+            },
+            "candidate": {
+              "balanced_ns": 387546.875,
+              "baseline_ns": 297359.375,
+              "count_ns": 47204.6875,
+              "staged_ns": 376615.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 276120.3125,
+              "baseline_ns": 148231.25,
+              "count_ns": 59228.125,
+              "staged_ns": 248446.875
+            },
+            "candidate": {
+              "balanced_ns": 220140.625,
+              "baseline_ns": 100837.5,
+              "count_ns": 52662.5,
+              "staged_ns": 223548.4375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 422695.3125,
+              "baseline_ns": 369581.25,
+              "count_ns": 48320.3125,
+              "staged_ns": 407134.375
+            },
+            "candidate": {
+              "balanced_ns": 440135.9375,
+              "baseline_ns": 316915.625,
+              "count_ns": 49448.4375,
+              "staged_ns": 376364.0625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 247692.1875,
+              "baseline_ns": 118842.1875,
+              "count_ns": 57370.3125,
+              "staged_ns": 243315.625
+            },
+            "candidate": {
+              "balanced_ns": 204975.0,
+              "baseline_ns": 101409.375,
+              "count_ns": 52581.25,
+              "staged_ns": 203793.75
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 14620.3125,
+              "baseline_ns": 9962.5,
+              "count_ns": 3653.125,
+              "staged_ns": 14937.5
+            },
+            "candidate": {
+              "balanced_ns": 18185.9375,
+              "baseline_ns": 10971.875,
+              "count_ns": 4740.625,
+              "staged_ns": 18896.875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 15914.0625,
+              "baseline_ns": 10865.625,
+              "count_ns": 4018.75,
+              "staged_ns": 16406.25
+            },
+            "candidate": {
+              "balanced_ns": 15873.4375,
+              "baseline_ns": 9256.25,
+              "count_ns": 4120.3125,
+              "staged_ns": 16089.0625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/gyro-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 12981.25,
+              "baseline_ns": 9640.625,
+              "count_ns": 2684.375,
+              "staged_ns": 14012.5
+            },
+            "candidate": {
+              "balanced_ns": 16918.75,
+              "baseline_ns": 11189.0625,
+              "count_ns": 3370.3125,
+              "staged_ns": 16450.0
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 18584.375,
+              "baseline_ns": 10739.0625,
+              "count_ns": 3187.5,
+              "staged_ns": 15179.6875
+            },
+            "candidate": {
+              "balanced_ns": 14242.1875,
+              "baseline_ns": 9312.5,
+              "count_ns": 2979.6875,
+              "staged_ns": 14718.75
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 436996.875,
+              "baseline_ns": 364629.6875,
+              "count_ns": 49934.375,
+              "staged_ns": 427917.1875
+            },
+            "candidate": {
+              "balanced_ns": 464540.625,
+              "baseline_ns": 377418.75,
+              "count_ns": 49050.0,
+              "staged_ns": 399120.3125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 248562.5,
+              "baseline_ns": 170820.3125,
+              "count_ns": 57718.75,
+              "staged_ns": 234209.375
+            },
+            "candidate": {
+              "balanced_ns": 218756.25,
+              "baseline_ns": 105748.4375,
+              "count_ns": 52396.875,
+              "staged_ns": 211998.4375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/gyro-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 427014.0625,
+              "baseline_ns": 359520.3125,
+              "count_ns": 52650.0,
+              "staged_ns": 446617.1875
+            },
+            "candidate": {
+              "balanced_ns": 388785.9375,
+              "baseline_ns": 342482.8125,
+              "count_ns": 48353.125,
+              "staged_ns": 382900.0
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 231328.125,
+              "baseline_ns": 128900.0,
+              "count_ns": 59223.4375,
+              "staged_ns": 258790.625
+            },
+            "candidate": {
+              "balanced_ns": 208287.5,
+              "baseline_ns": 119895.3125,
+              "count_ns": 54382.8125,
+              "staged_ns": 218271.875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-legacy/scan-093/final",
+        "group": "ineligible",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 56.25,
+              "baseline_ns": 37.5,
+              "count_ns": 45.3125,
+              "staged_ns": 339.0625
+            },
+            "candidate": {
+              "balanced_ns": 56.25,
+              "baseline_ns": 34.375,
+              "count_ns": 51.5625,
+              "staged_ns": 343.75
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 68.75,
+              "baseline_ns": 46.875,
+              "count_ns": 60.9375,
+              "staged_ns": 442.1875
+            },
+            "candidate": {
+              "balanced_ns": 70.3125,
+              "baseline_ns": 40.625,
+              "count_ns": 62.5,
+              "staged_ns": 434.375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-legacy/scan-093/final",
+        "group": "ineligible",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 50.0,
+              "baseline_ns": 32.8125,
+              "count_ns": 40.625,
+              "staged_ns": 325.0
+            },
+            "candidate": {
+              "balanced_ns": 43.75,
+              "baseline_ns": 28.125,
+              "count_ns": 45.3125,
+              "staged_ns": 323.4375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 56.25,
+              "baseline_ns": 34.375,
+              "count_ns": 53.125,
+              "staged_ns": 396.875
+            },
+            "candidate": {
+              "balanced_ns": 53.125,
+              "baseline_ns": 34.375,
+              "count_ns": 51.5625,
+              "staged_ns": 384.375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-0.1875/scan-093/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 158593.75,
+              "baseline_ns": 144339.0625,
+              "count_ns": 22154.6875,
+              "staged_ns": 166092.1875
+            },
+            "candidate": {
+              "balanced_ns": 144448.4375,
+              "baseline_ns": 113748.4375,
+              "count_ns": 19067.1875,
+              "staged_ns": 140914.0625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 133378.125,
+              "baseline_ns": 134498.4375,
+              "count_ns": 25987.5,
+              "staged_ns": 122256.25
+            },
+            "candidate": {
+              "balanced_ns": 118826.5625,
+              "baseline_ns": 102556.25,
+              "count_ns": 23784.375,
+              "staged_ns": 112365.625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-093/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 153076.5625,
+              "baseline_ns": 132156.25,
+              "count_ns": 20407.8125,
+              "staged_ns": 156620.3125
+            },
+            "candidate": {
+              "balanced_ns": 146960.9375,
+              "baseline_ns": 119748.4375,
+              "count_ns": 21345.3125,
+              "staged_ns": 155304.6875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 125803.125,
+              "baseline_ns": 125018.75,
+              "count_ns": 26871.875,
+              "staged_ns": 122256.25
+            },
+            "candidate": {
+              "balanced_ns": 109312.5,
+              "baseline_ns": 102115.625,
+              "count_ns": 23570.3125,
+              "staged_ns": 107401.5625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-legacy/scan-093/final",
+        "group": "ineligible",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 60.9375,
+              "baseline_ns": 39.0625,
+              "count_ns": 46.875,
+              "staged_ns": 357.8125
+            },
+            "candidate": {
+              "balanced_ns": 56.25,
+              "baseline_ns": 32.8125,
+              "count_ns": 48.4375,
+              "staged_ns": 356.25
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 64.0625,
+              "baseline_ns": 37.5,
+              "count_ns": 56.25,
+              "staged_ns": 425.0
+            },
+            "candidate": {
+              "balanced_ns": 62.5,
+              "baseline_ns": 37.5,
+              "count_ns": 53.125,
+              "staged_ns": 400.0
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/gyro-legacy/scan-093/final",
+        "group": "ineligible",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 56.25,
+              "baseline_ns": 35.9375,
+              "count_ns": 43.75,
+              "staged_ns": 350.0
+            },
+            "candidate": {
+              "balanced_ns": 48.4375,
+              "baseline_ns": 32.8125,
+              "count_ns": 43.75,
+              "staged_ns": 351.5625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 53.125,
+              "baseline_ns": 34.375,
+              "count_ns": 48.4375,
+              "staged_ns": 392.1875
+            },
+            "candidate": {
+              "balanced_ns": 53.125,
+              "baseline_ns": 34.375,
+              "count_ns": 50.0,
+              "staged_ns": 379.6875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-0.1875/scan-093/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 165295.3125,
+              "baseline_ns": 147131.25,
+              "count_ns": 23093.75,
+              "staged_ns": 170554.6875
+            },
+            "candidate": {
+              "balanced_ns": 162065.625,
+              "baseline_ns": 128092.1875,
+              "count_ns": 20939.0625,
+              "staged_ns": 150618.75
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 129434.375,
+              "baseline_ns": 121759.375,
+              "count_ns": 26921.875,
+              "staged_ns": 126131.25
+            },
+            "candidate": {
+              "balanced_ns": 111510.9375,
+              "baseline_ns": 109990.625,
+              "count_ns": 25037.5,
+              "staged_ns": 113754.6875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/gyro-0.1875/scan-093/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 170629.6875,
+              "baseline_ns": 136475.0,
+              "count_ns": 22323.4375,
+              "staged_ns": 163037.5
+            },
+            "candidate": {
+              "balanced_ns": 141760.9375,
+              "baseline_ns": 117115.625,
+              "count_ns": 18932.8125,
+              "staged_ns": 136025.0
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 127285.9375,
+              "baseline_ns": 124970.3125,
+              "count_ns": 29806.25,
+              "staged_ns": 139764.0625
+            },
+            "candidate": {
+              "balanced_ns": 110979.6875,
+              "baseline_ns": 99740.625,
+              "count_ns": 23653.125,
+              "staged_ns": 112446.875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-legacy/scan-185/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 13484.375,
+              "baseline_ns": 9367.1875,
+              "count_ns": 2600.0,
+              "staged_ns": 13735.9375
+            },
+            "candidate": {
+              "balanced_ns": 11650.0,
+              "baseline_ns": 7381.25,
+              "count_ns": 2378.125,
+              "staged_ns": 11765.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 20165.625,
+              "baseline_ns": 9970.3125,
+              "count_ns": 3459.375,
+              "staged_ns": 17959.375
+            },
+            "candidate": {
+              "balanced_ns": 13821.875,
+              "baseline_ns": 8154.6875,
+              "count_ns": 2776.5625,
+              "staged_ns": 14173.4375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-legacy/scan-185/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 13509.375,
+              "baseline_ns": 8951.5625,
+              "count_ns": 2507.8125,
+              "staged_ns": 13451.5625
+            },
+            "candidate": {
+              "balanced_ns": 11721.875,
+              "baseline_ns": 7357.8125,
+              "count_ns": 2306.25,
+              "staged_ns": 11523.4375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 14962.5,
+              "baseline_ns": 9914.0625,
+              "count_ns": 3356.25,
+              "staged_ns": 16900.0
+            },
+            "candidate": {
+              "balanced_ns": 13446.875,
+              "baseline_ns": 8354.6875,
+              "count_ns": 2737.5,
+              "staged_ns": 13942.1875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-0.1875/scan-185/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 448939.0625,
+              "baseline_ns": 412178.125,
+              "count_ns": 59451.5625,
+              "staged_ns": 472746.875
+            },
+            "candidate": {
+              "balanced_ns": 412007.8125,
+              "baseline_ns": 369226.5625,
+              "count_ns": 56934.375,
+              "staged_ns": 432053.125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 276120.3125,
+              "baseline_ns": 168876.5625,
+              "count_ns": 69590.625,
+              "staged_ns": 257837.5
+            },
+            "candidate": {
+              "balanced_ns": 241023.4375,
+              "baseline_ns": 124856.25,
+              "count_ns": 65132.8125,
+              "staged_ns": 248084.375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-185/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 481640.625,
+              "baseline_ns": 407434.375,
+              "count_ns": 62109.375,
+              "staged_ns": 475425.0
+            },
+            "candidate": {
+              "balanced_ns": 410859.375,
+              "baseline_ns": 359657.8125,
+              "count_ns": 54415.625,
+              "staged_ns": 402192.1875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 276379.6875,
+              "baseline_ns": 171056.25,
+              "count_ns": 71331.25,
+              "staged_ns": 263401.5625
+            },
+            "candidate": {
+              "balanced_ns": 239578.125,
+              "baseline_ns": 134785.9375,
+              "count_ns": 64856.25,
+              "staged_ns": 242125.0
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-legacy/scan-185/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 14670.3125,
+              "baseline_ns": 10900.0,
+              "count_ns": 2559.375,
+              "staged_ns": 15121.875
+            },
+            "candidate": {
+              "balanced_ns": 14612.5,
+              "baseline_ns": 9364.0625,
+              "count_ns": 2446.875,
+              "staged_ns": 13670.3125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 15757.8125,
+              "baseline_ns": 11648.4375,
+              "count_ns": 3042.1875,
+              "staged_ns": 15717.1875
+            },
+            "candidate": {
+              "balanced_ns": 15507.8125,
+              "baseline_ns": 10754.6875,
+              "count_ns": 2889.0625,
+              "staged_ns": 15223.4375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/gyro-legacy/scan-185/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 13145.3125,
+              "baseline_ns": 8729.6875,
+              "count_ns": 2473.4375,
+              "staged_ns": 13118.75
+            },
+            "candidate": {
+              "balanced_ns": 11806.25,
+              "baseline_ns": 7120.3125,
+              "count_ns": 2342.1875,
+              "staged_ns": 11440.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 14512.5,
+              "baseline_ns": 10093.75,
+              "count_ns": 3551.5625,
+              "staged_ns": 15985.9375
+            },
+            "candidate": {
+              "balanced_ns": 14189.0625,
+              "baseline_ns": 8950.0,
+              "count_ns": 2790.625,
+              "staged_ns": 13731.25
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-0.1875/scan-185/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 504745.3125,
+              "baseline_ns": 409065.625,
+              "count_ns": 61876.5625,
+              "staged_ns": 482517.1875
+            },
+            "candidate": {
+              "balanced_ns": 466721.875,
+              "baseline_ns": 391259.375,
+              "count_ns": 62201.5625,
+              "staged_ns": 470156.25
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 264723.4375,
+              "baseline_ns": 153084.375,
+              "count_ns": 71068.75,
+              "staged_ns": 272767.1875
+            },
+            "candidate": {
+              "balanced_ns": 247434.375,
+              "baseline_ns": 121606.25,
+              "count_ns": 66932.8125,
+              "staged_ns": 238060.9375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/gyro-0.1875/scan-185/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 483146.875,
+              "baseline_ns": 413031.25,
+              "count_ns": 60459.375,
+              "staged_ns": 468992.1875
+            },
+            "candidate": {
+              "balanced_ns": 471731.25,
+              "baseline_ns": 353668.75,
+              "count_ns": 58885.9375,
+              "staged_ns": 434935.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 271179.6875,
+              "baseline_ns": 154426.5625,
+              "count_ns": 72528.125,
+              "staged_ns": 266134.375
+            },
+            "candidate": {
+              "balanced_ns": 242409.375,
+              "baseline_ns": 140600.0,
+              "count_ns": 66810.9375,
+              "staged_ns": 246926.5625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 12378.125,
+              "baseline_ns": 8167.1875,
+              "count_ns": 2612.5,
+              "staged_ns": 12721.875
+            },
+            "candidate": {
+              "balanced_ns": 10601.5625,
+              "baseline_ns": 6479.6875,
+              "count_ns": 2340.625,
+              "staged_ns": 10867.1875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 14395.3125,
+              "baseline_ns": 9242.1875,
+              "count_ns": 3384.375,
+              "staged_ns": 14467.1875
+            },
+            "candidate": {
+              "balanced_ns": 14290.625,
+              "baseline_ns": 7834.375,
+              "count_ns": 3031.25,
+              "staged_ns": 14415.625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 13201.5625,
+              "baseline_ns": 8695.3125,
+              "count_ns": 2675.0,
+              "staged_ns": 12857.8125
+            },
+            "candidate": {
+              "balanced_ns": 10431.25,
+              "baseline_ns": 6476.5625,
+              "count_ns": 2296.875,
+              "staged_ns": 10215.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 15887.5,
+              "baseline_ns": 9245.3125,
+              "count_ns": 3039.0625,
+              "staged_ns": 15240.625
+            },
+            "candidate": {
+              "balanced_ns": 14232.8125,
+              "baseline_ns": 7825.0,
+              "count_ns": 2987.5,
+              "staged_ns": 14442.1875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 370165.625,
+              "baseline_ns": 310414.0625,
+              "count_ns": 45257.8125,
+              "staged_ns": 382639.0625
+            },
+            "candidate": {
+              "balanced_ns": 330054.6875,
+              "baseline_ns": 276600.0,
+              "count_ns": 42003.125,
+              "staged_ns": 330792.1875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 238726.5625,
+              "baseline_ns": 114295.3125,
+              "count_ns": 52431.25,
+              "staged_ns": 216965.625
+            },
+            "candidate": {
+              "balanced_ns": 206187.5,
+              "baseline_ns": 111753.125,
+              "count_ns": 49307.8125,
+              "staged_ns": 203103.125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 383654.6875,
+              "baseline_ns": 327918.75,
+              "count_ns": 45393.75,
+              "staged_ns": 392429.6875
+            },
+            "candidate": {
+              "balanced_ns": 341937.5,
+              "baseline_ns": 276967.1875,
+              "count_ns": 45365.625,
+              "staged_ns": 350628.125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 234198.4375,
+              "baseline_ns": 118760.9375,
+              "count_ns": 54467.1875,
+              "staged_ns": 222210.9375
+            },
+            "candidate": {
+              "balanced_ns": 198898.4375,
+              "baseline_ns": 106295.3125,
+              "count_ns": 47423.4375,
+              "staged_ns": 197196.875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/raw-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 12240.625,
+              "baseline_ns": 7921.875,
+              "count_ns": 2560.9375,
+              "staged_ns": 12282.8125
+            },
+            "candidate": {
+              "balanced_ns": 11392.1875,
+              "baseline_ns": 7123.4375,
+              "count_ns": 2587.5,
+              "staged_ns": 11782.8125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 17867.1875,
+              "baseline_ns": 9189.0625,
+              "count_ns": 2968.75,
+              "staged_ns": 14496.875
+            },
+            "candidate": {
+              "balanced_ns": 15045.3125,
+              "baseline_ns": 7846.875,
+              "count_ns": 3029.6875,
+              "staged_ns": 14073.4375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/gyro-legacy/scan-002/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 11670.3125,
+              "baseline_ns": 7981.25,
+              "count_ns": 2576.5625,
+              "staged_ns": 12470.3125
+            },
+            "candidate": {
+              "balanced_ns": 11487.5,
+              "baseline_ns": 6985.9375,
+              "count_ns": 2579.6875,
+              "staged_ns": 11757.8125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 17250.0,
+              "baseline_ns": 8953.125,
+              "count_ns": 2809.375,
+              "staged_ns": 13517.1875
+            },
+            "candidate": {
+              "balanced_ns": 14642.1875,
+              "baseline_ns": 7581.25,
+              "count_ns": 3025.0,
+              "staged_ns": 13960.9375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/raw-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 365768.75,
+              "baseline_ns": 309417.1875,
+              "count_ns": 44175.0,
+              "staged_ns": 369234.375
+            },
+            "candidate": {
+              "balanced_ns": 331196.875,
+              "baseline_ns": 268285.9375,
+              "count_ns": 43442.1875,
+              "staged_ns": 328304.6875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 220739.0625,
+              "baseline_ns": 124759.375,
+              "count_ns": 51817.1875,
+              "staged_ns": 209290.625
+            },
+            "candidate": {
+              "balanced_ns": 201431.25,
+              "baseline_ns": 115421.875,
+              "count_ns": 50712.5,
+              "staged_ns": 206631.25
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/gyro-0.1875/scan-002/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 362137.5,
+              "baseline_ns": 315648.4375,
+              "count_ns": 46450.0,
+              "staged_ns": 389250.0
+            },
+            "candidate": {
+              "balanced_ns": 316681.25,
+              "baseline_ns": 264856.25,
+              "count_ns": 43351.5625,
+              "staged_ns": 336870.3125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 215901.5625,
+              "baseline_ns": 106168.75,
+              "count_ns": 52518.75,
+              "staged_ns": 211318.75
+            },
+            "candidate": {
+              "balanced_ns": 201320.3125,
+              "baseline_ns": 104290.625,
+              "count_ns": 48320.3125,
+              "staged_ns": 196673.4375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-legacy/scan-068/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 5943.75,
+              "baseline_ns": 3706.25,
+              "count_ns": 1148.4375,
+              "staged_ns": 6340.625
+            },
+            "candidate": {
+              "balanced_ns": 5448.4375,
+              "baseline_ns": 3560.9375,
+              "count_ns": 1164.0625,
+              "staged_ns": 5875.0
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 9598.4375,
+              "baseline_ns": 4870.3125,
+              "count_ns": 1723.4375,
+              "staged_ns": 10782.8125
+            },
+            "candidate": {
+              "balanced_ns": 8882.8125,
+              "baseline_ns": 4346.875,
+              "count_ns": 1403.125,
+              "staged_ns": 8575.0
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-legacy/scan-068/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 5415.625,
+              "baseline_ns": 3673.4375,
+              "count_ns": 859.375,
+              "staged_ns": 5762.5
+            },
+            "candidate": {
+              "balanced_ns": 5450.0,
+              "baseline_ns": 3389.0625,
+              "count_ns": 953.125,
+              "staged_ns": 5684.375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 9595.3125,
+              "baseline_ns": 4939.0625,
+              "count_ns": 1395.3125,
+              "staged_ns": 10314.0625
+            },
+            "candidate": {
+              "balanced_ns": 8729.6875,
+              "baseline_ns": 4045.3125,
+              "count_ns": 1193.75,
+              "staged_ns": 8696.875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-068/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 201121.875,
+              "baseline_ns": 171676.5625,
+              "count_ns": 26873.4375,
+              "staged_ns": 208750.0
+            },
+            "candidate": {
+              "balanced_ns": 186689.0625,
+              "baseline_ns": 155884.375,
+              "count_ns": 24482.8125,
+              "staged_ns": 185687.5
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 155629.6875,
+              "baseline_ns": 123075.0,
+              "count_ns": 31665.625,
+              "staged_ns": 153625.0
+            },
+            "candidate": {
+              "balanced_ns": 137879.6875,
+              "baseline_ns": 107637.5,
+              "count_ns": 30520.3125,
+              "staged_ns": 137181.25
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-068/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 219556.25,
+              "baseline_ns": 161457.8125,
+              "count_ns": 25962.5,
+              "staged_ns": 202042.1875
+            },
+            "candidate": {
+              "balanced_ns": 184865.625,
+              "baseline_ns": 152156.25,
+              "count_ns": 24318.75,
+              "staged_ns": 182267.1875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 143612.5,
+              "baseline_ns": 110798.4375,
+              "count_ns": 31954.6875,
+              "staged_ns": 144440.625
+            },
+            "candidate": {
+              "balanced_ns": 136010.9375,
+              "baseline_ns": 105028.125,
+              "count_ns": 30190.625,
+              "staged_ns": 136767.1875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/raw-legacy/scan-068/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 6451.5625,
+              "baseline_ns": 4793.75,
+              "count_ns": 1089.0625,
+              "staged_ns": 7125.0
+            },
+            "candidate": {
+              "balanced_ns": 6160.9375,
+              "baseline_ns": 4381.25,
+              "count_ns": 901.5625,
+              "staged_ns": 6506.25
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 9129.6875,
+              "baseline_ns": 5826.5625,
+              "count_ns": 1734.375,
+              "staged_ns": 11515.625
+            },
+            "candidate": {
+              "balanced_ns": 8770.3125,
+              "baseline_ns": 5162.5,
+              "count_ns": 1156.25,
+              "staged_ns": 8907.8125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/gyro-legacy/scan-068/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 6890.625,
+              "baseline_ns": 5059.375,
+              "count_ns": 939.0625,
+              "staged_ns": 7237.5
+            },
+            "candidate": {
+              "balanced_ns": 6582.8125,
+              "baseline_ns": 4631.25,
+              "count_ns": 909.375,
+              "staged_ns": 6812.5
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 10106.25,
+              "baseline_ns": 6176.5625,
+              "count_ns": 1307.8125,
+              "staged_ns": 9568.75
+            },
+            "candidate": {
+              "balanced_ns": 9345.3125,
+              "baseline_ns": 5475.0,
+              "count_ns": 1192.1875,
+              "staged_ns": 9407.8125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/raw-0.1875/scan-068/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 198775.0,
+              "baseline_ns": 165381.25,
+              "count_ns": 26360.9375,
+              "staged_ns": 201156.25
+            },
+            "candidate": {
+              "balanced_ns": 195800.0,
+              "baseline_ns": 163446.875,
+              "count_ns": 24615.625,
+              "staged_ns": 188709.375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 140923.4375,
+              "baseline_ns": 120751.5625,
+              "count_ns": 31485.9375,
+              "staged_ns": 146123.4375
+            },
+            "candidate": {
+              "balanced_ns": 139312.5,
+              "baseline_ns": 110001.5625,
+              "count_ns": 30307.8125,
+              "staged_ns": 138235.9375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/gyro-0.1875/scan-068/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 200945.3125,
+              "baseline_ns": 173860.9375,
+              "count_ns": 27318.75,
+              "staged_ns": 213029.6875
+            },
+            "candidate": {
+              "balanced_ns": 193803.125,
+              "baseline_ns": 161515.625,
+              "count_ns": 25303.125,
+              "staged_ns": 189485.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 157965.625,
+              "baseline_ns": 124120.3125,
+              "count_ns": 31342.1875,
+              "staged_ns": 147259.375
+            },
+            "candidate": {
+              "balanced_ns": 141229.6875,
+              "baseline_ns": 101832.8125,
+              "count_ns": 30206.25,
+              "staged_ns": 137582.8125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-legacy/scan-135/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 15396.875,
+              "baseline_ns": 11046.875,
+              "count_ns": 3348.4375,
+              "staged_ns": 16564.0625
+            },
+            "candidate": {
+              "balanced_ns": 16410.9375,
+              "baseline_ns": 10450.0,
+              "count_ns": 3681.25,
+              "staged_ns": 16217.1875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 18629.6875,
+              "baseline_ns": 12718.75,
+              "count_ns": 4615.625,
+              "staged_ns": 18092.1875
+            },
+            "candidate": {
+              "balanced_ns": 17957.8125,
+              "baseline_ns": 12439.0625,
+              "count_ns": 4103.125,
+              "staged_ns": 17909.375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-legacy/scan-135/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 15564.0625,
+              "baseline_ns": 11206.25,
+              "count_ns": 2573.4375,
+              "staged_ns": 15418.75
+            },
+            "candidate": {
+              "balanced_ns": 14656.25,
+              "baseline_ns": 10265.625,
+              "count_ns": 2525.0,
+              "staged_ns": 14389.0625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 16664.0625,
+              "baseline_ns": 13410.9375,
+              "count_ns": 3053.125,
+              "staged_ns": 16043.75
+            },
+            "candidate": {
+              "balanced_ns": 16723.4375,
+              "baseline_ns": 12581.25,
+              "count_ns": 3093.75,
+              "staged_ns": 16634.375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-135/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 560273.4375,
+              "baseline_ns": 458656.25,
+              "count_ns": 75120.3125,
+              "staged_ns": 534748.4375
+            },
+            "candidate": {
+              "balanced_ns": 516062.5,
+              "baseline_ns": 416718.75,
+              "count_ns": 78687.5,
+              "staged_ns": 551715.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 300225.0,
+              "baseline_ns": 178504.6875,
+              "count_ns": 84004.6875,
+              "staged_ns": 282664.0625
+            },
+            "candidate": {
+              "balanced_ns": 299776.5625,
+              "baseline_ns": 166592.1875,
+              "count_ns": 87443.75,
+              "staged_ns": 285512.5
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-135/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 539901.5625,
+              "baseline_ns": 440134.375,
+              "count_ns": 81785.9375,
+              "staged_ns": 562184.375
+            },
+            "candidate": {
+              "balanced_ns": 472750.0,
+              "baseline_ns": 360334.375,
+              "count_ns": 70843.75,
+              "staged_ns": 446632.8125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 295475.0,
+              "baseline_ns": 153462.5,
+              "count_ns": 89029.6875,
+              "staged_ns": 302803.125
+            },
+            "candidate": {
+              "balanced_ns": 286223.4375,
+              "baseline_ns": 135854.6875,
+              "count_ns": 86389.0625,
+              "staged_ns": 276306.25
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/raw-legacy/scan-135/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 15842.1875,
+              "baseline_ns": 11100.0,
+              "count_ns": 3501.5625,
+              "staged_ns": 16487.5
+            },
+            "candidate": {
+              "balanced_ns": 12909.375,
+              "baseline_ns": 8498.4375,
+              "count_ns": 3181.25,
+              "staged_ns": 13743.75
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 18292.1875,
+              "baseline_ns": 13017.1875,
+              "count_ns": 4662.5,
+              "staged_ns": 19501.5625
+            },
+            "candidate": {
+              "balanced_ns": 17390.625,
+              "baseline_ns": 11054.6875,
+              "count_ns": 4204.6875,
+              "staged_ns": 16521.875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/gyro-legacy/scan-135/final",
+        "group": "legacy_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 14776.5625,
+              "baseline_ns": 10129.6875,
+              "count_ns": 2671.875,
+              "staged_ns": 14790.625
+            },
+            "candidate": {
+              "balanced_ns": 12007.8125,
+              "baseline_ns": 8181.25,
+              "count_ns": 2523.4375,
+              "staged_ns": 13639.0625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 17623.4375,
+              "baseline_ns": 12646.875,
+              "count_ns": 3198.4375,
+              "staged_ns": 17359.375
+            },
+            "candidate": {
+              "balanced_ns": 15253.125,
+              "baseline_ns": 10296.875,
+              "count_ns": 3264.0625,
+              "staged_ns": 17734.375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/raw-0.1875/scan-135/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 532539.0625,
+              "baseline_ns": 460496.875,
+              "count_ns": 78514.0625,
+              "staged_ns": 547600.0
+            },
+            "candidate": {
+              "balanced_ns": 456915.625,
+              "baseline_ns": 362826.5625,
+              "count_ns": 69029.6875,
+              "staged_ns": 459462.5
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 313928.125,
+              "baseline_ns": 204868.75,
+              "count_ns": 90632.8125,
+              "staged_ns": 309751.5625
+            },
+            "candidate": {
+              "balanced_ns": 283621.875,
+              "baseline_ns": 167209.375,
+              "count_ns": 84018.75,
+              "staged_ns": 270185.9375
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/last-pose/gyro-0.1875/scan-135/final",
+        "group": "fine_final",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 535492.1875,
+              "baseline_ns": 454918.75,
+              "count_ns": 76598.4375,
+              "staged_ns": 535448.4375
+            },
+            "candidate": {
+              "balanced_ns": 444996.875,
+              "baseline_ns": 361612.5,
+              "count_ns": 70153.125,
+              "staged_ns": 448385.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 296876.5625,
+              "baseline_ns": 163290.625,
+              "count_ns": 87487.5,
+              "staged_ns": 298371.875
+            },
+            "candidate": {
+              "balanced_ns": 268529.6875,
+              "baseline_ns": 141781.25,
+              "count_ns": 86582.8125,
+              "staged_ns": 271762.5
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-0.1875/scan-185/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 493478.125,
+              "baseline_ns": 424348.4375,
+              "count_ns": 62257.8125,
+              "staged_ns": 487981.25
+            },
+            "candidate": {
+              "balanced_ns": 434890.625,
+              "baseline_ns": 378615.625,
+              "count_ns": 54437.5,
+              "staged_ns": 415850.0
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 266954.6875,
+              "baseline_ns": 156989.0625,
+              "count_ns": 68925.0,
+              "staged_ns": 254790.625
+            },
+            "candidate": {
+              "balanced_ns": 244970.3125,
+              "baseline_ns": 128085.9375,
+              "count_ns": 67315.625,
+              "staged_ns": 240964.0625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/raw-0.1875/scan-185/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 494468.75,
+              "baseline_ns": 394085.9375,
+              "count_ns": 60267.1875,
+              "staged_ns": 480839.0625
+            },
+            "candidate": {
+              "balanced_ns": 395539.0625,
+              "baseline_ns": 342540.625,
+              "count_ns": 59351.5625,
+              "staged_ns": 444212.5
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 260181.25,
+              "baseline_ns": 154035.9375,
+              "count_ns": 71075.0,
+              "staged_ns": 273229.6875
+            },
+            "candidate": {
+              "balanced_ns": 239576.5625,
+              "baseline_ns": 123892.1875,
+              "count_ns": 65589.0625,
+              "staged_ns": 242228.125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-053/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 238289.0625,
+              "baseline_ns": 225078.125,
+              "count_ns": 41289.0625,
+              "staged_ns": 281778.125
+            },
+            "candidate": {
+              "balanced_ns": 221857.8125,
+              "baseline_ns": 173739.0625,
+              "count_ns": 36321.875,
+              "staged_ns": 227232.8125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 183929.6875,
+              "baseline_ns": 125942.1875,
+              "count_ns": 46559.375,
+              "staged_ns": 174226.5625
+            },
+            "candidate": {
+              "balanced_ns": 153839.0625,
+              "baseline_ns": 108826.5625,
+              "count_ns": 44137.5,
+              "staged_ns": 163615.625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-053/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 309314.0625,
+              "baseline_ns": 244745.3125,
+              "count_ns": 43175.0,
+              "staged_ns": 296368.75
+            },
+            "candidate": {
+              "balanced_ns": 236915.625,
+              "baseline_ns": 186806.25,
+              "count_ns": 36807.8125,
+              "staged_ns": 238240.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 183239.0625,
+              "baseline_ns": 128284.375,
+              "count_ns": 47937.5,
+              "staged_ns": 184681.25
+            },
+            "candidate": {
+              "balanced_ns": 175178.125,
+              "baseline_ns": 105128.125,
+              "count_ns": 44510.9375,
+              "staged_ns": 160067.1875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-132/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 201193.75,
+              "baseline_ns": 152457.8125,
+              "count_ns": 26218.75,
+              "staged_ns": 208303.125
+            },
+            "candidate": {
+              "balanced_ns": 189423.4375,
+              "baseline_ns": 173145.3125,
+              "count_ns": 27675.0,
+              "staged_ns": 195535.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 149790.625,
+              "baseline_ns": 130278.125,
+              "count_ns": 30917.1875,
+              "staged_ns": 150310.9375
+            },
+            "candidate": {
+              "balanced_ns": 134156.25,
+              "baseline_ns": 97401.5625,
+              "count_ns": 28579.6875,
+              "staged_ns": 131582.8125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/repeat-motion/gyro-0.1875/scan-132/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 208281.25,
+              "baseline_ns": 168321.875,
+              "count_ns": 25803.125,
+              "staged_ns": 191646.875
+            },
+            "candidate": {
+              "balanced_ns": 195571.875,
+              "baseline_ns": 159946.875,
+              "count_ns": 25915.625,
+              "staged_ns": 189414.0625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 149859.375,
+              "baseline_ns": 118078.125,
+              "count_ns": 30239.0625,
+              "staged_ns": 141217.1875
+            },
+            "candidate": {
+              "balanced_ns": 131501.5625,
+              "baseline_ns": 107665.625,
+              "count_ns": 28625.0,
+              "staged_ns": 128801.5625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-0.1875/scan-025/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 453781.25,
+              "baseline_ns": 376110.9375,
+              "count_ns": 80350.0,
+              "staged_ns": 497284.375
+            },
+            "candidate": {
+              "balanced_ns": 432135.9375,
+              "baseline_ns": 331735.9375,
+              "count_ns": 72998.4375,
+              "staged_ns": 414625.0
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 273428.125,
+              "baseline_ns": 111581.25,
+              "count_ns": 85845.3125,
+              "staged_ns": 282931.25
+            },
+            "candidate": {
+              "balanced_ns": 246689.0625,
+              "baseline_ns": 112989.0625,
+              "count_ns": 82017.1875,
+              "staged_ns": 247595.3125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_01/last-pose/raw-0.1875/scan-025/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 467576.5625,
+              "baseline_ns": 393307.8125,
+              "count_ns": 72879.6875,
+              "staged_ns": 455170.3125
+            },
+            "candidate": {
+              "balanced_ns": 409773.4375,
+              "baseline_ns": 322582.8125,
+              "count_ns": 66350.0,
+              "staged_ns": 382534.375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 288767.1875,
+              "baseline_ns": 169535.9375,
+              "count_ns": 83812.5,
+              "staged_ns": 293973.4375
+            },
+            "candidate": {
+              "balanced_ns": 249889.0625,
+              "baseline_ns": 104760.9375,
+              "count_ns": 80031.25,
+              "staged_ns": 244671.875
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-070/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 237098.4375,
+              "baseline_ns": 215989.0625,
+              "count_ns": 31359.375,
+              "staged_ns": 248679.6875
+            },
+            "candidate": {
+              "balanced_ns": 233651.5625,
+              "baseline_ns": 189150.0,
+              "count_ns": 29081.25,
+              "staged_ns": 225671.875
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 186745.3125,
+              "baseline_ns": 152223.4375,
+              "count_ns": 38990.625,
+              "staged_ns": 194521.875
+            },
+            "candidate": {
+              "balanced_ns": 153050.0,
+              "baseline_ns": 114775.0,
+              "count_ns": 33998.4375,
+              "staged_ns": 145787.5
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-070/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 279320.3125,
+              "baseline_ns": 264410.9375,
+              "count_ns": 31070.3125,
+              "staged_ns": 276229.6875
+            },
+            "candidate": {
+              "balanced_ns": 240270.3125,
+              "baseline_ns": 186620.3125,
+              "count_ns": 27375.0,
+              "staged_ns": 218593.75
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 188176.5625,
+              "baseline_ns": 157401.5625,
+              "count_ns": 36320.3125,
+              "staged_ns": 198214.0625
+            },
+            "candidate": {
+              "balanced_ns": 145412.5,
+              "baseline_ns": 118073.4375,
+              "count_ns": 32532.8125,
+              "staged_ns": 141807.8125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-090/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 787717.1875,
+              "baseline_ns": 745117.1875,
+              "count_ns": 104654.6875,
+              "staged_ns": 809581.25
+            },
+            "candidate": {
+              "balanced_ns": 656376.5625,
+              "baseline_ns": 545126.5625,
+              "count_ns": 90443.75,
+              "staged_ns": 659890.625
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 416514.0625,
+              "baseline_ns": 316996.875,
+              "count_ns": 112135.9375,
+              "staged_ns": 424671.875
+            },
+            "candidate": {
+              "balanced_ns": 376892.1875,
+              "baseline_ns": 261937.5,
+              "count_ns": 110521.875,
+              "staged_ns": 372001.5625
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/raw-0.1875/scan-090/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 725981.25,
+              "baseline_ns": 673173.4375,
+              "count_ns": 96218.75,
+              "staged_ns": 725040.625
+            },
+            "candidate": {
+              "balanced_ns": 771564.0625,
+              "baseline_ns": 578960.9375,
+              "count_ns": 101145.3125,
+              "staged_ns": 712335.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 424884.375,
+              "baseline_ns": 313403.125,
+              "count_ns": 112515.625,
+              "staged_ns": 435157.8125
+            },
+            "candidate": {
+              "balanced_ns": 409273.4375,
+              "baseline_ns": 250070.3125,
+              "count_ns": 113226.5625,
+              "staged_ns": 373050.0
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-022/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 295543.75,
+              "baseline_ns": 259282.8125,
+              "count_ns": 46210.9375,
+              "staged_ns": 309879.6875
+            },
+            "candidate": {
+              "balanced_ns": 269234.375,
+              "baseline_ns": 239459.375,
+              "count_ns": 44143.75,
+              "staged_ns": 288785.9375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 212485.9375,
+              "baseline_ns": 135276.5625,
+              "count_ns": 50179.6875,
+              "staged_ns": 200565.625
+            },
+            "candidate": {
+              "balanced_ns": 179587.5,
+              "baseline_ns": 128625.0,
+              "count_ns": 49695.3125,
+              "staged_ns": 183720.3125
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-022/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 310857.8125,
+              "baseline_ns": 272409.375,
+              "count_ns": 41820.3125,
+              "staged_ns": 270495.3125
+            },
+            "candidate": {
+              "balanced_ns": 270184.375,
+              "baseline_ns": 211826.5625,
+              "count_ns": 40179.6875,
+              "staged_ns": 254762.5
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 202514.0625,
+              "baseline_ns": 132340.625,
+              "count_ns": 51062.5,
+              "staged_ns": 211557.8125
+            },
+            "candidate": {
+              "balanced_ns": 180735.9375,
+              "baseline_ns": 110642.1875,
+              "count_ns": 50885.9375,
+              "staged_ns": 186968.75
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-051/step-0000",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 135743.75,
+              "baseline_ns": 103439.0625,
+              "count_ns": 16746.875,
+              "staged_ns": 129123.4375
+            },
+            "candidate": {
+              "balanced_ns": 102331.25,
+              "baseline_ns": 92625.0,
+              "count_ns": 14568.75,
+              "staged_ns": 103420.3125
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 98314.0625,
+              "baseline_ns": 120470.3125,
+              "count_ns": 20562.5,
+              "staged_ns": 100376.5625
+            },
+            "candidate": {
+              "balanced_ns": 81029.6875,
+              "baseline_ns": 100390.625,
+              "count_ns": 16498.4375,
+              "staged_ns": 78056.25
+            }
+          }
+        }
+      },
+      {
+        "name": "flatwall_02/repeat-motion/gyro-0.1875/scan-051/step-0499",
+        "group": "capped_steps",
+        "threads": {
+          "1": {
+            "baseline": {
+              "balanced_ns": 142759.375,
+              "baseline_ns": 107771.875,
+              "count_ns": 16925.0,
+              "staged_ns": 124514.0625
+            },
+            "candidate": {
+              "balanced_ns": 106584.375,
+              "baseline_ns": 86479.6875,
+              "count_ns": 15028.125,
+              "staged_ns": 108609.375
+            }
+          },
+          "4": {
+            "baseline": {
+              "balanced_ns": 106395.3125,
+              "baseline_ns": 109196.875,
+              "count_ns": 23334.375,
+              "staged_ns": 117521.875
+            },
+            "candidate": {
+              "balanced_ns": 80653.125,
+              "baseline_ns": 94557.8125,
+              "count_ns": 17362.5,
+              "staged_ns": 82573.4375
+            }
+          }
+        }
+      }
+    ],
+    "measured_blocks_per_state_thread_and_implementation": 10
+  },
+  "fixed_verification": {
+    "real_states": 64,
+    "eligible_states": 60,
+    "empty_source_controls": 4,
+    "validation_states": 512,
+    "ordered_pair_rows_checked": 257328,
+    "measured_blocks": 2560,
+    "warmup_blocks": 512,
+    "native_count_and_matrix_bits_identical": true,
+    "independent_original_pair_and_matrix_checks": true
+  },
+  "defaults_changed": false,
+  "installed_extension_replaced": false,
+  "whole_application_speedup_established": false
+}

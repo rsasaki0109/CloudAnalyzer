@@ -1,0 +1,34 @@
+"""Check every frozen real fixed-state row and recompute all stage summaries."""
+import importlib.util
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location('face_gaps_controller', ROOT/'notes/run-slam-face-gaps-20261018.py')
+c = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(c)
+spec = importlib.util.spec_from_file_location('face_gaps_fixed_comparison', ROOT/'scripts/flatwall_count_comparison.py')
+comparison = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(comparison)
+
+run_root = c.STUDY/'fixed-01'
+out = c.STUDY/'fixed-analysis-01'
+out.mkdir()
+receipt = c.read(run_root/'receipt.json')
+for name, digest in receipt['output_files_sha256'].items():
+    assert c.sha(run_root/name) == digest, name
+records = []
+for index, item in enumerate(c.read(c.STUDY/'protocol.json')['fixed_process_order']):
+    data = c.read(run_root/f"run-{index:02}-{item['implementation']}-threads-{item['threads']}.json")
+    records.append(dict(index=index, data=data, **item))
+verification = comparison.check_fixed(records, ROOT)
+origins = c.read(ROOT/'benchmarks/slam/flatwall-balance-stages/origins.json')
+summary = dict(schema='cloudanalyzer.voxel_face_gaps_summary.v1',
+    fixed=comparison.summarize_fixed(records, origins), fixed_verification=verification,
+    defaults_changed=False, installed_extension_replaced=False, whole_application_speedup_established=False)
+c.save(out/'summary.json', summary)
+c.save(out/'receipt.json', dict(summary_sha256=c.sha(out/'summary.json'),
+    run_receipt_sha256=c.sha(run_root/'receipt.json'), controller_sha256=c.sha(Path(__file__)),
+    runner_sha256=c.sha(ROOT/'notes/run-slam-face-gaps-20261018.py'),
+    analysis_source_sha256=c.sha(ROOT/'scripts/flatwall_count_comparison.py')))
+print(json.dumps(dict(fixed_verification=verification, groups=summary['fixed']['groups'])), flush=True)

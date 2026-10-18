@@ -1,0 +1,50 @@
+"""Prove the only production edit is hoisting the six voxel-face squares."""
+import hashlib
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location('face_gaps_audit_controller', ROOT/'notes/run-slam-face-gaps-20261018.py')
+c = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(c)
+name = c.ODOMETRY
+baseline = (c.STUDY/'build-baseline/source'/name).read_text(encoding='utf-8')
+candidate = (ROOT/name).read_text(encoding='utf-8')
+marker = '#[cfg(test)]\nmod tests {'
+before = baseline.split(marker)[0]
+after = candidate.split(marker)[0]
+start = '    fn nearest(&self, q: &[f64; 3]) -> Option<([f64; 3], f64)> {'
+end = '\n    fn correspondence_stats('
+a = before[before.index(start):before.index(end, before.index(start))]
+b = after[after.index(start):after.index(end, after.index(start))]
+assert before.replace(a, '<nearest>') == after.replace(b, '<nearest>')
+cached = '''        // Each neighboring voxel uses the same six face distances. Keep the
+        // original axis order when summing their squared lower bounds below.
+        let gaps: [[f64; 3]; 3] = std::array::from_fn(|k| {
+            let lower = q[k] - key[k] as f64 * v;
+            let upper = (key[k] + 1) as f64 * v - q[k];
+            [lower * lower, 0.0, upper * upper]
+        });
+'''
+old = '''                    let gap: f64 = (0..3)
+                        .map(|k| match offset[k] {
+                            -1 => q[k] - key[k] as f64 * v,
+                            1 => (key[k] + 1) as f64 * v - q[k],
+                            _ => 0.0,
+                        })
+                        .map(|g| g * g)
+                        .sum();'''
+new = '                    let gap: f64 = (0..3).map(|k| gaps[k][(offset[k] + 1) as usize]).sum();'
+assert b.count(cached) == b.count(new) == 1
+assert b.replace(cached, '').replace(new, old) == a
+c.save(c.STUDY/'arithmetic-source-audit.json', dict(
+    controller_sha256=c.sha(Path(__file__)), baseline_source_sha256=c.sha(c.STUDY/'build-baseline/source'/name),
+    candidate_source_sha256=c.sha(ROOT/name),
+    baseline_nearest_sha256=hashlib.sha256(a.encode()).hexdigest(),
+    candidate_nearest_sha256=hashlib.sha256(b.encode()).hexdigest(),
+    only_production_change_is_six_reused_face_squares=True,
+    axis_sum_order_and_search_order_unchanged=True,
+    remaining_production_code_identical=True,
+    new_tests=['nearest_face_bounds_match_ordered_sparse_neighborhoods',
+        'nearest_face_bounds_preserve_boundaries_ties_and_signed_zero']))
+print('Production edit restricted to six cached face squares; all other production code identical.')

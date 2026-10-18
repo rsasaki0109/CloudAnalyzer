@@ -1,0 +1,14 @@
+{
+  "controller_sha256": "4e6a0e0faa47e9ae858912153f60ae4b95a1e84b7aad6324f0b3704c49e8ab6b",
+  "baseline_source_sha256": "84cca68bb7a2c1ec0b1ea3176c140483b01510bc5ca5754b520dd6d492081c06",
+  "candidate_source_sha256": "78be7042ebe829288f803dd6785941956d7c55e8b70da7a1c8a24c3919e43f1f",
+  "baseline_nearest_sha256": "d391a315066a567e1510a90272af4a3c5f5107346c869cc0ce1c390f417d5bff",
+  "candidate_nearest_sha256": "e3cc2ab734db3a98c3d194a9691c13d894edd3e5c7b01128b017fdf9f0cf2b02",
+  "only_production_change_is_six_reused_face_squares": true,
+  "axis_sum_order_and_search_order_unchanged": true,
+  "remaining_production_code_identical": true,
+  "new_tests": [
+    "nearest_face_bounds_match_ordered_sparse_neighborhoods",
+    "nearest_face_bounds_preserve_boundaries_ties_and_signed_zero"
+  ]
+}

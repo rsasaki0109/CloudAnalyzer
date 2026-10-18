@@ -449,6 +449,13 @@ impl LocalMap {
     fn nearest(&self, q: &[f64; 3]) -> Option<([f64; 3], f64)> {
         let v = self.voxel;
         let key = q.map(|x| (x / v).floor() as i64);
+        // Each neighboring voxel uses the same six face distances. Keep the
+        // original axis order when summing their squared lower bounds below.
+        let gaps: [[f64; 3]; 3] = std::array::from_fn(|k| {
+            let lower = q[k] - key[k] as f64 * v;
+            let upper = (key[k] + 1) as f64 * v - q[k];
+            [lower * lower, 0.0, upper * upper]
+        });
         let mut best = ([0.0; 3], f64::INFINITY);
         let search = |cell: [i64; 3], best: &mut ([f64; 3], f64)| {
             for m in self.map.get(&cell).into_iter().flatten() {
@@ -467,14 +474,7 @@ impl LocalMap {
                         continue;
                     }
                     // How far `q` is from that voxel.
-                    let gap: f64 = (0..3)
-                        .map(|k| match offset[k] {
-                            -1 => q[k] - key[k] as f64 * v,
-                            1 => (key[k] + 1) as f64 * v - q[k],
-                            _ => 0.0,
-                        })
-                        .map(|g| g * g)
-                        .sum();
+                    let gap: f64 = (0..3).map(|k| gaps[k][(offset[k] + 1) as usize]).sum();
                     if gap < best.1 {
                         search(std::array::from_fn(|k| key[k] + offset[k]), &mut best);
                     }
@@ -1037,6 +1037,111 @@ impl Odometry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Exhaust all 27 cells in the same center-first order, without bounds.
+    // This checks target choice and distance bits independently of pruning.
+    fn ordered_neighborhood(map: &LocalMap, q: &[f64; 3]) -> Option<([f64; 3], f64)> {
+        let key = q.map(|x| (x / map.voxel).floor() as i64);
+        let mut cells = vec![key];
+        for dx in -1..=1 {
+            for dy in -1..=1 {
+                for dz in -1..=1 {
+                    if [dx, dy, dz] != [0; 3] {
+                        cells.push([key[0] + dx, key[1] + dy, key[2] + dz]);
+                    }
+                }
+            }
+        }
+        let mut best = ([0.0; 3], f64::INFINITY);
+        for cell in cells {
+            for m in map.map.get(&cell).into_iter().flatten() {
+                let distance =
+                    (m[0] - q[0]).powi(2) + (m[1] - q[1]).powi(2) + (m[2] - q[2]).powi(2);
+                if distance < best.1 {
+                    best = (*m, distance);
+                }
+            }
+        }
+        best.1.is_finite().then_some(best)
+    }
+
+    fn assert_nearest_bits(map: &LocalMap, q: [f64; 3]) {
+        let bits = |hit: Option<([f64; 3], f64)>| {
+            hit.map(|(point, distance)| (point.map(f64::to_bits), distance.to_bits()))
+        };
+        assert_eq!(bits(map.nearest(&q)), bits(ordered_neighborhood(map, &q)));
+    }
+
+    #[test]
+    fn nearest_face_bounds_match_ordered_sparse_neighborhoods() {
+        for voxel in [0.1875, 0.75, 1.0, 4.0] {
+            let mut map = LocalMap::new(voxel, 20);
+            for x in -3..=3 {
+                for y in -3..=3 {
+                    for z in -3..=3 {
+                        if (x + 2 * y + 3 * z) % 3 == 0 {
+                            for fraction in [0.125, 0.5, 0.875] {
+                                map.insert(&[[
+                                    (f64::from(x) + fraction) * voxel,
+                                    (f64::from(y) + fraction) * voxel,
+                                    (f64::from(z) + fraction) * voxel,
+                                ]]);
+                            }
+                        }
+                    }
+                }
+            }
+            let mut state = 1_u64;
+            for _ in 0..4096 {
+                let query = std::array::from_fn(|_| {
+                    state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+                    ((state >> 32) as f64 / u32::MAX as f64 * 10.0 - 5.0) * voxel
+                });
+                assert_nearest_bits(&map, query);
+            }
+            assert_nearest_bits(&map, [30.0 * voxel; 3]);
+            assert_nearest_bits(&LocalMap::new(voxel, 20), [0.0; 3]);
+        }
+    }
+
+    #[test]
+    fn nearest_face_bounds_preserve_boundaries_ties_and_signed_zero() {
+        for voxel in [0.1875, 0.75, 1.0, 4.0] {
+            let mut map = LocalMap::new(voxel, 20);
+            map.insert(&[[-0.0, 0.0, -0.0], [0.0; 3]]);
+            for x in -2..=2 {
+                for y in -2..=2 {
+                    for z in -2..=2 {
+                        map.insert(&[[
+                            f64::from(x) * voxel,
+                            f64::from(y) * voxel,
+                            f64::from(z) * voxel,
+                        ]]);
+                    }
+                }
+            }
+            for cell in -3..=3 {
+                let boundary = f64::from(cell) * voxel;
+                for value in [
+                    boundary.next_down(),
+                    boundary,
+                    boundary.next_up(),
+                    boundary + 0.5 * voxel,
+                ] {
+                    for axis in 0..3 {
+                        let mut query = [-0.0, 0.0, -0.0];
+                        query[axis] = value;
+                        assert_nearest_bits(&map, query);
+                    }
+                }
+            }
+            assert_eq!(
+                map.nearest(&[0.0; 3]).unwrap().0.map(f64::to_bits),
+                [-0.0, 0.0, -0.0].map(f64::to_bits)
+            );
+            assert_nearest_bits(&map, [f64::NAN, 0.0, 0.0]);
+        }
+    }
 
     fn sampling_cloud() -> PointCloud {
         PointCloud {

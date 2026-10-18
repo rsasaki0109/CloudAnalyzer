@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import importlib.util
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -48,6 +49,26 @@ def check_origins(root, origins, definitions):
         name = case+f'/scan-{scan:03d}/'+('final' if kind=='final' else f'step-{step:04d}')
         if origin['name'] != name or definition['name'] != name or definition['file'] != f'state-{i:03d}.f64' or origin['binary_file'] != definition['file']:
             raise ValueError('state binary identity differs')
+
+
+def check_summary(actual, expected, path='summary'):
+    """Keep structure/counts exact; allow roundoff in derived floating aggregates."""
+    if isinstance(expected,dict):
+        if not isinstance(actual,dict) or actual.keys()!=expected.keys():
+            raise ValueError('timing summary keys differ: '+path)
+        for key in expected:
+            check_summary(actual[key],expected[key],path+'/'+key)
+    elif isinstance(expected,list):
+        if not isinstance(actual,list) or len(actual)!=len(expected):
+            raise ValueError('timing summary list differs: '+path)
+        for i,value in enumerate(expected):
+            check_summary(actual[i],value,path+'/'+str(i))
+    elif isinstance(expected,float):
+        if (type(actual) not in [float,int] or not math.isfinite(actual) or not math.isfinite(expected)
+                or not math.isclose(actual,expected,rel_tol=2e-12,abs_tol=2e-12)):
+            raise ValueError('timing summary float differs: '+path)
+    elif type(actual) is not type(expected) or actual!=expected:
+        raise ValueError('timing summary value differs: '+path)
 
 
 def verify(folder=None):
@@ -156,8 +177,9 @@ def verify(folder=None):
         checks.append(independent.check_run(run,expected,threads))
         runs.append(run)
     summary = independent.summarize(runs,origins)
-    if summary != read(folder/'summary.json') or checks != read(folder/'verification.json')['per_process']:
-        raise ValueError('complete timing summary differs')
+    check_summary(summary,read(folder/'summary.json'))
+    if checks != read(folder/'verification.json')['per_process']:
+        raise ValueError('native verification summary differs')
     analysis_receipt = read(folder/'analysis-receipt.json')
     if not analysis_receipt['inputs_unchanged'] or analysis_receipt['invocation_sha256'] != sha(folder/'analysis-invocation.json'):
         raise ValueError('independent analysis did not close')

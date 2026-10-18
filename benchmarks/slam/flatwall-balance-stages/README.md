@@ -106,6 +106,13 @@ either the code content or the original archive remain rejected. The first Linux
 CI failure exposed an earlier raw-checkout digest; its log and original head are
 retained privately. No measurement, native source or reported timing changes.
 
+Derived floating summaries use `2e-12` relative/absolute comparison tolerance.
+Python 3.10's ordinary sum and the analysis host's Python 3.12 sum can differ in
+their final floating digits; the largest reproduced aggregate difference is
+about `1.82e-12` microseconds. Raw integer times, sample identities/counts/types
+and hashes remain exact; native matrix tolerances are unchanged. Legacy-sum and material-change tests
+cover this comparison without rewriting any original summary or receipt.
+
 Derived from `flatwall_01.bag` and `flatwall_02.bag`, Kenji Koide (AIST),
 [Zenodo record 7641866, version 2](https://zenodo.org/records/7641866),
 licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

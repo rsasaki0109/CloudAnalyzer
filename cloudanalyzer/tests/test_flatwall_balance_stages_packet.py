@@ -3,6 +3,9 @@ import copy
 import gzip
 import importlib.util
 import json
+import functools
+import math
+import operator
 from pathlib import Path
 import shutil
 
@@ -148,3 +151,26 @@ def test_search_dependency_content_changes_are_rejected(tmp_path,archive):
         (target/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     with pytest.raises(ValueError,match='original dependency source' if archive else 'normalized diagnostic source'):
         packet.verify(target)
+
+
+def test_pre_compensated_float_sum_still_verifies_original_aggregates(monkeypatch):
+    legacy = packet.load_independent(ROOT)
+    monkeypatch.setattr(legacy,'sum',lambda values,start=0:functools.reduce(operator.add,values,start),raising=False)
+    monkeypatch.setattr(packet,'load_independent',lambda root:legacy)
+    assert packet.verify()['measured_blocks'] == 1280
+
+
+def test_summary_roundoff_keeps_integer_counts_types_and_material_ratios_strict():
+    reference = packet.read(PACKET/'summary.json')
+    changed = copy.deepcopy(reference)
+    field = changed['groups']['eligible']['threads']['4']
+    field['balanced_over_baseline'] = math.nextafter(field['balanced_over_baseline'],math.inf)
+    packet.check_summary(changed,reference)
+    field['balanced_over_baseline'] *= 1.001
+    with pytest.raises(ValueError,match='summary float'):
+        packet.check_summary(changed,reference)
+    for name,value in [('measured_blocks',1281),('production_arithmetic_changed',0)]:
+        changed = copy.deepcopy(reference)
+        changed[name] = value
+        with pytest.raises(ValueError,match='summary value'):
+            packet.check_summary(changed,reference)

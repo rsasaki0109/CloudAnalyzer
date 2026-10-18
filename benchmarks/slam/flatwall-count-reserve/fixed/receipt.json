@@ -1,0 +1,32 @@
+{
+  "closed_at_utc": "2026-10-18T09:57:53.559157+00:00",
+  "invocation_sha256": "811d7d9c545348399f206755e36ec258a41780ba8d6099d4f72ab80a849237d2",
+  "input_hashes_unchanged": true,
+  "output_files_sha256": {
+    "invocation.json": "811d7d9c545348399f206755e36ec258a41780ba8d6099d4f72ab80a849237d2",
+    "run-00-baseline-threads-1-invocation.json": "0ae5f2372f635281de2e7f6be290749eb6adea7bf1c50cc1816decbfc19ca913",
+    "run-00-baseline-threads-1.json": "edfe142b000c72c35210ccd1baabc6b7ad61b3158e8d15c04d81e41c32063a56",
+    "run-00-baseline-threads-1.log": "d27068ed9a7fb5f404c90341eff88896b5667a57593681411b51c641e7678abe",
+    "run-01-candidate-threads-1-invocation.json": "4c3fd7908df9a963e5e7bdf1c837e9c2c1bfedeef564c9ac0161349c18d8cc5a",
+    "run-01-candidate-threads-1.json": "9243b723c9c19b2a45ca5729d812aa47f698f89b80140feb96da8bedbfa81f8b",
+    "run-01-candidate-threads-1.log": "936ebbf8d2cd4f5e9cbce9a5c7497fd69fcd837aaa7a18b516b71add405ca925",
+    "run-02-candidate-threads-1-invocation.json": "e3e8d6e398e781ac80ff86f3fc3cc773aa277bcfbfab580e725e24c01d1a5d0b",
+    "run-02-candidate-threads-1.json": "e6ff19dcfaeae9183c48bd6ce7ce74d5b65bb36b315cb5185b796853e04a1c60",
+    "run-02-candidate-threads-1.log": "f0cf87c5ba44bc33d236f7188a75611a420438964b57fee71229b7a7c27aa67e",
+    "run-03-baseline-threads-1-invocation.json": "b50a84560345feaa61bec9da9bd5e5fc3003fcaad2a895ec19a78612c33c4cc7",
+    "run-03-baseline-threads-1.json": "7788dd068fb5be77d4236e8f60776b17ceefa1326bd3562523141292c2c26049",
+    "run-03-baseline-threads-1.log": "a53eefebd50aebe1bb7098823fa744d7bd0ddbe5af4e71256009d97ad18d798c",
+    "run-04-baseline-threads-4-invocation.json": "a09da144e1df6b6d15249055af18d9808b1d81e23adb46cc3e44990ff2a82f2a",
+    "run-04-baseline-threads-4.json": "91b337777789c14948aa9ea6106e5a3cb47fc11f24d8f676b3ceaf43da621bdb",
+    "run-04-baseline-threads-4.log": "56d3a13f0aabdf3a1a7bbbed543553d0726325eae837170898feaddab8722558",
+    "run-05-candidate-threads-4-invocation.json": "87ec6c8397f8f3d52e74f4fa7f17696ea6ad45f76b334a4e6a5abc2320bc61b1",
+    "run-05-candidate-threads-4.json": "01da93a65de12e441263720da9c05ec9f5caea61b2dfe18319a48dc7192bc888",
+    "run-05-candidate-threads-4.log": "a9f0ac727f1ec205416f45ef9e5224b9e8659cda3f31b18a84d41dd81da396ab",
+    "run-06-candidate-threads-4-invocation.json": "a978d5c66b969299f38670986effee35691c96b2c94399ebe264f469f53a3792",
+    "run-06-candidate-threads-4.json": "d76d187942bdddf2ef11142102ae31ea61f4f2beb54a38f0a7e3c3451ada97dd",
+    "run-06-candidate-threads-4.log": "0fefcdd1266abd48dcf6f07df0315b5ae1da0503fe19a9443218a76553b47321",
+    "run-07-baseline-threads-4-invocation.json": "3ddfe04cf0bdc377f73b75ad031836bb91ce7b5893a9473051134c944d905579",
+    "run-07-baseline-threads-4.json": "2355af46814e071f977636a7659bafa2779ed0064cdf1e92490208d43f367029",
+    "run-07-baseline-threads-4.log": "e951375169c970536fd1c7fa33ccfa12c5e71dc8cf32685818e4f871d8633339"
+  }
+}

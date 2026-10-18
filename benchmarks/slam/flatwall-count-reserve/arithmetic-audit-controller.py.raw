@@ -1,0 +1,26 @@
+"""Prove that counting's allocation capacities are its only production edits."""
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location('count_reserve_audit_controller', ROOT/'notes/run-slam-count-reserve-20261018.py')
+c = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(c)
+baseline = (c.STUDY/'build-baseline/source'/c.ODOMETRY).read_text(encoding='utf-8')
+candidate = (ROOT/c.ODOMETRY).read_text(encoding='utf-8')
+old = '''    let mut index: HashMap<[u64; 3], usize, BuildHasherDefault<VoxelHasher>> = HashMap::default();
+    let mut frequencies = Vec::<usize>::new();'''
+new = '''    // There can be at most one unique coordinate per item. Reserve that upper
+    // bound once so counting does not repeatedly grow and rehash its table.
+    let mut index: HashMap<[u64; 3], usize, BuildHasherDefault<VoxelHasher>> =
+        HashMap::with_capacity_and_hasher(items.len(), BuildHasherDefault::default());
+    let mut frequencies = Vec::<usize>::with_capacity(items.len());'''
+assert baseline.count(old) == candidate.count(new) == 1
+assert candidate.replace(new, old) == baseline
+c.save(c.STUDY/'arithmetic-source-audit.json', dict(controller_sha256=c.sha(Path(__file__)),
+    baseline_source_sha256=c.sha(c.STUDY/'build-baseline/source'/c.ODOMETRY),
+    candidate_source_sha256=c.sha(ROOT/c.ODOMETRY), only_allocation_capacities_changed=True,
+    coordinate_keys_counts_order_and_arithmetic_identical=True, all_other_source_identical=True,
+    upper_bound='One distinct coordinate at most per input item; no empirical capacity threshold.',
+    tradeoff='Reserving for the upper bound can retain more unused capacity on duplicate-heavy inputs. This is an allocation/time tradeoff; no peak-memory improvement is claimed.'))
+print('Only count-table and frequency-vector capacity reservations changed.')

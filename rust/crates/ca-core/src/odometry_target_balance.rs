@@ -15,8 +15,11 @@ pub(crate) fn multiplicities(targets: &[[f64; 3]]) -> Vec<usize> {
 
 /// Count targets directly from pair records, preserving their input order.
 pub(super) fn multiplicities_by<T>(items: &[T], point: impl Fn(&T) -> [f64; 3]) -> Vec<usize> {
-    let mut index: HashMap<[u64; 3], usize, BuildHasherDefault<VoxelHasher>> = HashMap::default();
-    let mut frequencies = Vec::<usize>::new();
+    // There can be at most one unique coordinate per item. Reserve that upper
+    // bound once so counting does not repeatedly grow and rehash its table.
+    let mut index: HashMap<[u64; 3], usize, BuildHasherDefault<VoxelHasher>> =
+        HashMap::with_capacity_and_hasher(items.len(), BuildHasherDefault::default());
+    let mut frequencies = Vec::<usize>::with_capacity(items.len());
     let mut counts = Vec::with_capacity(items.len());
     for item in items {
         let next = frequencies.len();

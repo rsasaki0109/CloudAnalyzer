@@ -1,0 +1,102 @@
+{
+  "fixed": [
+    {
+      "index": 0,
+      "implementation": "baseline",
+      "threads": 1,
+      "file": "fixed/run-00-baseline-threads-1.json.gz",
+      "invocation": "fixed/run-00-baseline-threads-1-invocation.json",
+      "original_output_sha256": "edfe142b000c72c35210ccd1baabc6b7ad61b3158e8d15c04d81e41c32063a56"
+    },
+    {
+      "index": 1,
+      "implementation": "candidate",
+      "threads": 1,
+      "file": "fixed/run-01-candidate-threads-1.json.gz",
+      "invocation": "fixed/run-01-candidate-threads-1-invocation.json",
+      "original_output_sha256": "9243b723c9c19b2a45ca5729d812aa47f698f89b80140feb96da8bedbfa81f8b"
+    },
+    {
+      "index": 2,
+      "implementation": "candidate",
+      "threads": 1,
+      "file": "fixed/run-02-candidate-threads-1.json.gz",
+      "invocation": "fixed/run-02-candidate-threads-1-invocation.json",
+      "original_output_sha256": "e6ff19dcfaeae9183c48bd6ce7ce74d5b65bb36b315cb5185b796853e04a1c60"
+    },
+    {
+      "index": 3,
+      "implementation": "baseline",
+      "threads": 1,
+      "file": "fixed/run-03-baseline-threads-1.json.gz",
+      "invocation": "fixed/run-03-baseline-threads-1-invocation.json",
+      "original_output_sha256": "7788dd068fb5be77d4236e8f60776b17ceefa1326bd3562523141292c2c26049"
+    },
+    {
+      "index": 4,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "fixed/run-04-baseline-threads-4.json.gz",
+      "invocation": "fixed/run-04-baseline-threads-4-invocation.json",
+      "original_output_sha256": "91b337777789c14948aa9ea6106e5a3cb47fc11f24d8f676b3ceaf43da621bdb"
+    },
+    {
+      "index": 5,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "fixed/run-05-candidate-threads-4.json.gz",
+      "invocation": "fixed/run-05-candidate-threads-4-invocation.json",
+      "original_output_sha256": "01da93a65de12e441263720da9c05ec9f5caea61b2dfe18319a48dc7192bc888"
+    },
+    {
+      "index": 6,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "fixed/run-06-candidate-threads-4.json.gz",
+      "invocation": "fixed/run-06-candidate-threads-4-invocation.json",
+      "original_output_sha256": "d76d187942bdddf2ef11142102ae31ea61f4f2beb54a38f0a7e3c3451ada97dd"
+    },
+    {
+      "index": 7,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "fixed/run-07-baseline-threads-4.json.gz",
+      "invocation": "fixed/run-07-baseline-threads-4-invocation.json",
+      "original_output_sha256": "2355af46814e071f977636a7659bafa2779ed0064cdf1e92490208d43f367029"
+    }
+  ],
+  "time": [
+    {
+      "index": 0,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "time/run-00-baseline-threads-4.json.gz",
+      "invocation": "time/run-00-baseline-threads-4-invocation.json",
+      "original_output_sha256": "9bda3d1970ab02f51eb988539af0ac362d503b6f30aa2738703de69be7c93eb1"
+    },
+    {
+      "index": 1,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "time/run-01-candidate-threads-4.json.gz",
+      "invocation": "time/run-01-candidate-threads-4-invocation.json",
+      "original_output_sha256": "69187c6859c6f4690fc6783189068d33333c96cb7b6159c5ec9eed5d0760f092"
+    },
+    {
+      "index": 2,
+      "implementation": "candidate",
+      "threads": 4,
+      "file": "time/run-02-candidate-threads-4.json.gz",
+      "invocation": "time/run-02-candidate-threads-4-invocation.json",
+      "original_output_sha256": "6f089ca6b1e8ba2085e910366fac78f039d7a5068e0cf459c8451d1b374506ee"
+    },
+    {
+      "index": 3,
+      "implementation": "baseline",
+      "threads": 4,
+      "file": "time/run-03-baseline-threads-4.json.gz",
+      "invocation": "time/run-03-baseline-threads-4-invocation.json",
+      "original_output_sha256": "17dc439530625e306d0c7969656b1b2b2e4b9617455d5baf76c54b60c603e07e"
+    }
+  ]
+}

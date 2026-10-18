@@ -1,0 +1,377 @@
+{
+  "implementation": "baseline",
+  "sources": {
+    "rust/crates/ca-core/src/bag.rs": {
+      "sha256": "94d807b20f02cf9fb1ed7c63158ef139a43973306f2ed7636a3bbb40c14d30b9",
+      "normalized_sha256": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27"
+    },
+    "rust/crates/ca-core/src/cluster.rs": {
+      "sha256": "1eb48ac7f5831c2db32306c8f3d78e3f51958e589c8f98744e5a19186ed6ab2b",
+      "normalized_sha256": "079d36fe74ec0ea3f9f5d1595eccafa0035b1dea5b6f1de17f709cbf07388b8d"
+    },
+    "rust/crates/ca-core/src/delaunay.rs": {
+      "sha256": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+      "normalized_sha256": "2ef24589d77f892be59ea1e6fb7619a7cbff37f60eb48ea0fbcd4f9e62bdb224"
+    },
+    "rust/crates/ca-core/src/distance.rs": {
+      "sha256": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
+      "normalized_sha256": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1"
+    },
+    "rust/crates/ca-core/src/dynamic.rs": {
+      "sha256": "5872d51f2e566774d45aee94b971d6e8ffbd5b31b4461dba5b2d9bb0013fec27",
+      "normalized_sha256": "2df0614fb291a9e84f0ba0d4dcdff865b31f4ae320fa94f5325d3f1aac65bf44"
+    },
+    "rust/crates/ca-core/src/filter.rs": {
+      "sha256": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+      "normalized_sha256": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39"
+    },
+    "rust/crates/ca-core/src/geotiff.rs": {
+      "sha256": "36785efa8d8864e8e40d9ca068c592e225e7b7d49c98cf6fee187aae12bb6ac9",
+      "normalized_sha256": "2c1f567bf444c5962f78cbc6f0a7150a33750c2b30ece29942a7a6e38c89de9f"
+    },
+    "rust/crates/ca-core/src/gicp.rs": {
+      "sha256": "4ee7e1122c0e96facf911f6a6989825712a44099ac15cdf0ef3b4179d3ac8c96",
+      "normalized_sha256": "e786435b2bdcb710b0a3e25e7521c06d2cc7015c102a796861786d304c21dacd"
+    },
+    "rust/crates/ca-core/src/gicp_cycle.rs": {
+      "sha256": "5543daad13bb4bcce754ec5a4cdfeeb46f8f5590ced06ba8b183021281b95250",
+      "normalized_sha256": "c23efc209e4a3ce0e3733d031f43fa81707ab2687901d98d2f8409fb3e3d9c15"
+    },
+    "rust/crates/ca-core/src/gicp_registration.rs": {
+      "sha256": "ce661ea78e2f34d4eb6f9eb6c87e60cf28a76f5d384915d45e77331e44b2a311",
+      "normalized_sha256": "b4b5503847b3b9ce8a9b45ad5d2e3280c9af22ea65f35521dd6ad1d07d1cb5bd"
+    },
+    "rust/crates/ca-core/src/gicp_shapes.rs": {
+      "sha256": "805b1c5fb24a895bcacb6dd6ae678c8ced61af9b334249548063a83ffece2ec0",
+      "normalized_sha256": "a5b162f271092634ee9b0ab225972c357c5e4e5c731211bcc03fff5f4e551f6e"
+    },
+    "rust/crates/ca-core/src/gicp_transported.rs": {
+      "sha256": "46408f6c1c079b51ca8f166b4f0b6214d2f89fc77292e09141dccca7b68eb4f9",
+      "normalized_sha256": "f2c2674e9029bd632bba6b6c451e7c7e701d3db8443b0fbc564f6ea9ff926812"
+    },
+    "rust/crates/ca-core/src/ground.rs": {
+      "sha256": "3f0db870f9ebc017573561ca5328bdda1b6fc885c786619349333708175c9665",
+      "normalized_sha256": "f856a75c8f12ff948efac32cfb8b3b42d0360e60f648c20f4e227c317ccb7795"
+    },
+    "rust/crates/ca-core/src/icp.rs": {
+      "sha256": "8c0e8b13718719468492e6e4f5e0dc2c00cdbcb7a0164f3406ec714002dceb7e",
+      "normalized_sha256": "de673c6e7ed6c6e85ee9a3c7a0a479919aefd203bb717527cf8f04bdbb4f9bcc"
+    },
+    "rust/crates/ca-core/src/imu.rs": {
+      "sha256": "5f18d02ffdc8a1ff762af3df040161cf06a893538b4572352a238f8a3900f3c4",
+      "normalized_sha256": "8179c6e52ae72af670811ceb7ccaaba20bcb1656f0f0570f15655235f9e5b778"
+    },
+    "rust/crates/ca-core/src/imu_factor.rs": {
+      "sha256": "0f458a52bee55703a915aa73ca3c110094a6b3c7f8b824cdc27a1e31cd519d96",
+      "normalized_sha256": "fda0361bbdad60809aa050582c6bd2bded6ed02f8373d575c6d878c5eb0a042c"
+    },
+    "rust/crates/ca-core/src/imu_initialization.rs": {
+      "sha256": "9d1e7cb43070cb254c2b3a5b1f0d733484c941abee529a6b580801841746c571",
+      "normalized_sha256": "b99c4cd91abf6acb91eb851403966385a448ebc51d32ba8413399cb8df2190c6"
+    },
+    "rust/crates/ca-core/src/imu_rotation.rs": {
+      "sha256": "f36f28c8072054f34c2ae8b9d870251d9d6c4b0c50e95a63be7cbd536bf37acc",
+      "normalized_sha256": "e0664c9b1b19b9e3b470c5fc7720ffcaa25daea0044a43dca691cb496f5ca8eb"
+    },
+    "rust/crates/ca-core/src/imu_trajectory.rs": {
+      "sha256": "9b9b27dca63090e455b169d481fed0643695bd3039aa6bc76827936299f60350",
+      "normalized_sha256": "6f9c88e0211309f59700a55565c7c6ec877eedb8ab9b0672e6917591f5e5abe9"
+    },
+    "rust/crates/ca-core/src/imu_window.rs": {
+      "sha256": "53ee0a293706bbf6d7d0531af21ea069f6cf1869d68bec921108a3faf2e07e1c",
+      "normalized_sha256": "87dc928057bc59185793ba9da2c62ad0bfd00c04a050b69c7e97d9230e0741e9"
+    },
+    "rust/crates/ca-core/src/io/copc.rs": {
+      "sha256": "ee83822f3d0843d033f63fda4036400e5ae2ab356f9c63b0d6a3bdcadd41a597",
+      "normalized_sha256": "c3476826dd0bea65862f790dc0010c5ea3119d6d997e1c2065be2e5b41c9b942"
+    },
+    "rust/crates/ca-core/src/io/copc_query.rs": {
+      "sha256": "6f365ca5f7370e59c066b5202500755fb5c1f09213571abdbc9b29f15b9b1820",
+      "normalized_sha256": "455c4af2c600dd22d5a895c5b456d787b4e5bb1316cb527d436b1ecff5f5d53d"
+    },
+    "rust/crates/ca-core/src/io/e57.rs": {
+      "sha256": "22c5a8dc7b942944f03ae976e357bd7c693c7e78a83bc72a4d684fc746568993",
+      "normalized_sha256": "ae1a84f9a45e5900f883b3ff999502712adeaf0334c3e4a2cbe554489bb585e0"
+    },
+    "rust/crates/ca-core/src/io/kitti.rs": {
+      "sha256": "e4fddf18e105cd617ee0c8660dc1bda77cd9c61ea1b506cc299dfb4419249f86",
+      "normalized_sha256": "26ebab2c46b34e2cf15c56cce5261742f27288e2eb2131949092f27d35d4856f"
+    },
+    "rust/crates/ca-core/src/io/las.rs": {
+      "sha256": "97ee86bc57ab5924e1c37c277f7d7c10d96f41c8052487dfa22e63cb0830fc2e",
+      "normalized_sha256": "4ec3c8167322da838156b31acb2b9bb510396386b3b5812656d0525731ebff07"
+    },
+    "rust/crates/ca-core/src/io/las_chunks.rs": {
+      "sha256": "6f7e26401e17b781cb9728228d3113f456ddc59833215c676f152c935f29503c",
+      "normalized_sha256": "034e3d2d844b752827014e84742abcf62421ca3a8fae311c10951be66ff1f5e3"
+    },
+    "rust/crates/ca-core/src/io/las_write.rs": {
+      "sha256": "7104b0ef630e845251dd2bb9f275c4f3166a591c3edf92dcec8d99eb312135b4",
+      "normalized_sha256": "6c550c19d4a42cdbc38ca6e475a03e9a1104fd4126739a2889ebca9a66ff8b79"
+    },
+    "rust/crates/ca-core/src/io/mod.rs": {
+      "sha256": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+      "normalized_sha256": "1ca32726a6e25794ac93e006ff94d0fbfc20f18cf498db842692203bfd019b19"
+    },
+    "rust/crates/ca-core/src/io/obj.rs": {
+      "sha256": "b19e1f672498b26a3abbf76d327b206af9989c4d2dcd803165f671a30d18769c",
+      "normalized_sha256": "70bb6733f762eced1f004ff07c9ebecdf46f0e1eeaf2bfb98cc19fa1c82e6e64"
+    },
+    "rust/crates/ca-core/src/io/pcd.rs": {
+      "sha256": "3d60a5fcebb829a67df3a6f5864141da7ce053e04bc848281bd75391e0e5c74b",
+      "normalized_sha256": "cab567d7947c1da6ca6ea6da88a1400ab2cd3cf6c6fe4067695b7861eef2d350"
+    },
+    "rust/crates/ca-core/src/io/ply.rs": {
+      "sha256": "2c8698ea790484c1db0c1d0c9678427b25c573c55774db52b8654d657bb3067e",
+      "normalized_sha256": "4f47e5116a4e73f14aa988bdb56461fe5844eca17356b4ade508ed276b43bf5a"
+    },
+    "rust/crates/ca-core/src/io/scalar.rs": {
+      "sha256": "04e1bb7994af83fb59d7fa7f12ab9ee23586ec674d286b57eaeef72e0c8887f2",
+      "normalized_sha256": "46ea569d6b815f511ad6c504f4fb52083ee81cb6f6877f2e1fe51de25ade717c"
+    },
+    "rust/crates/ca-core/src/io/splat.rs": {
+      "sha256": "53acdec7392c65a66e2069c2935d3fa61e3f962ad79cba7b767cf85e0733d9a8",
+      "normalized_sha256": "70ddf158833ac1807cdebfefc663541514ff466931db54c0a4158a5d25b67713"
+    },
+    "rust/crates/ca-core/src/io/stl.rs": {
+      "sha256": "95bbedf1b3608a38d7aff62f117f6c005aa0a279b4e7d16eebb0cbd412999c30",
+      "normalized_sha256": "840682bc1e64af1b47b5b7e722a79981a551d756963ce91e36bd5fc14c7bfd9b"
+    },
+    "rust/crates/ca-core/src/io/stream.rs": {
+      "sha256": "ac65258ad1d96de66f0ee6c3fdcc2d641797461273cd10bb1acb497cf0d1db85",
+      "normalized_sha256": "ca9101f4b96ded4a0e1bfce6871bd2043b601d5ea7f5419f936fd15ec0de3737"
+    },
+    "rust/crates/ca-core/src/io/write.rs": {
+      "sha256": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+      "normalized_sha256": "0f97ad9503bbb312b52f12ce6f71a12abee6a8990eb51526bb880e5374cc3fdf"
+    },
+    "rust/crates/ca-core/src/io/xyz.rs": {
+      "sha256": "49286f55ddfb0faaa6a9e36726109782bb4046e9e99204e8f37a1f0284247b77",
+      "normalized_sha256": "03cd929c03faa40e2dbef1ce1c524acca20d6392ee69f23b4a9d48170871eb00"
+    },
+    "rust/crates/ca-core/src/kdtree.rs": {
+      "sha256": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+      "normalized_sha256": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3"
+    },
+    "rust/crates/ca-core/src/lib.rs": {
+      "sha256": "e08fefad6ac8a670f12072fa73dc9ee8eeeee482ee4d9f0ec584ff056fb0d948",
+      "normalized_sha256": "1b0970ecbf4f9062562c0ec7133b1fe2d8e751b44387a666d8122a6ada48d08b"
+    },
+    "rust/crates/ca-core/src/loop_search.rs": {
+      "sha256": "30e3772b49765c6f1c716513694dd1ec5e18e66e1dc730755dee7e9cff6701bf",
+      "normalized_sha256": "e7ff9f4809498882eabadcdf1bddd51ed52300a3c6809b5ef52e74a39a66133e"
+    },
+    "rust/crates/ca-core/src/m3c2.rs": {
+      "sha256": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+      "normalized_sha256": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312"
+    },
+    "rust/crates/ca-core/src/map_quality.rs": {
+      "sha256": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+      "normalized_sha256": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91"
+    },
+    "rust/crates/ca-core/src/merge.rs": {
+      "sha256": "61c3fb9548c15efc35ab57dc80798147a40bfff2be1909a8748f11396420d4c9",
+      "normalized_sha256": "5ca91917dd274fcc0c00a6d7c88766e19fcfbe4a79a0d40ebad7ba2affba1d15"
+    },
+    "rust/crates/ca-core/src/mesh.rs": {
+      "sha256": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+      "normalized_sha256": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855"
+    },
+    "rust/crates/ca-core/src/normal_pair.rs": {
+      "sha256": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+      "normalized_sha256": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef"
+    },
+    "rust/crates/ca-core/src/normals.rs": {
+      "sha256": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+      "normalized_sha256": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9"
+    },
+    "rust/crates/ca-core/src/octree.rs": {
+      "sha256": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+      "normalized_sha256": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60"
+    },
+    "rust/crates/ca-core/src/odometry.rs": {
+      "sha256": "78be7042ebe829288f803dd6785941956d7c55e8b70da7a1c8a24c3919e43f1f",
+      "normalized_sha256": "78be7042ebe829288f803dd6785941956d7c55e8b70da7a1c8a24c3919e43f1f"
+    },
+    "rust/crates/ca-core/src/odometry_linearization.rs": {
+      "sha256": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+      "normalized_sha256": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f"
+    },
+    "rust/crates/ca-core/src/odometry_profile.rs": {
+      "sha256": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+      "normalized_sha256": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108"
+    },
+    "rust/crates/ca-core/src/odometry_target_balance.rs": {
+      "sha256": "306bf11fc1d42e6a1a76e764e9842920952f8469e9a2272bf0443e9330152d8c",
+      "normalized_sha256": "306bf11fc1d42e6a1a76e764e9842920952f8469e9a2272bf0443e9330152d8c"
+    },
+    "rust/crates/ca-core/src/point_time.rs": {
+      "sha256": "1145e025fbaa1f50cb152ff58889c00b6cd440e3bb45064ca51511018dde0a43",
+      "normalized_sha256": "dcf1421fd44d8a3964493dd09355e3c84d75bb82076013f631fd63d33f7c1616"
+    },
+    "rust/crates/ca-core/src/pose_graph.rs": {
+      "sha256": "22169e673aed0c829261cb4e76f8cd968c03dad68d7f8a5554eabe9391b241a4",
+      "normalized_sha256": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799"
+    },
+    "rust/crates/ca-core/src/profile.rs": {
+      "sha256": "ce48f96d92b747f9225222dcaf1370b49b8d029c1fae4e82d77a89bb68daaa3a",
+      "normalized_sha256": "59f9ad78d46326e876cb51f689910d7ca7858d24c3624d4482bdf7b807a6f31c"
+    },
+    "rust/crates/ca-core/src/raster.rs": {
+      "sha256": "92d88d8fb601f1baea5d75a0fd69716bf77436ae8a1b15f55f691bbf698ca5fd",
+      "normalized_sha256": "628b6f003c20af7216c61dd55099d4662328039c6a78a8fd012bfbb97f806f25"
+    },
+    "rust/crates/ca-core/src/rosbag2.rs": {
+      "sha256": "5c0ea9f979843bfef084f4a9c691bcdb219b5a588e9b42b8524c3a8ea5c66c44",
+      "normalized_sha256": "79a28698dc5845c2c66ac2432ac52f4f3800d479992e056c4dbf7eeef909cd3e"
+    },
+    "rust/crates/ca-core/src/segment.rs": {
+      "sha256": "15f816f744ce2edd33940c067e34a18c21d6b3292c9d106c910625a5f8d7bfd1",
+      "normalized_sha256": "bd72608909130122615969a2d68d9c01845d637c32fc14963dc982f0985b8257"
+    },
+    "rust/crates/ca-core/src/shapes.rs": {
+      "sha256": "e5932e31c68774383f4f7333e9aac2c75e7a930251a46b0cc7b766a46a530da1",
+      "normalized_sha256": "1f1713298357d3857433373fa3663fe8643086aecc86381303c5e019e9bfd1bf"
+    },
+    "rust/crates/ca-core/src/trajectory.rs": {
+      "sha256": "8fecd20a9260be103603efa5858221c56450332a49ea7ebf48163036d82a1310",
+      "normalized_sha256": "6deb08d34f5f4a0abf8ac9c9147647747cd92abe0db2ce525f5da61f8a9c3e58"
+    },
+    "rust/crates/ca-core/src/vector_map/corridors.rs": {
+      "sha256": "2343a077c3b09a67ffa1477c94bba21774d20d0cc4e6f2b5ffb5823b0fcc9dc1",
+      "normalized_sha256": "82f8e9aa16eb1f9e76c4fb21db6c48423afbb66ac9ac21ebb00fb53a6d8f84d8"
+    },
+    "rust/crates/ca-core/src/vector_map/crosswalks.rs": {
+      "sha256": "71c70574450653a2e078424a7f5c839faf98c7802fe7f5b3a4baa65c4e114aba",
+      "normalized_sha256": "2d69b6429598bfe212d372b49744fc45117609271d77c4d12f95b8c1c8369c79"
+    },
+    "rust/crates/ca-core/src/vector_map/discovery.rs": {
+      "sha256": "23b3db8aa9d758850efb5b5e644315b03c74a919a245085f066f089e4c1585e2",
+      "normalized_sha256": "7129c127883a5a759e48ef823ca803b0878b642f1c9e3b647a428619ed6a927a"
+    },
+    "rust/crates/ca-core/src/vector_map/discovery_tests.rs": {
+      "sha256": "cbea4ddfb6a1afc3e18a073d6683203815a83169f1ff75a099c2f9c0e670bc6e",
+      "normalized_sha256": "eb4c05d9edc1770042e155437876c21efae44907e93b9725e1bd8c53b5088301"
+    },
+    "rust/crates/ca-core/src/vector_map/evidence.rs": {
+      "sha256": "cd1189bb39b42ecc3eb3c8356069adb8e0779b4d317dd2b6b3e69a5b22c236fc",
+      "normalized_sha256": "dfc796728c2b8a1881f60c75f0c1caf102fa028f88aae481e26615d96e0cdea4"
+    },
+    "rust/crates/ca-core/src/vector_map/feature_editing.rs": {
+      "sha256": "725cff8a25e095a4a24ed146ef4c807ee7f00146fd6e3a17b9f5ad5e9497f6b4",
+      "normalized_sha256": "822d0c8b037826ee7f3cfe28ee4dd81b962cf81cfe34bbafa6826e4a4760f775"
+    },
+    "rust/crates/ca-core/src/vector_map/fitting.rs": {
+      "sha256": "b2d3a1e2f130a5d296e8c5954a70de8617d1e72e6194efe0c84fdddb33bcecf4",
+      "normalized_sha256": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60"
+    },
+    "rust/crates/ca-core/src/vector_map/integration.rs": {
+      "sha256": "662970db0abd31ee42f5faff24162c7544f171891cc416bcaf0f9de241400c3f",
+      "normalized_sha256": "527554f31539257b4590cef0e7a1cb1205d03aef055d12c5c395100ae57bd3a3"
+    },
+    "rust/crates/ca-core/src/vector_map/junctions.rs": {
+      "sha256": "85da61860390a38c2470a4e00270a6227707ea059b1a8842c7b0ca70d259516c",
+      "normalized_sha256": "2338f1ef2b603e000a734d143836826dcd78e9434e3b004d840f3a6de90884f1"
+    },
+    "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": {
+      "sha256": "37db6fa0394d90e067b1486782ed779faebd08ff5b65ccb0707ac977191e509d",
+      "normalized_sha256": "e317ec1b13b1467c6d0d8c0c8fd9cb1795612e5b904f53a8139d89e454c38568"
+    },
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": {
+      "sha256": "e09c1a1aba04fb5e6abb3a607821b8ffb3aa7b78f1532eb2a493db3bf27fcfb7",
+      "normalized_sha256": "adc4fbd658a91b9f102c73128a1b2bbe252cae22247a745f077b692cb2d5ad84"
+    },
+    "rust/crates/ca-core/src/vector_map/paint_divider.rs": {
+      "sha256": "d145c696082084e6c8c8eb56c81c112890879d8f2f9261543002f31ac9dbf9da",
+      "normalized_sha256": "f963ed9c38e6681dc0753aeb0a75f3b11c5f9e299e4a613989be2345bfaf0204"
+    },
+    "rust/crates/ca-core/src/vector_map/quality.rs": {
+      "sha256": "58b15c3fa53dc22bb1bb71c36aa95badecb47c6ef0d62f0e2b928390517095c2",
+      "normalized_sha256": "cc9068bd9375fe0ea5cc326f46a6d4301e3616fbe9eec4d5b70fd2176cbf9486"
+    },
+    "rust/crates/ca-core/src/vector_map/relation_proposals.rs": {
+      "sha256": "db316733520608c28fbced25503fc83cb3e33ef9f7b9c6cece5d30a83d5dc176",
+      "normalized_sha256": "29a3032e4c84c800775853e846a926ee7c8e1c1071862ab6569bd53915f5755e"
+    },
+    "rust/crates/ca-core/src/vector_map/relations.rs": {
+      "sha256": "1fa302063cb4958915ea8311d24027ab98544886422ce0955b230c97f466d38f",
+      "normalized_sha256": "49a22608c60c4cc62adc186894f1f064685a86dfa23365c15b14d6f2d4c22204"
+    },
+    "rust/crates/ca-core/src/vector_map/segmentation.rs": {
+      "sha256": "5cdc6641848bcc40c759d4b07e5033cb78ca73bf55b27e4a92796051439ab092",
+      "normalized_sha256": "d6be5e3e38627fffdfab4beeb108f5f0390215020838deb97f2c25d7aea0dcc5"
+    },
+    "rust/crates/ca-core/src/vector_map/signals.rs": {
+      "sha256": "48f4c5926203aadb1c8de504fb489f760ab9679af91a087345c06221450d38fd",
+      "normalized_sha256": "e0dbaecc81df7da5f490261c58d6c938ec6066d29823f8bd455fb92f882de5cb"
+    },
+    "rust/crates/ca-core/src/vector_map/surface.rs": {
+      "sha256": "c20bd0ccbf7a3e59d34d9d8522655a0cb4ec4629f40f650f341f999007825c8d",
+      "normalized_sha256": "fbd80681a0c085e72526cdb9cc9ff53213ff613435e3b9887677348ead9817c2"
+    },
+    "rust/crates/ca-core/src/vector_map/trace_alignment.rs": {
+      "sha256": "2c58685ce97e4b6a2ae44bbf80aafb3927d203d414c72eb0f4e5782e64cf6415",
+      "normalized_sha256": "41ea32508d05136f1a5383a1aec45042263e7f052492ad8b3f27e7b7c897f371"
+    },
+    "rust/crates/ca-core/src/vector_map.rs": {
+      "sha256": "b03e6c83ba296a4f45346c99dd8c7c828bf76722e562c80c02025b65713f09ed",
+      "normalized_sha256": "bf394963d140a6eb0e2262a678faf9645bdce2d0cd7617904da34a43ed8fd8f2"
+    },
+    "rust/crates/ca-core/src/volume.rs": {
+      "sha256": "6842e46cefa1145d750515430a6e4c472996fea20c0bacd4a348b9b432a8990e",
+      "normalized_sha256": "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4"
+    },
+    "rust/Cargo.toml": {
+      "sha256": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+      "normalized_sha256": "2b1c299f65ecb0a601e84a230f701dd709347c1e04787e7e1dec94b3a0e67287"
+    },
+    "rust/Cargo.lock": {
+      "sha256": "a1dde16d86a3500d0123af8f41e46364cedd5702bb904e272eace4b56bd79257",
+      "normalized_sha256": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12"
+    },
+    "rust/crates/ca-core/Cargo.toml": {
+      "sha256": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+      "normalized_sha256": "84524d63173454cd474c8e20b65e0b64d757e3dd09535eb98175ff990183fb80"
+    },
+    "rust/crates/ca-core/examples/audit_odometry_steps.rs": {
+      "sha256": "41f5f8aa84bc6706ef3438832199cc20ffad2eec5a3f73531767ee09a0a07ffa",
+      "normalized_sha256": "8f17425a04365582a1528fab0a18515578f95c438345e026defc16e5bbda24f3"
+    }
+  },
+  "commands": [
+    [
+      "build",
+      "--release",
+      "--offline",
+      "--manifest-path",
+      "rust/Cargo.toml",
+      "-p",
+      "ca-core",
+      "--features",
+      "parallel",
+      "--message-format=json",
+      "--example",
+      "audit_odometry_steps"
+    ],
+    [
+      "test",
+      "--release",
+      "--offline",
+      "--manifest-path",
+      "rust/Cargo.toml",
+      "-p",
+      "ca-core",
+      "--features",
+      "parallel",
+      "--message-format=json",
+      "--lib",
+      "--no-run"
+    ]
+  ],
+  "versions": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)"
+  },
+  "protocol_sha256": "aa9b11be79262ebcaed923db75b705524d7e79b38e08e3524be0b331590e0e51",
+  "controller_sha256": "42434d7222cb5768d40a1621ac937f79f1ef059cbd404da9b0b00b0cc70e51b5"
+}

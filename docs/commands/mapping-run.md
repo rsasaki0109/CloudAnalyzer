@@ -63,13 +63,29 @@ or uncertainties. The original TUM and producer declaration travel with the
 finished artifacts and review bundle. The import checks for 10 GiB of free
 space plus its estimated small-output budget before creating a run.
 
-The returned action contract permits inspect, refine, draft, inspected
-connections and finish, with resume after an interrupted supported action.
+The returned action contract permits inspect, refine, draft, saved gap inspection,
+inspected connections and finish, with resume after an interrupted supported action.
 Raw-recording inspection and point-map/fusion retry actions require a raw-log
 run. Extent is measured over the supplied trajectory; imported pose counts
 and producer declarations do not verify coverage of the original recording.
 Point-map accuracy remains unverified, and the existing HD quality/extent
 gates and explicit review holds still apply.
+
+On an audited imported draft, `inspect_gaps` reads the retained draft's saved
+source proposal and reports missing station intervals, nearby extraction
+profiles, fixed-layout width observations and retained HD occupancy. It does not
+load point clouds, decode raw scans, regenerate geometry or perform new source
+audits. A later proposal refinement does not change this evidence's source.
+Saved extraction gaps do not establish physical absence of a road or a cause.
+The pages explicitly mark raw evidence and fresh audits unavailable and cannot
+authorize fusion, point-map retries or HD-repair trials.
+
+Each immutable page contains at most eight gaps, eight context profiles and
+eight width candidates per gap, sixteen bands per profile, and 128 sections per
+width preview. Counts and truncation flags expose omitted evidence. Each page is
+limited to 2 MiB, checks a 10 GiB disk reserve before writing, and reuses the
+existing page when its inputs and inspection protocol match. Inspecting spends
+no shared HD attempts. Referenced inputs and observation files remain hash checked.
 
 ### Start from a recording
 

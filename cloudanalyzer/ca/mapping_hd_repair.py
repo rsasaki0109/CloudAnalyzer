@@ -47,6 +47,8 @@ def occupancy(parent: dict[str, Any], gap: dict[str, Any]) -> dict[str, Any]:
 def validate(evidence: dict[str, Any], cid: int, gap_ids: Any) -> dict[str, Any]:
     jobs._verify(evidence)
     saved = json.loads(Path(evidence["path"]).read_text())
+    if saved.get("schema") == "cloudanalyzer.mapping_map_gaps.v1" or "raw_manifest" not in saved:
+        raise ValueError("HD repair requires raw-recording gap evidence; saved-map observations cannot authorize repair")
     retries._verify_inputs(saved["inputs"])
     jobs._verify(saved["raw_manifest"])
     if saved["candidate_id"] != cid:

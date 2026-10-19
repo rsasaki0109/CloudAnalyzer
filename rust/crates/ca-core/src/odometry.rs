@@ -446,6 +446,7 @@ impl LocalMap {
 
     /// The map point nearest `q` in its voxel and the 26 around it, with the
     /// squared distance; a voxel is skipped when it is no nearer than the best so far.
+    #[inline(always)]
     fn nearest(&self, q: &[f64; 3]) -> Option<([f64; 3], f64)> {
         let v = self.voxel;
         let key = q.map(|x| (x / v).floor() as i64);
@@ -467,14 +468,21 @@ impl LocalMap {
         };
         search(key, &mut best);
         for dx in -1..=1_i64 {
+            let gap_x = 0.0 + gaps[0][(dx + 1) as usize];
+            if gap_x >= best.1 {
+                continue;
+            }
             for dy in -1..=1_i64 {
+                let gap_xy = gap_x + gaps[1][(dy + 1) as usize];
+                if gap_xy >= best.1 {
+                    continue;
+                }
                 for dz in -1..=1_i64 {
                     let offset = [dx, dy, dz];
                     if offset == [0, 0, 0] {
                         continue;
                     }
-                    // How far `q` is from that voxel.
-                    let gap: f64 = (0..3).map(|k| gaps[k][(offset[k] + 1) as usize]).sum();
+                    let gap = gap_xy + gaps[2][(dz + 1) as usize];
                     if gap < best.1 {
                         search(std::array::from_fn(|k| key[k] + offset[k]), &mut best);
                     }
@@ -1140,6 +1148,29 @@ mod tests {
                 [-0.0, 0.0, -0.0].map(f64::to_bits)
             );
             assert_nearest_bits(&map, [f64::NAN, 0.0, 0.0]);
+        }
+    }
+
+    #[test]
+    fn nearest_prefix_bounds_preserve_overflowing_face_squares() {
+        for voxel in [1e155, 1e200] {
+            let mut map = LocalMap::new(voxel, 20);
+            map.insert(&[
+                [-voxel; 3],
+                [0.0; 3],
+                [voxel; 3],
+                [2.0 * voxel; 3],
+                [voxel, 0.0, 0.0],
+            ]);
+            for query in [
+                [0.5 * voxel; 3],
+                [voxel; 3],
+                [voxel.next_down(), 0.0, 0.0],
+                [voxel.next_up(), 0.0, 0.0],
+                [30.0 * voxel; 3],
+            ] {
+                assert_nearest_bits(&map, query);
+            }
         }
     }
 

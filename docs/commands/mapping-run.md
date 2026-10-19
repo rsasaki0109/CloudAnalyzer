@@ -109,6 +109,15 @@ can still preserve source curves for review.
    persists. Every candidate a draft decides on, deferred ones included, must
    have been inspected, and draft ranges must have inspected endpoints;
    unreviewed tails stay unresolved. Source-proposal inspection preserves original candidate IDs and does not adopt a draft automatically.
+   Each inspected candidate also carries `layout_width_preview`. It compares the
+   fixed lane fractions and minimum widths with the actual XY span of the source
+   boundaries, including any pinch between observed sections. A candidate's
+   minimum span covers its whole extent: one narrow section can leave wider
+   subranges worth inspecting. The preview reports those observed-station ranges
+   and whether every section contains the path. It checks only width; source
+   support, lane generation and complete road width still require review. Ranges
+   are capped at 16 with explicit total/truncation fields, and uninspected section
+   pairs are counted separately. No interval is adopted or added automatically.
 4. A draft action supplies **complete** include/defer decisions and reasons.
    It automatically saves source geometry, binds the fixed layout to each
    included piece, generates Lanelet2/IR/projector and reads all four source

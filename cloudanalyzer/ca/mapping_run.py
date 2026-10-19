@@ -18,10 +18,16 @@ from ca import mapping_local_points as local_points
 from ca import mapping_heights as heights
 from ca import mapping_hd_repair as hd_repair
 from ca import mapping_hd_plan as hd_plan
-from ca.mapping_geometry import assemble_geometry, corridor_lane_requests
+from ca.mapping_geometry import assemble_geometry, corridor_lane_requests, preview_layout_width
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
 FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_connections", "connect", "finish", "resume"}
+WIDTH_GUIDANCE = (
+    "A candidate's minimum support span covers its entire extent; a narrow section can hide wider subranges. "
+    "Inspect candidates whose maximum span could fit the fixed layout. Inspect observations include layout_width_preview: "
+    "observed-station ranges meeting lane fractions and minimum widths, including interpolated boundary pinches. "
+    "This screens width only; inspect path association and ground evidence, retain uninspected tails, and require the existing four source audits."
+)
 GUIDANCE = """Continue this run autonomously within its fixed layout and attempt budget.
 Page the candidate index; inspect relevant candidates before deciding include/defer
 ranges. Compare path association, surface levels, spans, edge evidence and competing
@@ -394,6 +400,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "The generated g2o contains pose vertices only, not the external estimator's constraints or uncertainties. "
             "Producer/frame/time declarations and source support do not prove independent accuracy or road semantics."
         )
+    answer["guidance"] += " " + WIDTH_GUIDANCE
     return answer
 
 
@@ -624,6 +631,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 if not isinstance(ids, list) or not 1 <= len(ids) <= 8 or any(type(v) is not int or v < 1 for v in ids) or len(set(ids)) != len(ids):
                     raise ValueError("inspect needs 1..8 distinct positive candidate IDs")
                 observation = [jobs.inspect_mapping_corridors(str(root), candidate_id=cid)["candidate"] for cid in ids]
+                layout = json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8"))
+                for candidate in observation:
+                    candidate["layout_width_preview"] = preview_layout_width(candidate, layout)
             elif kind == "refine":
                 if action["association"] != "trajectory_containing":
                     raise ValueError("refine association must be trajectory_containing")

@@ -13,7 +13,9 @@ on:
       - "cloudanalyzer/ca/mapping_job.py"
       - "cloudanalyzer/ca/mapping_import.py"
       - "cloudanalyzer/ca/mapping_run.py"
+      - "cloudanalyzer/ca/mapping_geometry.py"
       - "cloudanalyzer/tests/test_mapping_import.py"
+      - "cloudanalyzer/tests/test_mapping_layout_width.py"
       - "cloudanalyzer/ca/mapping_motion_run.py"
       - "cloudanalyzer/ca/mapping_motion_trial.py"
       - "cloudanalyzer/tests/test_mapping_motion_run.py"
@@ -39,7 +41,9 @@ on:
       - "cloudanalyzer/ca/mapping_job.py"
       - "cloudanalyzer/ca/mapping_import.py"
       - "cloudanalyzer/ca/mapping_run.py"
+      - "cloudanalyzer/ca/mapping_geometry.py"
       - "cloudanalyzer/tests/test_mapping_import.py"
+      - "cloudanalyzer/tests/test_mapping_layout_width.py"
       - "cloudanalyzer/ca/mapping_motion_run.py"
       - "cloudanalyzer/ca/mapping_motion_trial.py"
       - "cloudanalyzer/tests/test_mapping_motion_run.py"
@@ -136,7 +140,7 @@ jobs:
         run: >-
           python -m pytest -q
           tests/test_rust_core.py tests/test_metrics.py tests/test_io.py
-          tests/test_vector_map.py tests/test_mapping_job.py tests/test_mapping_import.py tests/test_mapping_motion_run.py
+          tests/test_vector_map.py tests/test_mapping_job.py tests/test_mapping_import.py tests/test_mapping_layout_width.py tests/test_mapping_motion_run.py
           tests/test_mapping_motion_trial.py tests/test_mapping_trajectory.py
           tests/test_mapping_hd_repair.py tests/test_mapping_hd_plan.py tests/test_mapping_plan_apply.py
           tests/test_mapping_bundle.py tests/test_mapping_preview.py tests/test_http_ranges.py

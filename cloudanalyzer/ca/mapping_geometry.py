@@ -6,6 +6,57 @@ import math
 from typing import Any
 
 
+def preview_layout_width(candidate: dict[str, Any], layout: dict[str, Any]) -> dict[str, Any]:
+    """Screen inspected section pairs against the fixed lane fractions and widths.
+
+    A narrow section does not discard the rest of a long candidate. Ranges use
+    observed endpoints only. Check the minimum XY span between those endpoints,
+    including a possible pinch between two wide sections. This is a width screen,
+    not a ground audit, lane-generation result or adoption decision. Only the
+    bounded section preview is checked; uninspected tails remain unresolved.
+    """
+    required = max(lane["minimum_width_m"] / lane["fraction"] for lane in layout["lanes"])
+    sections = candidate["sections"]
+    spans = []
+    for section in sections:
+        left, right = section["left"], section["right"]
+        if any(len(p) != 3 or any(not math.isfinite(v) or abs(v) > 1e15 for v in p) for p in (left, right)):
+            raise ValueError("width preview needs finite observed boundary sections")
+        spans.append((left[0] - right[0], left[1] - right[1]))
+    ranges: list[dict[str, Any]] = []
+    active: dict[str, Any] | None = None
+    for i, (a, b) in enumerate(zip(spans, spans[1:])):
+        lo, hi = sections[i]["station_m"], sections[i + 1]["station_m"]
+        if not math.isfinite(lo) or not math.isfinite(hi) or lo >= hi:
+            raise ValueError("width preview needs increasing observed stations")
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        norm = dx * dx + dy * dy
+        t = max(0., min(1., -(a[0] * dx + a[1] * dy) / norm)) if norm else 0.
+        width = math.hypot(a[0] + t * dx, a[1] + t * dy)
+        if any(width * lane["fraction"] + 1e-6 < lane["minimum_width_m"] for lane in layout["lanes"]):
+            active = None
+            continue
+        contains_path = all(s.get("intersects_trajectory") is True for s in sections[i:i + 2])
+        if active is None:
+            active = {"from_m": lo, "to_m": hi, "minimum_interpolated_span_m": width,
+                      "section_pairs": 1, "path_contained_at_all_sections": contains_path}
+            ranges.append(active)
+        else:
+            active.update(to_m=hi, minimum_interpolated_span_m=min(active["minimum_interpolated_span_m"], width),
+                          section_pairs=active["section_pairs"] + 1,
+                          path_contained_at_all_sections=active["path_contained_at_all_sections"] and contains_path)
+    checked = max(0, len(sections) - 1)
+    total = max(0, candidate.get("total_sections", len(sections)) - 1)
+    return {"required_span_m": required, "lane_width_tolerance_m": 1e-6,
+            "measurement": "minimum_xy_span_of_linearly_interpolated_observed_boundaries",
+            "checked_section_pairs": checked, "total_section_pairs": total,
+            "uninspected_section_pairs": total - checked,
+            "width_matching_station_length_m": sum(r["to_m"] - r["from_m"] for r in ranges),
+            "ranges": ranges[:16], "ranges_total": len(ranges), "ranges_limited_in_response": len(ranges) > 16,
+            "source_support_checked": False, "lane_generation_checked": False,
+            "adopted": False}
+
+
 def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], reason: str) -> tuple[dict[str, Any], dict[str, Any]]:
     """Make an IR and full input-station disposition from explicit bounded choices."""
     if not isinstance(reason, str) or not reason.strip():

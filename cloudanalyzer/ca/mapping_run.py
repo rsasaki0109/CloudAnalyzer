@@ -21,6 +21,7 @@ from ca import mapping_hd_plan as hd_plan
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
+FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_connections", "connect", "finish", "resume"}
 GUIDANCE = """Continue this run autonomously within its fixed layout and attempt budget.
 Page the candidate index; inspect relevant candidates before deciding include/defer
 ranges. Compare path association, surface levels, spans, edge evidence and competing
@@ -160,6 +161,32 @@ def start_mapping_run(source: str, out_dir: str, layout_hypothesis: dict[str, An
     job = jobs.start_mapping_job(source, out_dir, keyframe_spacing=keyframe_spacing,
         remove_dynamic=remove_dynamic, max_attempts=max_attempts, pointcloud_topic=pointcloud_topic,
         imu_topic=imu_topic, minimum_retained_fraction=minimum_retained_fraction)
+    return _prepare_run(out_dir, layout_hypothesis, job)
+
+
+def start_mapping_run_from_slam(
+    map_path: str, trajectory_path: str, out_dir: str, provenance: dict[str, Any],
+    layout_hypothesis: dict[str, Any], max_attempts: int = 6,
+    minimum_retained_fraction: float = .9,
+) -> dict[str, Any]:
+    """Start HD drafting from an existing external SLAM PLY/TUM pair.
+
+    Requires an explicit producer/frame/time/configuration declaration and the
+    same fixed layout hypothesis as a raw-recording run. The PLY is referenced
+    without copying, alignment or re-running SLAM. Input files must remain
+    accessible and unchanged. Inspect, refine, draft, connect and finish use
+    the existing quality/extent gates; raw-recording and fusion actions are
+    unavailable. No external SLAM package or model API key is required.
+    """
+    from ca.mapping_import import import_mapping_job
+
+    _layout(layout_hypothesis)
+    job = import_mapping_job(map_path, trajectory_path, out_dir, provenance,
+        max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
+    return _prepare_run(out_dir, layout_hypothesis, job)
+
+
+def _prepare_run(out_dir: str, layout_hypothesis: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]:
     root = Path(out_dir).resolve()
     jobs._save(root / "layout-hypothesis.json", layout_hypothesis)
     run = {"schema": SCHEMA, "revision": 0, "status": "preparing", "layout_file": jobs._artifact(root / "layout-hypothesis.json"),
@@ -356,6 +383,17 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "Explicit inspected connections can extend the seed while preserving existing geometry and edges. "
             "Require complete IR/reopened OSM audits from both estimators and no newly failing retained source locations. "
             "Route reachability does not increase original source extent or prove legal turns, independent accuracy or deployment readiness.")
+    if job["pointcloud"] and job["pointcloud"].get("origin") == "external_slam":
+        answer["pointcloud_retry_allowed"] = False
+        answer["action_contract"] = {k: v for k, v in answer["action_contract"].items() if k in FROZEN_MAP_ACTIONS}
+        answer["guidance"] = (
+            "This run references an existing external SLAM map and timestamped poses. Keep those files accessible and unchanged. "
+            "Inspect proposed sections before drafting; use the fixed layout and original extent/quality gates. "
+            "Refine path association, inspect/connect audited drafts, then finish with explicit unresolved work. "
+            "Only the actions in action_contract are available: raw-recording extraction and point-map retries require a raw-log run. "
+            "The generated g2o contains pose vertices only, not the external estimator's constraints or uncertainties. "
+            "Producer/frame/time declarations and source support do not prove independent accuracy or road semantics."
+        )
     return answer
 
 
@@ -545,6 +583,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         job = jobs.inspect_mapping_job(str(root))
         jobs._inputs(job)
         kind = action["type"]
+        if job["pointcloud"].get("origin") == "external_slam" and kind not in FROZEN_MAP_ACTIONS:
+            raise ValueError("frozen external SLAM maps support inspect, refine, draft, connections and finish; use a raw-log run for recording/fusion actions")
         if "hd_repair_manifest" in job.get("retry_inputs", {}) and kind == "refine":
             raise ValueError("HD-only repair retains the frozen source proposal")
         if "continuation" in job and kind in {"draft", "refine", "retry_pointcloud", "retry_frames", "retry_local_frames", "inspect_unused_frames", "inspect_local_points"}:

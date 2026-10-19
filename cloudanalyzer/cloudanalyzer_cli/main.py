@@ -1980,6 +1980,29 @@ def mapping_run_cmd(
         raise typer.Exit(1)
 
 
+@app.command("mapping-import")
+def mapping_import_cmd(
+    point_map: str = typer.Argument(..., help="Existing PLY map; referenced without copying"),
+    trajectory: str = typer.Option(..., "--trajectory", help="TUM world-from-sensor poses in the same metre frame"),
+    out: str = typer.Option(..., "--out"),
+    provenance: str = typer.Option(..., "--provenance", help="JSON producer/frame/time/configuration declaration"),
+    layout: str = typer.Option(..., "--layout", help="JSON fixed, explicit unverified lane assumptions"),
+    max_attempts: int = typer.Option(6, "--max-attempts", min=2, max=8),
+    minimum_retained_fraction: float = typer.Option(.9, "--minimum-retained-fraction", min=0, max=1),
+) -> None:
+    """Start HD drafting from an external SLAM map and trajectory."""
+    from ca.mapping_run import start_mapping_run_from_slam
+    try:
+        result = start_mapping_run_from_slam(point_map, trajectory, out,
+            _load_json_mapping(provenance), _load_json_mapping(layout),
+            max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "processing_failed":
+        raise typer.Exit(1)
+
+
 @app.command("mapping-run-inspect")
 def mapping_run_inspect_cmd(job: str = typer.Argument(...), offset: int = typer.Option(0, "--offset", min=0)) -> None:
     """Read saved agent-run state, paged observations and output paths."""

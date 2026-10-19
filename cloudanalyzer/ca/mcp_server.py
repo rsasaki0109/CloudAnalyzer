@@ -16,7 +16,7 @@ from typing import Any
 import numpy as np
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations
 from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
-from ca.mapping_run import start_mapping_run, inspect_mapping_run, advance_mapping_run
+from ca.mapping_run import start_mapping_run, start_mapping_run_from_slam, inspect_mapping_run, advance_mapping_run
 from ca.mapping_revision import continue_mapping_run
 from ca.mapping_plan_apply import apply_supported_hd_plan
 from ca.mapping_bundle import export_mapping_run, export_mapping_preview, inspect_mapping_bundle
@@ -96,7 +96,18 @@ lanes/connections and outside point records. inspect_protected_density previews 
 heights; retry_local_density uses that exact preview. It can exclude useful new
 evidence and keeps all four audit gates. Keep referenced prior runs accessible.
 
-For the complete agent-driven mapping loop, prefer start_mapping_run(source,
+When an external SLAM map and timestamped trajectory already exist, use
+start_mapping_run_from_slam(map_path, trajectory_path, out_dir, provenance,
+layout_hypothesis). Supply the producer/version/configuration and shared
+metre-frame world_from_sensor poses with the declared seconds time basis.
+It references the PLY without copying or rerunning SLAM and returns the same
+inspection/drafting/connection/finish loop. Preserve input files; use only
+the returned action_contract. Raw-log extraction/fusion retries are unavailable.
+Declared provenance and imported-pose extent do not prove full recording
+coverage or independent accuracy. The import checks free space for a 10 GiB
+reserve plus its estimated metadata/pose output budget before creating a run.
+
+For the complete agent-driven mapping loop from a raw recording, use start_mapping_run(source,
 out_dir, layout_hypothesis). Supply the user's explicit unverified lane layout
 once, without predefined corridor IDs. It generates the point map and proposals,
 then returns decision guidance. Continue autonomously using inspect_mapping_run
@@ -540,6 +551,9 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
 
 
 TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, measure_bridge_sections, draw_bridge_plan, find_bridge_damage_candidates, evaluate_map, evaluate_trajectory]
+
+
+TOOLS.append(start_mapping_run_from_slam)
 
 
 def build_server():

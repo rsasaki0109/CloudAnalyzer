@@ -63,6 +63,8 @@ def _frames(manifest: dict[str, Any]) -> list[Path]:
 
 def _raw_source(root: Path, job: dict[str, Any]) -> tuple[dict[str, Any], np.ndarray]:
     """Freshly decode the original recording, align raw returns at frozen keyframes."""
+    if job["pointcloud"].get("origin") == "external_slam":
+        raise ValueError("raw-recording evidence is unavailable for an imported external SLAM map")
     directory = root / "gap-source"
     manifest_file = directory / "manifest.json"
     if manifest_file.exists():

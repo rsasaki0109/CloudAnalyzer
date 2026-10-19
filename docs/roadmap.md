@@ -1,8 +1,9 @@
 # Development Roadmap
 
-Status snapshot: 2026-08-04. The roadmap is organized around the product goal
-in [VISION.md](../VISION.md): reproducible, CI-ready QA for 3D perception,
-mapping, and reconstruction outputs.
+Current product priority updated: 2026-10-19. The implementation inventory
+below originated on 2026-08-04. The roadmap follows [VISION.md](../VISION.md):
+generate point-cloud maps and HD-road drafts from real recordings, with
+reproducible quality evidence and explicit unresolved work.
 
 ## Product thesis
 
@@ -36,6 +37,32 @@ The implementation is pending commit/review. The working tree must remain
 compatible with the existing MIT license and optional CUDA/PDAL backends.
 
 ## Priority plan
+
+### External SLAM integration and complete mapping outputs (2026-10-19)
+
+External SLAM/LIO integration is a first-choice route to the product outcome.
+Keep the existing native core useful for that workflow. Use comparisons with
+systems such as GLIM to evaluate accuracy, robustness and runtime.
+
+The next milestone is a bounded real-recording workflow using existing inputs:
+
+1. Audit the existing ca slam-run driver/result contract and the mapping-job
+   input boundary. Record timestamps, units, coordinate frames, configuration
+   and implementation version; identify the adapter work needed to connect them.
+2. Connect the selected backend's point map and trajectory to HD-road drafting
+   and quality evaluation. Reuse available inputs and runtimes first.
+3. Deliver the point map, trajectory, Lanelet2 draft, quality report and explicit
+   unresolved regions from the same declared input coverage. Include reference
+   limitations and the required human interventions.
+4. Measure the complete workflow, including input/output time, peak memory and
+   disk use. Prioritize GPU/CPU work on measured bottlenecks while retaining
+   quality and coverage. Record speed qualification separately from implementation
+   and compatibility checks.
+
+Before large downloads, environment builds or map generation, estimate peak
+storage and check free space. Budget to retain 10 GiB free after the operation;
+reuse inputs/artifacts and reduce work size when the budget is unknown or
+insufficient. Clean up verified, task-owned temporary material after use.
 
 ### Agent-controlled mapping — current product priority (2026-10-08)
 

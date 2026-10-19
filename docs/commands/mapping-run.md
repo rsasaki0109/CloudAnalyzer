@@ -15,6 +15,64 @@ intervals and semantics, rather than a certified road network.
 
 ## Ask the agent to run
 
+### Start from an external SLAM map
+
+If SLAM has already produced a PLY map and TUM trajectory, use
+the CLI command below, or the MCP tool
+start_mapping_run_from_slam(map_path, trajectory_path, out_dir, provenance, layout_hypothesis).
+This enters the same inspection, drafting, connection and finish loop using
+the existing map. SLAM and point-map fusion do not run again.
+
+The map is referenced in place, including its original point attributes.
+Keep it and the TUM file accessible and unchanged throughout the run.
+Both must already share a Cartesian metre frame with Z up, and the TUM poses
+must be world-from-sensor transforms with strictly increasing seconds timestamps.
+The adapter applies no alignment, scale change or clock correction. It accepts
+a PLY up to 512 MiB and TUM up to 16 MiB, checks finite coordinates and poses,
+and requires at least two poses and unit quaternions (1e-5 norm tolerance for
+rounded exports).
+
+Save the producer declaration as provenance.json:
+
+~~~json
+{
+  "backend": "your-slam-backend",
+  "version": "the-version-or-commit-used",
+  "source": "the-recording-and-selected-input-coverage",
+  "license": "the-source-data-license-or-terms",
+  "coordinate_frame": "local_map",
+  "length_unit": "metres",
+  "up_axis": "z",
+  "pose_convention": "world_from_sensor",
+  "time_unit": "seconds",
+  "time_basis": "the-recording-clock-used-for-export",
+  "configuration": {}
+}
+~~~
+
+~~~sh
+ca mapping-import external/map.ply \
+  --trajectory external/trajectory.tum \
+  --provenance provenance.json --layout layout.json --out runs/external
+~~~
+
+Use the explicit layout described below. Import writes only metadata, a KITTI
+pose file and a vertex-only g2o pose snapshot; it does not copy the map. The g2o
+is for pose display/export and does not contain the external estimator's factors
+or uncertainties. The original TUM and producer declaration travel with the
+finished artifacts and review bundle. The import checks for 10 GiB of free
+space plus its estimated small-output budget before creating a run.
+
+The returned action contract permits inspect, refine, draft, inspected
+connections and finish, with resume after an interrupted supported action.
+Raw-recording inspection and point-map/fusion retry actions require a raw-log
+run. Extent is measured over the supplied trajectory; imported pose counts
+and producer declarations do not verify coverage of the original recording.
+Point-map accuracy remains unverified, and the existing HD quality/extent
+gates and explicit review holds still apply.
+
+### Start from a recording
+
 Install a current native core and register `ca mcp` with your agent. A request
 can specify:
 

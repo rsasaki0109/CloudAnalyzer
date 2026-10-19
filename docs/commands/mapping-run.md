@@ -64,7 +64,7 @@ finished artifacts and review bundle. The import checks for 10 GiB of free
 space plus its estimated small-output budget before creating a run.
 
 The returned action contract permits inspect, refine, draft, saved gap inspection,
-inspected connections and finish, with resume after an interrupted supported action.
+inspected connections, inspect_append, append_draft and finish, with resume after an interrupted supported action.
 Raw-recording inspection and point-map/fusion retry actions require a raw-log
 run. Extent is measured over the supplied trajectory; imported pose counts
 and producer declarations do not verify coverage of the original recording.
@@ -86,6 +86,37 @@ width preview. Counts and truncation flags expose omitted evidence. Each page is
 limited to 2 MiB, checks a 10 GiB disk reserve before writing, and reuses the
 existing page when its inputs and inspection protocol match. Inspecting spends
 no shared HD attempts. Referenced inputs and observation files remain hash checked.
+
+When path-association refinement offers a missing piece but loses useful earlier
+candidates, draft only the wanted addition. `append_draft` explicitly combines
+that own audited refined draft with an own original audited baseline. First use
+`inspect_gaps` on the baseline, then `inspect_append` with `baseline_candidate_id`,
+`addition_candidate_id` and 1..8 gap IDs from its latest inspected page. This
+returns at most 32 exact endpoint pairs using saved geometry only, without native
+processing or HD attempts. `append_draft` supplies the same IDs and `pairs`: all
+inspected `from`/`to` pairs, each with a reason, or `[]` if none. OSM can restore
+connections at shared endpoints, so these pairs require explicit selection. Every
+added lane must lie wholly inside a chosen gap and overlap no retained lane or
+connector. One forward one-way lane with fraction 1 is currently required.
+
+Appending spends one shared HD attempt. It keeps existing IDs, curves, semantics,
+metadata and original directed edges exact, assigns new IDs to additions, adds
+only selected exact endpoint links, and checks all
+four source audits after IR/OSM reload. New failures at previously supported
+retained locations hold the result. New traces need both estimators, or full
+ground-consensus support with every low-quantile shortfall explained by returns
+above the trace. Failed attempts preserve their audit/check evidence and leave
+both input drafts intact. The map, poses, layout, thresholds and original station
+denominator remain fixed; connector reachability adds no source extent.
+
+Other pieces stay disconnected. Selected joins need supported endpoints in every
+audit. One append is allowed per run; appended snapshots
+support saved gap inspection, review export and finish, while further appends and
+connections from that snapshot are unavailable. Missing-interval observations
+continue to use the baseline source proposal; the report records both proposals
+and each interval's source. Original ambiguity marks and source-deferred reasons
+remain in the combined report. Review bundles include both inputs and append
+checks without embedding the native binary. Existing source and semantic holds remain.
 
 ### Start from a recording
 

@@ -6,11 +6,34 @@ import math
 from typing import Any
 
 
+def _span_minimum(a: tuple[float, float], b: tuple[float, float]) -> tuple[float, float]:
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    norm = dx * dx + dy * dy
+    t = max(0., min(1., -(a[0] * dx + a[1] * dy) / norm)) if norm else 0.
+    return math.hypot(a[0] + t * dx, a[1] + t * dy), t
+
+
+def _append_width_range(ranges: list[dict[str, Any]], lo: float, hi: float,
+                        width: float, contains_path: bool) -> None:
+    if lo >= hi:
+        return
+    if ranges and ranges[-1]["to_m"] == lo:
+        active = ranges[-1]
+        active.update(to_m=hi, minimum_interpolated_span_m=min(active["minimum_interpolated_span_m"], width),
+                      section_pairs=active["section_pairs"] + 1,
+                      path_contained_at_all_sections=active["path_contained_at_all_sections"] and contains_path)
+    else:
+        ranges.append({"from_m": lo, "to_m": hi, "minimum_interpolated_span_m": width,
+                       "section_pairs": 1, "path_contained_at_all_sections": contains_path})
+
+
 def preview_layout_width(candidate: dict[str, Any], layout: dict[str, Any]) -> dict[str, Any]:
     """Screen inspected section pairs against the fixed lane fractions and widths.
 
     A narrow section does not discard the rest of a long candidate. Ranges use
-    observed endpoints only. Check the minimum XY span between those endpoints,
+    observed endpoints only. Additional interpolated_ranges can end within an
+    inspected section pair, with explicit endpoint_policy=linear_interpolation.
+    Check the minimum XY span between endpoints,
     including a possible pinch between two wide sections. This is a width screen,
     not a ground audit, lane-generation result or adoption decision. Only the
     bounded section preview is checked; uninspected tails remain unresolved.
@@ -24,27 +47,36 @@ def preview_layout_width(candidate: dict[str, Any], layout: dict[str, Any]) -> d
             raise ValueError("width preview needs finite observed boundary sections")
         spans.append((left[0] - right[0], left[1] - right[1]))
     ranges: list[dict[str, Any]] = []
-    active: dict[str, Any] | None = None
+    interpolated: list[dict[str, Any]] = []
     for i, (a, b) in enumerate(zip(spans, spans[1:])):
         lo, hi = sections[i]["station_m"], sections[i + 1]["station_m"]
         if not math.isfinite(lo) or not math.isfinite(hi) or lo >= hi:
             raise ValueError("width preview needs increasing observed stations")
-        dx, dy = b[0] - a[0], b[1] - a[1]
-        norm = dx * dx + dy * dy
-        t = max(0., min(1., -(a[0] * dx + a[1] * dy) / norm)) if norm else 0.
-        width = math.hypot(a[0] + t * dx, a[1] + t * dy)
-        if any(width * lane["fraction"] + 1e-6 < lane["minimum_width_m"] for lane in layout["lanes"]):
-            active = None
-            continue
+        width, t = _span_minimum(a, b)
         contains_path = all(s.get("intersects_trajectory") is True for s in sections[i:i + 2])
-        if active is None:
-            active = {"from_m": lo, "to_m": hi, "minimum_interpolated_span_m": width,
-                      "section_pairs": 1, "path_contained_at_all_sections": contains_path}
-            ranges.append(active)
+        if all(width * lane["fraction"] + 1e-6 >= lane["minimum_width_m"] for lane in layout["lanes"]):
+            _append_width_range(ranges, lo, hi, width, contains_path)
+            _append_width_range(interpolated, lo, hi, width, contains_path)
         else:
-            active.update(to_m=hi, minimum_interpolated_span_m=min(active["minimum_interpolated_span_m"], width),
-                          section_pairs=active["section_pairs"] + 1,
-                          path_contained_at_all_sections=active["path_contained_at_all_sections"] and contains_path)
+            # The XY span is convex on each side of its minimum. Keep the good
+            # side of each bracket; use the nominal width, not the lane tolerance,
+            # at newly derived endpoints so rounding does not consume that margin.
+            def span(at: float) -> tuple[float, float]:
+                return (a[0] + at * (b[0] - a[0]), a[1] + at * (b[1] - a[1]))
+            for edge in (0., 1.):
+                if math.hypot(*span(edge)) < required:
+                    continue
+                good, bad = edge, t
+                for _ in range(60):
+                    middle = (good + bad) / 2
+                    if math.hypot(*span(middle)) >= required:
+                        good = middle
+                    else:
+                        bad = middle
+                start, stop = sorted((edge, good))
+                minimum, _ = _span_minimum(span(start), span(stop))
+                _append_width_range(interpolated, lo if start == 0 else lo + (hi - lo) * start,
+                                    hi if stop == 1 else lo + (hi - lo) * stop, minimum, contains_path)
     checked = max(0, len(sections) - 1)
     total = max(0, candidate.get("total_sections", len(sections)) - 1)
     return {"required_span_m": required, "lane_width_tolerance_m": 1e-6,
@@ -53,8 +85,33 @@ def preview_layout_width(candidate: dict[str, Any], layout: dict[str, Any]) -> d
             "uninspected_section_pairs": total - checked,
             "width_matching_station_length_m": sum(r["to_m"] - r["from_m"] for r in ranges),
             "ranges": ranges[:16], "ranges_total": len(ranges), "ranges_limited_in_response": len(ranges) > 16,
+            "interpolated_ranges": [{**r, "endpoint_policy": "linear_interpolation"} for r in interpolated[:16]],
+            "interpolated_ranges_total": len(interpolated),
+            "interpolated_ranges_limited_in_response": len(interpolated) > 16,
+            "interpolated_width_matching_station_length_m": sum(r["to_m"] - r["from_m"] for r in interpolated),
+            "interpolated_path_containment_checked": False,
             "source_support_checked": False, "lane_generation_checked": False,
             "adopted": False}
+
+
+def _clipped_sections(sections: list[dict[str, Any]], start: float, stop: float) -> list[dict[str, Any]]:
+    """Clip existing piecewise linear curves, recording both source brackets."""
+    def endpoint(station: float) -> dict[str, Any]:
+        for section in sections:
+            if section["station_m"] == station:
+                return section
+        for a, b in zip(sections, sections[1:]):
+            if a["station_m"] < station < b["station_m"]:
+                t = (station - a["station_m"]) / (b["station_m"] - a["station_m"])
+                points = {}
+                for role in ("center", "left", "right"):
+                    if any(len(s[role]) != 3 or any(not math.isfinite(v) for v in s[role]) for s in (a, b)):
+                        raise ValueError("source curve contains invalid XYZ")
+                    points[role] = [x + t * (y - x) for x, y in zip(a[role], b[role])]
+                return {"station_m": station, **points, "interpolated": True,
+                        "source_stations_m": [a["station_m"], b["station_m"]]}
+        raise ValueError("interpolated range must stay within observed candidate stations; no extrapolation")
+    return [endpoint(start), *[s for s in sections if start < s["station_m"] < stop], endpoint(stop)]
 
 
 def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], reason: str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -68,8 +125,8 @@ def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], r
     segments: list[dict[str, Any]] = []
     boundaries: list[dict[str, Any]] = []
     for item in decisions:
-        if not isinstance(item, dict) or set(item) - {"candidate_id", "action", "reason", "from_m", "to_m"}:
-            raise ValueError("decisions allow candidate_id, action, reason and optional from_m/to_m only")
+        if not isinstance(item, dict) or set(item) - {"candidate_id", "action", "reason", "from_m", "to_m", "endpoint_policy"}:
+            raise ValueError("decisions allow candidate_id, action, reason, optional from_m/to_m and endpoint_policy only")
         cid = item.get("candidate_id")
         if type(cid) is not int or cid not in candidates:
             raise ValueError("decision needs a known corridor candidate_id")
@@ -78,9 +135,20 @@ def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], r
         candidate = candidates[cid]
         start, stop = item.get("from_m", candidate["from_m"]), item.get("to_m", candidate["to_m"])
         stations = [s["station_m"] for s in candidate["sections"]]
-        if any(type(v) not in (int, float) or not math.isfinite(v) for v in (start, stop)) or start >= stop or start not in stations or stop not in stations:
+        policy = item.get("endpoint_policy", "observed")
+        if policy not in ("observed", "linear_interpolation"):
+            raise ValueError("endpoint_policy must be observed or linear_interpolation")
+        if any(type(v) not in (int, float) or not math.isfinite(v) for v in (start, stop)) or start >= stop:
             raise ValueError("decision range must use increasing observed candidate stations; no extrapolation")
+        if policy == "observed" and (start not in stations or stop not in stations):
+            raise ValueError("decision range must use increasing observed candidate stations; no extrapolation")
+        if policy == "linear_interpolation" and (not stations or any(not math.isfinite(s) for s in stations)
+                or any(a >= b for a, b in zip(stations, stations[1:]))
+                or not stations[0] <= start < stop <= stations[-1]):
+            raise ValueError("interpolated range must stay within increasing observed candidate stations; no extrapolation")
         choice = {"candidate_id": cid, "action": item["action"], "reason": item["reason"].strip(), "from_m": start, "to_m": stop}
+        if "endpoint_policy" in item:
+            choice["endpoint_policy"] = policy
         if any(c["candidate_id"] == cid and max(start, c["from_m"]) < min(stop, c["to_m"]) for c in choices):
             raise ValueError("overlapping decisions for the same candidate")
         choices.append(choice)
@@ -88,7 +156,8 @@ def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], r
             continue
         if any(max(start, s["from_m"]) < min(stop, s["to_m"]) for s in segments):
             raise ValueError("included candidates overlap input stations; choose one band per interval")
-        sections = [s for s in candidate["sections"] if start <= s["station_m"] <= stop]
+        sections = (_clipped_sections(candidate["sections"], start, stop) if policy == "linear_interpolation"
+                    else [s for s in candidate["sections"] if start <= s["station_m"] <= stop])
         references = {}
         for role in ("center", "left", "right"):
             bid = len(boundaries) + 1

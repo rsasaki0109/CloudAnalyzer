@@ -245,13 +245,18 @@ removing a leftover `.mapping-lock`; retain the directory and start a new job.
 `generate_mapping_geometry(job_dir, decisions, reason)` records the calling
 agent's corridor choices and writes `geometry-NN/vector_map.json` plus
 `geometry-NN/report.json`. Each decision has `candidate_id`, `action` (`include`
-or `defer`) and a nonempty `reason`. Optional `from_m`/`to_m` must be actual
-observed stations in that candidate. The defaults use its complete interval.
+or `defer`) and a nonempty `reason`. Optional `from_m`/`to_m` use actual
+observed stations by default. The defaults use the complete candidate interval.
+Explicit `endpoint_policy: "linear_interpolation"` also permits endpoints between
+adjacent source sections. This clips the existing piecewise linear XYZ curves,
+retains interior observed sections, and records each derived endpoint and its
+source station bracket. Derived endpoints carry no new band or ground evidence.
+In a mapping run, both sections of each endpoint bracket must have been inspected.
 No extrapolation is allowed. Included ranges cannot overlap input stations;
 resolve competing bands explicitly. Disjoint ranges of the same candidate are
 allowed. Adjacent pieces remain separate, without joining gaps or smoothing.
 
-Each included piece saves the exact source centre, left and right curves as
+Each included piece saves the retained source centre, left and right curves as
 `vectormap-ir` boundaries of kind `other`, with attributes identifying the source
 role, proposal candidate and review hold. All section-level edge evidence and
 original stations remain in the report. These are reference curves, not lane

@@ -123,7 +123,7 @@ can still preserve source curves for review.
    surface evidence and observed stations. Previews contain up to 128 sections
    per candidate with explicit total/truncation flags. The inspection receipt
    persists. Every candidate a draft decides on, deferred ones included, must
-   have been inspected, and draft ranges must have inspected endpoints;
+   have been inspected, and draft ranges must have inspected endpoints by default;
    unreviewed tails stay unresolved. Source-proposal inspection preserves original candidate IDs and does not adopt a draft automatically.
    Each inspected candidate also carries `layout_width_preview`. It compares the
    fixed lane fractions and minimum widths with the actual XY span of the source
@@ -134,6 +134,16 @@ can still preserve source curves for review.
    support, lane generation and complete road width still require review. Ranges
    are capped at 16 with explicit total/truncation fields, and uninspected section
    pairs are counted separately. No interval is adopted or added automatically.
+   `interpolated_ranges` also reports usable pieces ending between two inspected
+   sections, with a separate total, length and 16-range cap. To choose such an
+   endpoint, explicitly add `endpoint_policy: "linear_interpolation"` to that
+   include/defer decision. Both adjacent source sections must have been inspected
+   through this run. The curves are clipped by linear interpolation in input
+   station, retaining every interior observed section. Derived endpoints record
+   their source stations and do not borrow band/ground/edge evidence or claim
+   intermediate path containment. No extrapolation or uninspected tail is allowed.
+   Narrow parts and pinches stay excluded; fixed lane widths and all four audits
+   still apply when generating the replacement draft.
 4. A draft action supplies **complete** include/defer decisions and reasons.
    It automatically saves source geometry, binds the fixed layout to each
    included piece, generates Lanelet2/IR/projector and reads all four source

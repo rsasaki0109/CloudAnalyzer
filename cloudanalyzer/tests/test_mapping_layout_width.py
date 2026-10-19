@@ -1,12 +1,13 @@
 """Width observations preserve usable subranges without adopting lane drafts."""
 from copy import deepcopy
 import json
+import math
 
 import pytest
 
 from ca import mapping_job as jobs, mapping_run as runs
-from ca.mapping_geometry import preview_layout_width
-from tests.test_mapping_job import job_backend, _corridor_report, _run_layout
+from ca.mapping_geometry import assemble_geometry, preview_layout_width
+from tests.test_mapping_job import job_backend, _attach_lane_native, _corridor_report, _run_layout
 
 
 def _candidate(widths):
@@ -132,4 +133,126 @@ def test_width_preview_does_not_authorize_uninspected_tail_stations(job_backend,
         runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [
             {"candidate_id": 37, "action": "include", "from_m": 0., "to_m": 358., "reason": "Unseen tail"}]},
             "A width observation must not authorize uninspected endpoints", run["revision"])
+    assert before == [(root / name).read_bytes() for name in ("job.json", "run.json")]
+
+
+def test_interpolated_width_ranges_recover_tapered_edges_without_changing_observed_ranges():
+    candidate = _candidate([3.5, 3.5, 1., 3.5, 3.5])
+    before = deepcopy(candidate)
+    preview = preview_layout_width(candidate, _run_layout(width=2.5))
+    observed = [(r["from_m"], r["to_m"]) for r in preview["ranges"]]
+    clipped = preview["interpolated_ranges"]
+    assert observed == [(0., 2.), (6., 8.)]
+    assert len(clipped) == 2
+    for result, expected in zip(clipped, [(0., 2.8), (5.2, 8.)]):
+        assert (result["from_m"], result["to_m"]) == pytest.approx(expected)
+    assert preview["interpolated_width_matching_station_length_m"] == pytest.approx(5.6)
+    assert all(r["minimum_interpolated_span_m"] >= 2.5 - 1e-12 for r in clipped)
+    assert all(r["endpoint_policy"] == "linear_interpolation" for r in clipped)
+    assert not preview["interpolated_path_containment_checked"] and candidate == before
+
+
+@pytest.mark.parametrize("end,expected", [
+    ((-4., 0.), [(0., .25), (1.75, 2.)]),
+    ((0., 4.), [(0., 1 - math.sqrt(.125)), (1 + math.sqrt(.125), 2.)]),
+])
+def test_interpolated_width_ranges_split_both_sides_of_an_interior_pinch(end, expected):
+    candidate = _candidate([4., 4.])
+    for section, span in zip(candidate["sections"], [(4., 0.), end]):
+        section["left"] = [span[0] / 2, span[1] / 2, 0.]
+        section["right"] = [-span[0] / 2, -span[1] / 2, 0.]
+    preview = preview_layout_width(candidate, _run_layout(width=3.))
+    assert preview["ranges"] == []
+    actual = preview["interpolated_ranges"]
+    for result, (lo, hi) in zip(actual, expected):
+        assert (result["from_m"], result["to_m"]) == pytest.approx((lo, hi))
+        for i in range(101):
+            t = (result["from_m"] + (result["to_m"] - result["from_m"]) * i / 100) / 2
+            assert math.hypot(4 + (end[0] - 4) * t, end[1] * t) >= 3 - 1e-12
+    assert len(actual) == 2
+
+
+def test_interpolated_width_uses_fixed_fraction_limits_and_retains_preview_bounds():
+    layout = _run_layout(width=2.)
+    layout["lanes"] = [{**layout["lanes"][0], "fraction": f} for f in (.4, .6)]
+    preview = preview_layout_width(_candidate([6., 4., 6.]), layout)
+    assert len(preview["interpolated_ranges"]) == 2
+    for result, expected in zip(preview["interpolated_ranges"], [(0., 1.), (3., 4.)]):
+        assert (result["from_m"], result["to_m"]) == pytest.approx(expected)
+    preview = preview_layout_width(_candidate([3., 3., 1.] * 40), _run_layout(width=2.5))
+    assert preview["interpolated_ranges_total"] == 40
+    assert len(preview["interpolated_ranges"]) == 16 and preview["interpolated_ranges_limited_in_response"]
+    candidate = _candidate([3.] * 128)
+    candidate["total_sections"] = 180
+    preview = preview_layout_width(candidate, _run_layout(width=2.5))
+    assert preview["interpolated_ranges"][-1]["to_m"] == 254.
+    assert preview["uninspected_section_pairs"] == 52
+
+
+def test_explicit_interpolated_geometry_clips_xyz_and_keeps_source_brackets():
+    candidate = _candidate([4., 4., 4.])
+    for section in candidate["sections"]:
+        for role in ("center", "left", "right"):
+            section[role][2] = section["station_m"] * 2
+    report = _proposal(candidate)
+    before = deepcopy(report)
+    ir, evidence = assemble_geometry(report, [{"candidate_id": 37, "action": "include",
+        "from_m": .5, "to_m": 3.5, "endpoint_policy": "linear_interpolation", "reason": "Clip saved curves"}], "Explicit clip")
+    sections = evidence["segments"][0]["sections"]
+    assert [s["station_m"] for s in sections] == [.5, 2., 3.5]
+    assert sections[0]["source_stations_m"] == [0., 2.]
+    assert sections[-1]["source_stations_m"] == [2., 4.]
+    assert "bands" not in sections[0] and "intersects_trajectory" not in sections[0]
+    assert sections[1] == report["candidates"][0]["sections"][1]
+    assert ir["boundaries"][0]["geometry"] == [[.5, 0., 1.], [2., 0., 4.], [3.5, 0., 7.]]
+    assert ir["boundaries"][1]["geometry"][0] == [.5, 2., 1.]
+    assert evidence["summary"]["included_station_length_m"] == 3.
+    assert evidence["summary"]["unresolved_station_length_m"] == 1.
+    assert sum(i["to_m"] - i["from_m"] for i in evidence["station_disposition"]) == 4.
+    assert report == before
+
+
+@pytest.mark.parametrize("change", [
+    {}, {"endpoint_policy": "invent"}, {"endpoint_policy": "linear_interpolation", "from_m": -.1},
+    {"endpoint_policy": "linear_interpolation", "to_m": 4.1},
+])
+def test_interpolation_requires_explicit_policy_and_refuses_extrapolation(change):
+    decision = {"candidate_id": 37, "action": "include", "from_m": .5, "to_m": 3.5,
+                "reason": "Unobserved endpoint", **change}
+    with pytest.raises(ValueError):
+        assemble_geometry(_proposal(_candidate([4., 4., 4.])), [decision], "No implicit derivation")
+
+
+def test_run_can_draft_explicit_width_clip_only_after_observing_both_brackets(job_backend, tmp_path):
+    source, _ = job_backend
+    _attach_lane_native()
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(_proposal(_candidate([3.5, 3.5, 1.])))
+    root = tmp_path / "run"
+    run = runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [37]}, "Read brackets", 0)
+    interval = run["observation"][0]["layout_width_preview"]["interpolated_ranges"][0]
+    action = {"type": "draft", "decisions": [{"candidate_id": 37, "action": "include",
+        "from_m": interval["from_m"], "to_m": interval["to_m"], "endpoint_policy": interval["endpoint_policy"],
+        "reason": "Retain width-matching part of the taper"}]}
+    frozen = [(root / name).read_bytes() for name in ("corridor-proposals.json",)]
+    run = runs.advance_mapping_run(str(root), action, "Explicit clipped hypothesis", run["revision"])
+    assert run["draft_result"]["status"] == "audited_draft", run["draft_result"]
+    assert run["remaining_attempts"] == 4
+    assert frozen == [(root / "corridor-proposals.json").read_bytes()]
+    geometry = jobs.inspect_mapping_geometry(str(root), 1)
+    assert geometry["segments"][0]["sections"][-1]["interpolated"]
+    assert geometry["segments"][0]["sections"][-1]["source_stations_m"] == [2., 4.]
+
+
+def test_interpolated_endpoint_cannot_use_an_uninspected_tail_bracket(job_backend, tmp_path):
+    source, _ = job_backend
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(_proposal(_candidate([3.] * 180)))
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [37]}, "Read bounded sections", 0)
+    before = [(root / name).read_bytes() for name in ("job.json", "run.json")]
+    with pytest.raises(ValueError, match="inspected preview stations"):
+        runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [{"candidate_id": 37,
+            "action": "include", "from_m": 0., "to_m": 255., "endpoint_policy": "linear_interpolation",
+            "reason": "Tail bracket was not inspected"}]}, "No unseen bracket", run["revision"])
     assert before == [(root / name).read_bytes() for name in ("job.json", "run.json")]

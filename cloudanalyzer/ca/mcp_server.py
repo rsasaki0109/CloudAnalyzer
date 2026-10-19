@@ -196,7 +196,10 @@ The proposal stage is cached and does not spend HD attempts. It does not infer
 road use, lane count/direction, speed or automatically adopt geometry. After reading
 the proposals, use generate_mapping_geometry with explicit include/defer decisions
 and reasons to retain selected source curves in editable IR without lane assumptions.
-Optional ranges use observed stations; included bands cannot overlap input stations.
+Optional ranges use observed stations by default. Explicit endpoint_policy=linear_interpolation
+clips existing curves within adjacent source sections and records derived endpoint brackets;
+it does not establish new surface evidence. Run actions require both brackets inspected.
+Included bands cannot overlap input stations; extrapolation is unavailable.
 Read inspect_mapping_geometry for curves, decisions and full-extent holds. Geometry
 drafts use the shared HD attempt budget, preserve existing selections, infer no lanes
 and are not selectable as audited lane maps. They publish IR and an evidence report;

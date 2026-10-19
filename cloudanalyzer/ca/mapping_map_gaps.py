@@ -14,6 +14,7 @@ from ca.mapping_hd_repair import occupancy
 SCHEMA = "cloudanalyzer.mapping_map_gaps.v1"
 MAX_REPORT_BYTES = 2 * 1024**2
 PROTOCOL = {"gaps_per_page": 8, "profiles_per_gap": 8, "bands_per_profile": 16,
+            "width_preview_version": 2,
             "width_candidates_per_gap": 8, "sections_per_width_preview": 128,
             "ranges_per_width_preview": 16, "maximum_report_bytes": MAX_REPORT_BYTES,
             "raw_evidence_available": False, "fresh_source_audit_performed": False}

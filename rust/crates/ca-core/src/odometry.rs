@@ -446,6 +446,7 @@ impl LocalMap {
 
     /// The map point nearest `q` in its voxel and the 26 around it, with the
     /// squared distance; a voxel is skipped when it is no nearer than the best so far.
+    #[inline(always)]
     fn nearest(&self, q: &[f64; 3]) -> Option<([f64; 3], f64)> {
         let v = self.voxel;
         let key = q.map(|x| (x / v).floor() as i64);

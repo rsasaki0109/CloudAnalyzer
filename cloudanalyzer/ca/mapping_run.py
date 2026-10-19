@@ -21,7 +21,7 @@ from ca import mapping_hd_plan as hd_plan
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests, preview_layout_width
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
-FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_connections", "connect", "finish", "resume"}
+FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_gaps", "inspect_connections", "connect", "finish", "resume"}
 WIDTH_GUIDANCE = (
     "A candidate's minimum support span covers its entire extent; a narrow section can hide wider subranges. "
     "Inspect candidates whose maximum span could fit the fixed layout. Inspect observations include layout_width_preview: "
@@ -395,6 +395,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         answer["guidance"] = (
             "This run references an existing external SLAM map and timestamped poses. Keep those files accessible and unchanged. "
             "Inspect proposed sections before drafting; use the fixed layout and original extent/quality gates. "
+            "Use inspect_gaps on an own audited draft to read saved profiles and fixed-layout width observations without extracting a raw log. "
+            "These pages use that draft's retained source proposal, even after refinement; they do not perform fresh source audits or authorize repair/retries. "
             "Refine path association, inspect/connect audited drafts, then finish with explicit unresolved work. "
             "Only the actions in action_contract are available: raw-recording extraction and point-map retries require a raw-log run. "
             "The generated g2o contains pose vertices only, not the external estimator's constraints or uncertainties. "
@@ -591,7 +593,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         jobs._inputs(job)
         kind = action["type"]
         if job["pointcloud"].get("origin") == "external_slam" and kind not in FROZEN_MAP_ACTIONS:
-            raise ValueError("frozen external SLAM maps support inspect, refine, draft, connections and finish; use a raw-log run for recording/fusion actions")
+            raise ValueError("frozen external SLAM maps support inspect, refine, draft, saved gap inspection, connections and finish; use a raw-log run for recording/fusion actions")
         if "hd_repair_manifest" in job.get("retry_inputs", {}) and kind == "refine":
             raise ValueError("HD-only repair retains the frozen source proposal")
         if "continuation" in job and kind in {"draft", "refine", "retry_pointcloud", "retry_frames", "retry_local_frames", "inspect_unused_frames", "inspect_local_points"}:

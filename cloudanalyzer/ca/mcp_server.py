@@ -103,6 +103,10 @@ metre-frame world_from_sensor poses with the declared seconds time basis.
 It references the PLY without copying or rerunning SLAM and returns the same
 inspection/drafting/connection/finish loop. Preserve input files; use only
 the returned action_contract. Raw-log extraction/fusion retries are unavailable.
+On an audited imported draft, inspect_gaps returns bounded saved profile and
+fixed-layout width observations without loading point clouds or raw recordings.
+It uses that draft's retained source proposal, even after refinement. These pages
+contain no fresh source audits and cannot authorize repair or point-map retries.
 Declared provenance and imported-pose extent do not prove full recording
 coverage or independent accuracy. The import checks free space for a 10 GiB
 reserve plus its estimated metadata/pose output budget before creating a run.

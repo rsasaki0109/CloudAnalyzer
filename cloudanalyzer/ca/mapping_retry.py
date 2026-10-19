@@ -123,6 +123,10 @@ def _neighborhood(tree: Any, xyz: np.ndarray, xy: Any) -> dict[str, Any]:
 def inspect_gaps(root: Path, cid: int, offset: int, layout: dict[str, Any]) -> dict[str, Any]:
     if type(offset) is not int or offset < 0:
         raise ValueError("gap offset must be a nonnegative integer")
+    if (jobs._load(root).get("pointcloud") or {}).get("origin") == "external_slam":
+        from ca.mapping_map_gaps import inspect
+
+        return inspect(root, cid, offset, layout)
     with jobs._locked(root):
         job = jobs._load(root)
         jobs._inputs(job)
@@ -176,6 +180,8 @@ def inspect_gaps(root: Path, cid: int, offset: int, layout: dict[str, Any]) -> d
 def validate(evidence: dict[str, Any], gap_ids: Any, options: Any) -> dict[str, Any]:
     jobs._verify(evidence)
     saved = json.loads(Path(evidence["path"]).read_text())
+    if saved.get("schema") == "cloudanalyzer.mapping_map_gaps.v1" or "raw_manifest" not in saved:
+        raise ValueError("density trials require raw-recording gap evidence; saved-map observations cannot authorize retries")
     _verify_inputs(saved["inputs"])
     jobs._verify(saved["raw_manifest"])
     if not isinstance(gap_ids, list) or not 1 <= len(gap_ids) <= 8 or any(type(i) is not int for i in gap_ids) or len(set(gap_ids)) != len(gap_ids) or not set(gap_ids) <= {g["id"] for g in saved["gaps"]}:

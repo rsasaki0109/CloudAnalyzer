@@ -26,6 +26,8 @@ WIDTH_GUIDANCE = (
     "A candidate's minimum support span covers its entire extent; a narrow section can hide wider subranges. "
     "Inspect candidates whose maximum span could fit the fixed layout. Inspect observations include layout_width_preview: "
     "observed-station ranges meeting lane fractions and minimum widths, including interpolated boundary pinches. "
+    "interpolated_ranges can clip existing curves within inspected adjacent sections: explicitly choose "
+    "endpoint_policy=linear_interpolation on that decision. Derived endpoints are recorded, not new surface observations. "
     "This screens width only; inspect path association and ground evidence, retain uninspected tails, and require the existing four source audits."
 )
 GUIDANCE = """Continue this run autonomously within its fixed layout and attempt budget.
@@ -349,7 +351,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
-            "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons and optional observed ranges"},
+            "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons; observed endpoints by default, or endpoint_policy=linear_interpolation within inspected adjacent sections"},
             "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected or gap-patched draft ID", "offset": "nonnegative; pages of 8"},
             "inspect_connection_region": {"type": "inspect_connection_region", "candidate_id": "own combined local-retry patch", "bounds_xy": "explicit HD-only [xmin,ymin,xmax,ymax]; contains frozen point box; sides <=20 m", "offset": "nonnegative; pages of 8; only links touching repair lanes"},
             "connect": {"type": "connect", "candidate_id": "inspected parent lane draft ID", "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"},
@@ -659,7 +661,12 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     previews = [c for h in run["history"] if h.get("proposal_sha256", original_sha) == proposal["sha256"]
                                 for c in h.get("observation", []) if c["id"] == d["candidate_id"]]
                     stations = {s["station_m"] for c in previews for s in c["sections"]}
-                    if d["from_m"] not in stations or d["to_m"] not in stations:
+                    brackets = [(a["station_m"], b["station_m"]) for c in previews
+                                for a, b in zip(c["sections"], c["sections"][1:])]
+                    def endpoint_seen(endpoint: float) -> bool:
+                        return endpoint in stations or (d.get("endpoint_policy") == "linear_interpolation"
+                                                        and any(a < endpoint < b for a, b in brackets))
+                    if not endpoint_seen(d["from_m"]) or not endpoint_seen(d["to_m"]):
                         raise ValueError("draft ranges must use inspected preview stations; retain unreviewed tails")
             elif kind in {"inspect_connections", "inspect_connection_region", "connect"}:
                 cid = action["candidate_id"]

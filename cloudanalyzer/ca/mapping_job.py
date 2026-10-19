@@ -409,13 +409,16 @@ def generate_mapping_geometry(job_dir: str, decisions: list[dict[str, Any]], rea
     """Adopt chosen corridor intervals as editable source geometry without inventing lanes.
 
     Each decision needs candidate_id, action (include/defer), reason and optional
-    from_m/to_m at observed candidate stations. Include at most one band per input
+    from_m/to_m at observed candidate stations by default. Explicitly choose
+    endpoint_policy=linear_interpolation to clip existing curves between adjacent
+    source sections; derived endpoints record their brackets, not new observations.
+    No extrapolation is allowed. Include at most one band per input
     interval; overlapping alternatives must be resolved explicitly. Adjacent pieces
     are not joined, filled or smoothed. Preserve unreviewed, agent-deferred and
     source-deferred extent across the whole input path, including ambiguous areas.
 
     Uses one shared HD attempt, with retained native failures and frozen provenance.
-    Writes vectormap-ir Other curves for centre/left/right, exact source sections,
+    Writes vectormap-ir Other curves for centre/left/right, retained source sections,
     decisions and unresolved semantics. No lane/road count, speed, traffic direction
     or complete width is established. No OSM is published: standalone unknown ways
     are dropped on Lanelet2 reload. The IR can be opened in the editor with virtual

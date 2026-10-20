@@ -200,6 +200,16 @@ Optional ranges use observed stations by default. Explicit endpoint_policy=linea
 clips existing curves within adjacent source sections and records derived endpoint brackets;
 it does not establish new surface evidence. Run actions require both brackets inspected.
 Included bands cannot overlap input stations; extrapolation is unavailable.
+On an imported-map run, append_draft can combine an own original audited baseline
+with an own gap-only audited path-association refinement. Inspect baseline gaps
+first, then use inspect_append with baseline_candidate_id, addition_candidate_id
+and 1..8 seen gap_ids. It reports at most 32 exact endpoint pairs without native
+processing or HD attempts. append_draft supplies the same IDs plus all inspected
+from/to pairs with reasons ([] when none). It uses one shared attempt, retains
+existing IDs/curves/metadata and original edges, adds only the selected exact
+endpoint links and requires four audits without new retained failure locations. The frozen point map, trajectory, layout and extent goal stay fixed.
+One append is allowed; appended snapshots support gap inspection and finish, not
+further appends or connections. Source and traffic-semantic holds remain visible.
 Read inspect_mapping_geometry for curves, decisions and full-extent holds. Geometry
 drafts use the shared HD attempt budget, preserve existing selections, infer no lanes
 and are not selectable as audited lane maps. They publish IR and an evidence report;

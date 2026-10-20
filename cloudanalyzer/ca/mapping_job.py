@@ -802,10 +802,12 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect the point footprint and trajectory/lane assumptions for the affected traces; sparse or occluded returns do not prove that a road is absent.")
     if attempt["extraction"].get("width_prior_vertices", 0):
         investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
-    if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes"}:
+    if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes"}:
         investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
     if "continuation" in job:
         investigations.append("This exact map pair is inherited from a finished run. Earlier point-update scopes are archived in the continuation manifest; the adopted hybrid point map retains earlier repairs and source holds.")
+    elif attempt.get("kind") == "appended_corridor_lanes":
+        investigations.append("This snapshot appends an audited path-refined draft to seen original-map gaps. Retained IDs and curves are exact; original route edges remain and only inspected exact endpoint pairs are added. The point map and trajectory are unchanged. Inspect both proposal sources and append checks in its report.")
     elif attempt.get("kind") == "patched_corridor_lanes":
         if "hd_repair_manifest" in job.get("retry_inputs", {}):
             point_note = "The point cloud is the exact retained baseline; only the HD map was repaired."
@@ -924,6 +926,8 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
         if attempt is None or attempt["status"] != "audited_draft":
             raise ValueError("select an audited draft candidate")
         for artifact in [*attempt["files"].values(), attempt["quality_report"], *attempt.get("geometry_inputs", {}).values(),
+                         *attempt.get("patch_inputs", {}).values(),
+                         *([attempt["patch_checks"], attempt["patch_audits"]] if "patch_checks" in attempt else []),
                          *attempt.get("connection_inputs", {}).values(),
                          *attempt.get("height_inputs", {}).values(),
                          *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],

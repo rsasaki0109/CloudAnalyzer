@@ -256,6 +256,11 @@ def _export(
             "owner_decision_history": jobs._artifact(owner / "run.json"),
         }
         preview = None
+        if candidate.get("kind") == "appended_corridor_lanes":
+            native = job["runtime"]["native"]["extension"]
+            artifacts.update({f"append_input_{key}": value for key, value in candidate["patch_inputs"].items() if value != native})
+            artifacts["append_audits"] = candidate["patch_audits"]
+            artifacts["append_checks"] = candidate["patch_checks"]
         if preview_points and (
             type(job["pointcloud"]["map_points"]) is not int
             or job["pointcloud"]["map_points"] < 1

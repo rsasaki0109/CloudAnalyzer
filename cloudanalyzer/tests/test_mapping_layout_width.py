@@ -6,7 +6,7 @@ import math
 import pytest
 
 from ca import mapping_job as jobs, mapping_run as runs
-from ca.mapping_geometry import assemble_geometry, preview_layout_width
+from ca.mapping_geometry import assemble_geometry, preview_layout_width, preview_lane_directions
 from tests.test_mapping_job import job_backend, _attach_lane_native, _corridor_report, _run_layout
 
 
@@ -119,6 +119,39 @@ def test_run_inspection_records_width_ranges_without_processing_attempts(job_bac
     saved = json.loads((root / "run.json").read_text())
     assert saved["history"][-1]["observation"][0]["layout_width_preview"] == preview
     assert saved["output"] is None
+
+
+@pytest.mark.parametrize("native_available", [False, True])
+def test_direction_inspection_retains_read_only_observation_when_native_unavailable_or_refuses(job_backend, tmp_path, native_available):
+    source, _ = job_backend
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(_proposal(_candidate([3.] * 3)))
+    if native_available:
+        def refused(*args):
+            raise ValueError("source geometry needs review")
+        jobs.core().inspect_corridor_lane_directions = refused
+    root = tmp_path / "directions"
+    runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
+    before = [(root / name).read_bytes() for name in ("job.json", "corridor-proposals.json")]
+    observed = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [37]}, "Read direction diagnostics", 0)
+    preview = observed["observation"][0]["layout_direction_preview"]
+    assert preview["available"] is native_available and not preview["native_check_completed"]
+    assert preview["native"] == (jobs._native() if native_available else None)
+    assert not preview["geometry_generated"] and not preview["adopted"]
+    assert observed["remaining_attempts"] == 6 and jobs.inspect_mapping_job(str(root))["attempts"] == []
+    assert before == [(root / name).read_bytes() for name in ("job.json", "corridor-proposals.json")]
+    if native_available:
+        assert preview["error"] == "source geometry needs review"
+
+
+def test_direction_preview_retains_width_truncation_and_skips_empty_ranges():
+    candidate = _candidate([1.] * 128)
+    candidate["total_sections"] = 180
+    candidate["layout_width_preview"] = preview_layout_width(candidate, _run_layout(width=2.5))
+    def unexpected(*args):
+        pytest.fail("A width-incompatible range must not be sent to native preflight")
+    preview = preview_lane_directions(candidate, _run_layout(width=2.5), unexpected)
+    assert preview["limited"] and not preview["native_check_completed"]
+    assert preview["ranges"] == preview["adjacent_interval_checks"] == []
 
 
 def test_width_preview_does_not_authorize_uninspected_tail_stations(job_backend, tmp_path):

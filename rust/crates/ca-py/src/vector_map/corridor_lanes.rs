@@ -28,7 +28,15 @@ struct SegmentSpec {
 
 pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, String> {
     let text = std::fs::read_to_string(geometry).map_err(|e| e.to_string())?;
-    let source = vectormap_io::json::from_str(&text).map_err(|e| e.to_string())?;
+    process(&text, specifications, false)
+}
+
+pub(super) fn inspect(geometry_json: &str, specifications: &str) -> Result<String, String> {
+    process(geometry_json, specifications, true)
+}
+
+fn process(text: &str, specifications: &str, preflight: bool) -> Result<String, String> {
+    let source = vectormap_io::json::from_str(text).map_err(|e| e.to_string())?;
     if source.map.lane_count() != 0
         || source.map.metadata().attributes.get("cloudanalyzer:draft") != Some("surface_geometry")
         || source
@@ -56,6 +64,8 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
     let mut vertices = 0usize;
     // Every interval no cut can resolve, across all segments, so one reply names them all.
     let mut ambiguous = Vec::new();
+    let mut plans = Vec::new();
+    let mut preview_remaining = 128usize;
     for spec in &specs {
         if !seen.insert(spec.center_curve_id) || spec.lanes.is_empty() || spec.lanes.len() > 16 {
             return Err(
@@ -184,18 +194,26 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
             })
         };
         let mut ranges = Vec::new();
+        let mut issues = Vec::new();
         let unresolved = ambiguous.len();
         let mut pending = vec![(0, center.len() - 1)];
         while let Some((i, j)) = pending.pop() {
             let reference = slice(&center, i, j);
             let bounds: Vec<_> = boundaries.iter().map(|b| slice(b, i, j)).collect();
             let centers_keep_direction = centers_oriented(&bounds);
-            if ca_core::vector_map::lanelet_directions_unambiguous(&reference, &bounds, &lanes)
-                && aligned(&bounds)
-                && centers_keep_direction
-            {
+            let lanelet_keeps_direction =
+                ca_core::vector_map::lanelet_directions_unambiguous(&reference, &bounds, &lanes);
+            let endpoints_aligned = aligned(&bounds);
+            if lanelet_keeps_direction && endpoints_aligned && centers_keep_direction {
                 ranges.push((i, j));
             } else if j - i <= 1 {
+                if preflight && preview_remaining > 0 {
+                    issues.push(json!({"section_range":[i, j],
+                        "lanelet_boundary_directions":lanelet_keeps_direction,
+                        "boundary_endpoint_alignment":endpoints_aligned,
+                        "explicit_centerline_direction":centers_keep_direction}));
+                    preview_remaining -= 1;
+                }
                 ambiguous.push(format!(
                     "centre curve {} between sections {i} and {j}{}",
                     spec.center_curve_id,
@@ -212,6 +230,14 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
             }
         }
         if ambiguous.len() > unresolved {
+            if preflight {
+                let count = ambiguous.len() - unresolved;
+                plans.push(json!({"center_curve_id":spec.center_curve_id,
+                    "direction_checks_passed":false, "unresolved_intervals":count,
+                    "issues_limited":issues.len() < count, "issues":issues,
+                    "planned_pieces":[], "planned_pieces_total":0,
+                    "planned_pieces_limited":false}));
+            }
             continue;
         }
         // Adjacent pieces each retain their shared endpoint section.
@@ -221,6 +247,16 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
                 "source sections exceed the 100000-vertex build budget including explicit centers"
                     .into(),
             );
+        }
+        if preflight {
+            let count = ranges.len().min(preview_remaining);
+            preview_remaining -= count;
+            plans.push(json!({"center_curve_id":spec.center_curve_id,
+                "direction_checks_passed":true, "unresolved_intervals":0,
+                "issues":[], "issues_limited":false,
+                "planned_pieces":ranges[..count].iter().map(|&(i, j)| [i, j]).collect::<Vec<_>>(),
+                "planned_pieces_total":ranges.len(), "planned_pieces_limited":count < ranges.len()}));
+            continue;
         }
         let mut chains = vec![Vec::new(); lanes.len()];
         let mut pieces = Vec::new();
@@ -301,6 +337,20 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         created.push(json!({"center_curve_id":spec.center_curve_id, "lane_ids":lane_ids,
             "lane_chains":chains, "pieces":pieces, "source_outer_curves_preserved":true,
             "lane_width_ranges_m":spec.lanes.iter().map(|l| [minimum_span*l.fraction, maximum_span*l.fraction]).collect::<Vec<_>>()}));
+    }
+    if preflight {
+        let limited = plans
+            .iter()
+            .any(|p| p["issues_limited"] == true || p["planned_pieces_limited"] == true);
+        return serde_json::to_string(&json!({
+            "schema":"cloudanalyzer.corridor_lane_direction_preview.v1",
+            "segments":plans, "direction_checks_passed":ambiguous.is_empty(),
+            "unresolved_intervals":ambiguous.len(), "limited":limited,
+            "interval_preview_budget":128, "geometry_generated":false,
+            "source_support_checked":false, "roundtrip_checked":false,
+            "adopted":false
+        }))
+        .map_err(|e| e.to_string());
     }
     if !ambiguous.is_empty() {
         return Err(format!(

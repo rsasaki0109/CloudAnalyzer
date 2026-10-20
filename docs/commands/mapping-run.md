@@ -137,6 +137,21 @@ and each interval's source. Original ambiguity marks and source-deferred reasons
 remain in the combined report. Review bundles include both inputs and append
 checks without embedding the native binary. Existing source and semantic holds remain.
 
+Inspection also returns `layout_direction_preview` when the native direction
+preflight is available. It shares the lane builder's direction planning and
+checks whole width-compatible ranges and adjacent section pairs separately,
+including interpolated endpoints. Each result names the original stations,
+planned section cuts, and unresolved boundary or explicit-center directions.
+A short pair can fail while its longer containing range passes; these results
+apply only to the checked endpoints. They do not authorize arbitrary clips.
+Missing native support, native validation errors and truncated details remain
+explicit. Saved run observations include the version and extension SHA256 of the
+native runtime used for this check, including when reading an older run. Details
+share a native budget of 128 interval previews per call.
+This inspection constructs no lanes, writes no map artifacts and spends no HD
+attempts. Source support and actual export/reload still require the existing
+generation and four-audit gates.
+
 New corridor lane drafts save explicit centerlines at the midpoints of each
 lane's paired source cross sections, in its travel direction. Left and right
 bounds retain their original section correspondence even when their curve

@@ -5,6 +5,8 @@ import numpy.typing as npt
 
 __version__: str
 
+def inspect_corridor_lane_directions(geometry_json: str, specifications: str) -> str: ...
+
 class CopcSpatialQuery:
     def __init__(
         self, head: bytes, file_size: int, bounds: tuple[float, float, float, float, float, float],

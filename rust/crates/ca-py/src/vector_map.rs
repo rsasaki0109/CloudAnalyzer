@@ -7,6 +7,17 @@ use vectormap_io::{autoware, lanelet2};
 
 mod corridor_lanes;
 
+/// Check the builder's direction conditions without constructing or exporting lanes.
+#[pyfunction]
+pub fn inspect_corridor_lane_directions(
+    py: Python<'_>,
+    geometry_json: &str,
+    specifications: &str,
+) -> PyResult<String> {
+    py.detach(|| corridor_lanes::inspect(geometry_json, specifications))
+        .map_err(PyValueError::new_err)
+}
+
 /// Export explicitly specified lane hypotheses inside frozen source geometry.
 #[pyfunction]
 pub fn build_corridor_lanes(

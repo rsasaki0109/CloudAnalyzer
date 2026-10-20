@@ -18,7 +18,7 @@ from ca import mapping_local_points as local_points
 from ca import mapping_heights as heights
 from ca import mapping_hd_repair as hd_repair
 from ca import mapping_hd_plan as hd_plan
-from ca.mapping_geometry import assemble_geometry, corridor_lane_requests, preview_layout_width
+from ca.mapping_geometry import assemble_geometry, corridor_lane_requests, preview_layout_width, preview_lane_directions
 from ca import mapping_append as appends
 from ca import mapping_map_points as map_points
 
@@ -30,7 +30,10 @@ WIDTH_GUIDANCE = (
     "observed-station ranges meeting lane fractions and minimum widths, including interpolated boundary pinches. "
     "interpolated_ranges can clip existing curves within inspected adjacent sections: explicitly choose "
     "endpoint_policy=linear_interpolation on that decision. Derived endpoints are recorded, not new surface observations. "
-    "This screens width only; inspect path association and ground evidence, retain uninspected tails, and require the existing four source audits."
+    "layout_direction_preview checks these exact width ranges with the native builder's direction planning, without generating lanes or spending HD attempts. "
+    "It separately checks whole width ranges and adjacent section pairs and reports unresolved stations and section cuts. "
+    "A pair's result does not predict a longer range, and a whole range's result does not authorize an arbitrary clip. "
+    "Absent native support and truncated previews remain explicit. Require path and ground evidence and the existing four source audits."
 )
 GUIDANCE = """Continue this run autonomously within its fixed layout and attempt budget.
 Page the candidate index; inspect relevant candidates before deciding include/defer
@@ -686,8 +689,12 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     raise ValueError("inspect needs 1..8 distinct positive candidate IDs")
                 observation = [jobs.inspect_mapping_corridors(str(root), candidate_id=cid)["candidate"] for cid in ids]
                 layout = json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8"))
+                preflight = getattr(jobs.core(), "inspect_corridor_lane_directions", None)
+                preflight_native = jobs._native() if preflight is not None else None
                 for candidate in observation:
                     candidate["layout_width_preview"] = preview_layout_width(candidate, layout)
+                    candidate["layout_direction_preview"] = {
+                        **preview_lane_directions(candidate, layout, preflight), "native": preflight_native}
             elif kind == "refine":
                 if action["association"] != "trajectory_containing":
                     raise ValueError("refine association must be trajectory_containing")

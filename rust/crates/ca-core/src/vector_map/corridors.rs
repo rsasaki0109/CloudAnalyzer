@@ -8,6 +8,7 @@ use super::{BuildError, BuildOptions, SurfaceIndex, junctions, trace_alignment};
 use crate::PointCloud;
 
 const SPACING: f64 = 2.0;
+const MIN_SPACING: f64 = 0.5;
 const BIN: f64 = 0.5;
 const HALF_WINDOW: f64 = 2.0;
 const MIN_WIDTH: f64 = 1.0;
@@ -29,6 +30,15 @@ pub struct CorridorOptions {
     pub search_radius_m: f64,
     /// Explicit geometric association, independent of lane identity or legal use.
     pub association: CorridorAssociation,
+    /// Along-path station spacing in metres (0.5..2); smaller values also use
+    /// nearer neighbouring stations to estimate the local path heading.
+    /// Omit the legacy default from serialized policies to preserve old reports.
+    #[serde(skip_serializing_if = "default_spacing")]
+    pub sample_spacing_m: f64,
+}
+
+fn default_spacing(spacing: &f64) -> bool {
+    *spacing == SPACING
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
@@ -43,6 +53,7 @@ impl Default for CorridorOptions {
         Self {
             search_radius_m: 8.0,
             association: CorridorAssociation::AllSupportedBands,
+            sample_spacing_m: SPACING,
         }
     }
 }
@@ -192,7 +203,7 @@ pub struct CorridorReport {
 
 /// Exact stations on the input's XY arc length, including its last position.
 /// Sensor Z is used only for interpolation of the path; proposed Z is source Z.
-fn samples(poses: &[[f64; 3]]) -> Result<Vec<(f64, [f64; 3])>, BuildError> {
+fn samples(poses: &[[f64; 3]], spacing: f64) -> Result<Vec<(f64, [f64; 3])>, BuildError> {
     if poses.len() < 2
         || poses
             .iter()
@@ -208,7 +219,7 @@ fn samples(poses: &[[f64; 3]]) -> Result<Vec<(f64, [f64; 3])>, BuildError> {
         .map(|p| (p[1][0] - p[0][0]).hypot(p[1][1] - p[0][1]))
         .collect();
     let total: f64 = lengths.iter().sum();
-    if total < 1e-6 || (total / SPACING).ceil() + 1.0 > MAX_SECTIONS as f64 {
+    if total < 1e-6 || (total / spacing).ceil() + 1.0 > MAX_SECTIONS as f64 {
         return Err(BuildError(
             "corridor path has no XY movement or exceeds the section budget; split the recording"
                 .into(),
@@ -225,7 +236,7 @@ fn samples(poses: &[[f64; 3]]) -> Result<Vec<(f64, [f64; 3])>, BuildError> {
                     next,
                     std::array::from_fn(|a| pair[0][a] + t * (pair[1][a] - pair[0][a])),
                 ));
-                next += SPACING;
+                next = out.len() as f64 * spacing;
             }
         }
         station += d;
@@ -503,7 +514,14 @@ fn propose_limited(
             "search_radius_m must be finite and within 1..20 metres".into(),
         ));
     }
-    let samples = samples(poses)?;
+    if !options.sample_spacing_m.is_finite()
+        || !(MIN_SPACING..=SPACING).contains(&options.sample_spacing_m)
+    {
+        return Err(BuildError(
+            "sample_spacing_m must be finite and within 0.5..2 metres".into(),
+        ));
+    }
+    let samples = samples(poses, options.sample_spacing_m)?;
     let total = samples.last().unwrap().0;
     // Round the reach outward to complete bins, and record the effective reach.
     let reach = (options.search_radius_m / BIN).ceil() * BIN;
@@ -518,7 +536,7 @@ fn propose_limited(
     let index = SurfaceIndex::new(cloud, &line, reach + BIN * 0.5 + HALF_WINDOW);
     let mut report = CorridorReport {
         schema: "cloudanalyzer.corridor_proposals.v1", coordinate_frame: "input_metres",
-        protocol: CorridorProtocol { options: CorridorOptions { search_radius_m: reach, association: options.association }, sample_spacing_m: SPACING, bin_width_m: BIN, half_window_m: HALF_WINDOW,
+        protocol: CorridorProtocol { options: CorridorOptions { search_radius_m: reach, ..options.clone() }, sample_spacing_m: options.sample_spacing_m, bin_width_m: BIN, half_window_m: HALF_WINDOW,
             minimum_support_span_m: MIN_WIDTH, maximum_adjacent_height_step_m: STEP, maximum_reference_level_grade: 0.12, ground_estimator: super::quality::GroundEstimator::consensus(),
             interval_support_spacing_m: 0.5, interval_ground_radius_m: junctions::RADIUS, interval_height_tolerance_m: junctions::HEIGHT,
             maximum_sections: MAX_SECTIONS, profile_query_point_budget: query_budget, interval_support_sample_budget: support_budget },
@@ -1449,6 +1467,75 @@ mod tests {
     }
 
     #[test]
+    fn legacy_spacing_policy_is_unchanged_and_explicit_grids_keep_exact_endpoints() {
+        let legacy =
+            serde_json::json!({"search_radius_m": 8.0, "association": "all_supported_bands"});
+        let options: CorridorOptions = serde_json::from_value(legacy.clone()).unwrap();
+        assert_eq!(options.sample_spacing_m, 2.0);
+        assert_eq!(serde_json::to_value(&options).unwrap(), legacy);
+        let path = [[0., 0., 99.], [0., 0., 100.], [2.01, 0., 200.]];
+        for spacing in [0.5, 0.7, 1.0, 2.0] {
+            let grid = samples(&path, spacing).unwrap();
+            assert_eq!(grid.first().unwrap().0, 0.);
+            assert_eq!(*grid.last().unwrap(), (2.01, path[2]));
+            assert!(
+                grid.windows(2)
+                    .all(|p| p[0].0 < p[1].0 && p[1].0 - p[0].0 <= spacing + 1e-12)
+            );
+            assert_eq!(grid.len(), (2.01 / spacing).ceil() as usize + 1);
+        }
+        assert_eq!(
+            samples(&[[0.; 3], [1_000., 0., 0.]], 0.5).unwrap().len(),
+            2_001
+        );
+        assert!(samples(&[[0.; 3], [1_024., 0., 0.]], 0.5).is_err());
+    }
+
+    #[test]
+    fn finer_grids_preserve_support_gaps_and_resource_limits() {
+        let mut cloud = scene();
+        cloud.positions.retain(|p| !(7.0..13.0).contains(&p[0]));
+        let options = CorridorOptions {
+            sample_spacing_m: 1.0,
+            ..on_path()
+        };
+        let report = propose(&cloud, &poses(), &options).unwrap();
+        assert_eq!(report.protocol.sample_spacing_m, 1.0);
+        assert_eq!(report.sampled_sections, 21);
+        assert_eq!(report.trajectory_length_m, 20.);
+        assert!(report.without_candidate_station_length_m >= 4.);
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| !(c.from_m < 7. && c.to_m > 13.))
+        );
+        let policy = serde_json::to_value(&report.protocol.options).unwrap();
+        assert_eq!(policy["sample_spacing_m"], 1.0);
+        for (query, support, reason) in [
+            (0, SUPPORT_BUDGET, IntervalReason::QueryBudget),
+            (QUERY_BUDGET, 0, IntervalReason::SupportBudget),
+        ] {
+            let limited = propose_limited(&scene(), &poses(), &options, query, support).unwrap();
+            assert!(limited.limited && limited.candidates.is_empty());
+            assert_eq!(limited.deferred_intervals.last().unwrap().reason, reason);
+            assert_eq!(limited.deferred_intervals.last().unwrap().to_m, 20.);
+        }
+        for spacing in [0.0, 0.49, 2.01, f64::NAN, f64::INFINITY] {
+            let bad = CorridorOptions {
+                sample_spacing_m: spacing,
+                ..on_path()
+            };
+            assert!(
+                propose(&scene(), &poses(), &bad)
+                    .unwrap_err()
+                    .0
+                    .contains("sample_spacing_m")
+            );
+        }
+    }
+
+    #[test]
     fn exact_station_endpoint_and_turnaround_remain_visible() {
         let report = propose(
             &scene(),
@@ -1464,7 +1551,7 @@ mod tests {
                 .iter()
                 .any(|i| i.reason == IntervalReason::UnstableHeading)
         );
-        let samples = samples(&[[0., 0., 99.], [0., 0., 100.], [2.01, 0., 200.]]).unwrap();
+        let samples = samples(&[[0., 0., 99.], [0., 0., 100.], [2.01, 0., 200.]], SPACING).unwrap();
         assert_eq!(samples.last().unwrap().0, 2.01);
         assert_eq!(samples.last().unwrap().1, [2.01, 0., 200.]);
     }

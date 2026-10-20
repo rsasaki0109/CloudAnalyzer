@@ -261,7 +261,8 @@ def test_agent_run_validates_layout_before_raw_processing(job_backend, tmp_path)
     assert not (tmp_path / "run").exists()
 
 
-def test_agent_refinement_reinspects_reused_ids_and_preserves_prior_drafts(job_backend, tmp_path):
+@pytest.mark.parametrize("spacing", [None, 1.0])
+def test_agent_refinement_reinspects_reused_ids_and_preserves_prior_drafts(job_backend, tmp_path, spacing):
     from ca import mapping_run as runs
     source, _ = job_backend
     _attach_lane_native()
@@ -272,17 +273,32 @@ def test_agent_refinement_reinspects_reused_ids_and_preserves_prior_drafts(job_b
     original = jobs.inspect_mapping_job(str(root))
     files = [original["corridor_proposal"]["file"], *original["attempts"][0]["files"].values(), *original["attempts"][1]["files"].values()]
     snapshots = {f["path"]: Path(f["path"]).read_bytes() for f in files}
+    calls = []
+    action = {"type": "refine", "association": "trajectory_containing"}
+    if spacing is not None:
+        action["sample_spacing_m"] = spacing
     def refined(cloud, trajectory, options):
+        calls.append(json.loads(options))
         report = _corridor_report()
-        report["protocol"] = {"options": json.loads(options)}
+        report["protocol"] = {"options": json.loads(options), "sample_spacing_m": spacing or 2.}
         candidate = report["candidates"][0]
         candidate.update(from_m=2., to_m=8.)
         candidate["sections"] = candidate["sections"][1:-1]
         return json.dumps(report)
     jobs.core().propose_road_corridors = refined
-    run = runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing"}, "Resolve off-path band overlap", 2)
+    run = runs.advance_mapping_run(str(root), action, "Resolve off-path band overlap", 2)
     assert run["refine_result"]["status"] == "ready" and run["remaining_attempts"] == 4
     assert run["reviewed_candidates"] == [] and run["layout_hypothesis"] == _run_layout()
+    if spacing is not None:
+        assert run["corridor_refinement"]["options"]["sample_spacing_m"] == spacing
+        cached = jobs._refine_mapping_corridors(str(root), "Resolve off-path band overlap", spacing)
+        assert cached["cached"] and len(calls) == 1
+        before = (root / "job.json").read_bytes()
+        with pytest.raises(ValueError, match="already attempted"):
+            jobs._refine_mapping_corridors(str(root), "Resolve off-path band overlap", .5)
+        assert (root / "job.json").read_bytes() == before and len(calls) == 1
+    else:
+        assert "sample_spacing_m" not in calls[0]
     choices = [{"candidate_id": 1, "action": "include", "reason": "Reused ID, different original stations"}]
     with pytest.raises(ValueError, match="inspect candidates"):
         runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Old receipt cannot authorize new geometry", 3)
@@ -300,16 +316,20 @@ def test_agent_refinement_reinspects_reused_ids_and_preserves_prior_drafts(job_b
 
 
 @pytest.mark.parametrize("after_processing", [False, True])
-def test_agent_refinement_failure_or_interruption_keeps_original_source(job_backend, tmp_path, monkeypatch, after_processing):
+@pytest.mark.parametrize("spacing", [None, 1.0])
+def test_agent_refinement_failure_or_interruption_keeps_original_source(job_backend, tmp_path, monkeypatch, after_processing, spacing):
     from ca import mapping_run as runs
     source, _ = job_backend
     root = tmp_path / "run"
     runs.start_mapping_run(str(source), str(root), _run_layout())
     original = jobs.inspect_mapping_job(str(root))["corridor_proposal"]
+    action_value = {"type": "refine", "association": "trajectory_containing"}
+    if spacing is not None:
+        action_value["sample_spacing_m"] = spacing
     if after_processing:
         def refined(cloud, trajectory, options):
             report = _corridor_report()
-            report["protocol"] = {"options": json.loads(options)}
+            report["protocol"] = {"options": json.loads(options), "sample_spacing_m": spacing or 2.}
             return json.dumps(report)
         jobs.core().propose_road_corridors = refined
         process = jobs._refine_mapping_corridors
@@ -318,7 +338,7 @@ def test_agent_refinement_failure_or_interruption_keeps_original_source(job_back
             raise KeyboardInterrupt()
         monkeypatch.setattr(jobs, "_refine_mapping_corridors", interrupted)
         with pytest.raises(KeyboardInterrupt):
-            runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing"}, "Retain completed extraction", 0)
+            runs.advance_mapping_run(str(root), action_value, "Retain completed extraction", 0)
         monkeypatch.setattr(jobs, "_refine_mapping_corridors", process)
         jobs.core().propose_road_corridors = lambda *args: pytest.fail("Completed extraction must not run twice")
         run = runs.advance_mapping_run(str(root), {"type": "resume"}, "Resume saved refinement", 1)
@@ -328,7 +348,7 @@ def test_agent_refinement_failure_or_interruption_keeps_original_source(job_back
             raise ValueError("Source extraction failed")
         jobs.core().propose_road_corridors = fail
         action = tmp_path / "refine.json"
-        action.write_text(json.dumps({"type": "refine", "association": "trajectory_containing"}))
+        action.write_text(json.dumps(action_value))
         result = CliRunner().invoke(app, ["mapping-run-advance", str(root), "--action", str(action), "--revision", "0", "--reason", "Retain failed extraction"])
         assert result.exit_code == 1
         run = runs.inspect_mapping_run(str(root))
@@ -337,6 +357,47 @@ def test_agent_refinement_failure_or_interruption_keeps_original_source(job_back
     assert run["status"] == "needs_agent" and run["remaining_attempts"] == 6
     jobs._verify(original["file"])
     assert not (root / ".mapping-run-lock").exists()
+
+
+@pytest.mark.parametrize("spacing", [None, True, "1", 0., .49, 2.01, float("nan"), float("inf")])
+def test_refinement_rejects_invalid_spacing_before_allocating_history(job_backend, tmp_path, spacing):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    before = {name: (root / name).read_bytes() for name in ("job.json", "run.json")}
+    jobs.core().propose_road_corridors = lambda *args: pytest.fail("invalid spacing must not extract")
+    with pytest.raises(ValueError, match="sample_spacing_m"):
+        runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing",
+            "sample_spacing_m": spacing}, "Reject invalid grid before processing", 0)
+    assert all((root / name).read_bytes() == data for name, data in before.items())
+
+
+@pytest.mark.parametrize("fault", ["options", "protocol", "missing"])
+def test_refinement_refuses_an_unapplied_grid_and_retains_original_proposal(job_backend, tmp_path, fault):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    original = jobs.inspect_mapping_job(str(root))["corridor_proposal"]
+    def ignored(cloud, trajectory, options):
+        report = _corridor_report()
+        report["protocol"] = {"options": json.loads(options), "sample_spacing_m": 1.}
+        if fault == "missing":
+            del report["protocol"]["sample_spacing_m"]
+        elif fault == "options":
+            report["protocol"]["options"]["sample_spacing_m"] = 2.
+        else:
+            report["protocol"]["sample_spacing_m"] = 2.
+        return json.dumps(report)
+    jobs.core().propose_road_corridors = ignored
+    result = runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing",
+        "sample_spacing_m": 1.}, "Verify the requested grid was applied", 0)
+    assert result["refine_result"]["status"] == "failed"
+    assert "requested sample spacing" in result["refine_result"]["error"]
+    assert jobs.inspect_mapping_job(str(root))["corridor_proposal"] == original
+    assert result["remaining_attempts"] == 6
+    jobs._verify(original["file"])
 
 
 def _corridor_report():
@@ -488,7 +549,8 @@ def test_incomplete_ground_consensus_cannot_be_selected(job_backend, tmp_path):
         jobs.select_mapping_candidate(str(root), 1, "Partial evidence must remain held")
 
 
-def test_corridor_proposals_cache_inputs_and_preserve_hd_budget_and_selection(job_backend, tmp_path):
+@pytest.mark.parametrize("spacing", [None, 1.0])
+def test_corridor_proposals_cache_inputs_and_preserve_hd_budget_and_selection(job_backend, tmp_path, spacing):
     source, _ = job_backend
     root = tmp_path / "job"
     jobs.start_mapping_job(str(source), str(root), max_attempts=2)
@@ -498,24 +560,31 @@ def test_corridor_proposals_cache_inputs_and_preserve_hd_budget_and_selection(jo
     calls = []
     def propose(cloud, trajectory, options):
         calls.append((cloud, trajectory, json.loads(options)))
-        return json.dumps(_corridor_report())
+        report = _corridor_report()
+        report["protocol"] = {"options": json.loads(options), "sample_spacing_m": spacing or 2.}
+        return json.dumps(report)
     module.propose_road_corridors = propose
-    proposed = jobs.propose_mapping_corridors(str(root))
+    proposed = jobs.propose_mapping_corridors(str(root), sample_spacing_m=spacing)
     assert proposed["status"] == "ready" and proposed["remaining_attempts"] == 1
     assert proposed["summary"]["curb_bounded_candidates"] == 0
     assert proposed["summary"]["coordinate_frame"] == "local_slam_metres"
-    cached = jobs.propose_mapping_corridors(str(root))
+    cached = jobs.propose_mapping_corridors(str(root), sample_spacing_m=spacing)
     assert cached["cached"] is True and len(calls) == 1
-    assert calls[0][2] == {"search_radius_m": 8.0}
+    expected = {"search_radius_m": 8.0}
+    if spacing is not None:
+        expected["sample_spacing_m"] = spacing
+    assert calls[0][2] == expected
     after = jobs.inspect_mapping_job(str(root))
     assert after["selected"] == selected["selected"] and after["attempts"] == selected["attempts"]
     assert "inspect_mapping_corridors" in after["next_actions"]
     with pytest.raises(ValueError, match="frozen"):
         jobs.propose_mapping_corridors(str(root), 9)
+    with pytest.raises(ValueError, match="frozen"):
+        jobs.propose_mapping_corridors(str(root), sample_spacing_m=.5)
     artifact = Path(proposed["file"]["path"])
     artifact.write_text("changed proposal geometry")
     with pytest.raises(ValueError, match="changed"):
-        jobs.propose_mapping_corridors(str(root))
+        jobs.propose_mapping_corridors(str(root), sample_spacing_m=spacing)
     with pytest.raises(ValueError, match="changed"):
         jobs.inspect_mapping_corridors(str(root))
 
@@ -1224,7 +1293,7 @@ def _connection_action(observation):
 
 
 @pytest.fixture
-def density_run(job_backend, tmp_path, monkeypatch):
+def density_run(job_backend, tmp_path, monkeypatch, request):
     """Real native fusion/HD export with synthetic raw returns and frozen motion."""
     from copy import deepcopy
     import numpy as np
@@ -1268,7 +1337,8 @@ def density_run(job_backend, tmp_path, monkeypatch):
                            "reference_ground_height_m": 1., "bands": []} for k in range(0, 11, 2)]
     def propose(cloud, trajectory, options):
         r = deepcopy(report)
-        r["protocol"] = {"options": {"association": "all_supported_bands", **json.loads(options)}}
+        r["protocol"] = {"options": {"association": "all_supported_bands", **json.loads(options)},
+                         "sample_spacing_m": json.loads(options).get("sample_spacing_m", 2.)}
         if 'pointcloud-retry' in cloud:
             r.update(candidates=[original], with_candidate_station_length_m=10., without_candidate_station_length_m=0.,
                      trajectory_covered_station_length_m=10., deferred_intervals=[])
@@ -1276,9 +1346,12 @@ def density_run(job_backend, tmp_path, monkeypatch):
     module.propose_road_corridors = propose
     root = tmp_path / 'density-run'
     runs.start_mapping_run(str(source), str(root), _run_layout())
-    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1, 17]}, "Read separated pieces", 0)
-    result = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [
-        {"candidate_id": cid, "action": "include", "reason": "Keep observed source"} for cid in (1, 17)]}, "Baseline", 1)
+    spacing = getattr(request, "param", None)
+    if spacing is not None:
+        _advance(root, {"type": "refine", "association": "trajectory_containing", "sample_spacing_m": spacing})
+    _advance(root, {"type": "inspect", "candidate_ids": [1, 17]})
+    result = _advance(root, {"type": "draft", "decisions": [
+        {"candidate_id": cid, "action": "include", "reason": "Keep observed source"} for cid in (1, 17)]})
     assert result["draft_result"]["status"] == "audited_draft"
     return root
 
@@ -1294,6 +1367,22 @@ def _density_trial(root):
     result = _advance(root, {"type": "retry_pointcloud", "candidate_id": 2, "gap_ids": ids,
                     "options": {"scan_voxel_m": .2, "map_voxel_m": .1}})
     return result
+
+
+@pytest.mark.parametrize("density_run", [1.0], indirect=True)
+def test_density_retry_inherits_frozen_finer_sampling(density_run):
+    root = density_run
+    parent = jobs.inspect_mapping_job(str(root))
+    source = json.loads(Path(parent["corridor_proposal"]["file"]["path"]).read_text())
+    result = _density_trial(root)
+    assert result["pointcloud_retry_result"]["status"] == "ready", result
+    child = Path(result["pointcloud_retry_result"]["stage"]["child_job_dir"])
+    active = jobs.inspect_mapping_job(str(child))["corridor_proposal"]
+    report = json.loads(Path(active["file"]["path"]).read_text())
+    assert report["protocol"] == source["protocol"]
+    assert report["protocol"]["sample_spacing_m"] == 1.
+    assert report["protocol"]["options"]["association"] == "trajectory_containing"
+    jobs._verify(parent["corridor_proposal"]["file"])
 
 
 def test_density_retry_freezes_motion_shares_budget_and_requires_comparison(density_run):

@@ -314,7 +314,7 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
             jobs._save(child / "job.json", child_job)
             source_proposal = json.loads(Path(parent["corridor_proposal"]["path"]).read_text())
             source_options = source_proposal["protocol"]["options"]
-            proposed = jobs.propose_mapping_corridors(str(child), source_options["search_radius_m"])
+            proposed = jobs.propose_mapping_corridors(str(child), source_options["search_radius_m"], source_options.get("sample_spacing_m"))
             if proposed["status"] != "ready":
                 raise RuntimeError("retry corridor extraction failed; inspect child job")
             if source_options.get("association", "all_supported_bands") == "trajectory_containing":

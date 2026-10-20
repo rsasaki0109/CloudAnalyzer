@@ -279,6 +279,25 @@ def test_known_input_reuse_overrides_an_incorrect_independence_declaration(fixtu
     assert result["reference_matches_recorded_inputs"] == ["source_motion_trajectory"]
 
 
+def test_report_closes_temporary_file_before_atomic_publication(fixture, monkeypatch):
+    opened = []
+    create = comparison.tempfile.NamedTemporaryFile
+    link = comparison.os.link
+    def capture(*args, **kwargs):
+        stream = create(*args, **kwargs)
+        opened.append(stream)
+        return stream
+    def closed_link(source, target):
+        assert opened and opened[-1].closed
+        return link(source, target)
+    monkeypatch.setattr(comparison.tempfile, "NamedTemporaryFile", capture)
+    monkeypatch.setattr(comparison.os, "link", closed_link)
+    result = _run(fixture)
+    jobs._verify(result["report"])
+    assert len(opened) == 1 and opened[0].closed
+    assert not list(fixture[2].parent.glob(".ca-trajectory-*"))
+
+
 def test_saves_no_report_if_the_output_path_is_created_during_evaluation(fixture, monkeypatch):
     out = fixture[2]
     evaluate = comparison.evaluate_trajectory

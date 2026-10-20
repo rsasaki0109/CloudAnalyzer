@@ -37,6 +37,8 @@ ranges. Compare path association, surface levels, spans, edge evidence and compe
 bands. Source support does not prove road identity or complete width.
 If off-path overlapping bands fragment the route, explicitly refine with
 association=trajectory_containing once, then inspect the new proposal IDs afresh.
+Optionally set sample_spacing_m (0.5..2) in that same refinement for a denser
+station grid; this changes local headings too and does not relax source checks.
 All original profiles and drafts remain available; unresolved source stays visible
 in corridor-extent accounting even when a short connector is added.
 After drafting, inspect_connections on an audited draft. For a single forward
@@ -356,7 +358,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "append_observation", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
-            "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
+            "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)",
+                       "sample_spacing_m": "optional finite 0.5..2 metres; omission retains the original grid"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons; observed endpoints by default, or endpoint_policy=linear_interpolation within inspected adjacent sections"},
             "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected, gap-patched or appended draft ID", "offset": "nonnegative; pages of 8"},
             "inspect_connection_region": {"type": "inspect_connection_region", "candidate_id": "own combined local-retry patch", "bounds_xy": "explicit HD-only [xmin,ymin,xmax,ymax]; contains frozen point box; sides <=20 m", "offset": "nonnegative; pages of 8; only links touching repair lanes"},
@@ -658,7 +661,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 "inspect_patch": {"type", "candidate_id", "gap_ids", "offset"}, "patch_gaps": {"type", "candidate_id", "gap_ids", "pairs"},
                 "compare_retry": {"type", "candidate_id"}, "finish_retry": {"type", "candidate_id"},
                 "finish": {"type", "candidate_id"}, "resume": {"type"}}
-        if set(action) != keys[kind]:
+        optional = {"sample_spacing_m"} if kind == "refine" else set()
+        if set(action) - optional != keys[kind]:
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
             if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {
@@ -681,6 +685,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             elif kind == "refine":
                 if action["association"] != "trajectory_containing":
                     raise ValueError("refine association must be trajectory_containing")
+                if "sample_spacing_m" in action:
+                    jobs._corridor_spacing(action["sample_spacing_m"])
                 if "corridor_refinement" in job:
                     raise ValueError("path-association refinement was already attempted")
                 if job.get("corridor_proposal", {}).get("status") != "ready":
@@ -946,7 +952,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 run["reviewed_candidates"] = sorted(set(run["reviewed_candidates"]) | set(action["candidate_ids"]))
                 entry["status"] = "inspected"
             elif entry["action"]["type"] == "refine":
-                outcome = jobs._refine_mapping_corridors(str(root), entry["reason"])
+                outcome = jobs._refine_mapping_corridors(str(root), entry["reason"], entry["action"].get("sample_spacing_m"))
                 entry["status"] = outcome["status"]
                 entry["outcome"] = outcome
                 if outcome["status"] == "ready":

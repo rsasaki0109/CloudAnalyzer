@@ -1,0 +1,1471 @@
+//! Lane-free proposals from contiguous low source bands along a recorded path.
+//! Coverage edges are not road edges; neither surface support nor paired curb
+//! profiles determine traffic semantics, clearance or the correct physical level.
+use serde::{Deserialize, Serialize};
+use vectormap_core::Point3;
+
+use super::{BuildError, BuildOptions, SurfaceIndex, junctions, trace_alignment};
+use crate::PointCloud;
+
+const SPACING: f64 = 2.0;
+const BIN: f64 = 0.5;
+const HALF_WINDOW: f64 = 2.0;
+const MIN_WIDTH: f64 = 1.0;
+const STEP: f64 = 0.08;
+const MAX_SECTIONS: usize = 2_048;
+const QUERY_BUDGET: usize = 2_000_000;
+const SUPPORT_BUDGET: usize = 100_000;
+/// Bins an edge may move inward when its trace between sections lacks support.
+const MAX_INSET_BINS: usize = 4;
+/// Half-widths around the path tried when no edge inset is supported: a band far
+/// wider than the road (edges at the search limit) can run its far edge or centre
+/// over a lower gutter, a parked vehicle or a rising verge.
+const PATH_WINDOWS: [f64; 3] = [3.0, 2.0, 1.5];
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CorridorOptions {
+    /// Symmetric search reach from the path, independent of lane count or width.
+    pub search_radius_m: f64,
+    /// Explicit geometric association, independent of lane identity or legal use.
+    pub association: CorridorAssociation,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CorridorAssociation {
+    #[default]
+    AllSupportedBands,
+    TrajectoryContaining,
+}
+impl Default for CorridorOptions {
+    fn default() -> Self {
+        Self {
+            search_radius_m: 8.0,
+            association: CorridorAssociation::AllSupportedBands,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EdgeEvidence {
+    CurbProfile,
+    SupportGap,
+    HeightDiscontinuity,
+    SearchLimit,
+    /// Moved inward by whole bins so the edge trace between sections stays on
+    /// supported ground. A conservative width, not a physical observation.
+    SupportInset,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CrossSection {
+    pub station_m: f64,
+    pub center: [f64; 3],
+    pub left: [f64; 3],
+    pub right: [f64; 3],
+    pub support_span_m: f64,
+    pub left_evidence: EdgeEvidence,
+    pub right_evidence: EdgeEvidence,
+    /// Signed height of the surface in the first bin beyond each edge, relative to
+    /// the edge bin: what ended the band. A few centimetres to a few tenths is a curb,
+    /// rut or rough surface; more is an obstacle (a vehicle, post or wall) standing on
+    /// or beside the road. Absent at the search limit, at a gap without returns and
+    /// on an inset edge.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub left_step_m: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub right_step_m: Option<f64>,
+    /// Height above the surface of the tallest returns (95th percentile) between
+    /// 0.2 m and 3 m up in the first bin beyond each edge: a post, vehicle, wall or
+    /// fence standing there. Absent when that bin holds fewer than three such returns,
+    /// at the search limit and on an inset edge.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub left_obstacle_m: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub right_obstacle_m: Option<f64>,
+    pub intersects_trajectory: bool,
+    pub path_level_supported: bool,
+}
+impl CrossSection {
+    fn curbs(&self) -> bool {
+        self.left_evidence == EdgeEvidence::CurbProfile
+            && self.right_evidence == EdgeEvidence::CurbProfile
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct CorridorCandidate {
+    pub id: usize,
+    pub from_m: f64,
+    pub to_m: f64,
+    pub minimum_support_span_m: f64,
+    pub maximum_support_span_m: f64,
+    pub paired_curb_sections: usize,
+    /// Present only when every section has two curb-like physical profiles.
+    /// Other spans measure point support, not a complete road or path width.
+    pub curb_width_range_m: Option<[f64; 2]>,
+    pub sections: Vec<CrossSection>,
+    pub review_required: bool,
+}
+
+#[derive(Debug, Serialize)]
+pub struct Profile {
+    pub station_m: f64,
+    pub trajectory: [f64; 3],
+    pub heading_usable: bool,
+    pub reference_ground_height_m: Option<f64>,
+    pub bands: Vec<CrossSection>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum IntervalReason {
+    MissingCoherentSurface,
+    MissingGroundAnchor,
+    MissingTrajectoryBand,
+    UnmatchedBands,
+    SourceGap,
+    BranchingBands,
+    UnstableHeading,
+    QueryBudget,
+    SupportBudget,
+}
+#[derive(Debug, Serialize)]
+pub struct StationInterval {
+    pub from_m: f64,
+    pub to_m: f64,
+    pub reason: IntervalReason,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CorridorProtocol {
+    pub options: CorridorOptions,
+    pub sample_spacing_m: f64,
+    pub bin_width_m: f64,
+    pub half_window_m: f64,
+    pub minimum_support_span_m: f64,
+    pub maximum_adjacent_height_step_m: f64,
+    pub maximum_reference_level_grade: f64,
+    pub ground_estimator: super::quality::GroundEstimator,
+    pub interval_support_spacing_m: f64,
+    pub interval_ground_radius_m: f64,
+    pub interval_height_tolerance_m: f64,
+    pub maximum_sections: usize,
+    pub profile_query_point_budget: usize,
+    pub interval_support_sample_budget: usize,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CorridorReport {
+    pub schema: &'static str,
+    pub coordinate_frame: &'static str,
+    pub protocol: CorridorProtocol,
+    pub trajectory_length_m: f64,
+    /// Union of along-input-path intervals, not summed candidate/unique road lengths.
+    pub with_candidate_station_length_m: f64,
+    pub without_candidate_station_length_m: f64,
+    pub trajectory_covered_station_length_m: f64,
+    pub curb_bounded_station_length_m: f64,
+    pub ambiguous_station_length_m: f64,
+    pub sampled_sections: usize,
+    pub evaluated_sections: usize,
+    pub sections_with_bands: usize,
+    pub multiple_band_sections: usize,
+    pub profile_queried_points: usize,
+    pub interval_support_samples: usize,
+    pub unstable_heading_sections: usize,
+    pub unanchored_sections: usize,
+    pub level_mismatch_bands: usize,
+    /// Observations kept in profiles but excluded by explicit path association.
+    pub off_trajectory_bands: usize,
+    pub limited: bool,
+    pub profiles: Vec<Profile>,
+    pub candidates: Vec<CorridorCandidate>,
+    pub deferred_intervals: Vec<StationInterval>,
+    pub ambiguous_intervals: Vec<StationInterval>,
+    pub road_semantics_inferred: bool,
+    pub deployment_ready: bool,
+    pub warnings: Vec<String>,
+}
+
+/// Exact stations on the input's XY arc length, including its last position.
+/// Sensor Z is used only for interpolation of the path; proposed Z is source Z.
+fn samples(poses: &[[f64; 3]]) -> Result<Vec<(f64, [f64; 3])>, BuildError> {
+    if poses.len() < 2
+        || poses
+            .iter()
+            .flatten()
+            .any(|v| !v.is_finite() || v.abs() > 1e12)
+    {
+        return Err(BuildError(
+            "corridor search needs two finite trajectory positions in metres".into(),
+        ));
+    }
+    let lengths: Vec<_> = poses
+        .windows(2)
+        .map(|p| (p[1][0] - p[0][0]).hypot(p[1][1] - p[0][1]))
+        .collect();
+    let total: f64 = lengths.iter().sum();
+    if total < 1e-6 || (total / SPACING).ceil() + 1.0 > MAX_SECTIONS as f64 {
+        return Err(BuildError(
+            "corridor path has no XY movement or exceeds the section budget; split the recording"
+                .into(),
+        ));
+    }
+    let mut out = Vec::new();
+    let mut next = 0.0;
+    let mut station = 0.0;
+    for (pair, d) in poses.windows(2).zip(lengths) {
+        if d > 1e-9 {
+            while next < station + d {
+                let t = (next - station) / d;
+                out.push((
+                    next,
+                    std::array::from_fn(|a| pair[0][a] + t * (pair[1][a] - pair[0][a])),
+                ));
+                next += SPACING;
+            }
+        }
+        station += d;
+    }
+    out.push((total, *poses.last().unwrap()));
+    Ok(out)
+}
+
+fn edges(surface: &[Option<f64>], index: usize, outward: isize, o: &BuildOptions) -> EdgeEvidence {
+    if trace_alignment::curb(surface, index, outward, o) {
+        return EdgeEvidence::CurbProfile;
+    }
+    match index
+        .checked_add_signed(outward)
+        .and_then(|i| surface.get(i))
+    {
+        None => EdgeEvidence::SearchLimit,
+        Some(None) => EdgeEvidence::SupportGap,
+        Some(Some(_)) => EdgeEvidence::HeightDiscontinuity,
+    }
+}
+
+/// Obstacle returns counted above a bin's surface (m).
+const OBSTACLE_HEIGHTS: (f64, f64) = (0.2, 3.0);
+
+/// 95th percentile height above `surface` of returns between OBSTACLE_HEIGHTS.
+fn obstacle(points: &[[f64; 3]], surface: Option<f64>) -> Option<f64> {
+    let z0 = surface?;
+    let mut up: Vec<f64> = points
+        .iter()
+        .map(|p| p[2] - z0)
+        .filter(|h| (OBSTACLE_HEIGHTS.0..=OBSTACLE_HEIGHTS.1).contains(h))
+        .collect();
+    if up.len() < 3 {
+        return None;
+    }
+    up.sort_unstable_by(f64::total_cmp);
+    Some(up[((up.len() - 1) as f64 * 0.95).round() as usize])
+}
+
+fn bands(
+    surface: &[Option<f64>],
+    obstacles: &[Option<f64>],
+    sample: (f64, [f64; 3]),
+    dir: [f64; 2],
+    reach: f64,
+    o: &BuildOptions,
+    reference_ground: Option<f64>,
+) -> Vec<CrossSection> {
+    let (station, p) = sample;
+    let lateral = |i: usize| -reach + i as f64 * BIN;
+    let xyz = |offset: f64, z: f64| [p[0] - dir[1] * offset, p[1] + dir[0] * offset, z];
+    let level = |i: usize, j: usize| {
+        surface[i]
+            .zip(surface[j])
+            .is_some_and(|(a, b)| (a - b).abs() <= STEP)
+    };
+    // A height step separates bands only when it persists past one bin. A single
+    // bin off both neighbours, which themselves agree, by no more than the
+    // support height tolerance is noise between fused scans; a curb or level
+    // change keeps the new height in the next bin, and taller obstacles split.
+    let joined = |i: usize| {
+        surface[i]
+            .zip(surface[i - 1])
+            .is_some_and(|(a, b)| (a - b).abs() <= junctions::HEIGHT)
+            && (level(i, i - 1)
+                || (i + 1 < surface.len() && level(i + 1, i - 1))
+                || (i >= 2 && level(i, i - 2)))
+    };
+    let mut result = Vec::new();
+    let mut start = 0;
+    for end in 1..=surface.len() {
+        if end < surface.len() && joined(end) {
+            continue;
+        }
+        if surface[start].is_some() && (end - start - 1) as f64 * BIN >= MIN_WIDTH {
+            let right = lateral(start);
+            let left = lateral(end - 1);
+            let middle = (start + end - 1) / 2;
+            result.push(CrossSection {
+                station_m: station,
+                center: xyz((left + right) * 0.5, surface[middle].unwrap()),
+                left: xyz(left, surface[end - 1].unwrap()),
+                right: xyz(right, surface[start].unwrap()),
+                support_span_m: left - right,
+                left_evidence: edges(surface, end - 1, 1, o),
+                right_evidence: edges(surface, start, -1, o),
+                left_step_m: surface
+                    .get(end)
+                    .copied()
+                    .flatten()
+                    .map(|z| z - surface[end - 1].unwrap()),
+                right_step_m: start
+                    .checked_sub(1)
+                    .and_then(|i| surface[i])
+                    .map(|z| z - surface[start].unwrap()),
+                left_obstacle_m: obstacles.get(end).copied().flatten(),
+                right_obstacle_m: start.checked_sub(1).and_then(|i| obstacles[i]),
+                intersects_trajectory: right <= 0.0 && left >= 0.0,
+                path_level_supported: reference_ground.is_some_and(|z| {
+                    (surface[middle].unwrap() - z).abs()
+                        <= junctions::HEIGHT + 0.12 * ((left + right) * 0.5).abs()
+                }),
+            });
+        }
+        start = end;
+    }
+    result
+}
+
+/// Connect only uniquely overlapping bands with bounded vertical change. A
+/// branch never silently chooses the widest/nearest band as a semantic road.
+fn matching(a: &CrossSection, b: &CrossSection, station_distance: f64) -> bool {
+    let edge = [b.left[0] - b.right[0], b.left[1] - b.right[1]];
+    let norm = edge[0].hypot(edge[1]);
+    let offset =
+        ((a.center[0] - b.center[0]) * edge[0] + (a.center[1] - b.center[1]) * edge[1]) / norm;
+    let overlap = (a.support_span_m + b.support_span_m) * 0.5 - offset.abs();
+    // Two bands containing the path are tied by it: a band widening on one side
+    // moves its centre sideways, so only the along-road separation bounds a jump.
+    let separation = if a.intersects_trajectory && b.intersects_trajectory {
+        (((a.center[0] - b.center[0]) * edge[1] - (a.center[1] - b.center[1]) * edge[0]) / norm)
+            .abs()
+    } else {
+        (a.center[0] - b.center[0]).hypot(a.center[1] - b.center[1])
+    };
+    overlap >= MIN_WIDTH * 0.5
+        && (a.center[2] - b.center[2]).abs() <= station_distance * 0.12 + junctions::LAYER_HEIGHT
+        && separation <= station_distance * 2.0 + BIN
+}
+
+fn support_sample_count(a: &CrossSection, b: &CrossSection) -> usize {
+    [(a.center, b.center), (a.left, b.left), (a.right, b.right)]
+        .iter()
+        .map(|(a, b)| {
+            let d = (b[0] - a[0]).hypot(b[1] - a[1]).hypot(b[2] - a[2]);
+            (d / 0.5).ceil().max(1.0) as usize + 1
+        })
+        .sum()
+}
+
+fn supported(
+    a: &CrossSection,
+    b: &CrossSection,
+    ground: &junctions::Ground<'_>,
+    samples: &mut usize,
+) -> bool {
+    [(a.center, b.center), (a.left, b.left), (a.right, b.right)]
+        .iter()
+        .all(|(a, b)| {
+            let d = (b[0] - a[0]).hypot(b[1] - a[1]).hypot(b[2] - a[2]);
+            let steps = (d / 0.5).ceil().max(1.0) as usize;
+            (0..=steps).all(|k| {
+                *samples += 1;
+                let p: [f64; 3] =
+                    std::array::from_fn(|i| a[i] + (b[i] - a[i]) * k as f64 / steps as f64);
+                ground.supports(Point3::new(p[0], p[1], p[2]))
+            })
+        })
+}
+
+/// Replace a candidate's last section with a narrower one at the same station and
+/// recount its span range and curb-bounded sections.
+fn narrow_last(c: &mut CorridorCandidate, section: CrossSection) {
+    *c.sections.last_mut().unwrap() = section;
+    c.minimum_support_span_m = c
+        .sections
+        .iter()
+        .map(|s| s.support_span_m)
+        .fold(f64::INFINITY, f64::min);
+    c.maximum_support_span_m = c
+        .sections
+        .iter()
+        .map(|s| s.support_span_m)
+        .fold(0.0, f64::max);
+    c.paired_curb_sections = c.sections.iter().filter(|s| s.curbs()).count();
+}
+
+/// Narrow a path-containing section by whole bins to within `half` of the path on
+/// each side; `None` when that changes nothing or leaves it narrower than `MIN_WIDTH`.
+fn around_path(s: &CrossSection, half: f64, path: [f64; 3]) -> Option<CrossSection> {
+    let edge = [s.left[0] - s.right[0], s.left[1] - s.right[1]];
+    let t = ((path[0] - s.right[0]) * edge[0] + (path[1] - s.right[1]) * edge[1])
+        / (edge[0] * edge[0] + edge[1] * edge[1]);
+    let bins = |d: f64| ((d - half).max(0.0) / BIN - 1e-9).ceil() as usize;
+    let (right, left) = (
+        bins(t * s.support_span_m),
+        bins((1.0 - t) * s.support_span_m),
+    );
+    if right == 0 && left == 0 {
+        return None;
+    }
+    inset(s, left, right, path)
+}
+
+/// Narrow a section by whole bins at each edge. The band must stay at least
+/// `MIN_WIDTH` wide and keep containing the path when it did before.
+fn inset(s: &CrossSection, left: usize, right: usize, path: [f64; 3]) -> Option<CrossSection> {
+    if left == 0 && right == 0 {
+        return Some(s.clone());
+    }
+    let span = s.support_span_m - (left + right) as f64 * BIN;
+    if span < MIN_WIDTH - 1e-9 {
+        return None;
+    }
+    let along =
+        |f: f64| -> [f64; 3] { std::array::from_fn(|i| s.right[i] + (s.left[i] - s.right[i]) * f) };
+    let r = right as f64 * BIN / s.support_span_m;
+    let l = 1.0 - left as f64 * BIN / s.support_span_m;
+    let edge = [s.left[0] - s.right[0], s.left[1] - s.right[1]];
+    let t = ((path[0] - s.right[0]) * edge[0] + (path[1] - s.right[1]) * edge[1])
+        / (edge[0] * edge[0] + edge[1] * edge[1]);
+    let contains = (r - 1e-9..=l + 1e-9).contains(&t);
+    if s.intersects_trajectory && !contains {
+        return None;
+    }
+    let (right_point, left_point) = (along(r), along(l));
+    let mut out = s.clone();
+    out.right = right_point;
+    out.left = left_point;
+    out.center = [
+        (right_point[0] + left_point[0]) * 0.5,
+        (right_point[1] + left_point[1]) * 0.5,
+        s.center[2],
+    ];
+    out.support_span_m = span;
+    if left > 0 {
+        out.left_evidence = EdgeEvidence::SupportInset;
+        out.left_step_m = None;
+        out.left_obstacle_m = None;
+    }
+    if right > 0 {
+        out.right_evidence = EdgeEvidence::SupportInset;
+        out.right_step_m = None;
+        out.right_obstacle_m = None;
+    }
+    out.intersects_trajectory = s.intersects_trajectory && contains;
+    Some(out)
+}
+
+fn interval(out: &mut Vec<StationInterval>, from: f64, to: f64, reason: IntervalReason) {
+    if let Some(last) = out
+        .last_mut()
+        .filter(|last| last.to_m == from && last.reason == reason)
+    {
+        last.to_m = to;
+    } else {
+        out.push(StationInterval {
+            from_m: from,
+            to_m: to,
+            reason,
+        });
+    }
+}
+
+/// No lane count, lane width, direction, speed or existing map is an input.
+/// All proposals require review; absent observations are not filled from priors.
+pub fn propose(
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    options: &CorridorOptions,
+) -> Result<CorridorReport, BuildError> {
+    propose_limited(cloud, poses, options, QUERY_BUDGET, SUPPORT_BUDGET)
+}
+
+fn propose_limited(
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    options: &CorridorOptions,
+    query_budget: usize,
+    support_budget: usize,
+) -> Result<CorridorReport, BuildError> {
+    if !options.search_radius_m.is_finite() || !(1.0..=20.0).contains(&options.search_radius_m) {
+        return Err(BuildError(
+            "search_radius_m must be finite and within 1..20 metres".into(),
+        ));
+    }
+    let samples = samples(poses)?;
+    let total = samples.last().unwrap().0;
+    // Round the reach outward to complete bins, and record the effective reach.
+    let reach = (options.search_radius_m / BIN).ceil() * BIN;
+    let o = BuildOptions {
+        half_window: HALF_WINDOW,
+        bin_width: BIN,
+        curb_height: STEP,
+        ..BuildOptions::default()
+    };
+    let ground = junctions::Ground::new_consensus(cloud)?;
+    let line: Vec<_> = samples.iter().map(|(_, p)| *p).collect();
+    let index = SurfaceIndex::new(cloud, &line, reach + BIN * 0.5 + HALF_WINDOW);
+    let mut report = CorridorReport {
+        schema: "cloudanalyzer.corridor_proposals.v1", coordinate_frame: "input_metres",
+        protocol: CorridorProtocol { options: CorridorOptions { search_radius_m: reach, association: options.association }, sample_spacing_m: SPACING, bin_width_m: BIN, half_window_m: HALF_WINDOW,
+            minimum_support_span_m: MIN_WIDTH, maximum_adjacent_height_step_m: STEP, maximum_reference_level_grade: 0.12, ground_estimator: super::quality::GroundEstimator::consensus(),
+            interval_support_spacing_m: 0.5, interval_ground_radius_m: junctions::RADIUS, interval_height_tolerance_m: junctions::HEIGHT,
+            maximum_sections: MAX_SECTIONS, profile_query_point_budget: query_budget, interval_support_sample_budget: support_budget },
+        trajectory_length_m: total, with_candidate_station_length_m: 0., without_candidate_station_length_m: total,
+        trajectory_covered_station_length_m: 0., curb_bounded_station_length_m: 0., ambiguous_station_length_m: 0.,
+        sampled_sections: samples.len(), evaluated_sections: 0, sections_with_bands: 0, multiple_band_sections: 0,
+        profile_queried_points: 0, interval_support_samples: 0, unstable_heading_sections: 0, unanchored_sections: 0, level_mismatch_bands: 0, off_trajectory_bands: 0, limited: false,
+        profiles: Vec::new(), candidates: Vec::new(), deferred_intervals: Vec::new(), ambiguous_intervals: Vec::new(),
+        road_semantics_inferred: false, deployment_ready: false,
+        warnings: vec!["Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.".into()],
+    };
+    let mut previous: Vec<CrossSection> = Vec::new();
+    if options.association == CorridorAssociation::TrajectoryContaining {
+        report.warnings.push("Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred.".into());
+    }
+    let mut tracks: Vec<Option<usize>> = Vec::new();
+    for (k, &(station, p)) in samples.iter().enumerate() {
+        let a = samples[k.saturating_sub(1)].1;
+        let b = samples[(k + 1).min(samples.len() - 1)].1;
+        let norm = (b[0] - a[0]).hypot(b[1] - a[1]);
+        let mut current = Vec::new();
+        let mut observed = Vec::new();
+        let reference_ground = ground.height(Point3::new(p[0], p[1], p[2]));
+        if norm > 1e-6 {
+            let dir = [(b[0] - a[0]) / norm, (b[1] - a[1]) / norm];
+            // Centre a bin on the path. With bin edges at the path, a surface split
+            // exactly there left neither adjacent band containing the trajectory.
+            let bins = index.slice(p, dir, -reach - BIN * 0.5, reach + BIN * 0.5, &o);
+            let count: usize = bins.iter().map(Vec::len).sum();
+            if report.profile_queried_points + count > query_budget {
+                report.limited = true;
+                interval(
+                    &mut report.deferred_intervals,
+                    samples[k.saturating_sub(1)].0,
+                    total,
+                    IntervalReason::QueryBudget,
+                );
+                break;
+            }
+            report.profile_queried_points += count;
+            let points: Vec<Vec<[f64; 3]>> = bins
+                .iter()
+                .map(|ids| ids.iter().map(|&i| cloud.positions[i]).collect())
+                .collect();
+            let surface: Vec<_> = points
+                .iter()
+                .map(|pts| junctions::lowest_layer(&mut pts.clone()))
+                .collect();
+            let obstacles: Vec<_> = points
+                .iter()
+                .zip(&surface)
+                .map(|(pts, &z)| obstacle(pts, z))
+                .collect();
+            observed = bands(
+                &surface,
+                &obstacles,
+                (station, p),
+                dir,
+                reach,
+                &o,
+                reference_ground,
+            );
+            current = observed
+                .iter()
+                .filter(|b| {
+                    b.path_level_supported
+                        && (options.association == CorridorAssociation::AllSupportedBands
+                            || b.intersects_trajectory)
+                })
+                .cloned()
+                .collect();
+        }
+        report.evaluated_sections += 1;
+        report.unstable_heading_sections += usize::from(norm <= 1e-6);
+        report.unanchored_sections += usize::from(reference_ground.is_none());
+        if reference_ground.is_some() {
+            report.level_mismatch_bands +=
+                observed.iter().filter(|b| !b.path_level_supported).count();
+        }
+        report.off_trajectory_bands += observed
+            .iter()
+            .filter(|b| b.path_level_supported && !b.intersects_trajectory)
+            .count();
+        report.sections_with_bands += usize::from(!current.is_empty());
+        report.multiple_band_sections += usize::from(current.len() > 1);
+        report.profiles.push(Profile {
+            station_m: station,
+            trajectory: p,
+            heading_usable: norm > 1e-6,
+            reference_ground_height_m: reference_ground,
+            bands: observed,
+        });
+        let mut next_tracks = vec![None; current.len()];
+        if k > 0 {
+            let distance = station - samples[k - 1].0;
+            let pairs: Vec<_> = previous
+                .iter()
+                .map(|a| {
+                    current
+                        .iter()
+                        .map(|b| matching(a, b, distance))
+                        .collect::<Vec<_>>()
+                })
+                .collect();
+            let row_counts: Vec<_> = pairs
+                .iter()
+                .map(|row| row.iter().filter(|&&v| v).count())
+                .collect();
+            let column_counts: Vec<_> = (0..current.len())
+                .map(|j| pairs.iter().filter(|row| row[j]).count())
+                .collect();
+            let required: usize = previous
+                .iter()
+                .enumerate()
+                .map(|(i, a)| {
+                    current
+                        .iter()
+                        .enumerate()
+                        .filter(|(j, _)| {
+                            pairs[i][*j] && row_counts[i] == 1 && column_counts[*j] == 1
+                        })
+                        .map(|(_, b)| support_sample_count(a, b))
+                        .sum::<usize>()
+                })
+                .sum();
+            if report.interval_support_samples + required > support_budget {
+                report.limited = true;
+                interval(
+                    &mut report.deferred_intervals,
+                    samples[k - 1].0,
+                    total,
+                    IntervalReason::SupportBudget,
+                );
+                break;
+            }
+            let ambiguous = row_counts.iter().chain(&column_counts).any(|&n| n > 1);
+            if ambiguous {
+                report.ambiguous_station_length_m += distance;
+                interval(
+                    &mut report.ambiguous_intervals,
+                    samples[k - 1].0,
+                    station,
+                    IntervalReason::BranchingBands,
+                );
+            }
+            let mut connected = false;
+            let mut on_trace = false;
+            let mut curbs = false;
+            let mut source_gap = false;
+            for (i, a) in previous.iter().enumerate() {
+                for (j, b) in current.iter().enumerate() {
+                    if !pairs[i][j] || row_counts[i] != 1 || column_counts[j] != 1 {
+                        continue;
+                    }
+                    // A continuing track starts from its stored section, so the
+                    // saved traces are exactly the ones checked against the source.
+                    let stored =
+                        tracks[i].map(|id| report.candidates[id].sections.last().unwrap().clone());
+                    let mut accepted = None;
+                    let mut trials: Vec<_> = (0..=MAX_INSET_BINS)
+                        .flat_map(|l| (0..=MAX_INSET_BINS).map(move |r| (l, r)))
+                        .collect();
+                    trials.sort_by_key(|&(l, r)| (l + r, l.max(r)));
+                    for (l, r) in trials {
+                        let Some(end) = inset(b, l, r, p) else {
+                            continue;
+                        };
+                        let Some(start) =
+                            stored.clone().or_else(|| inset(a, l, r, samples[k - 1].1))
+                        else {
+                            continue;
+                        };
+                        if (l, r) != (0, 0)
+                            && report.interval_support_samples + support_sample_count(&start, &end)
+                                > support_budget
+                        {
+                            report.limited = true;
+                            break;
+                        }
+                        if supported(&start, &end, &ground, &mut report.interval_support_samples) {
+                            accepted = Some((start, end));
+                            break;
+                        }
+                    }
+                    // A track that continues starts from its stored section; when that
+                    // start is too wide to be supported, a trimmed previous section
+                    // starts a new candidate instead.
+                    let mut fresh = false;
+                    if accepted.is_none() && a.intersects_trajectory && b.intersects_trajectory {
+                        'windows: for half in PATH_WINDOWS {
+                            let Some(end) = around_path(b, half, p) else {
+                                continue;
+                            };
+                            let trimmed = around_path(a, half, samples[k - 1].1);
+                            let starts = [
+                                stored.clone().map(|s| (s, false)),
+                                trimmed.map(|s| (s, true)),
+                            ];
+                            for (start, new_track) in starts.into_iter().flatten() {
+                                if report.interval_support_samples
+                                    + support_sample_count(&start, &end)
+                                    > support_budget
+                                {
+                                    report.limited = true;
+                                    break 'windows;
+                                }
+                                if supported(
+                                    &start,
+                                    &end,
+                                    &ground,
+                                    &mut report.interval_support_samples,
+                                ) {
+                                    if let (true, Some(id)) = (new_track, tracks[i]) {
+                                        // Narrow the track's last section in place when the
+                                        // trace into it from the section before stays
+                                        // supported; only otherwise start a new candidate,
+                                        // whose seam at this station would split the lanes.
+                                        let sections = &report.candidates[id].sections;
+                                        let joined = match sections.len() {
+                                            0 | 1 => true,
+                                            n => {
+                                                let before = sections[n - 2].clone();
+                                                report.interval_support_samples
+                                                    + support_sample_count(&before, &start)
+                                                    <= support_budget
+                                                    && supported(
+                                                        &before,
+                                                        &start,
+                                                        &ground,
+                                                        &mut report.interval_support_samples,
+                                                    )
+                                            }
+                                        };
+                                        if joined {
+                                            narrow_last(&mut report.candidates[id], start.clone());
+                                        } else {
+                                            fresh = true;
+                                        }
+                                    }
+                                    accepted = Some((start, end));
+                                    break 'windows;
+                                }
+                            }
+                        }
+                    }
+                    let Some((a, b)) = accepted else {
+                        source_gap = true;
+                        continue;
+                    };
+                    let (a, b) = (&a, &b);
+                    let track = if let (Some(id), false) = (tracks[i], fresh) {
+                        id
+                    } else {
+                        let id = report.candidates.len();
+                        report.candidates.push(CorridorCandidate {
+                            id: id + 1,
+                            from_m: a.station_m,
+                            to_m: b.station_m,
+                            minimum_support_span_m: a.support_span_m,
+                            maximum_support_span_m: a.support_span_m,
+                            paired_curb_sections: usize::from(a.curbs()),
+                            curb_width_range_m: None,
+                            sections: vec![a.clone()],
+                            review_required: true,
+                        });
+                        id
+                    };
+                    let c = &mut report.candidates[track];
+                    c.to_m = b.station_m;
+                    c.minimum_support_span_m = c.minimum_support_span_m.min(b.support_span_m);
+                    c.maximum_support_span_m = c.maximum_support_span_m.max(b.support_span_m);
+                    c.paired_curb_sections += usize::from(b.curbs());
+                    c.sections.push(b.clone());
+                    next_tracks[j] = Some(track);
+                    connected = true;
+                    on_trace |= a.intersects_trajectory && b.intersects_trajectory;
+                    curbs |= a.curbs() && b.curbs();
+                }
+            }
+            if connected {
+                report.with_candidate_station_length_m += distance;
+                report.trajectory_covered_station_length_m += if on_trace { distance } else { 0. };
+                report.curb_bounded_station_length_m += if curbs { distance } else { 0. };
+            } else {
+                let reason = if !report.profiles[k - 1].heading_usable
+                    || !report.profiles[k].heading_usable
+                {
+                    IntervalReason::UnstableHeading
+                } else if report.profiles[k - 1].reference_ground_height_m.is_none()
+                    || report.profiles[k].reference_ground_height_m.is_none()
+                {
+                    IntervalReason::MissingGroundAnchor
+                } else if previous.is_empty() || current.is_empty() {
+                    if options.association == CorridorAssociation::TrajectoryContaining
+                        && ((previous.is_empty()
+                            && report.profiles[k - 1]
+                                .bands
+                                .iter()
+                                .any(|b| b.path_level_supported))
+                            || (current.is_empty()
+                                && report.profiles[k]
+                                    .bands
+                                    .iter()
+                                    .any(|b| b.path_level_supported)))
+                    {
+                        IntervalReason::MissingTrajectoryBand
+                    } else {
+                        IntervalReason::MissingCoherentSurface
+                    }
+                } else if ambiguous {
+                    IntervalReason::BranchingBands
+                } else if source_gap {
+                    IntervalReason::SourceGap
+                } else {
+                    IntervalReason::UnmatchedBands
+                };
+                interval(
+                    &mut report.deferred_intervals,
+                    samples[k - 1].0,
+                    station,
+                    reason,
+                );
+            }
+        }
+        previous = current;
+        tracks = next_tracks;
+    }
+    report.without_candidate_station_length_m = total - report.with_candidate_station_length_m;
+    for c in &mut report.candidates {
+        if c.paired_curb_sections == c.sections.len() {
+            c.curb_width_range_m = Some([c.minimum_support_span_m, c.maximum_support_span_m]);
+        }
+    }
+    if report.limited {
+        report.warnings.push("A profile-query or interval-support budget was reached; remaining intervals are deferred and were not fully inspected. Start a smaller recording segment; do not treat partial proposals as complete.".into());
+    }
+    Ok(report)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn scene() -> PointCloud {
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -40..=40 {
+                let y = y as f64 * 0.2;
+                let z = if (-3.0..=1.0).contains(&y) { 2.0 } else { 2.15 };
+                cloud.positions.push([x as f64 * 0.2, y, z]);
+            }
+        }
+        cloud
+    }
+    fn poses() -> [[f64; 3]; 2] {
+        [[0., 0., 99.], [20., 0., 99.]]
+    }
+
+    #[test]
+    fn explicit_path_association_keeps_observations_and_resolves_off_path_branches() {
+        let mut cloud = scene();
+        for p in &mut cloud.positions {
+            if p[0] > 10. && (-1.5..=-0.5).contains(&p[1]) {
+                p[2] += 1.;
+            }
+        }
+        let original = cloud.positions.clone();
+        let all = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        let on_path = propose(
+            &cloud,
+            &poses(),
+            &CorridorOptions {
+                association: CorridorAssociation::TrajectoryContaining,
+                ..CorridorOptions::default()
+            },
+        )
+        .unwrap();
+        assert!(all.ambiguous_station_length_m > 0.);
+        assert_eq!(on_path.ambiguous_station_length_m, 0.);
+        assert!(
+            on_path.trajectory_covered_station_length_m > all.trajectory_covered_station_length_m
+        );
+        assert!(on_path.off_trajectory_bands > 0);
+        assert_eq!(
+            serde_json::to_value(&all.profiles).unwrap(),
+            serde_json::to_value(&on_path.profiles).unwrap()
+        );
+        assert!(
+            on_path
+                .candidates
+                .iter()
+                .flat_map(|c| &c.sections)
+                .all(|s| s.intersects_trajectory && s.path_level_supported)
+        );
+        assert_eq!(cloud.positions, original);
+        assert!(!on_path.road_semantics_inferred && !on_path.deployment_ready);
+    }
+
+    #[test]
+    fn a_height_step_along_the_path_keeps_the_path_containing_band() {
+        // The path runs exactly along a 0.2 m step. With bin edges at the path,
+        // each side formed a band ending beside it and neither contained it.
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -80..80 {
+                let y = (y as f64 + 0.5) * 0.05;
+                let z = if y < 0. { 2.0 } else { 2.2 };
+                cloud.positions.push([x as f64 * 0.2, y, z]);
+            }
+        }
+        let report = propose(
+            &cloud,
+            &poses(),
+            &CorridorOptions {
+                association: CorridorAssociation::TrajectoryContaining,
+                ..CorridorOptions::default()
+            },
+        )
+        .unwrap();
+        assert!(
+            report.profiles.iter().all(|p| p
+                .bands
+                .iter()
+                .filter(|b| b.intersects_trajectory)
+                .count()
+                == 1)
+        );
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        assert!(
+            !report
+                .deferred_intervals
+                .iter()
+                .any(|i| i.reason == IntervalReason::MissingTrajectoryBand)
+        );
+    }
+
+    fn flat_road() -> PointCloud {
+        // Low road for |y| <= 3 m between raised shoulders.
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -40..=40 {
+                let y = y as f64 * 0.2;
+                let z = if y.abs() <= 3.0 + 1e-9 { 2.0 } else { 2.15 };
+                cloud.positions.push([x as f64 * 0.2, y, z]);
+            }
+        }
+        cloud
+    }
+
+    fn on_path() -> CorridorOptions {
+        CorridorOptions {
+            association: CorridorAssociation::TrajectoryContaining,
+            ..CorridorOptions::default()
+        }
+    }
+
+    #[test]
+    fn a_one_bin_height_deviation_does_not_split_the_surface() {
+        // One 0.4 m strip sits 0.12 m high, above the adjacent-step limit but
+        // back at road level in the next bin. A curb would persist.
+        let mut cloud = flat_road();
+        for p in &mut cloud.positions {
+            if (0.9..1.3).contains(&p[1]) {
+                p[2] += 0.12;
+            }
+        }
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        assert!(report.profiles.iter().all(|p| {
+            p.bands
+                .iter()
+                .any(|b| b.intersects_trajectory && b.support_span_m >= 5.5)
+        }));
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+    }
+
+    #[test]
+    fn an_unsupported_edge_trace_narrows_the_edge_instead_of_breaking_the_track() {
+        // A hole beside the left edge between two sections leaves that edge trace
+        // without nearby ground, while each section still observes the edge.
+        let mut cloud = flat_road();
+        cloud
+            .positions
+            .retain(|p| !((8.5..11.5).contains(&p[0]) && (2.1..3.7).contains(&p[1])));
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
+        assert!(
+            sections
+                .iter()
+                .any(|s| s.left_evidence == EdgeEvidence::SupportInset)
+        );
+        assert!(sections.iter().all(|s| {
+            s.support_span_m >= MIN_WIDTH && s.intersects_trajectory && s.path_level_supported
+        }));
+        // Inset edges are not physical curbs, so no curb-bounded width is claimed.
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| c.curb_width_range_m.is_none())
+        );
+    }
+
+    #[test]
+    fn a_wider_unsupported_strip_narrows_the_edge_by_up_to_two_metres() {
+        // Ground is missing up to 1.9 m inside the left edge, so the edge trace
+        // needs a three-bin inset before nearby ground supports it.
+        let mut cloud = flat_road();
+        cloud
+            .positions
+            .retain(|p| !((9.0..11.0).contains(&p[0]) && (1.1..3.7).contains(&p[1])));
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
+        let narrowest = sections
+            .iter()
+            .filter(|s| s.left_evidence == EdgeEvidence::SupportInset)
+            .map(|s| s.support_span_m)
+            .fold(f64::INFINITY, f64::min);
+        assert!((4.0..=4.5).contains(&narrowest), "{narrowest}");
+        assert!(
+            sections
+                .iter()
+                .all(|s| s.support_span_m >= MIN_WIDTH && s.intersects_trajectory)
+        );
+    }
+
+    #[test]
+    fn edges_record_the_step_that_ended_the_band() {
+        // Raised shoulders 0.15 m above the road, and a 6 m long, 1.2 m high block
+        // (a parked vehicle) on the road's left half: sections beside it stop at it.
+        // Each profile takes the lowest layer within 2 m along, so a short object
+        // does not end a band.
+        let mut cloud = flat_road();
+        for p in &mut cloud.positions {
+            if (7.0..13.0).contains(&p[0]) && (1.0..3.0 + 1e-9).contains(&p[1]) {
+                p[2] += 1.2;
+            }
+        }
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        let on_path_band = |station: f64| {
+            report
+                .profiles
+                .iter()
+                .find(|p| (p.station_m - station).abs() < 1e-9)
+                .and_then(|p| p.bands.iter().find(|b| b.intersects_trajectory))
+                .unwrap()
+                .clone()
+        };
+        let open = on_path_band(4.0);
+        for step in [open.left_step_m, open.right_step_m] {
+            assert!((step.unwrap() - 0.15).abs() < 0.03, "{step:?}");
+        }
+        let blocked = on_path_band(10.0);
+        assert!(blocked.support_span_m < open.support_span_m);
+        assert!(
+            (blocked.left_step_m.unwrap() - 1.2).abs() < 0.1,
+            "{:?}",
+            blocked.left_step_m
+        );
+        assert!((blocked.right_step_m.unwrap() - 0.15).abs() < 0.03);
+        // Nothing stands on the open shoulders.
+        assert_eq!((open.left_obstacle_m, open.right_obstacle_m), (None, None));
+    }
+
+    #[test]
+    fn edges_record_an_obstacle_standing_beyond_them() {
+        // A 1.5 m post just outside the right shoulder edge: the band still ends at
+        // the 0.15 m step, and the post is reported standing in the bin beyond it.
+        let mut cloud = flat_road();
+        for k in 0..60 {
+            let z = 2.15 + k as f64 * 0.025;
+            for (x, y) in [(10.0, -3.4), (10.1, -3.4), (10.0, -3.3), (10.1, -3.3)] {
+                cloud.positions.push([x, y, z]);
+            }
+        }
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        let band = report
+            .profiles
+            .iter()
+            .find(|p| (p.station_m - 10.0).abs() < 1e-9)
+            .and_then(|p| p.bands.iter().find(|b| b.intersects_trajectory))
+            .unwrap();
+        assert!((band.right_step_m.unwrap() - 0.15).abs() < 0.03);
+        let post = band.right_obstacle_m.unwrap();
+        assert!((1.3..=1.5).contains(&post), "{post}");
+        assert_eq!(band.left_obstacle_m, None);
+    }
+
+    #[test]
+    fn a_wide_band_is_narrowed_around_the_path_past_unsupported_ground() {
+        // A 12 m road with the path 1 m inside its right edge: everything from
+        // 2.5 m left of the path is a hole that no edge inset of up to 2 m clears.
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -40..=40 {
+                let (x, y) = (x as f64 * 0.2, y as f64 * 0.2);
+                if (9.0..11.0).contains(&x) && (-1.5..7.5).contains(&y) {
+                    continue;
+                }
+                let z = if (-5.0 - 1e-9..=7.0 + 1e-9).contains(&y) {
+                    2.0
+                } else {
+                    2.15
+                };
+                cloud.positions.push([x, y, z]);
+            }
+        }
+        let path = [[0., -4., 99.], [20., -4., 99.]];
+        let report = propose(&cloud, &path, &on_path()).unwrap();
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        // The last wide section before the hole is narrowed in place: one candidate,
+        // no seam where a new one would start at the same station.
+        assert_eq!(
+            report.candidates.len(),
+            1,
+            "{:?}",
+            report
+                .candidates
+                .iter()
+                .map(|c| (c.from_m, c.to_m))
+                .collect::<Vec<_>>()
+        );
+        let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
+        let narrowest = sections
+            .iter()
+            .map(|s| s.support_span_m)
+            .fold(f64::INFINITY, f64::min);
+        assert!((MIN_WIDTH..=4.5).contains(&narrowest), "{narrowest}");
+        assert!(sections.iter().all(|s| s.intersects_trajectory));
+    }
+
+    #[test]
+    fn a_band_widening_on_one_side_matches_but_an_along_road_jump_does_not() {
+        let a = CrossSection {
+            station_m: 0.,
+            center: [0., 0., 2.],
+            left: [0., 3., 2.],
+            right: [0., -3., 2.],
+            support_span_m: 6.,
+            left_evidence: EdgeEvidence::CurbProfile,
+            right_evidence: EdgeEvidence::CurbProfile,
+            left_step_m: None,
+            right_step_m: None,
+            left_obstacle_m: None,
+            right_obstacle_m: None,
+            intersects_trajectory: true,
+            path_level_supported: true,
+        };
+        // The left edge opens 10 m: the centre moves 5 m sideways, 2 m along.
+        let mut wide = a.clone();
+        wide.center = [2., 5., 2.];
+        wide.left = [2., 13., 2.];
+        wide.right = [2., -3., 2.];
+        wide.support_span_m = 16.;
+        assert!(matching(&a, &wide, 2.));
+        // Off the path nothing ties the two bands, so their centres must stay close.
+        let (mut off_a, mut off_wide) = (a.clone(), wide.clone());
+        off_a.intersects_trajectory = false;
+        off_wide.intersects_trajectory = false;
+        assert!(!matching(&off_a, &off_wide, 2.));
+        // The same band 7 m further along the path is a jump, not a widening.
+        let mut ahead = a.clone();
+        for p in [&mut ahead.center, &mut ahead.left, &mut ahead.right] {
+            p[0] = 7.;
+        }
+        assert!(!matching(&a, &ahead, 2.));
+    }
+
+    #[test]
+    fn insets_never_drop_below_the_minimum_width_or_leave_the_path() {
+        let s = CrossSection {
+            station_m: 0.,
+            center: [0., 0., 2.],
+            left: [0., 1., 2.],
+            right: [0., -1., 2.],
+            support_span_m: 2.,
+            left_evidence: EdgeEvidence::CurbProfile,
+            right_evidence: EdgeEvidence::CurbProfile,
+            left_step_m: None,
+            right_step_m: None,
+            left_obstacle_m: None,
+            right_obstacle_m: None,
+            intersects_trajectory: true,
+            path_level_supported: true,
+        };
+        let path = [0., 0., 3.];
+        let narrowed = inset(&s, 1, 0, path).unwrap();
+        assert_eq!(narrowed.support_span_m, 1.5);
+        assert!((narrowed.left[1] - 0.5).abs() < 1e-9);
+        assert_eq!(narrowed.left_evidence, EdgeEvidence::SupportInset);
+        assert_eq!(narrowed.right_evidence, EdgeEvidence::CurbProfile);
+        assert!(narrowed.intersects_trajectory);
+        assert!(inset(&s, 2, 0, path).is_some());
+        assert!(inset(&s, 2, 1, path).is_none());
+        assert!(inset(&s, 0, 2, [0., -0.9, 3.]).is_none());
+    }
+
+    #[test]
+    fn path_association_never_borrows_an_outside_band_or_bridges_missing_source() {
+        let options = CorridorOptions {
+            association: CorridorAssociation::TrajectoryContaining,
+            ..CorridorOptions::default()
+        };
+        let mut outside = scene();
+        outside.positions.retain(|p| p[1] >= 0.4);
+        let report = propose(&outside, &poses(), &options).unwrap();
+        assert!(report.candidates.is_empty());
+        assert_eq!(report.without_candidate_station_length_m, 20.);
+        assert!(report.profiles.iter().any(|p| !p.bands.is_empty()));
+        assert!(report.off_trajectory_bands > 0);
+        assert!(
+            report
+                .deferred_intervals
+                .iter()
+                .any(|i| i.reason == IntervalReason::MissingTrajectoryBand)
+        );
+        let mut gap = scene();
+        gap.positions.retain(|p| !(7.0..13.0).contains(&p[0]));
+        let report = propose(&gap, &poses(), &options).unwrap();
+        assert!(report.without_candidate_station_length_m >= 4.);
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| !(c.from_m < 7. && c.to_m > 13.))
+        );
+        assert_eq!(report.trajectory_length_m, 20.);
+    }
+
+    #[test]
+    fn offset_curb_band_has_measured_geometry_without_lane_or_sensor_priors() {
+        let cloud = scene();
+        let original = cloud.positions.clone();
+        let report = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        let road = report
+            .candidates
+            .iter()
+            .find(|c| c.curb_width_range_m.is_some())
+            .unwrap();
+        assert_eq!(road.from_m, 0.);
+        assert_eq!(road.to_m, 20.);
+        assert!((road.sections[0].center[1] + 1.).abs() < BIN);
+        assert!(
+            road.sections
+                .iter()
+                .all(|s| (s.center[2] - 2.).abs() < 1e-9)
+        );
+        assert!(road.maximum_support_span_m <= 4.0);
+        assert_eq!(report.with_candidate_station_length_m, 20.);
+        assert_eq!(report.without_candidate_station_length_m, 0.);
+        assert!(report.candidates.iter().all(|c| c.review_required));
+        assert!(!report.road_semantics_inferred && !report.deployment_ready && !report.limited);
+        assert_eq!(cloud.positions, original);
+    }
+
+    #[test]
+    fn observation_and_search_edges_never_supply_a_complete_width() {
+        let mut cloud = scene();
+        cloud.positions.retain(|p| p[1] >= -3. && p[1] <= 1.);
+        let report = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        assert!(!report.candidates.is_empty());
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| c.curb_width_range_m.is_none())
+        );
+        assert!(
+            report
+                .candidates
+                .iter()
+                .flat_map(|c| &c.sections)
+                .all(|s| s.left_evidence == EdgeEvidence::SupportGap
+                    && s.right_evidence == EdgeEvidence::SupportGap)
+        );
+        let report = propose(
+            &scene(),
+            &poses(),
+            &CorridorOptions {
+                search_radius_m: 1.0,
+                ..CorridorOptions::default()
+            },
+        )
+        .unwrap();
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| c.curb_width_range_m.is_none())
+        );
+        assert!(
+            report
+                .candidates
+                .iter()
+                .flat_map(|c| &c.sections)
+                .all(|s| s.left_evidence == EdgeEvidence::SearchLimit
+                    && s.right_evidence == EdgeEvidence::SearchLimit)
+        );
+    }
+
+    #[test]
+    fn elevated_or_lower_bands_remain_observations_without_becoming_path_proposals() {
+        let mut cloud = scene();
+        for p in &mut cloud.positions {
+            if p[1] > 4.0 {
+                p[2] = 5.0;
+            }
+            if p[1] < -4.0 {
+                p[2] = -3.0;
+            }
+        }
+        let report = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        assert!(report.level_mismatch_bands > 0);
+        assert!(
+            report
+                .profiles
+                .iter()
+                .flat_map(|p| &p.bands)
+                .any(|b| !b.path_level_supported)
+        );
+        assert!(
+            report
+                .candidates
+                .iter()
+                .flat_map(|c| &c.sections)
+                .all(|s| s.path_level_supported && s.center[2] > 1.0 && s.center[2] < 3.0)
+        );
+    }
+
+    #[test]
+    fn missing_source_and_branches_break_tracks_and_keep_full_extent() {
+        let mut cloud = scene();
+        cloud.positions.retain(|p| !(7.0..13.0).contains(&p[0]));
+        let report = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        assert_eq!(report.trajectory_length_m, 20.);
+        assert!(report.without_candidate_station_length_m >= 4.0);
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| !(c.from_m < 7. && c.to_m > 13.))
+        );
+        let a = CrossSection {
+            station_m: 0.,
+            center: [0., 0., 2.],
+            left: [0., 3., 2.],
+            right: [0., -3., 2.],
+            support_span_m: 6.,
+            left_evidence: EdgeEvidence::SupportGap,
+            right_evidence: EdgeEvidence::SupportGap,
+            left_step_m: None,
+            right_step_m: None,
+            left_obstacle_m: None,
+            right_obstacle_m: None,
+            intersects_trajectory: true,
+            path_level_supported: true,
+        };
+        let mut b = a.clone();
+        b.center = [2., -1.5, 2.];
+        b.left = [2., -0.5, 2.];
+        b.right = [2., -2.5, 2.];
+        b.support_span_m = 2.;
+        let mut c = b.clone();
+        c.center[1] = 1.5;
+        c.left[1] = 2.5;
+        c.right[1] = 0.5;
+        assert!(matching(&a, &b, 2.) && matching(&a, &c, 2.));
+        // Generate a split at x=10: one wide low band becomes two branches.
+        let mut cloud = scene();
+        for p in &mut cloud.positions {
+            if p[0] > 10. && (-1.5..=-0.5).contains(&p[1]) {
+                p[2] += 1.;
+            }
+        }
+        let report = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        assert!(report.ambiguous_station_length_m > 0.);
+        assert!(
+            report
+                .candidates
+                .iter()
+                .filter(|c| c.curb_width_range_m.is_some())
+                .all(|c| c.to_m <= 12.)
+        );
+    }
+
+    #[test]
+    fn no_supported_band_and_resource_limits_do_not_become_passes() {
+        let mut cloud = scene();
+        cloud.positions.retain(|p| p[1] == 0.);
+        let report = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        assert!(report.candidates.is_empty());
+        assert_eq!(report.without_candidate_station_length_m, 20.);
+        for (query, support, reason) in [
+            (0, SUPPORT_BUDGET, IntervalReason::QueryBudget),
+            (QUERY_BUDGET, 0, IntervalReason::SupportBudget),
+        ] {
+            let report = propose_limited(
+                &scene(),
+                &poses(),
+                &CorridorOptions::default(),
+                query,
+                support,
+            )
+            .unwrap();
+            assert!(report.limited && report.candidates.is_empty());
+            assert_eq!(report.deferred_intervals.last().unwrap().reason, reason);
+            assert_eq!(report.deferred_intervals.last().unwrap().to_m, 20.);
+        }
+        assert!(
+            propose(
+                &scene(),
+                &[[0., 0., 0.], [10_000., 0., 0.]],
+                &CorridorOptions::default()
+            )
+            .is_err()
+        );
+        assert!(
+            propose(
+                &scene(),
+                &poses(),
+                &CorridorOptions {
+                    search_radius_m: f64::NAN,
+                    ..CorridorOptions::default()
+                }
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn exact_station_endpoint_and_turnaround_remain_visible() {
+        let report = propose(
+            &scene(),
+            &[[0., 0., 99.], [4., 0., 99.], [0., 0., 99.]],
+            &CorridorOptions::default(),
+        )
+        .unwrap();
+        assert_eq!(report.trajectory_length_m, 8.);
+        assert!(report.unstable_heading_sections > 0);
+        assert!(
+            report
+                .deferred_intervals
+                .iter()
+                .any(|i| i.reason == IntervalReason::UnstableHeading)
+        );
+        let samples = samples(&[[0., 0., 99.], [0., 0., 100.], [2.01, 0., 200.]]).unwrap();
+        assert_eq!(samples.last().unwrap().0, 2.01);
+        assert_eq!(samples.last().unwrap().1, [2.01, 0., 200.]);
+    }
+}

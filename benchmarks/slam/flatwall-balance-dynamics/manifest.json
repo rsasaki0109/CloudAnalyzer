@@ -51,7 +51,7 @@
     "trace-01-invocation.json": "9d3ee408bdd42c236dc57d43b4fce43780b8c5d64963e6c0c9a947f8a8e00398",
     "trace-01-receipt.json": "6fecffdefd6d60c38a5cb35c93d20639eee904e937bacef47664d139358ba7a5",
     "trace-runs.npz": "68787ff7f1c1786cb1641a997f4c6de7fb83149a9b08abb108703c8fc72b4940",
-    "verify.py": "a9620ddf7e1a8c61257ed0bef04c2948eefae160d1d79275e28d477b68075bce"
+    "verify.py": "3d05856dbded755a16c16475fecc46dc1f69652abf0e7bd280e043a10e708a07"
   },
   "dependencies": {
     "benchmarks/slam/flatwall-frontend-constraints/raw-legacy/frames.jsonl": "f20ac0175831d5784f62671586dac6d4b75ee0bbb18430241d7d01111051d29d",
@@ -103,7 +103,8 @@
     "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-0.1875/frames.jsonl": "df3f16ff04dccc29757605c70d0b2a5e852172bee28d2eab9fe11851fa59708b",
     "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-0.1875/default-replay-trajectory.npz": "d441f5f0400254e846d23d50d8a3017d407589ea6813f4c407baceea2012622a",
     "benchmarks/slam/flatwall-target-balance/estimates-receipt.json": "8d62eb9fc5f31d4e32446124c8aca7575d1d605366adb47e02dc739daf269d49",
-    "benchmarks/slam/flatwall-target-balance/comparison.json": "14987d61233a75279f4c19099c34e54d8ef1a17ef2ace36cd96b98ce3087bd86"
+    "benchmarks/slam/flatwall-target-balance/comparison.json": "14987d61233a75279f4c19099c34e54d8ef1a17ef2ace36cd96b98ce3087bd86",
+    "benchmarks/slam/executed-source/corridors-82f8e9aa.rs": "82f8e9aa16eb1f9e76c4fb21db6c48423afbb66ac9ac21ebb00fb53a6d8f84d8"
   },
   "normalized_native_sources_sha256": {
     "rust/Cargo.lock": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12",
@@ -198,5 +199,8 @@
     "scripts/analyze_flatwall_balance_dynamics.py": "4f83f6f4fe555bcab71e56a1292ebf054429d5d36b81e2ca1fc83b6a84ad820d",
     "rust/crates/ca-core/examples/audit_odometry_pose_inputs.rs": "2bd766a0575795ce9b075245f6be6bd4ad2a917af58b3fb1627e0e318b3c58e9",
     "scripts/reconcile_flatwall_balance_dynamics.py": "7218345cfa06a9b6c78873ad735e079347c91b2427f884107a3dace00fdea86c"
+  },
+  "native_source_aliases": {
+    "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs"
   }
 }

@@ -48,8 +48,9 @@ def pair_fixture(trial_fixture, monkeypatch, request):
     job.update(status='pointcloud_ready', attempts=[], selected=None)
     jobs._save(baseline / 'job.json', job)
     jobs.propose_mapping_corridors(str(baseline))
-    if request.param == 'trajectory_containing':
-        assert jobs._refine_mapping_corridors(str(baseline), 'Frozen path association')['status'] == 'ready'
+    if request.param in ('trajectory_containing', 'trajectory_containing_fine'):
+        spacing = 1.0 if request.param == 'trajectory_containing_fine' else None
+        assert jobs._refine_mapping_corridors(str(baseline), 'Frozen path association', spacing)['status'] == 'ready'
     jobs._save(baseline / 'layout-hypothesis.json', _run_layout())
     jobs._save(baseline / 'run.json', {'schema': runs.SCHEMA, 'revision': 0, 'status': 'needs_agent',
         'layout_file': jobs._artifact(baseline / 'layout-hypothesis.json'), 'reviewed_candidates': [], 'history': [], 'output': None, 'maximum_actions': 128})
@@ -76,6 +77,22 @@ def _generate(value):
     assert result['status'] == 'needs_agent', result
     _finish(root)
     return root
+
+
+@pytest.mark.parametrize('pair_fixture', ['trajectory_containing_fine'], indirect=True)
+def test_fresh_motion_hd_inherits_frozen_finer_sampling(pair_fixture):
+    baseline, trial, *_ = pair_fixture
+    before = _snapshot(baseline)
+    root = baseline.parent / 'fine-hd'
+    result = pairs.start_mapping_motion_run(str(trial), str(baseline), str(root), 4, 'Retain finer source sampling')
+    assert result['status'] == 'needs_agent'
+    report = json.loads(Path(jobs._load(root)['corridor_proposal']['file']['path']).read_text())
+    assert report['protocol']['sample_spacing_m'] == 1.
+    assert report['protocol']['options']['sample_spacing_m'] == 1.
+    assert report['protocol']['options']['association'] == 'trajectory_containing'
+    assert all(0 < b['station_m'] - a['station_m'] <= 1. + 1e-12
+               for a, b in zip(report['profiles'], report['profiles'][1:]))
+    assert _snapshot(baseline) == before
 
 
 def test_fresh_hd_generation_comparison_selection_and_exact_restore_preserve_inputs(pair_fixture):

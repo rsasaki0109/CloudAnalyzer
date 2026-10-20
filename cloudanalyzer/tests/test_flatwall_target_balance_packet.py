@@ -132,3 +132,18 @@ def test_archived_executed_native_source_is_still_hash_checked(tmp_path):
     alias=packet.read(target/'manifest.json')['native_source_aliases']['rust/crates/ca-core/src/odometry.rs']
     with (target.parents[2]/alias).open('ab') as stream:stream.write(b'\n// changed historical source\n')
     with pytest.raises(ValueError,match='hash'):packet.verify(target)
+
+
+def test_development_corridor_source_can_change_but_resigned_executed_source_cannot(tmp_path):
+    target=copy_packet(tmp_path)
+    name='rust/crates/ca-core/src/vector_map/corridors.rs'
+    manifest=packet.read(target/'manifest.json')
+    alias=manifest['native_source_aliases'][name]
+    (target.parents[2]/name).write_bytes(b'// newer development source\n')
+    assert packet.verify(target)['default_replay_pose_bits_checked']==2560
+    archived=target.parents[2]/alias
+    with archived.open('ab') as stream:stream.write(b'\n// changed executed source\n')
+    manifest['dependencies'][alias]=packet.sha(archived)
+    save(target/'manifest.json',manifest)
+    with pytest.raises(ValueError,match='normalized native source'):
+        packet.verify(target)

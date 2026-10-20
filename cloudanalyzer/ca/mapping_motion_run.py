@@ -101,8 +101,10 @@ def start_mapping_motion_run(trial_job_dir: str, finished_job_dir: str, out_dir:
     retries._verify_inputs(inputs)
     proposal = json.loads(Path(parent["corridor_proposal"]["file"]["path"]).read_text())
     policy = proposal["protocol"]["options"]
-    if set(policy) - {"search_radius_m", "association"} or policy.get("association", "all_supported_bands") not in {"all_supported_bands", "trajectory_containing"}:
+    if set(policy) - {"search_radius_m", "association", "sample_spacing_m"} or policy.get("association", "all_supported_bands") not in {"all_supported_bands", "trajectory_containing"}:
         raise ValueError("unsupported frozen source-extraction policy")
+    if "sample_spacing_m" in policy:
+        jobs._corridor_spacing(policy["sample_spacing_m"])
     layout = json.loads(Path(baseline_run["layout_file"]["path"]).read_text())
     runs._layout(layout)
     target.mkdir(parents=True)
@@ -121,7 +123,7 @@ def start_mapping_motion_run(trial_job_dir: str, finished_job_dir: str, out_dir:
            "reviewed_candidates": [], "history": [], "output": None, "maximum_actions": 128}
     jobs._save(target / "run.json", run)
     try:
-        stage = jobs.propose_mapping_corridors(str(target), policy["search_radius_m"])
+        stage = jobs.propose_mapping_corridors(str(target), policy["search_radius_m"], policy.get("sample_spacing_m"))
         if stage["status"] == "ready" and policy.get("association") == "trajectory_containing":
             stage = jobs._refine_mapping_corridors(str(target), reason)
         run["status"] = "needs_agent" if stage["status"] == "ready" else "processing_failed"

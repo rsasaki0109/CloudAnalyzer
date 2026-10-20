@@ -20,9 +20,10 @@ from ca import mapping_hd_repair as hd_repair
 from ca import mapping_hd_plan as hd_plan
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests, preview_layout_width
 from ca import mapping_append as appends
+from ca import mapping_map_points as map_points
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
-FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_gaps", "inspect_append", "append_draft", "inspect_connections", "connect", "finish", "resume"}
+FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_gaps", "inspect_map_points", "inspect_append", "append_draft", "inspect_connections", "connect", "finish", "resume"}
 WIDTH_GUIDANCE = (
     "A candidate's minimum support span covers its entire extent; a narrow section can hide wider subranges. "
     "Inspect candidates whose maximum span could fit the fixed layout. Inspect observations include layout_width_preview: "
@@ -337,7 +338,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             completed_append = next((a for a in job["attempts"] if a["id"] == h.get("lane_candidate_id")), None)
             if completed_append and completed_append["status"] == "audited_draft":
                 retries._parent(job, completed_append["id"])
-        for key in ("gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "patch_observation", "append_observation", "retry_comparison"):
+        for key in ("gap_observation", "map_point_observation", "unused_frame_observation", "local_point_observation", "height_observation", "patch_observation", "append_observation", "retry_comparison"):
             if key in h:
                 jobs._verify(h[key]["file"])
         if "hd_plan_observation" in h:
@@ -355,7 +356,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
         "corridor_refinement": job.get("corridor_refinement"), "continuation": job.get("continuation"), "motion_run": job.get("motion_run"),
         "pointcloud_retry": stage, "retry_child": retry_child, "pointcloud_retry_allowed": run.get("pointcloud_retry_allowed", True),
-        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "append_observation", "action"}} for a in run["history"][-8:]],
+        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "map_point_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "append_observation", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)",
@@ -402,6 +403,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "Route reachability does not increase original source extent or prove legal turns, independent accuracy or deployment readiness.")
     if job["pointcloud"] and job["pointcloud"].get("origin") == "external_slam":
         answer["pointcloud_retry_allowed"] = False
+        answer["action_contract"]["inspect_map_points"] = {"type": "inspect_map_points", "candidate_id": "own audited draft",
+            "gap_ids": "1..8 IDs from the latest seen saved gap page", "stations_m": "1..8 distinct profile stations visible in those gaps; fixed 0.75 m XY radius, all heights"}
         answer["action_contract"] = {k: v for k, v in answer["action_contract"].items() if k in FROZEN_MAP_ACTIONS}
         answer["action_contract"]["append_draft"] = {"type": "append_draft", "baseline_candidate_id": "own original audited draft",
             "addition_candidate_id": "own gap-only audited path-refined draft", "gap_ids": "1..8 IDs from the latest seen baseline gap page; one shared HD attempt; one append per run",
@@ -413,6 +416,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "Inspect proposed sections before drafting; use the fixed layout and original extent/quality gates. "
             "Use inspect_gaps on an own audited draft to read saved profiles and fixed-layout width observations without extracting a raw log. "
             "These pages use that draft's retained source proposal, even after refinement; they do not perform fresh source audits or authorize repair/retries. "
+            "Use inspect_map_points with explicit seen gap/profile stations to inspect bounded, all-height point-map neighborhoods. "
+            "Return counts, occupied XY cells and truncated point previews are observations, not fresh ground estimates or audits. "
             "Refine path association, inspect/connect audited drafts, then finish with explicit unresolved work. "
             "append_draft can retain an original draft while adding an audited refined draft wholly inside seen unoccupied gaps. "
             "First inspect_append, then explicitly select every exact endpoint pair with a reason; OSM can restore connections at shared endpoints. "
@@ -621,7 +626,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
     if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {
-        "inspect", "refine", "draft", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
+        "inspect", "refine", "draft", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "inspect_map_points", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
         raise ValueError("use an action type from action_contract")
     root = Path(job_dir).resolve()
     with _locked(root):
@@ -654,6 +659,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 "inspect_hd_plan": {"type", "candidate_id", "gap_ids", "offset"},
                 "repair_hd": {"type", "candidate_id", "gap_ids"},
                 "inspect_gaps": {"type", "candidate_id", "offset"}, "retry_pointcloud": {"type", "candidate_id", "gap_ids", "options"},
+                "inspect_map_points": {"type", "candidate_id", "gap_ids", "stations_m"},
                 "inspect_unused_frames": {"type", "candidate_id", "offset"}, "retry_frames": {"type", "candidate_id", "frame_ids"},
                 "inspect_local_points": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "retry_local_frames": {"type", "candidate_id", "frame_ids", "preview_file"},
                 "inspect_local_density": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "inspect_protected_density": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "retry_local_density": {"type", "candidate_id", "options", "preview_file"},
@@ -666,7 +672,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
             if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {
-                "draft", "refine", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
+                "draft", "refine", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "inspect_map_points", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
                 raise ValueError("resume requires an interrupted processing action")
             entry = run["history"][-1]
         else:
@@ -774,6 +780,15 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     raise ValueError("inspect every chosen plan gap through this run")
                 if type(action["offset"]) is not int or action["offset"] < 0:
                     raise ValueError("plan offset must be a nonnegative integer")
+            elif kind == "inspect_map_points":
+                cid = action["candidate_id"]
+                if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
+                    raise ValueError("inspect map points on an own audited draft")
+                receipts_gaps = [h["gap_observation"] for h in run["history"] if h.get("gap_observation", {}).get("candidate_id") == cid]
+                if not receipts_gaps:
+                    raise ValueError("inspect gaps through this run before map points")
+                gap_evidence = receipts_gaps[-1]["file"]
+                map_points.validate(root, cid, gap_evidence, action["gap_ids"], action["stations_m"])
             elif kind in {"inspect_gaps", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density"}:
                 cid = action["candidate_id"]
                 if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
@@ -924,7 +939,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 entry["plan_layout"] = run["layout_file"]
             elif kind in {"repair_hd", "retry_pointcloud", "inspect_local_density", "inspect_protected_density", "retry_local_density"}:
                 entry["gap_evidence"] = gap_evidence
-            elif kind == "inspect_unused_frames":
+            elif kind in {"inspect_unused_frames", "inspect_map_points"}:
                 entry["gap_evidence"] = gap_evidence
             elif kind == "retry_frames":
                 entry["frame_evidence"] = frame_evidence
@@ -979,6 +994,11 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             elif entry["action"]["type"] == "inspect_gaps":
                 gap_observation = retries.inspect_gaps(root, entry["action"]["candidate_id"], entry["action"]["offset"], run["layout_file"])
                 entry["gap_observation"] = gap_observation
+                entry["status"] = "inspected"
+            elif entry["action"]["type"] == "inspect_map_points":
+                a = entry["action"]
+                point_observation = map_points.inspect(root, a["candidate_id"], entry["gap_evidence"], a["gap_ids"], a["stations_m"])
+                entry["map_point_observation"] = point_observation
                 entry["status"] = "inspected"
             elif entry["action"]["type"] == "inspect_hd_plan":
                 a = entry["action"]
@@ -1095,6 +1115,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         answer["connect_result"] = outcome
     elif entry["action"]["type"] == "inspect_gaps":
         answer["gap_observation"] = gap_observation
+    elif entry["action"]["type"] == "inspect_map_points":
+        answer["map_point_observation"] = point_observation
     elif entry["action"]["type"] == "inspect_hd_plan":
         answer["hd_plan_observation"] = plan_observation
     elif entry["action"]["type"] == "inspect_unused_frames":

@@ -80,6 +80,25 @@ Saved extraction gaps do not establish physical absence of a road or a cause.
 The pages explicitly mark raw evidence and fresh audits unavailable and cannot
 authorize fusion, point-map retries or HD-repair trials.
 
+After inspecting a saved gap page, explicitly inspect the nearby point-map
+returns at up to eight profile stations visible in the selected gaps:
+
+```json
+{"type": "inspect_map_points", "candidate_id": 2, "gap_ids": [1], "stations_m": [6.0, 8.0]}
+```
+
+This reads the unchanged imported PLY within a fixed inclusive 0.75 m XY radius
+at each requested profile, retaining all heights. The observation gives exact
+return counts, occupied 0.2 m XY cell counts, height ranges and at most 128
+evenly spaced source-record previews per profile, with original record indices
+and explicit truncation flags. The saved reference ground height is labelled as
+an earlier observation; no new ground estimate or source audit is performed.
+These observations help examine sparse or vertically split returns without
+establishing a physical cause or authorizing a repair. Inspection spends no HD
+attempts, keeps maps and poses unchanged, and supports cache reuse and resume.
+It is limited to imported maps of two million points and 128 MiB, a 2 MiB output
+page and a 10 GiB free-space reserve. Other import limits remain unchanged.
+
 Each immutable page contains at most eight gaps, eight context profiles and
 eight width candidates per gap, sixteen bands per profile, and 128 sections per
 width preview. Counts and truncation flags expose omitted evidence. Each page is

@@ -137,6 +137,21 @@ and each interval's source. Original ambiguity marks and source-deferred reasons
 remain in the combined report. Review bundles include both inputs and append
 checks without embedding the native binary. Existing source and semantic holds remain.
 
+New corridor lane drafts save explicit centerlines at the midpoints of each
+lane's paired source cross sections, in its travel direction. Left and right
+bounds retain their original section correspondence even when their curve
+lengths differ or an interval is clipped. This avoids a different centerline
+being inferred from normalized boundary lengths after a cut. The explicit
+centerlines survive IR/Lanelet2 reload and are included in the existing
+100,000-vertex build budget. Their presence and coordinates are checked along
+with the source bounds. They remain geometric hypotheses requiring the same
+four source audits; no ground-support threshold is relaxed. Historical drafts
+remain bound to their recorded native version and are not rewritten.
+Wide turns are also split at source sections when the pinned Lanelet2 reader
+would reverse an explicit centerline. If an adjacent pair cannot retain its
+centerline direction, generation names that interval and requires deferral;
+it does not move the source geometry or discard the explicit centerline.
+
 ### Start from a recording
 
 Install a current native core and register `ca mcp` with your agent. A request

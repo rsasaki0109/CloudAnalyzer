@@ -1,5 +1,6 @@
 # Keep hashed source-footprint artifacts byte-identical across checkouts.
 benchmarks/slam/executed-source/** -text
+benchmarks/slam/executed-source/corridor-lanes-c72de64e.rs -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 benchmarks/vector-map/hard-intersection/source-footprint/* text eol=lf
 benchmarks/vector-map/source-footprint-*-development.json text eol=lf
 benchmarks/vector-map/hard-intersection/supported-intersection/* text eol=lf

@@ -257,7 +257,8 @@
     "benchmarks/slam/flatwall02-prediction/verify.py": "9f9748d7b55ea7126ef7b5e775856a1d51ae8a04d7125cd448c85932879f53dd",
     "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs": "7fceb9f069e738388fc0fbca393eb2e7018779c3b02f4b11dc191c2538496fa6",
     "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/odometry_target_balance.rs": "f961927f13fe7886b2026944e6830f11f5f60d24cf8056f29188d9d5a02fa686",
-    "benchmarks/slam/executed-source/corridors-82f8e9aa.rs": "82f8e9aa16eb1f9e76c4fb21db6c48423afbb66ac9ac21ebb00fb53a6d8f84d8"
+    "benchmarks/slam/executed-source/corridors-82f8e9aa.rs": "82f8e9aa16eb1f9e76c4fb21db6c48423afbb66ac9ac21ebb00fb53a6d8f84d8",
+    "benchmarks/slam/executed-source/corridor-lanes-c72de64e.rs": "c72de64e984be2ecfde9f84f7d20c5881645a20deca981c46caebb4b3ec0d72f"
   },
   "checkout_sources_sha256": {
     "scripts/audit_flatwall_target_balance.py": "117dba1df2cc5adc441508d0e860465805c31272987dd236af1eba732317dd1a",
@@ -391,6 +392,7 @@
   "native_source_aliases": {
     "rust/crates/ca-core/src/odometry.rs": "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs",
     "rust/crates/ca-core/src/odometry_target_balance.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/odometry_target_balance.rs",
-    "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs"
+    "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs",
+    "rust/crates/ca-py/src/vector_map/corridor_lanes.rs": "benchmarks/slam/executed-source/corridor-lanes-c72de64e.rs"
   }
 }

@@ -268,6 +268,15 @@ def verify_lane_roundtrip(original: dict[str, Any], reopened: dict[str, Any]) ->
         a, b = lane.get("speed_limit", {}).get("kmh"), other.get("speed_limit", {}).get("kmh")
         if (a is None) != (b is None) or (a is not None and not math.isclose(a, b, abs_tol=1e-6)):
             raise ValueError("OSM reload changed the speed hypothesis")
+        a_center, b_center = lane.get("centerline"), other.get("centerline")
+        if (a_center is None) != (b_center is None) or (a_center is not None and (
+            len(a_center) != len(b_center) or any(
+                len(p) != 3 or len(q) != 3 or any(
+                    not math.isclose(a, b, rel_tol=0, abs_tol=1e-9) for a, b in zip(p, q)
+                ) for p, q in zip(a_center, b_center)
+            )
+        )):
+            raise ValueError("OSM reload changed the explicit source-section centerline")
         for side in ("left", "right"):
             if ref(lane[side]) != ref(other[side]):
                 raise ValueError("OSM reload changed lane orientation or shared boundaries")

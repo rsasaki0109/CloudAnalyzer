@@ -196,14 +196,15 @@ def evaluate_mapping_trajectory(
     for artifact in inputs.values():
         jobs._verify(artifact)
     encoded = (json.dumps(report, indent=2, allow_nan=False) + "\n").encode()
-    with tempfile.NamedTemporaryFile(dir=target.parent, prefix=".ca-trajectory-", delete=False) as stream:
-        temporary = Path(stream.name)
-        try:
+    stream = tempfile.NamedTemporaryFile(dir=target.parent, prefix=".ca-trajectory-", delete=False)
+    temporary = Path(stream.name)
+    try:
+        with stream:
             stream.write(encoded)
             stream.flush()
-            os.link(temporary, target)
-        finally:
-            temporary.unlink()
+        os.link(temporary, target)
+    finally:
+        temporary.unlink()
     # Keep the agent response bounded; all matched samples remain in the hashed file.
     summary = {name: {key: value for key, value in result.items() if key not in {"matched_trajectory", "error_series"}}
                for name, result in results.items()}

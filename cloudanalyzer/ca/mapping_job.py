@@ -252,7 +252,22 @@ def _corridor_summary(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dict[str, Any]:
+def _corridor_spacing(value: Any) -> float:
+    if type(value) not in (int, float) or not math.isfinite(value) or not .5 <= value <= 2.:
+        raise ValueError("sample_spacing_m must be finite and within 0.5..2 metres")
+    return float(value)
+
+
+def _verify_corridor_spacing(report: dict[str, Any], options: dict[str, Any]) -> None:
+    if "sample_spacing_m" in options:
+        protocol = report["protocol"]
+        if (protocol.get("sample_spacing_m") != options["sample_spacing_m"]
+                or protocol["options"].get("sample_spacing_m", 2.) != options["sample_spacing_m"]):
+            raise ValueError("native core did not apply the requested sample spacing")
+
+
+def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0,
+                              sample_spacing_m: float | None = None) -> dict[str, Any]:
     """Generate lane-free road/path surface proposals from frozen map and trajectory.
 
     Searches low, spatially supported cross-section bands symmetrically around
@@ -265,15 +280,19 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
 
     Saves geometry, exact input-station coverage and query limits as a hashed
     report. This one-time stage does not spend the HD attempt budget; identical
-    calls verify and reuse it. Different reach/failed stages require a new job.
+    calls verify and reuse it. Optional sample_spacing_m (0.5..2 m) freezes a
+    denser station grid; omission preserves the native default and older cores.
+    Different options/failed stages require a new job.
     """
     if not math.isfinite(search_radius_m) or not 1 <= search_radius_m <= 20:
         raise ValueError("search_radius_m must be finite and within 1..20 metres")
+    options = {"search_radius_m": search_radius_m}
+    if sample_spacing_m is not None:
+        options["sample_spacing_m"] = _corridor_spacing(sample_spacing_m)
     root = Path(job_dir).resolve()
     with _locked(root):
         job = _load(root)
         _inputs(job)
-        options = {"search_radius_m": search_radius_m}
         if "corridor_proposal" in job:
             stage = job["corridor_proposal"]
             if stage["options"] != options:
@@ -291,6 +310,7 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
             assert module is not None
             files = job["pointcloud"]["files"]
             report = json.loads(module.propose_road_corridors(files["map"]["path"], files["trajectory"]["path"], json.dumps(options, allow_nan=False)))
+            _verify_corridor_spacing(report, options)
             report["coordinate_frame"] = job["pointcloud"]["coordinate_frame"]
             report["input_artifacts"] = {"source": job["source"], "pointcloud": files, "native": job["runtime"]["native"]}
             summary = _corridor_summary(report)
@@ -306,8 +326,9 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
     return {**stage, "cached": False, "remaining_attempts": _remaining(job)}
 
 
-def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
+def _refine_mapping_corridors(job_dir: str, reason: str, sample_spacing_m: float | None = None) -> dict[str, Any]:
     """One explicit path-association experiment; retain every previous artifact."""
+    spacing = _corridor_spacing(sample_spacing_m) if sample_spacing_m is not None else None
     root = Path(job_dir).resolve()
     with _locked(root):
         job = _load(root)
@@ -318,10 +339,14 @@ def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
         if not prior or prior["status"] != "ready":
             raise ValueError("refinement requires a ready original corridor proposal")
         _verify(prior["file"])
+        original = job.get("corridor_refinement", {}).get("previous", prior)
+        options = {**original["options"], "association": "trajectory_containing"}
+        if spacing is not None:
+            options["sample_spacing_m"] = spacing
         if "corridor_refinement" in job:
             stage = job["corridor_refinement"]
             _verify(stage["previous"]["file"])
-            if stage["reason"] != reason:
+            if stage["reason"] != reason or stage["options"] != options:
                 raise ValueError("path-association refinement was already attempted")
             if stage["status"] == "running":
                 raise RuntimeError("refinement processing did not finish; inspect its retained state before recovery")
@@ -331,7 +356,7 @@ def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
         if prior["options"].get("association", "all_supported_bands") != "all_supported_bands":
             raise ValueError("refinement requires the original all-supported-bands proposal")
         stage = {"status": "running", "reason": reason, "previous": prior,
-            "options": {**prior["options"], "association": "trajectory_containing"}}
+            "options": options}
         job["corridor_refinement"] = stage
         _save(root / "job.json", job)
         try:
@@ -341,6 +366,7 @@ def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
             report = json.loads(module.propose_road_corridors(files["map"]["path"], files["trajectory"]["path"], json.dumps(stage["options"])))
             if report["protocol"]["options"]["association"] != "trajectory_containing":
                 raise ValueError("native core did not apply the requested path association")
+            _verify_corridor_spacing(report, options)
             report["coordinate_frame"] = job["pointcloud"]["coordinate_frame"]
             report["input_artifacts"] = {"source": job["source"], "pointcloud": files, "native": job["runtime"]["native"]}
             summary = _corridor_summary(report)

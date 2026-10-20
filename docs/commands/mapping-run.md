@@ -362,10 +362,27 @@ the calling agent can issue one explicit source extraction experiment:
 {"type": "refine", "association": "trajectory_containing"}
 ```
 
+An optional `sample_spacing_m` in the same action requests a denser station grid:
+
+```json
+{"type": "refine", "association": "trajectory_containing", "sample_spacing_m": 1.0}
+```
+
+It must be a finite number within 0.5..2 m. Omission retains the original grid
+(normally 2 m). Neighbouring sampled stations determine the local heading, so
+denser sampling can also change profile orientation and candidate geometry.
+It may increase work or expose more gaps; it does not guarantee greater coverage.
+The existing 2,048-section, point-query and interval-support budgets still apply,
+and truncated evidence remains unresolved. This option is part of the same
+one-time refinement, not an additional extraction allowance. Inspect the new
+IDs and width ranges before drafting; the fixed layout and source-audit gates
+remain active. Density retries and fresh-motion HD runs inherit this grid.
+
 The extractor keeps only source bands containing the recorded trajectory in
-each endpoint profile for matching. Every original profile, off-path band and
-source-level observation is retained. Search reach, height/width thresholds,
-support spacing, query budgets, point map, trajectory, initial layout and full
+each endpoint profile for matching. Each new profile retains its off-path bands
+and source-level observations; the original grid remains in the original proposal.
+Search reach, height/width thresholds, spacing of source-support checks, query
+budgets, point map, trajectory, initial layout and full
 input denominator stay unchanged. Centre and both edges still need continuous
 source support. Absent path bands, missing anchors and source gaps remain deferred;
 no road junction, legal branch choice or full-width clearance is inferred.

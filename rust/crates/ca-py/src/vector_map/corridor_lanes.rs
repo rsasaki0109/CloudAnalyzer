@@ -53,7 +53,7 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         .insert("cloudanalyzer:boundary_policy", "source_span_hypothesis");
     let mut seen = std::collections::HashSet::new();
     let mut created = Vec::new();
-    let mut vertices = 0;
+    let mut vertices = 0usize;
     // Every interval no cut can resolve, across all segments, so one reply names them all.
     let mut ambiguous = Vec::new();
     for spec in &specs {
@@ -75,7 +75,9 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         let center = curve(spec.center_curve_id, "source_center")?;
         let left = curve(spec.left_curve_id, "source_left")?;
         let right = curve(spec.right_curve_id, "source_right")?;
-        vertices += center.len() * (spec.lanes.len() + 1);
+        // Count both boundaries and explicit lane centers in the output budget.
+        let vertices_per_section = spec.lanes.len() * 2 + 1;
+        vertices = vertices.saturating_add(center.len().saturating_mul(vertices_per_section));
         if vertices > 100_000
             || center.len() < 2
             || center.len() != left.len()
@@ -162,20 +164,46 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
                 d(ls, re) + d(le, rs) >= d(ls, rs) + d(le, re) + 1e-9
             })
         };
+        // The pinned Lanelet2 reader orients an explicit center from its first
+        // point's distance to the oriented left-boundary endpoints. A very wide
+        // turn can reverse it even when both boundary directions survive. Cut
+        // such pieces too, or defer an adjacent-section pair that cannot be cut.
+        let centers_oriented = |bounds: &[Vec<[f64; 3]>]| {
+            let d = |a: &[f64; 3], b: &[f64; 3]| (a[0] - b[0]).hypot(a[1] - b[1]);
+            bounds.windows(2).zip(&spec.lanes).all(|(pair, lane)| {
+                let (left, right) = (&pair[0], &pair[1]);
+                let last = left.len() - 1;
+                let (index, bound, start, end) = if lane.direction == LaneDirection::Backward {
+                    (last, right, last, 0)
+                } else {
+                    (0, left, 0, last)
+                };
+                let center =
+                    std::array::from_fn(|axis| (left[index][axis] + right[index][axis]) * 0.5);
+                d(&center, &bound[end]) >= d(&center, &bound[start]) + 1e-9
+            })
+        };
         let mut ranges = Vec::new();
         let unresolved = ambiguous.len();
         let mut pending = vec![(0, center.len() - 1)];
         while let Some((i, j)) = pending.pop() {
             let reference = slice(&center, i, j);
             let bounds: Vec<_> = boundaries.iter().map(|b| slice(b, i, j)).collect();
+            let centers_keep_direction = centers_oriented(&bounds);
             if ca_core::vector_map::lanelet_directions_unambiguous(&reference, &bounds, &lanes)
                 && aligned(&bounds)
+                && centers_keep_direction
             {
                 ranges.push((i, j));
             } else if j - i <= 1 {
                 ambiguous.push(format!(
-                    "centre curve {} between sections {i} and {j}",
-                    spec.center_curve_id
+                    "centre curve {} between sections {i} and {j}{}",
+                    spec.center_curve_id,
+                    if centers_keep_direction {
+                        ""
+                    } else {
+                        " (explicit centerline direction reverses on reload)"
+                    }
                 ));
             } else {
                 let middle = (i + j) / 2;
@@ -185,6 +213,14 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         }
         if ambiguous.len() > unresolved {
             continue;
+        }
+        // Adjacent pieces each retain their shared endpoint section.
+        vertices = vertices.saturating_add((ranges.len() - 1) * vertices_per_section);
+        if vertices > 100_000 {
+            return Err(
+                "source sections exceed the 100000-vertex build budget including explicit centers"
+                    .into(),
+            );
         }
         let mut chains = vec![Vec::new(); lanes.len()];
         let mut pieces = Vec::new();
@@ -210,8 +246,24 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
             );
             let (built, _) = out.build_road(road).map_err(|e| e.to_string())?;
             let lane_ids: Vec<_> = built.lanes.iter().map(|chain| chain[0]).collect();
-            for (id, lane) in lane_ids.iter().zip(&spec.lanes) {
-                out.lane_mut(*id).unwrap().one_way = lane.one_way;
+            for (index, (id, lane)) in lane_ids.iter().zip(&spec.lanes).enumerate() {
+                // Source bounds share section stations. Normalized arc-length
+                // averaging loses that correspondence on unequal-length curves
+                // and changes the center when a source interval is clipped.
+                let center = Polyline3::new(
+                    boundaries[index].points[i..=j]
+                        .iter()
+                        .zip(&boundaries[index + 1].points[i..=j])
+                        .map(|(left, right)| left.lerp(*right, 0.5))
+                        .collect(),
+                );
+                let built_lane = out.lane_mut(*id).unwrap();
+                built_lane.one_way = lane.one_way;
+                built_lane.centerline = Some(if lane.direction == LaneDirection::Backward {
+                    center.reversed()
+                } else {
+                    center
+                });
             }
             let first = out.lane(lane_ids[0]).unwrap();
             let last = out.lane(*lane_ids.last().unwrap()).unwrap();
@@ -260,7 +312,8 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         &out,
         json!(source.issues),
         json!({"schema":"cloudanalyzer.corridor_lanes.v1",
-        "boundary_policy":"source_span_hypothesis", "specifications":specs, "built_segments":created,
+        "boundary_policy":"source_span_hypothesis", "centerline_policy":"paired_source_section_midpoints",
+        "specifications":specs, "built_segments":created,
         "road_semantics_inferred":false, "complete_width_resolved":false, "deployment_ready":false,
         "warnings":["Source spans are explicit layout hypotheses, not complete road widths. Lane fractions, kind, direction, one-way use and speed remain unverified. Virtual boundaries do not claim observed markings. Separate source pieces are not connected or filled."]}),
     )

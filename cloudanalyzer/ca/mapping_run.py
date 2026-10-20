@@ -47,6 +47,9 @@ All original profiles and drafts remain available; unresolved source stays visib
 in corridor-extent accounting even when a short connector is added.
 After drafting, inspect_connections on an audited draft. For a single forward
 one-way lane per piece, explicitly connect inspected consecutive drive pieces.
+Native branches can be resolved only when every competing supported choice skips
+or reverses that original piece order; inspect branch_check and its alternatives.
+Unknown, missing or truncated branch evidence remains held.
 Short gaps need recorded-path containment, unchanged minimum widths and complete
 center/boundary support from both ground estimators after export/reload. Inspect
 local and global route station spans separately; connector reachability does not

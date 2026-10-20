@@ -21,6 +21,8 @@ OPTIONS = {"max_gap": 10., "min_ground_support": 1., "check_boundary_support": T
 # between lane-end centres can leave the path a few centimetres outside on a bend;
 # half the 0.5 m path sampling still refuses a shortcut away from the drive.
 PATH_TOLERANCE_M = 0.25
+WIDTH_TOLERANCE_M = 1e-7
+WIDTH_MEASUREMENT = "equal_normalized_xy_arc_positions_on_linear_boundaries"
 
 
 def edges(ir: dict[str, Any]) -> set[tuple[int, int]]:
@@ -128,21 +130,39 @@ def _inside(points: np.ndarray, polygon: np.ndarray, tolerance: float = 1e-7) ->
     return _outside_by(points, polygon) <= tolerance
 
 
-def _width(candidate: dict[str, Any]) -> float:
+def _width_check(candidate: dict[str, Any], required: float) -> dict[str, Any]:
     # Exact minimum between equal normalized XY-arc positions on linear sides.
+    # Keep the minimizing pair too: wide endpoints do not rule out an interior
+    # pinch. This position is a boundary arc fraction, not a drive station.
     sides = []
     for side in ("left", "right"):
-        curve = np.asarray(candidate[side], dtype=float)[:, :2]
-        distance = np.r_[0., np.cumsum(np.linalg.norm(np.diff(curve, axis=0), axis=1))]
-        if not np.isfinite(curve).all() or distance[-1] <= 0:
+        curve = np.asarray(candidate[side], dtype=float)
+        if curve.ndim != 2 or curve.shape[0] < 2 or curve.shape[1] != 3 or not np.isfinite(curve).all():
+            raise ValueError("invalid connector boundary")
+        distance = np.r_[0., np.cumsum(np.linalg.norm(np.diff(curve[:, :2], axis=0), axis=1))]
+        if not np.isfinite(distance[-1]) or distance[-1] <= 0:
             raise ValueError("invalid connector boundary")
         sides.append((curve, distance / distance[-1]))
     ts = np.unique(np.concatenate([t for _, t in sides]))
-    samples = [np.column_stack([np.interp(ts, t, curve[:, k]) for k in (0, 1)]) for curve, t in sides]
-    width = samples[0] - samples[1]
+    samples = [np.column_stack([np.interp(ts, t, curve[:, k]) for k in (0, 1, 2)]) for curve, t in sides]
+    width = samples[0][:, :2] - samples[1][:, :2]
     delta = np.diff(width, axis=0)
     fraction = np.clip(-np.sum(width[:-1] * delta, axis=1) / np.maximum(np.sum(delta * delta, axis=1), 1e-30), 0, 1)
-    return float(np.min(np.linalg.norm(width[:-1] + fraction[:, None] * delta, axis=1)))
+    minima = np.linalg.norm(width[:-1] + fraction[:, None] * delta, axis=1)
+    index = int(np.argmin(minima))
+    at = fraction[index]
+    minimum = float(minima[index])
+    points = [(s[index] + at * (s[index + 1] - s[index])).tolist() for s in samples]
+    return {"measurement": WIDTH_MEASUREMENT, "minimum_m": minimum, "required_minimum_m": required,
+            "shortfall_m": max(0., required - minimum), "tolerance_m": WIDTH_TOLERANCE_M,
+            "passes": minimum + WIDTH_TOLERANCE_M >= required,
+            "normalized_xy_arc_position": float(ts[index] + at * (ts[index + 1] - ts[index])),
+            "left_xyz": points[0], "right_xyz": points[1],
+            "endpoint_widths_m": np.linalg.norm(width[[0, -1]], axis=1).tolist()}
+
+
+def _width(candidate: dict[str, Any]) -> float:
+    return float(_width_check(candidate, 0.)["minimum_m"])
 
 
 def connection_region(job: dict[str, Any], parent: dict[str, Any], bounds_xy: Any) -> dict[str, Any]:
@@ -228,7 +248,7 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                 c = offered[pair]
                 ts = np.linspace(first["to_m"], second["from_m"], math.ceil(gap / .5) + 1)
                 xy = np.column_stack([np.interp(ts, stations, poses[:, k]) for k in (0, 1)])
-                minimum = _width(c)
+                width_check = _width_check(c, max(first["minimum_width_m"], second["minimum_width_m"]))
                 holds = []
                 if box is not None and any(not local.inside_geometry(c[k], box) for k in ('left', 'right', 'center')):
                     holds.append('outside_explicit_hd_connection_bounds' if region is not None else 'outside_local_point_update_bounds')
@@ -241,20 +261,23 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                 outside = _outside_by(xy, np.asarray(c["left"] + c["right"][::-1])[:, :2])
                 if outside > PATH_TOLERANCE_M:
                     holds.append("recorded_path_outside_connection")
-                if minimum + 1e-7 < max(first["minimum_width_m"], second["minimum_width_m"]):
+                if not width_check["passes"]:
                     holds.append("below_fixed_minimum_width")
                 if max(len(c[k]) for k in ("center", "left", "right")) > 128:
                     holds.append("geometry_exceeds_inspection_bound")
                 if holds:
                     points = np.concatenate([c[k] for k in ('left', 'right', 'center')])[:, :2]
-                    rejected.append({"from": pair[0], "to": pair[1], "holds": holds, "recorded_path_outside_m": outside,
+                    rejected.append({"from": pair[0], "to": pair[1], "holds": holds,
+                                     "from_m": first["to_m"], "to_m": second["from_m"], "station_gap_m": gap,
+                                     "width_check": width_check, "recorded_path_outside_m": outside,
+                                     "recorded_path_tolerance_m": PATH_TOLERANCE_M,
                                      "geometry_bounds_xy": [*points.min(axis=0).tolist(), *points.max(axis=0).tolist()]})
                 else:
                     candidates.append({**c, "from_m": first["to_m"], "to_m": second["from_m"], "station_gap_m": gap,
                                        "trajectory_xy": xy.tolist(), "trajectory_step_max_m": .5,
                                        "recorded_path_outside_m": outside, "recorded_path_tolerance_m": PATH_TOLERANCE_M,
-                                       "minimum_interpolated_xy_width_m": minimum,
-                                       "width_measurement": "equal_normalized_xy_arc_positions_on_linear_boundaries",
+                                       "minimum_interpolated_xy_width_m": width_check["minimum_m"],
+                                       "width_measurement": WIDTH_MEASUREMENT, "width_check": width_check,
                                        "both_estimators_verified": False})
             proposal = {"candidate_id": cid, "inputs": inputs, "options": OPTIONS, "pieces": pieces, "region": region,
                         "baseline_routes": route_metrics(ir, {p["lane"]: (p["from_m"], p["to_m"]) for p in pieces}),

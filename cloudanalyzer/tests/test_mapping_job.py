@@ -1648,6 +1648,14 @@ def test_connections_preserve_source_extent_and_verify_real_reopened_route(conne
     assert preview["remaining_attempts"] == 4
     c = preview["connection_observation"]["candidates"][0]
     assert (c["from"], c["to"], c["station_gap_m"]) == (3, 6, 4.)
+    check = c["width_check"]
+    assert check["passes"] and check["shortfall_m"] == 0.
+    assert check["minimum_m"] == c["minimum_interpolated_xy_width_m"] == pytest.approx(2.)
+    assert check["required_minimum_m"] == 1.5
+    assert check["measurement"] == c["width_measurement"]
+    assert check["normalized_xy_arc_position"] == 0.
+    assert check["left_xyz"] == pytest.approx([4., 1., 1.])
+    assert check["right_xyz"] == pytest.approx([4., -1., 1.])
     for pairs in ([], [{"from": 6, "to": 3, "reason": "Reverse"}], _connection_action(preview)["pairs"] * 2):
         with pytest.raises(ValueError):
             runs.advance_mapping_run(str(root), {"type": "connect", "candidate_id": 2, "pairs": pairs}, "Reject invalid decision", 3)
@@ -1771,6 +1779,69 @@ def test_recorded_path_containment_includes_edges_but_rejects_shortcuts():
         route_metrics({"lanes": [{"id": 1}, {"id": 2}], "topology": [{"lane": 1, "successors": [2]}]}, {1: (0., 4.), 2: (8., 10.)})
 
 
+@pytest.mark.parametrize("subdivide", [False, True])
+def test_connection_width_evidence_finds_an_interior_pinch_between_wide_endpoints(subdivide):
+    from copy import deepcopy
+    import math
+    from ca.mapping_connections import _width, _width_check
+    # The XY width vector is (4t, 4-4t), with a known minimum at t=1/2.
+    # Separate Z levels must not inflate this planar width measurement.
+    candidate = {"left": [[0., 2., 10.], [6., 0., 14.]],
+                 "right": [[0., -2., -10.], [2., 0., -6.]]}
+    if subdivide:
+        # The sides have distinct normalized vertex positions (1/4 and 3/4).
+        candidate["left"].insert(1, [1.5, 1.5, 11.])
+        candidate["right"].insert(1, [1.5, -.5, -7.])
+    before = deepcopy(candidate)
+    check = _width_check(candidate, 3.)
+    assert check["endpoint_widths_m"] == pytest.approx([4., 4.])
+    assert check["minimum_m"] == pytest.approx(math.sqrt(8.))
+    assert check["shortfall_m"] == pytest.approx(3. - math.sqrt(8.))
+    assert check["normalized_xy_arc_position"] == pytest.approx(.5)
+    assert check["left_xyz"] == pytest.approx([3., 1., 12.])
+    assert check["right_xyz"] == pytest.approx([1., -1., -8.])
+    assert not check["passes"] and candidate == before
+    assert _width(candidate) == check["minimum_m"]
+    json.dumps(check, allow_nan=False)
+
+
+@pytest.mark.parametrize("reverse,position", [(False, 1.), (True, 0.)])
+def test_connection_width_evidence_locates_a_narrow_endpoint(reverse, position):
+    from ca.mapping_connections import _width_check
+    candidate = {"left": [[0., 1.5, 1.], [4., 1., 1.]],
+                 "right": [[0., -1.5, 1.], [4., -1., 1.]]}
+    if reverse:
+        candidate = {k: v[::-1] for k, v in candidate.items()}
+    check = _width_check(candidate, 2.5)
+    assert check["minimum_m"] == 2. and check["shortfall_m"] == .5
+    assert check["normalized_xy_arc_position"] == position
+    assert check["left_xyz"] == [4., 1., 1.] and check["right_xyz"] == [4., -1., 1.]
+    assert not check["passes"]
+
+
+@pytest.mark.parametrize("shortfall,passes", [(0., True), (5e-8, True), (2e-7, False)])
+def test_connection_width_evidence_preserves_the_existing_tolerance(shortfall, passes):
+    from ca.mapping_connections import _width_check
+    width = 2.5 - shortfall
+    check = _width_check({"left": [[0., width / 2, 1.], [4., width / 2, 1.]],
+                          "right": [[0., -width / 2, 1.], [4., -width / 2, 1.]]}, 2.5)
+    assert check["tolerance_m"] == 1e-7
+    assert check["shortfall_m"] == pytest.approx(shortfall)
+    assert check["passes"] is passes
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+@pytest.mark.parametrize("curve", [[], [[0., 1., 1.]], [[0., 1.], [4., 1.]],
+    [[0., 1., 1.], [0., 1., 2.]], [[0., 1., 1.], [4., float("nan"), 1.]],
+    [[0., 1., 1.], [4., 1., float("inf")]]])
+def test_connection_width_evidence_refuses_unusable_boundary_geometry(side, curve):
+    from ca.mapping_connections import _width_check
+    candidate = {"left": [[0., 1., 1.], [4., 1., 1.]], "right": [[0., -1., 1.], [4., -1., 1.]]}
+    candidate[side] = curve
+    with pytest.raises(ValueError, match="invalid connector boundary"):
+        _width_check(candidate, 2.5)
+
+
 @pytest.mark.parametrize("hold", ["recorded_path_outside_connection", "below_fixed_minimum_width", "ambiguous_native_branch"])
 def test_connection_preview_withholds_geometric_shortcuts_narrowing_and_ambiguity(connection_run, hold):
     from ca import mapping_run as runs
@@ -1795,6 +1866,16 @@ def test_connection_preview_withholds_geometric_shortcuts_narrowing_and_ambiguit
     result = _inspect_connection(root)
     observation = result["connection_observation"]
     assert observation["candidates"] == [] and hold in observation["rejected"][0]["holds"]
+    rejected = observation["rejected"][0]
+    assert (rejected["from_m"], rejected["to_m"], rejected["station_gap_m"]) == (4., 8., 4.)
+    assert rejected["recorded_path_tolerance_m"] == .25
+    check = rejected["width_check"]
+    assert check["required_minimum_m"] == 1.5
+    assert check["passes"] is (hold != "below_fixed_minimum_width")
+    assert check["minimum_m"] == pytest.approx(1. if hold == "below_fixed_minimum_width" else 2.)
+    assert check["shortfall_m"] == pytest.approx(.5 if hold == "below_fixed_minimum_width" else 0.)
+    saved = json.loads(Path(observation["proposal_file"]["path"]).read_text())
+    assert saved["rejected"] == observation["rejected"]
     assert result["remaining_attempts"] == 4
     # The retained proposal is reused, rather than silently retrying native extraction.
     module.connect_vector_map_junctions = lambda *args: pytest.fail("cached preview must not rerun")

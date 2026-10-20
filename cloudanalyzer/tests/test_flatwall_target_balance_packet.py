@@ -137,6 +137,8 @@ def test_archived_executed_native_source_is_still_hash_checked(tmp_path):
 @pytest.mark.parametrize('name', [
     'rust/crates/ca-core/src/vector_map/corridors.rs',
     'rust/crates/ca-py/src/vector_map/corridor_lanes.rs',
+    'rust/crates/ca-py/src/lib.rs',
+    'rust/crates/ca-py/src/vector_map.rs',
 ])
 def test_development_native_source_can_change_but_resigned_executed_source_cannot(tmp_path,name):
     target=copy_packet(tmp_path)

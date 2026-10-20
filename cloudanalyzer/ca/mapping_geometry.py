@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import math
-from typing import Any
+from typing import Any, Callable
 
 
 def _span_minimum(a: tuple[float, float], b: tuple[float, float]) -> tuple[float, float]:
@@ -112,6 +113,75 @@ def _clipped_sections(sections: list[dict[str, Any]], start: float, stop: float)
                         "source_stations_m": [a["station_m"], b["station_m"]]}
         raise ValueError("interpolated range must stay within observed candidate stations; no extrapolation")
     return [endpoint(start), *[s for s in sections if start < s["station_m"] < stop], endpoint(stop)]
+
+
+def preview_lane_directions(candidate: dict[str, Any], layout: dict[str, Any],
+                            preflight: Callable[[str, str], str] | None) -> dict[str, Any]:
+    """Apply the builder's direction planning to inspected width ranges, without lanes.
+
+    This checks each clipped range as a whole and each adjacent section pair
+    separately. An adjacent pair alone need not predict a longer range. Missing
+    native support stays explicitly unavailable; inspection remains read-only.
+    """
+    width = candidate["layout_width_preview"]
+    limited = width["interpolated_ranges_limited_in_response"] or width["uninspected_section_pairs"] > 0
+    answer: dict[str, Any] = {"available": preflight is not None, "ranges": [], "adjacent_interval_checks": [],
+        "native_check_completed": False,
+        "limited": limited, "geometry_generated": False, "source_support_checked": False,
+        "roundtrip_checked": False, "adopted": False}
+    if preflight is None:
+        answer["reason"] = "Native corridor direction preflight is unavailable"
+        return answer
+    boundaries: list[dict[str, Any]] = []
+    specs: list[dict[str, Any]] = []
+    checks: list[tuple[str, dict[str, Any], list[dict[str, Any]]]] = []
+    ranges = width["interpolated_ranges"]
+    if not ranges:
+        return answer
+    for interval in ranges:
+        sections = _clipped_sections(candidate["sections"], interval["from_m"], interval["to_m"])
+        checks.append(("ranges", interval, sections))
+        checks.extend(("adjacent_interval_checks", {"from_m": a["station_m"], "to_m": b["station_m"]}, [a, b])
+                      for a, b in zip(sections, sections[1:]))
+    for _, _, sections in checks:
+        cid = len(boundaries) + 1
+        for role in ("center", "left", "right"):
+            boundaries.append({"id": len(boundaries) + 1, "kind": {"type": "other"},
+                "geometry": [s[role] for s in sections],
+                "attributes": {"cloudanalyzer:role": f"source_{role}"}})
+        specs.append({"center_curve_id": cid, "left_curve_id": cid + 1, "right_curve_id": cid + 2,
+            "lanes": layout["lanes"], "speed_limit_kmh": layout["speed_limit_kmh"]})
+    geometry = {"format": "vectormap-ir", "version": 1,
+        "metadata": {"attributes": {"cloudanalyzer:draft": "surface_geometry"}},
+        "boundaries": boundaries, "lanes": [], "roads": [], "topology": []}
+    try:
+        encoded = preflight(json.dumps(geometry, allow_nan=False), json.dumps(specs, allow_nan=False))
+    except ValueError as error:
+        answer["error"] = str(error)
+        return answer
+    result = json.loads(encoded)
+    if result["schema"] != "cloudanalyzer.corridor_lane_direction_preview.v1":
+        raise ValueError("unexpected native corridor direction preview schema")
+    by_id = {s["center_curve_id"]: s for s in result["segments"]}
+    if set(by_id) != {s["center_curve_id"] for s in specs}:
+        raise ValueError("native direction preview lost inspected ranges")
+    for spec, (scope, interval, sections) in zip(specs, checks):
+        segment = by_id[spec["center_curve_id"]]
+        def station_range(indices: list[int]) -> list[float]:
+            a, b = indices
+            if not 0 <= a < b < len(sections):
+                raise ValueError("native direction preview returned an unseen section")
+            return [sections[a]["station_m"], sections[b]["station_m"]]
+        answer[scope].append({"from_m": interval["from_m"], "to_m": interval["to_m"],
+            "endpoint_policy": "linear_interpolation", "direction_checks_passed": segment["direction_checks_passed"],
+            "planned_pieces_total": segment["planned_pieces_total"],
+            "planned_pieces_limited": segment["planned_pieces_limited"],
+            "planned_station_pieces": [station_range(piece) for piece in segment["planned_pieces"]],
+            "unresolved_intervals": segment["unresolved_intervals"], "issues_limited": segment["issues_limited"],
+            "issues": [{**issue, "station_range_m": station_range(issue["section_range"])} for issue in segment["issues"]]})
+    answer["limited"] |= result["limited"]
+    answer["native_check_completed"] = True
+    return answer
 
 
 def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], reason: str) -> tuple[dict[str, Any], dict[str, Any]]:

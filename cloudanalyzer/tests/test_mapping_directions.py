@@ -127,6 +127,7 @@ def test_run_records_native_turn_diagnostics_without_hd_attempts(job_backend, tm
     observed = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [37]}, "Read turn directions", 0)
     preview = observed["observation"][0]["layout_direction_preview"]
     assert preview["native_check_completed"] and not preview["geometry_generated"]
+    assert preview["native"] == jobs._native()
     issue = preview["adjacent_interval_checks"][0]["issues"][0]
     assert issue["station_range_m"] == [21., 22.] and not issue["boundary_endpoint_alignment"]
     assert observed["remaining_attempts"] == 6 and jobs.inspect_mapping_job(str(root))["attempts"] == []

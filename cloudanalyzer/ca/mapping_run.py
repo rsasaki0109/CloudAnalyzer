@@ -689,10 +689,12 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     raise ValueError("inspect needs 1..8 distinct positive candidate IDs")
                 observation = [jobs.inspect_mapping_corridors(str(root), candidate_id=cid)["candidate"] for cid in ids]
                 layout = json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8"))
+                preflight = getattr(jobs.core(), "inspect_corridor_lane_directions", None)
+                preflight_native = jobs._native() if preflight is not None else None
                 for candidate in observation:
                     candidate["layout_width_preview"] = preview_layout_width(candidate, layout)
-                    candidate["layout_direction_preview"] = preview_lane_directions(
-                        candidate, layout, getattr(jobs.core(), "inspect_corridor_lane_directions", None))
+                    candidate["layout_direction_preview"] = {
+                        **preview_lane_directions(candidate, layout, preflight), "native": preflight_native}
             elif kind == "refine":
                 if action["association"] != "trajectory_containing":
                     raise ValueError("refine association must be trajectory_containing")

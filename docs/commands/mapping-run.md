@@ -145,7 +145,9 @@ planned section cuts, and unresolved boundary or explicit-center directions.
 A short pair can fail while its longer containing range passes; these results
 apply only to the checked endpoints. They do not authorize arbitrary clips.
 Missing native support, native validation errors and truncated details remain
-explicit. Details share a native budget of 128 interval previews per call.
+explicit. Saved run observations include the version and extension SHA256 of the
+native runtime used for this check, including when reading an older run. Details
+share a native budget of 128 interval previews per call.
 This inspection constructs no lanes, writes no map artifacts and spends no HD
 attempts. Source support and actual export/reload still require the existing
 generation and four-audit gates.

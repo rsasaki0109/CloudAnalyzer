@@ -135,6 +135,7 @@ def test_direction_inspection_retains_read_only_observation_when_native_unavaila
     observed = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [37]}, "Read direction diagnostics", 0)
     preview = observed["observation"][0]["layout_direction_preview"]
     assert preview["available"] is native_available and not preview["native_check_completed"]
+    assert preview["native"] == (jobs._native() if native_available else None)
     assert not preview["geometry_generated"] and not preview["adopted"]
     assert observed["remaining_attempts"] == 6 and jobs.inspect_mapping_job(str(root))["attempts"] == []
     assert before == [(root / name).read_bytes() for name in ("job.json", "corridor-proposals.json")]

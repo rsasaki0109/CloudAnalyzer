@@ -134,9 +134,12 @@ def test_archived_executed_native_source_is_still_hash_checked(tmp_path):
     with pytest.raises(ValueError,match='hash'):packet.verify(target)
 
 
-def test_development_corridor_source_can_change_but_resigned_executed_source_cannot(tmp_path):
+@pytest.mark.parametrize('name', [
+    'rust/crates/ca-core/src/vector_map/corridors.rs',
+    'rust/crates/ca-py/src/vector_map/corridor_lanes.rs',
+])
+def test_development_native_source_can_change_but_resigned_executed_source_cannot(tmp_path,name):
     target=copy_packet(tmp_path)
-    name='rust/crates/ca-core/src/vector_map/corridors.rs'
     manifest=packet.read(target/'manifest.json')
     alias=manifest['native_source_aliases'][name]
     (target.parents[2]/name).write_bytes(b'// newer development source\n')

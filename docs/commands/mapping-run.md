@@ -415,6 +415,19 @@ gives how far the path left it. Minimum distance between equal normalized
 XY-arc positions on the piecewise-linear boundaries must meet the fixed width
 hypothesis. This is a geometric width check, not observed physical road width.
 
+New previews retain a `width_check` for each native-supported pair, including
+pairs withheld by the Python geometry checks. It gives `minimum_m`, the fixed
+`required_minimum_m`, `shortfall_m`, `tolerance_m` (1e-7 m), and `passes`. The
+`endpoint_widths_m` are the start and end widths; even two wide endpoints can
+enclose a narrower point. `left_xyz` and `right_xyz` locate one minimizing pair,
+at the same `normalized_xy_arc_position` (0 at the start, 1 at the end) along
+each boundary's own XY arc length. This fraction is not an original drive station
+or a shared vertex index, and Z separation does not increase the measured width.
+Geometric rejections also retain the original gap's `from_m`, `to_m` and
+`station_gap_m`. These measurements explain the existing decision; inspection
+does not reshape the connector or reduce the width requirement. Saved previews
+from older versions are reused as recorded and may lack this evidence.
+
 Consecutive pieces within the gap limit that are neither offered nor already
 linked are listed in `rejected`, each with its holds, so the agent can see why they
 stay apart. Pieces joined by a connector, or one source piece split into lanelets,

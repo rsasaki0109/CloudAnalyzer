@@ -150,9 +150,14 @@ def verify(folder=None):
         if sha(root/name) != digest:
             raise ValueError('dependency hash differs: '+name)
     footprint = read(folder/'source-footprints.json')
+    # Frozen measurements bind the executed source, even as development moves on.
+    aliases = manifest.get('native_source_aliases', {})
+    if set(aliases) - set(footprint['normalized_native_sources_sha256']):
+        raise ValueError('native source alias has no executed source footprint')
     for group in ['normalized_native_sources_sha256','normalized_checkout_sources_sha256']:
         for name, digest in footprint[group].items():
-            if hashlib.sha256((root/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest() != digest:
+            source = aliases.get(name, name) if group == 'normalized_native_sources_sha256' else name
+            if hashlib.sha256((root/source).read_bytes().replace(b'\r\n',b'\n')).hexdigest() != digest:
                 raise ValueError('normalized source differs: '+name)
     build = read(folder/'native-build-inputs.json')
     for name, digest in build['normalized_sources_sha256'].items():

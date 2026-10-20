@@ -113,3 +113,19 @@ def test_changed_executed_source_is_detected_even_after_resigning_packet_files(t
     resign(target)
     with pytest.raises(ValueError,match='normalized source'):
         packet.verify(target)
+
+
+def test_development_corridor_source_can_change_but_resigned_executed_source_cannot(tmp_path):
+    target = copy_packet(tmp_path)
+    name = 'rust/crates/ca-core/src/vector_map/corridors.rs'
+    manifest = packet.read(target/'manifest.json')
+    alias = manifest['native_source_aliases'][name]
+    (target.parents[2]/name).write_bytes(b'// newer development source\n')
+    assert packet.verify(target)['native_steps_checked'] == 4000
+    archived = target.parents[2]/alias
+    with archived.open('ab') as stream:
+        stream.write(b'\n// changed executed source\n')
+    manifest['dependencies'][alias] = packet.sha(archived)
+    save(target/'manifest.json',manifest)
+    with pytest.raises(ValueError,match='normalized source'):
+        packet.verify(target)

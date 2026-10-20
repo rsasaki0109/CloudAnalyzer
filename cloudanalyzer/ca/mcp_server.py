@@ -208,8 +208,10 @@ processing or HD attempts. append_draft supplies the same IDs plus all inspected
 from/to pairs with reasons ([] when none). It uses one shared attempt, retains
 existing IDs/curves/metadata and original edges, adds only the selected exact
 endpoint links and requires four audits without new retained failure locations. The frozen point map, trajectory, layout and extent goal stay fixed.
-One append is allowed; appended snapshots support gap inspection and finish, not
-further appends or connections. Source and traffic-semantic holds remain visible.
+One append is allowed. Appended snapshots also support inspect_connections and
+explicit connect actions with the same fixed width, source checks and shared budget.
+Both proposals and append checks remain available after connection and in review
+bundles. Further appends are unavailable. Source and traffic-semantic holds remain visible.
 Read inspect_mapping_geometry for curves, decisions and full-extent holds. Geometry
 drafts use the shared HD attempt budget, preserve existing selections, infer no lanes
 and are not selectable as audited lane maps. They publish IR and an evidence report;

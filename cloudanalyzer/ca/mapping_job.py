@@ -806,8 +806,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
     if "continuation" in job:
         investigations.append("This exact map pair is inherited from a finished run. Earlier point-update scopes are archived in the continuation manifest; the adopted hybrid point map retains earlier repairs and source holds.")
-    elif attempt.get("kind") == "appended_corridor_lanes":
-        investigations.append("This snapshot appends an audited path-refined draft to seen original-map gaps. Retained IDs and curves are exact; original route edges remain and only inspected exact endpoint pairs are added. The point map and trajectory are unchanged. Inspect both proposal sources and append checks in its report.")
+    elif attempt.get("kind") == "appended_corridor_lanes" or "append_preview" in attempt.get("patch_inputs", {}):
+        investigations.append("This draft includes an audited path-refined addition to seen original-map gaps. Retained IDs, curves and original route edges remain exact. The point map and trajectory are unchanged. Inspect both proposal sources, the append checks and any separately audited short connections in its report.")
     elif attempt.get("kind") == "patched_corridor_lanes":
         if "hd_repair_manifest" in job.get("retry_inputs", {}):
             point_note = "The point cloud is the exact retained baseline; only the HD map was repaired."

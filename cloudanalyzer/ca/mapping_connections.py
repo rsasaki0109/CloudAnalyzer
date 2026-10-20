@@ -67,7 +67,7 @@ def route_metrics(ir: dict[str, Any], intervals: dict[int, tuple[float, float]])
 def _parent(job: dict[str, Any], cid: int) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
     from ca import mapping_retry as retries, mapping_patch as patches
     parent = next((a for a in job["attempts"] if a["id"] == cid), None)
-    if parent is None or parent.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes"} or parent["status"] != "audited_draft":
+    if parent is None or parent.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes"} or parent["status"] != "audited_draft":
         raise ValueError("inspect connections on an audited corridor lane draft")
     parent = retries._parent(job, cid)
     specs = parent["road_options"]["lane_specs"]
@@ -80,11 +80,12 @@ def _parent(job: dict[str, Any], cid: int) -> tuple[dict[str, Any], dict[str, An
     intervals = patches._intervals(parent)
     if "lane_minimum_width_m" in report:
         widths = {int(k): v for k, v in report["lane_minimum_width_m"].items()}
-    elif parent["kind"] == "patched_corridor_lanes":
-        # Patch validation froze one uniform run layout across retained/addition lanes.
+    elif parent["kind"] in {"patched_corridor_lanes", "appended_corridor_lanes"}:
+        # Both operations froze one uniform layout across retained/addition lanes.
+        # Curve IDs belong to different proposals; use the fixed lane layout.
         fixed = {s["lanes"][0]["minimum_width_m"] for s in specs}
         if len(fixed) != 1:
-            raise ValueError("patched lanes need their fixed uniform minimum width")
+            raise ValueError("combined lanes need their fixed uniform minimum width")
         widths = {lid: next(iter(fixed)) for lid in intervals}
     else:
         widths = {b["lane_ids"][0]: next(s["lanes"][0]["minimum_width_m"] for s in specs if s["center_curve_id"] == b["center_curve_id"])
@@ -386,10 +387,14 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
                 "connection_proposal": proposal_file, "connection_inputs": proposal["inputs"],
                 "connection_region": proposal.get("region"),
                 "station_disposition": parent_report["station_disposition"], "extraction": parent["extraction"],
-                "extent": parent["extent"], "built_segments": parent_report["built_segments"],
+                "extent": parent["extent"], "built_segments": parent_report.get("built_segments", []),
                 "lane_intervals": {str(k): v for k, v in intervals.items()},
                 "lane_minimum_width_m": {str(k): v for k, v in widths.items()},
                 "retained_geometry_and_connections": True})
+            for key in ("source_proposals", "append_inputs", "append_checks", "baseline_candidate_id", "addition_candidate_id",
+                        "selected_gap_ids", "explicit_endpoint_pairs", "added_lane_id_map"):
+                if key in parent_report:
+                    evidence[key] = parent_report[key]
             with tempfile.TemporaryDirectory(prefix=".mapping-connections-", dir=root) as temporary:
                 draft = Path(temporary) / "result"
                 files = _publish(payload, draft)["files"]

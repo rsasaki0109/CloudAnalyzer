@@ -38,7 +38,7 @@ def validate(root: Path, baseline_id: int, addition_id: int, gap_ids: list[int],
             or any(type(v) is not int or v < 1 for v in gap_ids) or len(set(gap_ids)) != len(gap_ids)):
         raise ValueError("append needs 1..8 distinct seen gap IDs")
     baseline, addition = [retries._parent(job, cid) for cid in (baseline_id, addition_id)]
-    if baseline["kind"] not in {"corridor_lanes", "connected_corridor_lanes"} or addition["kind"] != "corridor_lanes":
+    if baseline["kind"] not in {"corridor_lanes", "connected_corridor_lanes", "aligned_corridor_lanes"} or addition["kind"] != "corridor_lanes":
         raise ValueError("append an unconnected refined source draft to the original audited baseline")
     refinement = job.get("corridor_refinement", {})
     if (refinement.get("status") != "ready" or baseline["corridor_proposal"] != refinement["previous"]["file"]
@@ -97,6 +97,10 @@ def validate(root: Path, baseline_id: int, addition_id: int, gap_ids: list[int],
         inputs.update({f"{label}_geometry_{k}": v for k, v in parent["geometry_inputs"].items()})
         inputs.update({f"{label}_proposal": parent["corridor_proposal"], f"{label}_audits": parent["quality_report"]})
         inputs.update({f"{label}_connection_{k}": v for k, v in parent.get("connection_inputs", {}).items()})
+        inputs.update({f"{label}_endpoint_{k}": v for k, v in parent.get("endpoint_inputs", {}).items()})
+        for key in ("endpoint_preview", "endpoint_checks", "endpoint_audits"):
+            if key in parent:
+                inputs[f"{label}_{key}"] = parent[key]
     retries._verify_inputs(inputs)
     if shutil.disk_usage(root).free < 10 * 1024**3 + 2 * MAX_OUTPUT_BYTES:
         raise ValueError("insufficient disk space: draft append must retain 10 GiB free")
@@ -197,6 +201,9 @@ def append(root: Path, baseline_id: int, addition_id: int, gap_ids: list[int], e
             reason=reason, baseline_candidate_id=baseline_id, addition_candidate_id=addition_id, gap_ids=gap_ids,
             patch_inputs=expected, geometry_inputs=baseline["geometry_inputs"], corridor_proposal=baseline["corridor_proposal"],
             road_options=options, append_pairs=pairs)
+        for key in ("endpoint_inputs", "endpoint_preview", "endpoint_checks", "endpoint_audits"):
+            if key in baseline:
+                attempt[key] = baseline[key]
         job["attempts"].append(attempt)
         job["draft_append"] = {"candidate_id": attempt["id"]}
         jobs._save(root / "job.json", job)

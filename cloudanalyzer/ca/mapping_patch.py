@@ -111,6 +111,7 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
               **{f"baseline_{k}": v for k, v in baseline["files"].items()}, "baseline_audits": baseline["quality_report"],
               **{f"baseline_geometry_{k}": v for k, v in baseline["geometry_inputs"].items()},
               **{f"baseline_connection_{k}": v for k, v in baseline.get("connection_inputs", {}).items()},
+              **{f"baseline_endpoint_{k}": v for k, v in baseline.get("endpoint_inputs", {}).items()},
               "baseline_proposal": baseline["corridor_proposal"],
               **{f"addition_{k}": v for k, v in candidate["files"].items()}, "addition_audits": candidate["quality_report"],
               **{f"addition_geometry_{k}": v for k, v in candidate["geometry_inputs"].items()},
@@ -119,6 +120,9 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
               **{f"trial_pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}}
     if "connection_proposal" in baseline:
         inputs["baseline_connection_proposal"] = baseline["connection_proposal"]
+    for key in ("endpoint_preview", "endpoint_checks", "endpoint_audits"):
+        if key in baseline:
+            inputs[f"baseline_{key}"] = baseline[key]
     inputs.update({f'addition_height_{k}':v for k,v in candidate.get('height_inputs', {}).items()})
     for key in ('height_checks', 'height_audits', 'height_trial'):
         if key in candidate: inputs[f'addition_{key}'] = candidate[key]
@@ -308,6 +312,9 @@ def patch(root: Path, cid: int, gap_ids: list[int], pairs: list[dict[str, Any]],
         attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "patched_corridor_lanes", "status": "running",
             "reason": reason, "parent_candidate_id": cid, "gap_ids": gap_ids, "patch_inputs": prepared["inputs"], "patch_pairs": pairs, "patch_preview": preview_file,
             "geometry_inputs": addition["geometry_inputs"], "corridor_proposal": addition["corridor_proposal"], "road_options": addition["road_options"]}
+        for key in ("endpoint_inputs", "endpoint_preview", "endpoint_checks", "endpoint_audits"):
+            if key in baseline:
+                attempt[key] = baseline[key]
         for key in ('height_inputs', 'height_edits', 'height_checks', 'height_audits', 'height_trial'):
             if key in addition: attempt[key] = addition[key]
         job["attempts"].append(attempt); job["gap_patch"] = {"candidate_id": attempt["id"], "gap_ids": gap_ids}

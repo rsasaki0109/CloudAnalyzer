@@ -21,9 +21,10 @@ from ca import mapping_hd_plan as hd_plan
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests, preview_layout_width, preview_lane_directions
 from ca import mapping_append as appends
 from ca import mapping_map_points as map_points
+from ca import mapping_endpoints as endpoints
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
-FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_gaps", "inspect_map_points", "inspect_append", "append_draft", "inspect_connections", "connect", "finish", "resume"}
+FROZEN_MAP_ACTIONS = {"inspect", "refine", "draft", "inspect_gaps", "inspect_map_points", "inspect_append", "append_draft", "inspect_connections", "connect", "inspect_endpoint_alignment", "align_endpoints", "finish", "resume"}
 WIDTH_GUIDANCE = (
     "A candidate's minimum support span covers its entire extent; a narrow section can hide wider subranges. "
     "Inspect candidates whose maximum span could fit the fixed layout. Inspect observations include layout_width_preview: "
@@ -57,6 +58,14 @@ increase original source-corridor extent or prove permitted turns.
 Connections may extend an audited connected, gap-patched or appended draft. Existing
 lanes and directed edges are inherited; supply only the new inspected pairs.
 Old source samples must not gain failures in either estimator or saved format.
+For a zero-station seam in a root run, inspect_endpoint_alignment with explicit
+from/to lane IDs and revise_lane. The other lane is the fixed anchor. Only private
+paired boundaries and their explicit center endpoint may move, at most 0.75 m
+and at most one fixed ground radius. Inspect the before/after coordinates, anchor
+support, width, path and whole-lane direction check. align_endpoints adopts that
+exact eligible preview, spending one shared attempt and requiring four fresh
+audits. All untouched lane rows and failure locations remain exact. A revised
+lane cannot accumulate further revisions. Missing intervals remain unresolved.
 To extend a combined local patch's HD envelope independently,
 use inspect_connection_region with explicit bounds_xy containing the frozen
 point-update box and sides at most 20 m. Point records remain fixed. Only links
@@ -351,6 +360,10 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             hd_plan.verify_observation(h["hd_plan_observation"])
         if "connection_observation" in h:
             jobs._verify(h["connection_observation"]["proposal_file"])
+        if "endpoint_observation" in h:
+            jobs._verify(h["endpoint_observation"]["file"])
+        if "endpoint_preview" in h:
+            jobs._verify(h["endpoint_preview"])
     stage = job.get("pointcloud_retry")
     retry_child = None
     if stage and (Path(stage["child_job_dir"]) / "job.json").exists():
@@ -362,13 +375,15 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
         "corridor_refinement": job.get("corridor_refinement"), "continuation": job.get("continuation"), "motion_run": job.get("motion_run"),
         "pointcloud_retry": stage, "retry_child": retry_child, "pointcloud_retry_allowed": run.get("pointcloud_retry_allowed", True),
-        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "map_point_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "append_observation", "action"}} for a in run["history"][-8:]],
+        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "endpoint_observation", "gap_observation", "map_point_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "append_observation", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)",
                        "sample_spacing_m": "optional finite 0.5..2 metres; omission retains the original grid"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons; observed endpoints by default, or endpoint_policy=linear_interpolation within inspected adjacent sections"},
             "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected, gap-patched or appended draft ID", "offset": "nonnegative; pages of 8"},
+            "inspect_endpoint_alignment": {"type": "inspect_endpoint_alignment", "candidate_id": "own audited root draft ID", "from": "lane ID before a zero-station seam", "to": "immediately following lane ID", "revise_lane": "from or to; the other lane remains the fixed anchor"},
+            "align_endpoints": {"type": "align_endpoints", "candidate_id": "the inspected parent ID", "preview_file": "exact file descriptor of an eligible endpoint_observation from this run"},
             "inspect_connection_region": {"type": "inspect_connection_region", "candidate_id": "own combined local-retry patch", "bounds_xy": "explicit HD-only [xmin,ymin,xmax,ymax]; contains frozen point box; sides <=20 m", "offset": "nonnegative; pages of 8; only links touching repair lanes"},
             "connect": {"type": "connect", "candidate_id": "inspected parent lane draft ID", "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"},
             "inspect_gaps": {"type": "inspect_gaps", "candidate_id": "own audited lane draft", "offset": "nonnegative; pages of 8"},
@@ -498,6 +513,29 @@ def _connect(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
                 "connection_checks": attempt.get("connection_checks"), "connection_audits": attempt.get("connection_audits")}
     return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid),
             "connection_checks": attempt.get("connection_checks")}
+
+
+def _align_endpoints(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
+    job = jobs.inspect_mapping_job(str(root))
+    lid = entry["lane_candidate_id"]
+    attempt = next((a for a in job["attempts"] if a["id"] == lid), None)
+    if attempt is None:
+        if len(job["attempts"]) + 1 != lid:
+            raise ValueError("mapping job changed outside this run")
+        job = endpoints.align(root, entry["action"]["candidate_id"], entry["endpoint_preview"], entry["reason"])
+        attempt = job["attempts"][-1]
+    if (attempt.get("kind") != "aligned_corridor_lanes" or attempt["reason"] != entry["reason"]
+            or attempt["parent_candidate_id"] != entry["action"]["candidate_id"]
+            or attempt["endpoint_preview"] != entry["endpoint_preview"]):
+        raise ValueError("planned endpoint revision belongs to a different action")
+    jobs._verify(entry["endpoint_preview"])
+    retries._verify_inputs(attempt["endpoint_inputs"])
+    if attempt["status"] == "running":
+        raise RuntimeError("endpoint revision did not finish; inspect retained state before recovery")
+    if attempt["status"] != "audited_draft":
+        return {"status": "failed", "stage": "endpoint_alignment", "error": attempt.get("error"),
+                "endpoint_checks": attempt.get("endpoint_checks"), "endpoint_audits": attempt.get("endpoint_audits")}
+    return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid), "endpoint_checks": attempt["endpoint_checks"]}
 
 
 def _retry(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
@@ -632,7 +670,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
     if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {
-        "inspect", "refine", "draft", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "inspect_map_points", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
+        "inspect", "refine", "draft", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_endpoint_alignment", "align_endpoints", "inspect_gaps", "inspect_map_points", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
         raise ValueError("use an action type from action_contract")
     root = Path(job_dir).resolve()
     with _locked(root):
@@ -661,6 +699,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 "inspect_append": {"type", "baseline_candidate_id", "addition_candidate_id", "gap_ids"},
                 "append_draft": {"type", "baseline_candidate_id", "addition_candidate_id", "gap_ids", "pairs"},
                 "inspect_connections": {"type", "candidate_id", "offset"}, "connect": {"type", "candidate_id", "pairs"},
+                "inspect_endpoint_alignment": {"type", "candidate_id", "from", "to", "revise_lane"},
+                "align_endpoints": {"type", "candidate_id", "preview_file"},
                 "inspect_connection_region": {"type", "candidate_id", "bounds_xy", "offset"},
                 "inspect_hd_plan": {"type", "candidate_id", "gap_ids", "offset"},
                 "repair_hd": {"type", "candidate_id", "gap_ids"},
@@ -678,7 +718,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
             if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {
-                "draft", "refine", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "inspect_map_points", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
+                "draft", "refine", "inspect_append", "append_draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_endpoint_alignment", "align_endpoints", "inspect_gaps", "inspect_map_points", "inspect_hd_plan", "repair_hd", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "inspect_protected_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
                 raise ValueError("resume requires an interrupted processing action")
             entry = run["history"][-1]
         else:
@@ -776,6 +816,20 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     seen = {(c["from"], c["to"]) for r in receipts if r["proposal_file"] == proposal_file for c in r["candidates"]}
                     if not set(chosen) <= seen:
                         raise ValueError("inspect every chosen connection pair before adoption")
+            elif kind in {"inspect_endpoint_alignment", "align_endpoints"}:
+                cid = action["candidate_id"]
+                if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
+                    raise ValueError("use an audited lane draft generated by this run")
+                _, _, endpoint_ir, _, endpoint_pieces = endpoints._context(root, cid)
+                if kind == "inspect_endpoint_alignment":
+                    endpoints._case(endpoint_ir, endpoint_pieces, action["from"], action["to"], action["revise_lane"])
+                else:
+                    if job["remaining_attempts"] < 1:
+                        raise ValueError("an endpoint revision needs one remaining shared HD attempt")
+                    if not any(h.get("endpoint_observation", {}).get("file") == action["preview_file"]
+                               and h["endpoint_observation"]["candidate_id"] == cid for h in run["history"]):
+                        raise ValueError("inspect this endpoint preview through this run before adoption")
+                    endpoints.validate(root, cid, action["preview_file"])
             elif kind == "inspect_hd_plan":
                 cid = action["candidate_id"]
                 if "retry_inputs" in job or type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
@@ -927,7 +981,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     raise ValueError("finish needs an audited candidate ID or null")
                 if cid is not None:
                     attempt = next((a for a in job["attempts"] if a["id"] == cid), None)
-                    if attempt is None or attempt.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes"} or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
+                    if attempt is None or attempt.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes", "aligned_corridor_lanes"} or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
                         raise ValueError("finish with an audited lane candidate generated by this run")
                     diagnosis = _diagnosis(root, cid)
             entry = {"sequence": len(run["history"]) + 1, "action": action, "reason": reason.strip(), "status": "running"}
@@ -944,6 +998,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             elif kind == "connect":
                 entry["lane_candidate_id"] = len(job["attempts"]) + 1
                 entry["connection_proposal"] = proposal_file
+            elif kind == "align_endpoints":
+                entry["lane_candidate_id"] = len(job["attempts"]) + 1
+                entry["endpoint_preview"] = action["preview_file"]
             elif kind == "inspect_hd_plan":
                 entry["gap_evidence"] = gap_evidence
                 entry["plan_layout"] = run["layout_file"]
@@ -999,6 +1056,14 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 entry["status"] = "inspected"
             elif entry["action"]["type"] == "connect":
                 outcome = _connect(root, entry)
+                entry["status"] = outcome["status"]
+                entry["outcome"] = outcome
+            elif entry["action"]["type"] == "inspect_endpoint_alignment":
+                a = entry["action"]
+                entry["endpoint_observation"] = endpoints.preview(root, a["candidate_id"], a["from"], a["to"], a["revise_lane"])
+                entry["status"] = "inspected"
+            elif entry["action"]["type"] == "align_endpoints":
+                outcome = _align_endpoints(root, entry)
                 entry["status"] = outcome["status"]
                 entry["outcome"] = outcome
             elif entry["action"]["type"] == "inspect_gaps":
@@ -1063,6 +1128,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                         artifacts["hd_connection_proposal"] = attempt["connection_proposal"]
                     for key in ('height_checks', 'height_audits', 'height_trial'):
                         if key in attempt: artifacts[f'hd_{key}'] = attempt[key]
+                    for key in endpoints.EVIDENCE:
+                        if key in attempt:
+                            artifacts[f"hd_{key}"] = attempt[key]
                 application = root / "hd-plan-application.json"
                 if application.exists():
                     policy = json.loads(application.read_text())
@@ -1123,6 +1191,10 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         answer["connection_observation"] = observation_connections
     elif entry["action"]["type"] == "connect":
         answer["connect_result"] = outcome
+    elif entry["action"]["type"] == "inspect_endpoint_alignment":
+        answer["endpoint_observation"] = entry["endpoint_observation"]
+    elif entry["action"]["type"] == "align_endpoints":
+        answer["endpoint_result"] = outcome
     elif entry["action"]["type"] == "inspect_gaps":
         answer["gap_observation"] = gap_observation
     elif entry["action"]["type"] == "inspect_map_points":

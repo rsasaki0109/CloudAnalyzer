@@ -23,6 +23,7 @@ OPTIONS = {"max_gap": 10., "min_ground_support": 1., "check_boundary_support": T
 PATH_TOLERANCE_M = 0.25
 WIDTH_TOLERANCE_M = 1e-7
 WIDTH_MEASUREMENT = "equal_normalized_xy_arc_positions_on_linear_boundaries"
+BRANCH_ALTERNATIVE_LIMIT = 32
 
 
 def edges(ir: dict[str, Any]) -> set[tuple[int, int]]:
@@ -165,6 +166,39 @@ def _width(candidate: dict[str, Any]) -> float:
     return float(_width_check(candidate, 0.)["minimum_m"])
 
 
+def _branch_check(candidate: dict[str, Any], offered: dict[tuple[int, int], Any],
+                  pieces: list[dict[str, Any]]) -> dict[str, Any]:
+    """Resolve native choices only against the validated original piece order.
+
+    Native discovery also proposes shortcuts over intervening retained pieces.
+    Those choices cannot compete in this recorded-drive workflow. Keep their
+    evidence and the native ambiguity flag; unknown, missing or bounded-out
+    alternatives remain unresolved. This establishes no permitted manoeuvres.
+    """
+    pair = candidate["from"], candidate["to"]
+    answer: dict[str, Any] = {
+        "policy": "original_recorded_station_adjacency_v1",
+        "native_ambiguous": candidate["ambiguous"], "passes": not candidate["ambiguous"],
+        "resolution": "not_ambiguous" if not candidate["ambiguous"] else "unresolved",
+        "alternatives": [], "alternatives_total": 0, "alternatives_limited_in_response": False,
+    }
+    if not candidate["ambiguous"]:
+        return answer
+    intervals = {p["lane"]: [p["from_m"], p["to_m"]] for p in pieces}
+    adjacent = {(a["lane"], b["lane"]) for a, b in zip(pieces, pieces[1:])}
+    alternatives = sorted(key for key in offered if key != pair and (key[0] == pair[0] or key[1] == pair[1]))
+    answer["alternatives_total"] = len(alternatives)
+    answer["alternatives_limited_in_response"] = len(alternatives) > BRANCH_ALTERNATIVE_LIMIT
+    answer["alternatives"] = [{
+        "from": frm, "to": to, "from_interval_m": intervals.get(frm), "to_interval_m": intervals.get(to),
+        "original_station_adjacent": (frm, to) in adjacent if frm in intervals and to in intervals else None,
+    } for frm, to in alternatives[:BRANCH_ALTERNATIVE_LIMIT]]
+    if (pair in adjacent and alternatives and not answer["alternatives_limited_in_response"]
+            and all(a["original_station_adjacent"] is False for a in answer["alternatives"])):
+        answer.update(passes=True, resolution="only_nonconsecutive_alternatives")
+    return answer
+
+
 def connection_region(job: dict[str, Any], parent: dict[str, Any], bounds_xy: Any) -> dict[str, Any]:
     """Validate an explicit HD envelope without expanding point replacement."""
     from ca import mapping_local_points as local
@@ -256,7 +290,8 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                     holds.append('unrelated_to_local_hd_repair')
                 if any(frm == pair[0] or to == pair[1] for frm, to in edges(ir)):
                     holds.append("existing_endpoint_already_connected")
-                if c["ambiguous"]:
+                branch_check = _branch_check(c, offered, pieces)
+                if not branch_check["passes"]:
                     holds.append("ambiguous_native_branch")
                 outside = _outside_by(xy, np.asarray(c["left"] + c["right"][::-1])[:, :2])
                 if outside > PATH_TOLERANCE_M:
@@ -270,6 +305,7 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                     rejected.append({"from": pair[0], "to": pair[1], "holds": holds,
                                      "from_m": first["to_m"], "to_m": second["from_m"], "station_gap_m": gap,
                                      "width_check": width_check, "recorded_path_outside_m": outside,
+                                     "branch_check": branch_check,
                                      "recorded_path_tolerance_m": PATH_TOLERANCE_M,
                                      "geometry_bounds_xy": [*points.min(axis=0).tolist(), *points.max(axis=0).tolist()]})
                 else:
@@ -278,6 +314,7 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                                        "recorded_path_outside_m": outside, "recorded_path_tolerance_m": PATH_TOLERANCE_M,
                                        "minimum_interpolated_xy_width_m": width_check["minimum_m"],
                                        "width_measurement": WIDTH_MEASUREMENT, "width_check": width_check,
+                                       "branch_check": branch_check,
                                        "both_estimators_verified": False})
             proposal = {"candidate_id": cid, "inputs": inputs, "options": OPTIONS, "pieces": pieces, "region": region,
                         "baseline_routes": route_metrics(ir, {p["lane"]: (p["from_m"], p["to_m"]) for p in pieces}),

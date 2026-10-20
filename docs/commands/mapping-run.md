@@ -467,7 +467,17 @@ Use the actual shared attempt ID from your run. This first version supports one
 forward, one-way driving lane per disconnected source piece, at most 256 lanes.
 It considers only consecutive pieces in original drive-station order. Both the
 endpoint distance and original drive gap must be at most 10 m. Native heading,
-grade and endpoint checks remain active. Ambiguous native branches are withheld.
+grade and endpoint checks remain active. Native discovery can also offer a
+shortcut that skips an intervening retained piece. For a consecutive pair,
+`branch_check` resolves native ambiguity only when **every** competing supported
+choice sharing its exit or entry is known to be nonconsecutive in original
+drive-station order. Its `alternatives` retain the competing lane IDs, original
+station intervals and `original_station_adjacent` result. The original native
+`ambiguous` flag remains visible. A missing alternative, unknown lane or more
+than 32 alternatives leaves the branch unresolved and withheld; truncated
+evidence never authorizes a connection. This uses the recorded drive ordering,
+not inferred traffic permissions. The agent still explicitly chooses each seen
+pair. Previously saved previews keep their recorded decisions.
 Centre and both actual boundaries must have full support from both estimators,
 or be explained by returns above the road (see the run diagnosis above).
 Recorded XY path samples at no more than 0.5 m spacing must lie inside the exact

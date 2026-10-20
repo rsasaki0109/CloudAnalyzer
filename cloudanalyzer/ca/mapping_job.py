@@ -803,6 +803,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     for artifact in [job["source"], *job["pointcloud"]["files"].values(), *attempt.get("geometry_inputs", {}).values(),
                      *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else []),
                      *attempt.get("connection_inputs", {}).values(),
+                     *attempt.get("endpoint_inputs", {}).values(),
+                     *[attempt[k] for k in ("endpoint_preview", "endpoint_checks", "endpoint_audits") if k in attempt],
                      *attempt.get("patch_inputs", {}).values(),
                      *attempt.get("height_inputs", {}).values(),
                      *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],
@@ -828,7 +830,7 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect the point footprint and trajectory/lane assumptions for the affected traces; sparse or occluded returns do not prove that a road is absent.")
     if attempt["extraction"].get("width_prior_vertices", 0):
         investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
-    if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes"}:
+    if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes", "aligned_corridor_lanes"}:
         investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
     if "continuation" in job:
         investigations.append("This exact map pair is inherited from a finished run. Earlier point-update scopes are archived in the continuation manifest; the adopted hybrid point map retains earlier repairs and source holds.")
@@ -842,6 +844,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         else:
             point_note = "The point cloud is the complete fusion trial, not a local point replacement."
         investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. " + point_note)
+    if "endpoint_inputs" in attempt:
+        investigations.append("An explicitly selected lane endpoint and its paired center point were revised to a fixed adjacent anchor. Inspect the endpoint preview, displacements and four fresh audits; changed geometry is not claimed preserved. All other lane geometry, audit rows and failure locations remain exact. Original station extent is unchanged.")
     if attempt.get("kind") == "connected_corridor_lanes":
         investigations.append("Connector turn_direction tags classify geometric headings, not permitted manoeuvres. Review legal routing, full-width interior and clearance; graph station spans do not increase original source-corridor extent.")
     if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):
@@ -955,6 +959,8 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
                          *attempt.get("patch_inputs", {}).values(),
                          *([attempt["patch_checks"], attempt["patch_audits"]] if "patch_checks" in attempt else []),
                          *attempt.get("connection_inputs", {}).values(),
+                         *attempt.get("endpoint_inputs", {}).values(),
+                         *[attempt[k] for k in ("endpoint_preview", "endpoint_checks", "endpoint_audits") if k in attempt],
                          *attempt.get("height_inputs", {}).values(),
                          *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],
                          *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),

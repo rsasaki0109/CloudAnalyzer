@@ -455,6 +455,50 @@ The [two NCLT refinement runs](../../benchmarks/vector-map/nclt-path-refinement/
 retain all previous exported intervals and record actual before/after maps:
 102 → 106 m and 88 → 112 m, with June's longest piece increasing 60 → 66 m.
 
+### Revise one endpoint at an inspected zero-station seam
+
+In a root run, two consecutive lanes can cover adjacent original station intervals
+while their boundary endpoints disagree. Inspect one explicit hypothesis:
+
+```json
+{"type": "inspect_endpoint_alignment", "candidate_id": 4, "from": 20, "to": 6, "revise_lane": 20}
+```
+
+Use actual candidate and lane IDs. `revise_lane` must be one of `from` or `to`;
+the other lane remains the fixed anchor. Inspection gives before/after XYZ,
+displacements, anchor endpoint support in all four saved audits, fixed minimum
+width, recorded-path containment and native whole-lane direction planning. It
+spends no HD attempt. The maximum XYZ displacement is the smaller of 0.75 m and
+the unchanged ground query radii. All anchor center/boundary endpoint traces must
+be supported in both estimators and both formats. Missing original station length,
+occupied exits/entries, shared boundaries, implicit or unpaired center vertices,
+and previously revised lanes are ineligible. Direction plans requiring cuts or
+deferrals and incomplete previews stay held. Retry children must finish their
+repair before using this operation in a root run.
+
+Adopt only an eligible preview returned through this run:
+
+```json
+{"type": "align_endpoints", "candidate_id": 4, "preview_file": {"path": "<endpoint_observation.file.path>", "sha256": "<endpoint_observation.file.sha256>", "bytes": 12345}}
+```
+
+Pass the exact `endpoint_observation.file` descriptor, including its actual byte
+count. One shared HD attempt copies the anchor's existing left/right XYZ into
+the selected lane's endpoint and updates the corresponding explicit paired center
+midpoint. Interior vertices, opposite endpoints, IDs, lane semantics, all other
+geometry and existing edges remain exact. Only the selected directed edge is added.
+The changed rows carry revision/anchor attributes; changed geometry is explicitly
+identified rather than reported as preserved.
+
+Export and OSM reload must preserve the revised curves and graph. Four fresh
+audits must support every revised trace, or explain every low-quantile shortfall
+by returns above a fully supported ground-consensus trace. Unchanged lane audit
+rows and failure locations remain exact in all four reports. Failed attempts keep
+their evidence and the prior draft; resume never repeats a completed attempt.
+Successful aligned drafts can be inspected for short connections, finished and
+exported with their endpoint evidence. Original source extent and thresholds stay
+fixed. Route reachability establishes neither road accuracy nor permitted turns.
+
 ### Connect short, inspected source gaps
 
 After an audited lane draft, the calling agent can inspect connection candidates:

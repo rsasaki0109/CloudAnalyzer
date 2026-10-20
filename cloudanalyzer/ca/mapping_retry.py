@@ -18,7 +18,7 @@ from ca.mapping_connections import route_metrics
 
 def _parent(job: dict[str, Any], cid: int) -> dict[str, Any]:
     parent = next((a for a in job["attempts"] if a["id"] == cid), None)
-    if parent is None or parent.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes"} or parent["status"] != "audited_draft":
+    if parent is None or parent.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes", "appended_corridor_lanes", "aligned_corridor_lanes"} or parent["status"] != "audited_draft":
         raise ValueError("inspect gaps on a retained audited corridor lane draft")
     for artifact in [*parent["files"].values(), *parent["geometry_inputs"].values(), parent["quality_report"], parent["corridor_proposal"],
                      *parent.get("connection_inputs", {}).values(), *parent.get("patch_inputs", {}).values(),
@@ -29,6 +29,10 @@ def _parent(job: dict[str, Any], cid: int) -> dict[str, Any]:
             jobs._verify(parent[key])
     if "patch_preview" in parent:
         jobs._verify(parent["patch_preview"])
+    _verify_inputs(parent.get("endpoint_inputs", {}))
+    for key in ("endpoint_preview", "endpoint_checks", "endpoint_audits"):
+        if key in parent:
+            jobs._verify(parent[key])
     _verify_inputs(parent.get('height_inputs', {}))
     for key in ('height_checks', 'height_audits', 'height_trial'):
         if key in parent: jobs._verify(parent[key])

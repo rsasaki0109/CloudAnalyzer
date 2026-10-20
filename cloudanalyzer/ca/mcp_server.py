@@ -126,6 +126,14 @@ source-supported gaps between consecutive drive pieces. The fixed single-forward
 layout, recorded path, both ground estimators and reopened OSM topology are checked.
 Read local route spans and global longest route separately; connections do not increase
 original corridor extent or prove permitted turns. Failed links retain the prior draft.
+For a zero-station seam in a root run, inspect_endpoint_alignment names explicit
+from/to lane IDs and revise_lane, keeping the other lane as a fixed anchor.
+align_endpoints requires the exact eligible preview, spends one shared HD attempt
+and requires four fresh audits. Only one private boundary endpoint pair and its
+explicit center midpoint may move, at most 0.75 m and one unchanged ground radius.
+Anchor endpoint support, fixed width, recorded path and whole-lane direction must
+pass. All other geometry and audit failure locations remain exact. Revised geometry
+is identified in the report; it does not increase original corridor extent.
 For a combined local HD patch, inspect_connection_region explicitly supplies an
 HD-only bounds_xy envelope containing the unchanged point-update box, with sides
 at most 20 m. Only links touching new repair lanes are offered; all geometry must

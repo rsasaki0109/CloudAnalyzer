@@ -256,6 +256,9 @@ def _export(
             "owner_decision_history": jobs._artifact(owner / "run.json"),
         }
         preview = None
+        if "endpoint_inputs" in candidate:
+            native = job["runtime"]["native"]["extension"]
+            artifacts.update({f"endpoint_input_{key}": value for key, value in candidate["endpoint_inputs"].items() if value != native})
         if candidate.get("kind") == "appended_corridor_lanes" or "append_preview" in candidate.get("patch_inputs", {}):
             native = job["runtime"]["native"]["extension"]
             artifacts.update({f"append_input_{key}": value for key, value in candidate["patch_inputs"].items() if value != native})

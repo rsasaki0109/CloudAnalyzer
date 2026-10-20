@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ca import mapping_append as appends, mapping_job as jobs, mapping_run as runs
+from ca import mapping_append as appends, mapping_connections as connections, mapping_job as jobs, mapping_run as runs
 from ca.mapping_bundle import export_mapping_run, inspect_mapping_bundle
 from ca.mapping_patch import _preserved
 from tests.test_mapping_job import job_backend, _attach_lane_native, _corridor_report, _run_layout
@@ -209,15 +209,161 @@ def test_tampered_append_sources_and_checks_are_rejected_on_inspection(prepared_
         jobs.select_mapping_candidate(str(root), 5, "Reject changed append evidence")
 
 
-def test_append_refuses_recursive_edits_and_connections_from_snapshot(prepared_run):
+def test_append_refuses_recursive_edits(prepared_run):
     root = prepared_run[0]()
     _step(root, ACTION)
     before = [(root / name).read_bytes() for name in ("job.json", "run.json")]
     with pytest.raises(ValueError, match="one draft append"):
         _step(root, ACTION)
-    with pytest.raises(ValueError, match="audited corridor"):
-        _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 0})
     assert before == [(root / name).read_bytes() for name in ("job.json", "run.json")]
+
+
+
+def _appended_connection_parent(prepared_run, attempts=6):
+    prepare, module, _, _ = prepared_run
+    root = prepare(attempts=attempts)
+    module.connect_vector_map_junctions = _attach_lane_native().connect_vector_map_junctions
+    result = _step(root, ACTION)
+    assert result["append_result"]["status"] == "audited_draft", result
+    return root, module
+
+
+def _connection_action():
+    return {"type": "connect", "candidate_id": 5,
+            "pairs": [{"from": 9, "to": 6, "reason": "Inspected the open gap after the audited addition"}]}
+
+
+def test_appended_connections_keep_source_extent_lineage_and_portable_review(prepared_run, tmp_path, monkeypatch):
+    root, module = _appended_connection_parent(prepared_run)
+    before = _frozen(root)
+    original = _read(root / "candidate-05/vector_map.json")
+    original_report = _read(root / "candidate-05/report.json")
+    original_job = (root / "job.json").read_bytes()
+    observation = _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 0})["connection_observation"]
+    assert [(c["from"], c["to"]) for c in observation["candidates"]] == [(9, 6)]
+    assert (root / "job.json").read_bytes() == original_job
+    assert observation["baseline_routes"]["connected_components"] == 2
+    def forbidden(*args, **kwargs):
+        raise AssertionError("cached connection inspection repeated native discovery")
+    with monkeypatch.context() as cached:
+        cached.setattr(module, "connect_vector_map_junctions", forbidden)
+        repeated = _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 0})["connection_observation"]
+    assert repeated == observation and (root / "job.json").read_bytes() == original_job
+    connected = _step(root, _connection_action())
+    assert connected["connect_result"]["status"] == "audited_draft", connected
+    assert connected["remaining_attempts"] == 0
+    current = jobs.inspect_mapping_job(str(root))["attempts"][-1]
+    report = _read(current["files"]["report"]["path"])
+    ir = _read(current["files"]["editable_map"]["path"])
+    added = report["routes"]["added"]
+    assert len(added) == 1 and (added[0]["from"], added[0]["to"]) == (9, 6)
+    extra_edges = {(9, added[0]["lane"]), (added[0]["lane"], 6)}
+    _preserved(original, ir, extra_edges)
+    assert connections.edges(ir) == connections.edges(original) | extra_edges
+    assert report["routes"]["after"]["connected_components"] == 1
+    assert report["routes"]["after"]["longest_route_station_span_m"] == 10.
+    assert report["extraction"]["generated_length"] == 8.
+    assert current["extent"] == jobs.inspect_mapping_job(str(root))["attempts"][4]["extent"]
+    assert not current["extent"]["passes_requested_extent"]
+    assert _read(current["connection_checks"]["path"])["passes"]
+    for key in ("source_proposals", "append_inputs", "append_checks", "baseline_candidate_id", "addition_candidate_id",
+                "selected_gap_ids", "explicit_endpoint_pairs", "added_lane_id_map", "station_disposition", "options"):
+        assert report[key] == original_report[key], key
+    assert set(report["lane_minimum_width_m"]) == {str(l["id"]) for l in ir["lanes"]}
+    assert set(report["lane_minimum_width_m"].values()) == {1.5}
+    assert any("both proposal sources" in note for note in connected["connect_result"]["diagnosis"]["investigations"])
+    after = _step(root, {"type": "inspect_connections", "candidate_id": 6, "offset": 0})["connection_observation"]
+    assert after["candidates_total"] == 0
+    gap = _step(root, {"type": "inspect_gaps", "candidate_id": 6, "offset": 0})["gap_observation"]
+    assert [(g["from_m"], g["to_m"]) for g in gap["gaps"]] == [(6., 8.)]
+    _step(root, {"type": "finish", "candidate_id": 6})
+    bundle = tmp_path / "connected-review.zip"
+    export_mapping_run(str(root), str(bundle), "Unit fixture; no real recording")
+    inspected = inspect_mapping_bundle(str(bundle))
+    assert inspected["integrity_verified"] and not inspected["deployment_ready"]
+    import zipfile
+    with zipfile.ZipFile(bundle) as archive:
+        manifest = json.loads(archive.read("manifest.json"))
+        delivered_audits = json.loads(archive.read(manifest["roles"]["hd_source_audits"]))
+    assert delivered_audits == _read(current["connection_audits"]["path"])
+    assert {"append_input_addition_proposal", "append_input_baseline_geometry_report", "append_checks", "append_audits",
+            "hd_connection_checks", "hd_source_audits", "hd_connection_proposal"} <= manifest["roles"].keys()
+    native_sha = jobs._load(root)["runtime"]["native"]["extension"]["sha256"]
+    assert all(f["sha256"] != native_sha for f in manifest["files"])
+    _unchanged(before)
+
+
+@pytest.mark.parametrize("condition", ["unseen", "unseen_page", "unoffered", "budget"])
+def test_appended_connections_require_seen_pairs_and_shared_budget(prepared_run, condition):
+    root, _ = _appended_connection_parent(prepared_run, attempts=5 if condition == "budget" else 6)
+    if condition != "unseen":
+        _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 8 if condition == "unseen_page" else 0})
+    action = _connection_action()
+    if condition == "unoffered":
+        action["pairs"][0]["from"] = 3
+    before = [(root / name).read_bytes() for name in ("job.json", "run.json")]
+    with pytest.raises(ValueError, match="inspect|offered|remaining"):
+        _step(root, action)
+    assert before == [(root / name).read_bytes() for name in ("job.json", "run.json")]
+
+
+@pytest.mark.parametrize("artifact", ["candidate-05-append-checks.json", "candidate-05-append-audits.json",
+    "geometry-01/report.json", "corridor-proposals-trajectory.json", "append-preview-*.json", "connections-05.json"])
+def test_appended_connections_reject_changed_ancestry_before_spending(prepared_run, artifact):
+    root, _ = _appended_connection_parent(prepared_run)
+    _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 0})
+    before = [(root / name).read_bytes() for name in ("job.json", "run.json")]
+    path = next(root.glob(artifact))
+    path.write_bytes(path.read_bytes() + b" ")
+    with pytest.raises(ValueError, match="changed"):
+        _step(root, _connection_action())
+    assert before == [(root / name).read_bytes() for name in ("job.json", "run.json")]
+
+
+@pytest.mark.parametrize("regression", ["retained_endpoint", "connector_endpoint"])
+def test_appended_connection_failure_retains_inputs_and_audit_evidence(prepared_run, monkeypatch, regression):
+    root, module = _appended_connection_parent(prepared_run)
+    _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 0})
+    before = _frozen(root)
+    for name in ("audit_vector_map_quality_details", "audit_vector_map_ground_consensus_details"):
+        original = getattr(module, name)
+        def changed(*args, _original=original):
+            audit = json.loads(_original(*args))
+            ids = [l["lane"] for l in audit["quality"]["lanes"]]
+            target = min(ids) if regression == "retained_endpoint" else max(ids)
+            lane = next(l for l in audit["quality"]["lanes"] if l["lane"] == target)
+            for trace in ("center", "left", "right"):
+                lane[trace]["end_supported"] = False
+            return json.dumps(audit)
+        monkeypatch.setattr(module, name, changed)
+    result = _step(root, _connection_action())
+    assert result["connect_result"]["status"] == "failed" and result["remaining_attempts"] == 0
+    assert not (root / "candidate-06").exists()
+    assert not _read(root / "candidate-06-connection-checks.json")["passes"]
+    assert (root / "candidate-06-connection-audits.json").exists()
+    _unchanged(before)
+    assert _step(root, {"type": "finish", "candidate_id": 5})["output"]["candidate_id"] == 5
+
+
+def test_appended_connection_resume_reuses_completed_attempt(prepared_run, monkeypatch):
+    root, module = _appended_connection_parent(prepared_run)
+    _step(root, {"type": "inspect_connections", "candidate_id": 5, "offset": 0})
+    real = runs._connect
+    def interrupted(*args):
+        real(*args)
+        raise KeyboardInterrupt("after completed connection")
+    monkeypatch.setattr(runs, "_connect", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        _step(root, _connection_action())
+    assert jobs.inspect_mapping_job(str(root))["remaining_attempts"] == 0
+    monkeypatch.setattr(runs, "_connect", real)
+    def forbidden(*args, **kwargs):
+        raise AssertionError("completed connection invoked native processing again")
+    monkeypatch.setattr(module, "connect_vector_map_junctions", forbidden)
+    result = _step(root, {"type": "resume"})
+    assert result["connect_result"]["status"] == "audited_draft" and result["remaining_attempts"] == 0
+    assert len(jobs.inspect_mapping_job(str(root))["attempts"]) == 6
+
 
 
 def test_raw_runs_do_not_advertise_or_authorize_external_draft_append(job_backend, tmp_path):

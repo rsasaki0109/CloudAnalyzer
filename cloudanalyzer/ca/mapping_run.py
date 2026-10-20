@@ -45,7 +45,7 @@ Short gaps need recorded-path containment, unchanged minimum widths and complete
 center/boundary support from both ground estimators after export/reload. Inspect
 local and global route station spans separately; connector reachability does not
 increase original source-corridor extent or prove permitted turns.
-Connections may extend an audited connected or gap-patched draft. Existing
+Connections may extend an audited connected, gap-patched or appended draft. Existing
 lanes and directed edges are inherited; supply only the new inspected pairs.
 Old source samples must not gain failures in either estimator or saved format.
 To extend a combined local patch's HD envelope independently,
@@ -358,7 +358,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons; observed endpoints by default, or endpoint_policy=linear_interpolation within inspected adjacent sections"},
-            "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected or gap-patched draft ID", "offset": "nonnegative; pages of 8"},
+            "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected, gap-patched or appended draft ID", "offset": "nonnegative; pages of 8"},
             "inspect_connection_region": {"type": "inspect_connection_region", "candidate_id": "own combined local-retry patch", "bounds_xy": "explicit HD-only [xmin,ymin,xmax,ymax]; contains frozen point box; sides <=20 m", "offset": "nonnegative; pages of 8; only links touching repair lanes"},
             "connect": {"type": "connect", "candidate_id": "inspected parent lane draft ID", "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"},
             "inspect_gaps": {"type": "inspect_gaps", "candidate_id": "own audited lane draft", "offset": "nonnegative; pages of 8"},

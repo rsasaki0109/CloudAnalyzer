@@ -110,9 +110,9 @@ both input drafts intact. The map, poses, layout, thresholds and original statio
 denominator remain fixed; connector reachability adds no source extent.
 
 Other pieces stay disconnected. Selected joins need supported endpoints in every
-audit. One append is allowed per run; appended snapshots
-support saved gap inspection, review export and finish, while further appends and
-connections from that snapshot are unavailable. Missing-interval observations
+audit. One append is allowed per run; appended snapshots support saved gap
+inspection, short connection inspection and explicit connection choices, review
+export and finish. Further appends are unavailable. Missing-interval observations
 continue to use the baseline source proposal; the report records both proposals
 and each interval's source. Original ambiguity marks and source-deferred reasons
 remain in the combined report. Review bundles include both inputs and append
@@ -478,12 +478,21 @@ silently turn unresolved source intervals into generated source corridors.
 Finish may return the new connected draft or an earlier retained draft.
 Interrupted inspection/connection actions support `resume` without replaying
 completed work. One connection attempt uses the existing shared HD budget. Every connection
-trial starts from its inspected audited parent, including connected or gap-patched
+trial starts from its inspected audited parent, including connected, gap-patched or appended
 drafts. Existing lanes and directed edges remain fixed; supply only new pairs.
 Only consecutive original-station pieces with open endpoints are eligible.
 All retained source samples must keep their support in both estimators and both
 saved formats; new connectors require complete support. Saved connection checks
 and four full audits remain available even when the trial fails.
+
+After an imported-map append, inspect connections on the combined candidate.
+Retained and added lanes use the same frozen minimum width even when their source
+proposals reuse curve IDs. Choose only newly inspected consecutive pairs. Existing
+exact endpoint links remain, and connectors leave the source station dispositions,
+generated source length and extent goal unchanged. Connected descendants retain
+both source proposals, interval origins, original ambiguity marks and append
+checks. Review bundles carry both append inputs and checks as well as the new
+connection evidence, with the native binary excluded.
 
 The [NCLT connection evidence](../../benchmarks/vector-map/nclt-route-connections/README.md)
 records a local chain changing 6 → 14 m in April and 4 → 22 m in June, with

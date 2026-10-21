@@ -4,13 +4,13 @@ import { GpuCandidateDevice, GpuCandidateSearch } from "../../src/gpu-candidates
 import { GpuVerifiers, type GpuVerifierQueries } from "../../src/gpu-verifiers";
 import { poolMemory, poolSize, releaseOn, warmUpPool } from "../../src/pool";
 
-type Mode = "pool" | "pool-staged" | "shared-serial" | "shared";
+type Mode = "pool" | "pool-staged" | "pool-staged-overlap" | "shared-serial" | "shared" | "shared-overlap";
 type Pipeline = "fixed" | "gpu";
 interface Memory { committedBytes: number; sharedMemory: boolean; snapshotBytes: number; queryBytes: number; referenceGeneration: number; queryGeneration: number }
 interface Verification extends Memory { distances: Float64Array; certified: number; millis: number; threads: number }
 interface SharedInit extends Memory { threads: number; indices: number[]; isolated: boolean }
 interface FileInput { name: string; bytes: Uint8Array }
-const modes: Mode[] = ["pool", "pool-staged", "shared-serial", "shared"];
+const modes: Mode[] = ["pool", "pool-staged", "pool-staged-overlap", "shared-serial", "shared", "shared-overlap"];
 
 function rpc(url: string) {
   const worker = new Worker(url, { type: "module" });
@@ -136,6 +136,8 @@ async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
   if (!modes.includes(mode) || !["fixed", "gpu"].includes(pipeline)) throw new Error("Unknown comparison mode");
   if ((!job && !freshJobs) || !index || !verifiers || !hints) throw new Error("Prepare the clouds first");
   if (pipeline === "gpu" && !gpu) throw new Error("GPU pipeline not available");
+  if (mode.endsWith("-overlap") && !freshJobs) throw new Error("Overlap comparison requires fresh query jobs");
+  const verifier = mode.replace(/-overlap$/, ""), overlap = pipeline === "gpu" && mode.endsWith("-overlap");
   const started = performance.now(), sequence = ++jobSequence;
   const activeJob = freshJobs ? new GpuC2cJob(queryCloud!, index) : job!;
   const queryJobMillis = performance.now() - started;
@@ -143,24 +145,34 @@ async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
   let queryStageMillis = 0, queryReleaseMillis = 0, stagedQueryBytes = 0;
   let certified = 0, verifyMillis = 0, gpuWaitMillis = 0, sharedMemory: Memory | undefined;
   let sharedPrepared = false, queryReleaseAcknowledged = !freshJobs, result;
+  let firstGpuDispatchMillis: number | undefined, gpuDispatchCount = 0;
+  let queryStageStartedMillis = 0, queryStageFinishedMillis = 0;
   type Batch = { ok: true; candidates: Uint32Array } | { ok: false; error: unknown };
-  const dispatch = (first: number) => gpu!.find(activeJob.queries(first, Math.min(batchSize, activeJob.length - first)))
-    .then<Batch, Batch>(candidates => ({ ok: true, candidates }), error => ({ ok: false, error }));
+  const dispatch = (first: number) => {
+    if (first === 0) firstGpuDispatchMillis = performance.now() - started;
+    gpuDispatchCount++;
+    // Catch immediately: query staging may still be awaiting a different worker.
+    return gpu!.find(activeJob.queries(first, Math.min(batchSize, activeJob.length - first)))
+      .then<Batch, Batch>(candidates => ({ ok: true, candidates }), error => ({ ok: false, error }));
+  };
   let pending: Promise<Batch> | undefined;
   try {
+    if (overlap) pending = dispatch(0);
     const stageStart = performance.now();
-    if (freshJobs && mode === "pool-staged") {
+    queryStageStartedMillis = stageStart - started;
+    if (freshJobs && verifier === "pool-staged") {
       activeStaged = verifiers.queries(batchSize, threads);
       await activeStaged.prepare(activeJob); stagedQueryBytes = activeStaged.bytes;
-    } else if (freshJobs && mode.startsWith("shared")) {
+    } else if (freshJobs && verifier.startsWith("shared")) {
       const queries = activeJob.queriesF64(0, activeJob.length); stagedQueryBytes = queries.byteLength;
       sharedMemory = await shared.call<Memory>({ kind: "queries", queries }, [queries.buffer]);
       sharedPrepared = true;
       if (sharedMemory.referenceGeneration !== 1) throw new Error("Shared reference unexpectedly rebuilt");
     }
     queryStageMillis = performance.now() - stageStart;
+    queryStageFinishedMillis = performance.now() - started;
     const distances = new Float64Array(activeJob.length);
-    pending = pipeline === "gpu" ? dispatch(0) : undefined;
+    if (pipeline === "gpu" && !pending) pending = dispatch(0);
     for (let first = 0; first < activeJob.length; first += batchSize) {
       const count = Math.min(batchSize, activeJob.length - first);
       let candidates = hints.subarray(first, first + count);
@@ -172,11 +184,11 @@ async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
         if (first + count < activeJob.length) pending = dispatch(first + count);
       }
       const t = performance.now();
-      if (mode.startsWith("pool")) {
+      if (verifier.startsWith("pool")) {
         certified += await verifiers.complete(activeJob, first, candidates, threads, true, true, distances,
-          mode === "pool-staged" ? activeStaged : undefined);
+          verifier === "pool-staged" ? activeStaged : undefined);
       } else {
-        const verified = await verifyShared(first, candidates, mode === "shared");
+        const verified = await verifyShared(first, candidates, verifier === "shared");
         if (verified.distances.length !== count) throw new Error("Incomplete shared verification batch");
         distances.set(verified.distances, first); certified += verified.certified; sharedMemory = verified;
       }
@@ -186,6 +198,7 @@ async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
       poolReferenceReused: verifiers.reused(threads), ...(sharedMemory ? { sharedCommittedBytes: sharedMemory.committedBytes,
         sharedReferenceGeneration: sharedMemory.referenceGeneration, sharedQueryGeneration: sharedMemory.queryGeneration } : {}) });
   } finally {
+    // A staging failure must not free owner queries while the early GPU batch is pending.
     if (pending) await pending;
     if (freshJobs) {
       const releaseStart = performance.now();
@@ -201,7 +214,9 @@ async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
     }
   }
   return { ...result, millis: performance.now() - started, freshJob: freshJobs, jobSequence: sequence,
-    queryJobMillis, queryStageMillis, queryReleaseMillis, stagedQueryBytes, queryReleaseAcknowledged };
+    queryJobMillis, queryStageMillis, queryReleaseMillis, stagedQueryBytes, queryReleaseAcknowledged,
+    firstGpuDispatchMillis, gpuDispatchCount, queryStageStartedMillis, queryStageFinishedMillis,
+    firstGpuDispatchedBeforeStaging: overlap && firstGpuDispatchMillis !== undefined && firstGpuDispatchMillis <= queryStageStartedMillis };
 }
 
 async function expected() {

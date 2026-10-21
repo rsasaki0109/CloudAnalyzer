@@ -12,6 +12,7 @@ on:
       - "web/tests/shared-gpu-c2c-order.test.mjs"
       - "web/tests/shared-gpu-packets.test.mjs"
       - "benchmarks/wasm-shared-gpu-fresh/**"
+      - "benchmarks/wasm-shared-gpu-overlap/**"
       - "benchmarks/wasm-shared-gpu-c2c/**"
       - "web/src/worker.ts"
       - "web/src/pool.ts"
@@ -37,6 +38,7 @@ on:
       - "web/tests/shared-gpu-c2c-order.test.mjs"
       - "web/tests/shared-gpu-packets.test.mjs"
       - "benchmarks/wasm-shared-gpu-fresh/**"
+      - "benchmarks/wasm-shared-gpu-overlap/**"
       - "benchmarks/wasm-shared-gpu-c2c/**"
       - "web/src/worker.ts"
       - "web/src/pool.ts"
@@ -105,6 +107,7 @@ jobs:
           npx playwright install --with-deps chromium
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-fresh-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh
+          node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-overlap-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh --overlap compare
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -112,3 +115,4 @@ jobs:
           path: |
             web/shared-gpu-c2c-smoke.json
             web/shared-gpu-c2c-fresh-smoke.json
+            web/shared-gpu-c2c-overlap-smoke.json

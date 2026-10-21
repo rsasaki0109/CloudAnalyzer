@@ -1,6 +1,7 @@
 // Fixed real WebGPU hints and complete prefetched GPU pipeline comparisons.
 import { chromium } from '@playwright/test';
 import { verifierTrialOrder } from '../experiments/shared-gpu-c2c/trial-order.mjs';
+import { overlapTrialOrder } from '../experiments/shared-gpu-c2c/overlap-order.mjs';
 import { createServer } from 'node:http';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -10,18 +11,18 @@ import { fileURLToPath } from 'node:url';
 import { cpus, platform, release, totalmem } from 'node:os';
 
 const args = process.argv.slice(2);
-const allowed = ['--output', '--reference', '--compared', '--input-manifest', '--threads', '--warmups', '--repeats', '--gpu', '--batch-size', '--jobs'];
+const allowed = ['--output', '--reference', '--compared', '--input-manifest', '--threads', '--warmups', '--repeats', '--gpu', '--batch-size', '--jobs', '--overlap'];
 for (let i = 0; i < args.length; i += 2) if (!allowed.includes(args[i]) || !args[i + 1] || args[i + 1].startsWith('--') || args.indexOf(args[i]) !== i)
   throw new Error(`Invalid or repeated option: ${args[i]}`);
 const option = (key, fallback) => args.includes(key) ? args[args.indexOf(key) + 1] : fallback;
 const output = option('--output'), reference = option('--reference'), compared = option('--compared');
-if (!output || !reference || !compared) throw new Error('Supply --output NEW.json --reference FILE --compared FILE [--threads 4] [--gpu physical|disabled] [--jobs prepared|fresh]');
+if (!output || !reference || !compared) throw new Error('Supply --output NEW.json --reference FILE --compared FILE [--threads 4] [--gpu physical|disabled] [--jobs prepared|fresh] [--overlap off|compare]');
 if (existsSync(output)) throw new Error('Report already exists');
 const threads = Number(option('--threads', '4')), warmups = Number(option('--warmups', '5')), repeats = Number(option('--repeats', '10'));
-const batchSize = Number(option('--batch-size', '131072')), gpu = option('--gpu', 'physical'), jobs = option('--jobs', 'prepared');
+const batchSize = Number(option('--batch-size', '131072')), gpu = option('--gpu', 'physical'), jobs = option('--jobs', 'prepared'), overlap = option('--overlap', 'off');
 if (!Number.isInteger(threads) || threads < 1 || threads > 8 || !Number.isInteger(warmups) || warmups < 0 ||
     !Number.isInteger(repeats) || repeats < 1 || !Number.isInteger(batchSize) || batchSize < 1 || batchSize > 262_144 ||
-    !['physical', 'disabled'].includes(gpu) || !['prepared', 'fresh'].includes(jobs)) throw new Error('Invalid trial options');
+    !['physical', 'disabled'].includes(gpu) || !['prepared', 'fresh'].includes(jobs) || !['off', 'compare'].includes(overlap) || (overlap === 'compare' && jobs !== 'fresh')) throw new Error('Invalid trial options');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 const experiment = resolve(repository, 'web/experiments/shared-gpu-c2c');
@@ -65,7 +66,7 @@ const server = createServer((request, response) => {
   catch { response.writeHead(404).end(); }
 });
 
-async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, gpu, jobs, trialOrders }) {
+async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, gpu, jobs, overlap, trialOrders }) {
   function rpc(url) {
     const worker = new Worker(url, { type: 'module' }); let seq = 0;
     const pending = new Map();
@@ -152,7 +153,8 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
         lastSharedQueryGeneration = value.sharedQueryGeneration;
       }
     };
-    const modes = ['pool', 'pool-staged', 'shared-serial', 'shared'], pipelines = gpu === 'physical' ? ['fixed', 'gpu'] : ['fixed'];
+    const modes = overlap === 'compare' ? ['pool', 'pool-staged', 'pool-staged-overlap', 'shared-serial', 'shared', 'shared-overlap'] :
+      ['pool', 'pool-staged', 'shared-serial', 'shared'], pipelines = gpu === 'physical' ? ['fixed', 'gpu'] : ['fixed'];
     const compact = result => ({ elapsedMillis: result.elapsedMillis, workerMillis: result.value.millis,
       verifyMillis: result.value.verifyMillis, gpuWaitMillis: result.value.gpuWaitMillis,
       poolReferenceReused: result.value.poolReferenceReused, mainCommittedBytes: result.value.mainCommittedBytes,
@@ -160,17 +162,29 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
       freshJob: result.value.freshJob, jobSequence: result.value.jobSequence, queryJobMillis: result.value.queryJobMillis,
       queryStageMillis: result.value.queryStageMillis, queryReleaseMillis: result.value.queryReleaseMillis,
       queryReleaseAcknowledged: result.value.queryReleaseAcknowledged, stagedQueryBytes: result.value.stagedQueryBytes,
-      sharedReferenceGeneration: result.value.sharedReferenceGeneration, sharedQueryGeneration: result.value.sharedQueryGeneration });
+      sharedReferenceGeneration: result.value.sharedReferenceGeneration, sharedQueryGeneration: result.value.sharedQueryGeneration,
+      gpuDispatchCount: result.value.gpuDispatchCount, firstGpuDispatchMillis: result.value.firstGpuDispatchMillis,
+      queryStageStartedMillis: result.value.queryStageStartedMillis, queryStageFinishedMillis: result.value.queryStageFinishedMillis,
+      firstGpuDispatchedBeforeStaging: result.value.firstGpuDispatchedBeforeStaging });
+    const schedule = (value, mode, pipeline) => {
+      const early = pipeline === 'gpu' && mode.endsWith('-overlap');
+      if (value.firstGpuDispatchedBeforeStaging !== early || value.queryStageStartedMillis > value.queryStageFinishedMillis ||
+          value.gpuDispatchCount !== (pipeline === 'gpu' ? Math.ceil(preparation.value.queryCount / preparation.value.batchSize) : 0))
+        throw new Error('Unexpected staging or dispatch schedule');
+      if (pipeline === 'gpu' && (early ? value.firstGpuDispatchMillis > value.queryStageStartedMillis :
+          value.firstGpuDispatchMillis < value.queryStageFinishedMillis)) throw new Error('First GPU dispatch crossed its staging boundary');
+      if (pipeline === 'fixed' && value.firstGpuDispatchMillis !== undefined) throw new Error('Fixed hints unexpectedly dispatched GPU work');
+    };
     const measurements = {};
     for (const pipeline of pipelines) {
       const cold = {}, warming = [], trials = [];
       for (const mode of modes) {
-        const result = await driver.call({ kind: 'run', mode, pipeline, exact: true }); parity(result.value, true); validateLifecycle(result.value); cold[mode] = compact(result);
+        const result = await driver.call({ kind: 'run', mode, pipeline, exact: true }); parity(result.value, true); validateLifecycle(result.value); schedule(result.value, mode, pipeline); cold[mode] = compact(result);
       }
       for (let i = 0; i < warmups + repeats; i++) {
         const order = trialOrders[i], results = {};
         for (const mode of order) {
-          const result = await driver.call({ kind: 'run', mode, pipeline }); parity(result.value); validateLifecycle(result.value);
+          const result = await driver.call({ kind: 'run', mode, pipeline }); parity(result.value); validateLifecycle(result.value); schedule(result.value, mode, pipeline);
           if (!result.value.poolReferenceReused) throw new Error('Verifier reference unexpectedly rebuilt');
           results[mode] = compact(result);
         }
@@ -190,18 +204,18 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
   } finally { stable.close(); driver.close(); }
 }
 
-const trialOrders = Array.from({ length: warmups + repeats }, (_, i) => verifierTrialOrder(i));
-const report = { schemaVersion: 2, queryJobs: jobs, operationScope: jobs === 'fresh' ?
+const trialOrders = Array.from({ length: warmups + repeats }, (_, i) => (overlap === 'compare' ? overlapTrialOrder(i) : verifierTrialOrder(i)));
+const report = { schemaVersion: 3, queryJobs: jobs, overlapComparison: overlap === 'compare', operationScope: jobs === 'fresh' ?
   'Fresh owned queries from an already parsed cloud, per-operation staging, selected pipeline, ordered summaries, f32 export, acknowledged query release and output transfer; immutable reference caches stay fixed. Excludes file parsing, initialization, reference import and diagnostic f64 export.' :
-  'Prepared immutable query job reused across requests; per-job query preparation and release excluded.', orderScheme: 'williams-4', createdUtc: new Date().toISOString(), inputs, inputManifest,
+  'Prepared immutable query job reused across requests; per-job query preparation and release excluded.', orderScheme: overlap === 'compare' ? 'williams-6' : 'williams-4', createdUtc: new Date().toISOString(), inputs, inputManifest,
   purpose: gpu === 'physical' && warmups >= 5 && repeats >= 10 ? 'timing-comparison' : 'compatibility-smoke',
   machine: { platform: platform(), release: release(), cpu: cpus()[0]?.model, logicalCpus: cpus().length,
     memoryBytes: totalmem(), node: process.version }, threads, warmups, repeats, batchSize, gpu, builds,
   inputManifestSha256: manifestBytes ? hash(manifestBytes) : undefined,
   sources: Object.fromEntries(['web/scripts/benchmark-shared-gpu-c2c.mjs', 'web/experiments/shared-gpu-c2c/worker.mjs',
-    'web/experiments/shared-gpu-c2c/coi-sw.js', 'web/experiments/shared-gpu-c2c/trial-order.mjs'].map(name => [name, hash(readFileSync(resolve(repository, name), 'utf8').replaceAll('\r\n', '\n'))])),
+    'web/experiments/shared-gpu-c2c/coi-sw.js', 'web/experiments/shared-gpu-c2c/trial-order.mjs', 'web/experiments/shared-gpu-c2c/overlap-order.mjs'].map(name => [name, hash(readFileSync(resolve(repository, name), 'utf8').replaceAll('\r\n', '\n'))])),
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', windowsHide: true }).trim(),
-  note: 'Standalone shared candidate-verification experiment. No production defaults or isolation registration change. A plain HTTP static server and experiment-scoped service worker isolate the page and nested workers. Driver caps production pool capacity to threads+1 before initialization. Production candidate shader, f64 verification and ordered summary arithmetic are reused. Fixed pipeline reuses identical captured physical-WebGPU hints; GPU pipeline repeats rounded query packing, actual dispatch/readback and one-batch prefetch before verification. All modes retain identical owner reference and query order. Pool streams exact query coordinates per batch; pool-staged retains distributed queries once per job. The queryJobs and operationScope fields distinguish prepared reuse from fresh per-request jobs. Fresh jobs retain the already parsed cloud, create a new production owner snapshot on every call, stage only the current queries, and await one release acknowledgement per participating worker before freeing the owner job. Shared jobs replace only owned queries; reference generation must remain one. The fixed oracle and stable fallback are checked before releasing the initial prepared job. Diagnostic f64 export is outside warm trials. Both share the same production per-lane reference trees. Shared serial and parallel hold one extra imported tree and full query snapshot in the same threaded binary; stable serial is an untimed correctness/fallback control. Initialization and reference imports are separate; validation calls do not establish cold first-call speedup. The legacy cold field contains post-guard validation requests. Warm RPC times include the complete chosen pipeline, exact verification, ordered f64 summaries, f32 export and output transfer; diagnostic f64 exports occur only outside timed trials. GPU wait and verification intervals can overlap and must not be summed into wall time. Snapshot transfer bytes describe wire payload, not retained tree allocation. WASM committed pages are high-water counters, not RSS; all alternatives coexist, so no whole-application memory-saving claim is made. Measured point subsets are not independent surveys or SLAM-accuracy ground truth. Other host activity, GC, clocks and power are uncontrolled. No adapter identity is collected.' };
+  note: 'Standalone shared candidate-verification experiment. No production defaults or isolation registration change. A plain HTTP static server and experiment-scoped service worker isolate the page and nested workers. Driver caps production pool capacity to threads+1 before initialization. Production candidate shader, f64 verification and ordered summary arithmetic are reused. Fixed pipeline reuses identical captured physical-WebGPU hints; GPU pipeline repeats rounded query packing, actual dispatch/readback and one-batch prefetch before verification. All modes retain identical owner reference and query order. Pool streams exact query coordinates per batch; pool-staged retains distributed queries once per job. The queryJobs and operationScope fields distinguish prepared reuse from fresh per-request jobs. Fresh jobs retain the already parsed cloud, create a new production owner snapshot on every call, stage only the current queries, and await one release acknowledgement per participating worker before freeing the owner job. Shared jobs replace only owned queries; reference generation must remain one. The fixed oracle and stable fallback are checked before releasing the initial prepared job. Diagnostic f64 export is outside warm trials. Both share the same production per-lane reference trees. Shared serial and parallel hold one extra imported tree and full query snapshot in the same threaded binary; stable serial is an untimed correctness/fallback control. Initialization and reference imports are separate; validation calls do not establish cold first-call speedup. The legacy cold field contains post-guard validation requests. Warm RPC times include the complete chosen pipeline, exact verification, ordered f64 summaries, f32 export and output transfer; diagnostic f64 exports occur only outside timed trials. GPU execution may overlap CPU staging and verification. gpuWaitMillis measures host promise waits, not shader execution time. First dispatch offsets describe the host call before query packing, not hardware timestamps. The overlap modes start the first batch before full-job query staging; matched controls start it after staging. Fixed-hint overlap modes perform the same CPU work without a GPU dispatch. A pending early batch is drained before cleanup even if staging fails. Snapshot transfer bytes describe wire payload, not retained tree allocation. WASM committed pages are high-water counters, not RSS; all alternatives coexist, so no whole-application memory-saving claim is made. Measured point subsets are not independent surveys or SLAM-accuracy ground truth. Other host activity, GC, clocks and power are uncontrolled. No adapter identity is collected.' };
 let browser;
 try {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -217,7 +231,7 @@ try {
         await page.evaluate(async () => { await navigator.serviceWorker.register('./coi-sw.js'); await navigator.serviceWorker.ready; });
         await page.reload(); await page.waitForFunction(() => self.crossOriginIsolated, undefined, { timeout: 15_000 });
       }
-      report[isolated ? 'measurement' : 'preflight'] = await page.evaluate(inPage, { isolated, inputs, threads, warmups, repeats, batchSize, gpu, jobs, trialOrders });
+      report[isolated ? 'measurement' : 'preflight'] = await page.evaluate(inPage, { isolated, inputs, threads, warmups, repeats, batchSize, gpu, jobs, overlap, trialOrders });
     } finally { await context.close(); }
   }
   for (const input of Object.values(inputs)) if (hash(readFileSync(input.path)) !== input.sha256) throw new Error('Input changed during measurement');

@@ -233,6 +233,7 @@
     "verify.py": "3c421f1d8e1b68a3c8964b1e62973283f38e075644caa6ced571e66e473fdf6f"
   },
   "dependencies": {
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/distance.rs": "25f1836a1aa3a044779e9c12841ffa7fe3282954b5f59c8540156959816590c1",
     "benchmarks/slam/flatwall-frontend-constraints/raw-legacy/frames.jsonl": "f20ac0175831d5784f62671586dac6d4b75ee0bbb18430241d7d01111051d29d",
     "benchmarks/slam/flatwall-frontend-constraints/snapshot-catalog.json": "ca4bfee70e8b3442f2d6b48bc20c0323423f86f5443b5bda9340cb6241cef2a1",
     "benchmarks/slam/flatwall-frontend-constraints/gyro-legacy/frames.jsonl": "385cd0e284faa8542ed3e42543e137c1e9f0c281e9d6cbddfa4276bc15de21de",
@@ -394,6 +395,7 @@
     "rust/crates/ca-wasm/src/vector_map.rs": "60fe4f91460466fe5b3dd09409301e1b75754633ddcdf2defd5bea319b1d3611"
   },
   "native_source_aliases": {
+    "rust/crates/ca-core/src/distance.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/distance.rs",
     "rust/crates/ca-core/src/odometry.rs": "benchmarks/slam/flatwall-balance-stages/history/rust/crates/ca-core/src/odometry.rs",
     "rust/crates/ca-core/src/odometry_target_balance.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/odometry_target_balance.rs",
     "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs",

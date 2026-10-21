@@ -14,12 +14,13 @@ const median = values => { const a = values.toSorted((x, y) => x - y); return (a
 
 test('query-export packet retains measured candidate sources and the failed adoption gate', () => {
   const manifest = JSON.parse(bytes(`${directory}/manifest.json`));
-  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases };
+  const later = JSON.parse(bytes('benchmarks/wasm-owned-query-export/manifest.json'));
+  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...later.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
     const alias = aliases[expected];
     assert.equal(alias?.original, name);
-    assert.ok(alias.archived.startsWith(`${directory}/executed-source/`) && !alias.archived.includes('..'));
+    assert.ok((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith('benchmarks/wasm-owned-query-export/executed-source/')) && !alias.archived.includes('..'));
     assert.equal(normalizedHash(alias.archived), expected);
   };
   assert.equal(manifest.adopted, false);
@@ -29,7 +30,7 @@ test('query-export packet retains measured candidate sources and the failed adop
   const footprint = manifest.normalizedSourceFootprint;
   assert.equal(hash(Object.entries(footprint).sort(([a], [b]) => a < b ? -1 : 1).map(([p, h]) => `${p}\0${h}\n`).join('')), manifest.normalizedSourceFingerprintSha256);
   for (const [name, h] of Object.entries(footprint)) source(name, h);
-  for (const [name, h] of Object.entries(manifest.finalBuild.normalizedInputs)) assert.equal(normalizedHash(name), h);
+  for (const [name, h] of Object.entries(manifest.finalBuild.normalizedInputs)) source(name, h);
   for (const [h, alias] of Object.entries(aliases)) assert.equal(normalizedHash(alias.archived), h);
   let totalWins = 0;
   const gates = [], identities = new Map();

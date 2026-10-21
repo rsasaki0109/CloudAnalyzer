@@ -93,7 +93,7 @@ export class GpuVerifiers {
 
   async complete(job: GpuC2cJob, first: number, candidates: Uint32Array, workers: number,
     bounds: boolean, simd: boolean, distances: Float64Array, queries?: GpuVerifierQueries,
-    mainWorker = false, sliceQueryCopy = false): Promise<number> {
+    mainWorker = false, sliceQueryCopy = false, ownedQueryCopy = false): Promise<number> {
     const lanes = Math.min(workers, candidates.length);
     const poolLanes = lanes - Number(mainWorker);
     // Post pool work before the resident synchronous lane so exact searches
@@ -108,7 +108,8 @@ export class GpuVerifiers {
       }
       return runOnGeneration(lane, this.generations.get(lane), { kind: "gpu-verify", referenceId: this.id,
         ...(queries ? { queryJob: queries.id, first: queries.first(first, lane) } :
-          { queries: sliceQueryCopy ? job.queriesF64WithCopy(first + start, end - start, true) :
+          { queries: ownedQueryCopy ? job.queriesF64Owned(first + start, end - start) :
+            sliceQueryCopy ? job.queriesF64WithCopy(first + start, end - start, true) :
             job.queriesF64(first + start, end - start) }),
         candidates: candidates.slice(start, end), bounds, simd });
     });

@@ -1,0 +1,2143 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-10-21T04:06:00.708Z",
+  "inputs": {
+    "reference": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\wasm-shared-gpu-c2c-20261021\\data\\pandaset\\reference.ply",
+      "name": "reference.ply",
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba",
+      "points": 531908
+    },
+    "compared": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\wasm-shared-gpu-c2c-20261021\\data\\pandaset\\compared.ply",
+      "name": "compared.ply",
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23",
+      "points": 531908
+    }
+  },
+  "inputManifest": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/pandaset-vector-map/map.pcd",
+      "bytes": 17021251,
+      "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+      "declaredPoints": 1063816,
+      "decodedPoints": 1063816,
+      "url": "https://github.com/scaleapi/pandaset-devkit",
+      "attribution": "PandaSet, Hesai and Scale AI; scene 019 Pandar64 frames 0,8,...,72 in world coordinates",
+      "license": "CC-BY-4.0"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "15b9011092b9873f6175834b8af0448232c8f01a133dbc565ade524078275f4f",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 531908,
+        "bytes": 12765915,
+        "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+      }
+    }
+  },
+  "purpose": "timing-comparison",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz",
+    "logicalCpus": 12,
+    "memoryBytes": 34207854592,
+    "node": "v22.22.0"
+  },
+  "threads": 4,
+  "warmups": 5,
+  "repeats": 10,
+  "batchSize": 131072,
+  "gpu": "physical",
+  "builds": {
+    "serial": {
+      "schemaVersion": 1,
+      "mode": "serial",
+      "createdUtc": "2026-10-21T03:52:27.985Z",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8",
+      "bindgenVersion": "wasm-bindgen 0.2.129",
+      "rustflags": "-C target-feature=+simd128",
+      "cargoArgs": [
+        "build",
+        "--manifest-path",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\experiments\\shared-gpu-c2c\\Cargo.toml",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--release",
+        "--locked"
+      ],
+      "inputs": {
+        "rust/Cargo.lock": "a1dde16d86a3500d0123af8f41e46364cedd5702bb904e272eace4b56bd79257",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/crates/ca-core/src/bag.rs": "94d807b20f02cf9fb1ed7c63158ef139a43973306f2ed7636a3bbb40c14d30b9",
+        "rust/crates/ca-core/src/cluster.rs": "1eb48ac7f5831c2db32306c8f3d78e3f51958e589c8f98744e5a19186ed6ab2b",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/distance.rs": "c9371ec4fb0a6fcafe4a775777d3e29035d664714ca54979834f7be708acc3f7",
+        "rust/crates/ca-core/src/dynamic.rs": "5872d51f2e566774d45aee94b971d6e8ffbd5b31b4461dba5b2d9bb0013fec27",
+        "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+        "rust/crates/ca-core/src/geotiff.rs": "36785efa8d8864e8e40d9ca068c592e225e7b7d49c98cf6fee187aae12bb6ac9",
+        "rust/crates/ca-core/src/gicp.rs": "4ee7e1122c0e96facf911f6a6989825712a44099ac15cdf0ef3b4179d3ac8c96",
+        "rust/crates/ca-core/src/gicp_cycle.rs": "5543daad13bb4bcce754ec5a4cdfeeb46f8f5590ced06ba8b183021281b95250",
+        "rust/crates/ca-core/src/gicp_registration.rs": "ce661ea78e2f34d4eb6f9eb6c87e60cf28a76f5d384915d45e77331e44b2a311",
+        "rust/crates/ca-core/src/gicp_shapes.rs": "805b1c5fb24a895bcacb6dd6ae678c8ced61af9b334249548063a83ffece2ec0",
+        "rust/crates/ca-core/src/gicp_transported.rs": "46408f6c1c079b51ca8f166b4f0b6214d2f89fc77292e09141dccca7b68eb4f9",
+        "rust/crates/ca-core/src/ground.rs": "3f0db870f9ebc017573561ca5328bdda1b6fc885c786619349333708175c9665",
+        "rust/crates/ca-core/src/icp.rs": "8c0e8b13718719468492e6e4f5e0dc2c00cdbcb7a0164f3406ec714002dceb7e",
+        "rust/crates/ca-core/src/imu.rs": "5f18d02ffdc8a1ff762af3df040161cf06a893538b4572352a238f8a3900f3c4",
+        "rust/crates/ca-core/src/imu_factor.rs": "0f458a52bee55703a915aa73ca3c110094a6b3c7f8b824cdc27a1e31cd519d96",
+        "rust/crates/ca-core/src/imu_initialization.rs": "9d1e7cb43070cb254c2b3a5b1f0d733484c941abee529a6b580801841746c571",
+        "rust/crates/ca-core/src/imu_rotation.rs": "f36f28c8072054f34c2ae8b9d870251d9d6c4b0c50e95a63be7cbd536bf37acc",
+        "rust/crates/ca-core/src/imu_trajectory.rs": "9b9b27dca63090e455b169d481fed0643695bd3039aa6bc76827936299f60350",
+        "rust/crates/ca-core/src/imu_window.rs": "53ee0a293706bbf6d7d0531af21ea069f6cf1869d68bec921108a3faf2e07e1c",
+        "rust/crates/ca-core/src/io/copc.rs": "ee83822f3d0843d033f63fda4036400e5ae2ab356f9c63b0d6a3bdcadd41a597",
+        "rust/crates/ca-core/src/io/copc_query.rs": "6f365ca5f7370e59c066b5202500755fb5c1f09213571abdbc9b29f15b9b1820",
+        "rust/crates/ca-core/src/io/e57.rs": "22c5a8dc7b942944f03ae976e357bd7c693c7e78a83bc72a4d684fc746568993",
+        "rust/crates/ca-core/src/io/kitti.rs": "e4fddf18e105cd617ee0c8660dc1bda77cd9c61ea1b506cc299dfb4419249f86",
+        "rust/crates/ca-core/src/io/las.rs": "97ee86bc57ab5924e1c37c277f7d7c10d96f41c8052487dfa22e63cb0830fc2e",
+        "rust/crates/ca-core/src/io/las_chunks.rs": "6f7e26401e17b781cb9728228d3113f456ddc59833215c676f152c935f29503c",
+        "rust/crates/ca-core/src/io/las_write.rs": "7104b0ef630e845251dd2bb9f275c4f3166a591c3edf92dcec8d99eb312135b4",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/src/io/obj.rs": "b19e1f672498b26a3abbf76d327b206af9989c4d2dcd803165f671a30d18769c",
+        "rust/crates/ca-core/src/io/pcd.rs": "3d60a5fcebb829a67df3a6f5864141da7ce053e04bc848281bd75391e0e5c74b",
+        "rust/crates/ca-core/src/io/ply.rs": "2c8698ea790484c1db0c1d0c9678427b25c573c55774db52b8654d657bb3067e",
+        "rust/crates/ca-core/src/io/scalar.rs": "04e1bb7994af83fb59d7fa7f12ab9ee23586ec674d286b57eaeef72e0c8887f2",
+        "rust/crates/ca-core/src/io/splat.rs": "53acdec7392c65a66e2069c2935d3fa61e3f962ad79cba7b767cf85e0733d9a8",
+        "rust/crates/ca-core/src/io/stl.rs": "95bbedf1b3608a38d7aff62f117f6c005aa0a279b4e7d16eebb0cbd412999c30",
+        "rust/crates/ca-core/src/io/stream.rs": "ac65258ad1d96de66f0ee6c3fdcc2d641797461273cd10bb1acb497cf0d1db85",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/xyz.rs": "49286f55ddfb0faaa6a9e36726109782bb4046e9e99204e8f37a1f0284247b77",
+        "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+        "rust/crates/ca-core/src/lib.rs": "e08fefad6ac8a670f12072fa73dc9ee8eeeee482ee4d9f0ec584ff056fb0d948",
+        "rust/crates/ca-core/src/loop_search.rs": "30e3772b49765c6f1c716513694dd1ec5e18e66e1dc730755dee7e9cff6701bf",
+        "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+        "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+        "rust/crates/ca-core/src/merge.rs": "61c3fb9548c15efc35ab57dc80798147a40bfff2be1909a8748f11396420d4c9",
+        "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+        "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+        "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+        "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+        "rust/crates/ca-core/src/odometry.rs": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f",
+        "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+        "rust/crates/ca-core/src/odometry_profile.rs": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+        "rust/crates/ca-core/src/odometry_target_balance.rs": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+        "rust/crates/ca-core/src/point_time.rs": "1145e025fbaa1f50cb152ff58889c00b6cd440e3bb45064ca51511018dde0a43",
+        "rust/crates/ca-core/src/pose_graph.rs": "22169e673aed0c829261cb4e76f8cd968c03dad68d7f8a5554eabe9391b241a4",
+        "rust/crates/ca-core/src/profile.rs": "ce48f96d92b747f9225222dcaf1370b49b8d029c1fae4e82d77a89bb68daaa3a",
+        "rust/crates/ca-core/src/raster.rs": "92d88d8fb601f1baea5d75a0fd69716bf77436ae8a1b15f55f691bbf698ca5fd",
+        "rust/crates/ca-core/src/rosbag2.rs": "5c0ea9f979843bfef084f4a9c691bcdb219b5a588e9b42b8524c3a8ea5c66c44",
+        "rust/crates/ca-core/src/segment.rs": "15f816f744ce2edd33940c067e34a18c21d6b3292c9d106c910625a5f8d7bfd1",
+        "rust/crates/ca-core/src/shapes.rs": "e5932e31c68774383f4f7333e9aac2c75e7a930251a46b0cc7b766a46a530da1",
+        "rust/crates/ca-core/src/trajectory.rs": "8fecd20a9260be103603efa5858221c56450332a49ea7ebf48163036d82a1310",
+        "rust/crates/ca-core/src/vector_map.rs": "b03e6c83ba296a4f45346c99dd8c7c828bf76722e562c80c02025b65713f09ed",
+        "rust/crates/ca-core/src/vector_map/corridors.rs": "a448eb2a25144612c307949abf76ab3eea18da13081675a046aabe734ae1ae57",
+        "rust/crates/ca-core/src/vector_map/crosswalks.rs": "71c70574450653a2e078424a7f5c839faf98c7802fe7f5b3a4baa65c4e114aba",
+        "rust/crates/ca-core/src/vector_map/discovery.rs": "23b3db8aa9d758850efb5b5e644315b03c74a919a245085f066f089e4c1585e2",
+        "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "cbea4ddfb6a1afc3e18a073d6683203815a83169f1ff75a099c2f9c0e670bc6e",
+        "rust/crates/ca-core/src/vector_map/evidence.rs": "cd1189bb39b42ecc3eb3c8356069adb8e0779b4d317dd2b6b3e69a5b22c236fc",
+        "rust/crates/ca-core/src/vector_map/feature_editing.rs": "725cff8a25e095a4a24ed146ef4c807ee7f00146fd6e3a17b9f5ad5e9497f6b4",
+        "rust/crates/ca-core/src/vector_map/fitting.rs": "b2d3a1e2f130a5d296e8c5954a70de8617d1e72e6194efe0c84fdddb33bcecf4",
+        "rust/crates/ca-core/src/vector_map/integration.rs": "662970db0abd31ee42f5faff24162c7544f171891cc416bcaf0f9de241400c3f",
+        "rust/crates/ca-core/src/vector_map/junctions.rs": "85da61860390a38c2470a4e00270a6227707ea059b1a8842c7b0ca70d259516c",
+        "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "37db6fa0394d90e067b1486782ed779faebd08ff5b65ccb0707ac977191e509d",
+        "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "e09c1a1aba04fb5e6abb3a607821b8ffb3aa7b78f1532eb2a493db3bf27fcfb7",
+        "rust/crates/ca-core/src/vector_map/paint_divider.rs": "d145c696082084e6c8c8eb56c81c112890879d8f2f9261543002f31ac9dbf9da",
+        "rust/crates/ca-core/src/vector_map/quality.rs": "58b15c3fa53dc22bb1bb71c36aa95badecb47c6ef0d62f0e2b928390517095c2",
+        "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "db316733520608c28fbced25503fc83cb3e33ef9f7b9c6cece5d30a83d5dc176",
+        "rust/crates/ca-core/src/vector_map/relations.rs": "1fa302063cb4958915ea8311d24027ab98544886422ce0955b230c97f466d38f",
+        "rust/crates/ca-core/src/vector_map/segmentation.rs": "5cdc6641848bcc40c759d4b07e5033cb78ca73bf55b27e4a92796051439ab092",
+        "rust/crates/ca-core/src/vector_map/signals.rs": "48f4c5926203aadb1c8de504fb489f760ab9679af91a087345c06221450d38fd",
+        "rust/crates/ca-core/src/vector_map/surface.rs": "c20bd0ccbf7a3e59d34d9d8522655a0cb4ec4629f40f650f341f999007825c8d",
+        "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "2c58685ce97e4b6a2ae44bbf80aafb3927d203d414c72eb0f4e5782e64cf6415",
+        "rust/crates/ca-core/src/volume.rs": "6842e46cefa1145d750515430a6e4c472996fea20c0bacd4a348b9b432a8990e",
+        "web/experiments/shared-gpu-c2c/Cargo.lock": "b7210cb4fd5ed3e2d705938a01b97357801f228af288eb4d303fcc9c7dbf23e4",
+        "web/experiments/shared-gpu-c2c/Cargo.toml": "2bdd62092d0f0472484b3c1fb186316b59bf885e72aaee5a2a9e3daff1a1a116",
+        "web/experiments/shared-gpu-c2c/src/lib.rs": "00b5e539d1373edae81948b4e96b3633fda20e439525ad7245551ec0042167e2",
+        "web/scripts/build-shared-gpu-c2c.mjs": "dbabbf028772eaaf29bf3620f96ac36b047f5a46272627df4ce87a6220fbcc5a"
+      },
+      "normalizedInputs": {
+        "rust/Cargo.lock": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12",
+        "rust/Cargo.toml": "2b1c299f65ecb0a601e84a230f701dd709347c1e04787e7e1dec94b3a0e67287",
+        "rust/crates/ca-core/Cargo.toml": "84524d63173454cd474c8e20b65e0b64d757e3dd09535eb98175ff990183fb80",
+        "rust/crates/ca-core/src/bag.rs": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27",
+        "rust/crates/ca-core/src/cluster.rs": "079d36fe74ec0ea3f9f5d1595eccafa0035b1dea5b6f1de17f709cbf07388b8d",
+        "rust/crates/ca-core/src/delaunay.rs": "2ef24589d77f892be59ea1e6fb7619a7cbff37f60eb48ea0fbcd4f9e62bdb224",
+        "rust/crates/ca-core/src/distance.rs": "410f865c1af7394f1f154ae8f3b4589b6676ec7ae167fb1b9bf9f64358612ef0",
+        "rust/crates/ca-core/src/dynamic.rs": "2df0614fb291a9e84f0ba0d4dcdff865b31f4ae320fa94f5325d3f1aac65bf44",
+        "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+        "rust/crates/ca-core/src/geotiff.rs": "2c1f567bf444c5962f78cbc6f0a7150a33750c2b30ece29942a7a6e38c89de9f",
+        "rust/crates/ca-core/src/gicp.rs": "e786435b2bdcb710b0a3e25e7521c06d2cc7015c102a796861786d304c21dacd",
+        "rust/crates/ca-core/src/gicp_cycle.rs": "c23efc209e4a3ce0e3733d031f43fa81707ab2687901d98d2f8409fb3e3d9c15",
+        "rust/crates/ca-core/src/gicp_registration.rs": "b4b5503847b3b9ce8a9b45ad5d2e3280c9af22ea65f35521dd6ad1d07d1cb5bd",
+        "rust/crates/ca-core/src/gicp_shapes.rs": "a5b162f271092634ee9b0ab225972c357c5e4e5c731211bcc03fff5f4e551f6e",
+        "rust/crates/ca-core/src/gicp_transported.rs": "f2c2674e9029bd632bba6b6c451e7c7e701d3db8443b0fbc564f6ea9ff926812",
+        "rust/crates/ca-core/src/ground.rs": "f856a75c8f12ff948efac32cfb8b3b42d0360e60f648c20f4e227c317ccb7795",
+        "rust/crates/ca-core/src/icp.rs": "de673c6e7ed6c6e85ee9a3c7a0a479919aefd203bb717527cf8f04bdbb4f9bcc",
+        "rust/crates/ca-core/src/imu.rs": "8179c6e52ae72af670811ceb7ccaaba20bcb1656f0f0570f15655235f9e5b778",
+        "rust/crates/ca-core/src/imu_factor.rs": "fda0361bbdad60809aa050582c6bd2bded6ed02f8373d575c6d878c5eb0a042c",
+        "rust/crates/ca-core/src/imu_initialization.rs": "b99c4cd91abf6acb91eb851403966385a448ebc51d32ba8413399cb8df2190c6",
+        "rust/crates/ca-core/src/imu_rotation.rs": "e0664c9b1b19b9e3b470c5fc7720ffcaa25daea0044a43dca691cb496f5ca8eb",
+        "rust/crates/ca-core/src/imu_trajectory.rs": "6f9c88e0211309f59700a55565c7c6ec877eedb8ab9b0672e6917591f5e5abe9",
+        "rust/crates/ca-core/src/imu_window.rs": "87dc928057bc59185793ba9da2c62ad0bfd00c04a050b69c7e97d9230e0741e9",
+        "rust/crates/ca-core/src/io/copc.rs": "c3476826dd0bea65862f790dc0010c5ea3119d6d997e1c2065be2e5b41c9b942",
+        "rust/crates/ca-core/src/io/copc_query.rs": "455c4af2c600dd22d5a895c5b456d787b4e5bb1316cb527d436b1ecff5f5d53d",
+        "rust/crates/ca-core/src/io/e57.rs": "ae1a84f9a45e5900f883b3ff999502712adeaf0334c3e4a2cbe554489bb585e0",
+        "rust/crates/ca-core/src/io/kitti.rs": "26ebab2c46b34e2cf15c56cce5261742f27288e2eb2131949092f27d35d4856f",
+        "rust/crates/ca-core/src/io/las.rs": "4ec3c8167322da838156b31acb2b9bb510396386b3b5812656d0525731ebff07",
+        "rust/crates/ca-core/src/io/las_chunks.rs": "034e3d2d844b752827014e84742abcf62421ca3a8fae311c10951be66ff1f5e3",
+        "rust/crates/ca-core/src/io/las_write.rs": "6c550c19d4a42cdbc38ca6e475a03e9a1104fd4126739a2889ebca9a66ff8b79",
+        "rust/crates/ca-core/src/io/mod.rs": "1ca32726a6e25794ac93e006ff94d0fbfc20f18cf498db842692203bfd019b19",
+        "rust/crates/ca-core/src/io/obj.rs": "70bb6733f762eced1f004ff07c9ebecdf46f0e1eeaf2bfb98cc19fa1c82e6e64",
+        "rust/crates/ca-core/src/io/pcd.rs": "cab567d7947c1da6ca6ea6da88a1400ab2cd3cf6c6fe4067695b7861eef2d350",
+        "rust/crates/ca-core/src/io/ply.rs": "4f47e5116a4e73f14aa988bdb56461fe5844eca17356b4ade508ed276b43bf5a",
+        "rust/crates/ca-core/src/io/scalar.rs": "46ea569d6b815f511ad6c504f4fb52083ee81cb6f6877f2e1fe51de25ade717c",
+        "rust/crates/ca-core/src/io/splat.rs": "70ddf158833ac1807cdebfefc663541514ff466931db54c0a4158a5d25b67713",
+        "rust/crates/ca-core/src/io/stl.rs": "840682bc1e64af1b47b5b7e722a79981a551d756963ce91e36bd5fc14c7bfd9b",
+        "rust/crates/ca-core/src/io/stream.rs": "ca9101f4b96ded4a0e1bfce6871bd2043b601d5ea7f5419f936fd15ec0de3737",
+        "rust/crates/ca-core/src/io/write.rs": "0f97ad9503bbb312b52f12ce6f71a12abee6a8990eb51526bb880e5374cc3fdf",
+        "rust/crates/ca-core/src/io/xyz.rs": "03cd929c03faa40e2dbef1ce1c524acca20d6392ee69f23b4a9d48170871eb00",
+        "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+        "rust/crates/ca-core/src/lib.rs": "1b0970ecbf4f9062562c0ec7133b1fe2d8e751b44387a666d8122a6ada48d08b",
+        "rust/crates/ca-core/src/loop_search.rs": "e7ff9f4809498882eabadcdf1bddd51ed52300a3c6809b5ef52e74a39a66133e",
+        "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+        "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+        "rust/crates/ca-core/src/merge.rs": "5ca91917dd274fcc0c00a6d7c88766e19fcfbe4a79a0d40ebad7ba2affba1d15",
+        "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+        "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+        "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+        "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+        "rust/crates/ca-core/src/odometry.rs": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f",
+        "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+        "rust/crates/ca-core/src/odometry_profile.rs": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+        "rust/crates/ca-core/src/odometry_target_balance.rs": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+        "rust/crates/ca-core/src/point_time.rs": "dcf1421fd44d8a3964493dd09355e3c84d75bb82076013f631fd63d33f7c1616",
+        "rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799",
+        "rust/crates/ca-core/src/profile.rs": "59f9ad78d46326e876cb51f689910d7ca7858d24c3624d4482bdf7b807a6f31c",
+        "rust/crates/ca-core/src/raster.rs": "628b6f003c20af7216c61dd55099d4662328039c6a78a8fd012bfbb97f806f25",
+        "rust/crates/ca-core/src/rosbag2.rs": "79a28698dc5845c2c66ac2432ac52f4f3800d479992e056c4dbf7eeef909cd3e",
+        "rust/crates/ca-core/src/segment.rs": "bd72608909130122615969a2d68d9c01845d637c32fc14963dc982f0985b8257",
+        "rust/crates/ca-core/src/shapes.rs": "1f1713298357d3857433373fa3663fe8643086aecc86381303c5e019e9bfd1bf",
+        "rust/crates/ca-core/src/trajectory.rs": "6deb08d34f5f4a0abf8ac9c9147647747cd92abe0db2ce525f5da61f8a9c3e58",
+        "rust/crates/ca-core/src/vector_map.rs": "bf394963d140a6eb0e2262a678faf9645bdce2d0cd7617904da34a43ed8fd8f2",
+        "rust/crates/ca-core/src/vector_map/corridors.rs": "e68ecb82589f3b52296d6abb0723553a95245f99000f2b1e6bddf066ccd01ba7",
+        "rust/crates/ca-core/src/vector_map/crosswalks.rs": "2d69b6429598bfe212d372b49744fc45117609271d77c4d12f95b8c1c8369c79",
+        "rust/crates/ca-core/src/vector_map/discovery.rs": "7129c127883a5a759e48ef823ca803b0878b642f1c9e3b647a428619ed6a927a",
+        "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "eb4c05d9edc1770042e155437876c21efae44907e93b9725e1bd8c53b5088301",
+        "rust/crates/ca-core/src/vector_map/evidence.rs": "dfc796728c2b8a1881f60c75f0c1caf102fa028f88aae481e26615d96e0cdea4",
+        "rust/crates/ca-core/src/vector_map/feature_editing.rs": "822d0c8b037826ee7f3cfe28ee4dd81b962cf81cfe34bbafa6826e4a4760f775",
+        "rust/crates/ca-core/src/vector_map/fitting.rs": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60",
+        "rust/crates/ca-core/src/vector_map/integration.rs": "527554f31539257b4590cef0e7a1cb1205d03aef055d12c5c395100ae57bd3a3",
+        "rust/crates/ca-core/src/vector_map/junctions.rs": "2338f1ef2b603e000a734d143836826dcd78e9434e3b004d840f3a6de90884f1",
+        "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "e317ec1b13b1467c6d0d8c0c8fd9cb1795612e5b904f53a8139d89e454c38568",
+        "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "adc4fbd658a91b9f102c73128a1b2bbe252cae22247a745f077b692cb2d5ad84",
+        "rust/crates/ca-core/src/vector_map/paint_divider.rs": "f963ed9c38e6681dc0753aeb0a75f3b11c5f9e299e4a613989be2345bfaf0204",
+        "rust/crates/ca-core/src/vector_map/quality.rs": "cc9068bd9375fe0ea5cc326f46a6d4301e3616fbe9eec4d5b70fd2176cbf9486",
+        "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "29a3032e4c84c800775853e846a926ee7c8e1c1071862ab6569bd53915f5755e",
+        "rust/crates/ca-core/src/vector_map/relations.rs": "49a22608c60c4cc62adc186894f1f064685a86dfa23365c15b14d6f2d4c22204",
+        "rust/crates/ca-core/src/vector_map/segmentation.rs": "d6be5e3e38627fffdfab4beeb108f5f0390215020838deb97f2c25d7aea0dcc5",
+        "rust/crates/ca-core/src/vector_map/signals.rs": "e0dbaecc81df7da5f490261c58d6c938ec6066d29823f8bd455fb92f882de5cb",
+        "rust/crates/ca-core/src/vector_map/surface.rs": "fbd80681a0c085e72526cdb9cc9ff53213ff613435e3b9887677348ead9817c2",
+        "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "41ea32508d05136f1a5383a1aec45042263e7f052492ad8b3f27e7b7c897f371",
+        "rust/crates/ca-core/src/volume.rs": "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4",
+        "web/experiments/shared-gpu-c2c/Cargo.lock": "b7210cb4fd5ed3e2d705938a01b97357801f228af288eb4d303fcc9c7dbf23e4",
+        "web/experiments/shared-gpu-c2c/Cargo.toml": "2bdd62092d0f0472484b3c1fb186316b59bf885e72aaee5a2a9e3daff1a1a116",
+        "web/experiments/shared-gpu-c2c/src/lib.rs": "00b5e539d1373edae81948b4e96b3633fda20e439525ad7245551ec0042167e2",
+        "web/scripts/build-shared-gpu-c2c.mjs": "dbabbf028772eaaf29bf3620f96ac36b047f5a46272627df4ce87a6220fbcc5a"
+      },
+      "artifacts": {
+        "ca_wasm_shared_gpu_c2c.d.ts": "1ec3b069adc338099b3c1b992f07a58c8697f5f3af9ca59b7342c55110f5a623",
+        "ca_wasm_shared_gpu_c2c.js": "584a462e0fa111756cbbb7210668924a8ad0c9af42c12d50f5c4ca769882f3e0",
+        "ca_wasm_shared_gpu_c2c_bg.wasm": "1162b06b6488ca866ad035e255c7eabbf381be0144fca906049b89ffe9ea2281",
+        "ca_wasm_shared_gpu_c2c_bg.wasm.d.ts": "967c0818ee5c392a2fa448afd8b9453cb7a0377d8da7569059d220f61924f80a"
+      }
+    },
+    "threads": {
+      "schemaVersion": 1,
+      "mode": "threads",
+      "createdUtc": "2026-10-21T03:55:39.002Z",
+      "compiler": "rustc 1.101.0-nightly (07e526db9 2026-10-19)\nbinary: rustc\ncommit-hash: 07e526db9df34143c99ec8064acc8ad543f69b30\ncommit-date: 2026-10-19\nhost: x86_64-pc-windows-msvc\nrelease: 1.101.0-nightly\nLLVM version: 23.1.4",
+      "bindgenVersion": "wasm-bindgen 0.2.129",
+      "rustflags": "-C target-feature=+simd128,+atomics,+bulk-memory,+mutable-globals -C link-arg=--shared-memory -C link-arg=--import-memory -C link-arg=--max-memory=1073741824 -C link-arg=--export=__wasm_init_tls -C link-arg=--export=__tls_size -C link-arg=--export=__tls_align -C link-arg=--export=__tls_base",
+      "cargoArgs": [
+        "build",
+        "--manifest-path",
+        "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\web\\experiments\\shared-gpu-c2c\\Cargo.toml",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--release",
+        "--locked",
+        "--features",
+        "threads",
+        "-Zbuild-std=panic_abort,std"
+      ],
+      "inputs": {
+        "rust/Cargo.lock": "a1dde16d86a3500d0123af8f41e46364cedd5702bb904e272eace4b56bd79257",
+        "rust/Cargo.toml": "d5c7c77ff7f6ff7b24f65cfe731014d4fdb88656a6cfb0d880a84863d64b78dc",
+        "rust/crates/ca-core/Cargo.toml": "31410f4265e66f314414450b060c39d52ba282621c4716b26eb703eceda7c268",
+        "rust/crates/ca-core/src/bag.rs": "94d807b20f02cf9fb1ed7c63158ef139a43973306f2ed7636a3bbb40c14d30b9",
+        "rust/crates/ca-core/src/cluster.rs": "1eb48ac7f5831c2db32306c8f3d78e3f51958e589c8f98744e5a19186ed6ab2b",
+        "rust/crates/ca-core/src/delaunay.rs": "e81db837bcae5e9707ba1d9d4ca10f44b0708646603448e3c5bd810979df459b",
+        "rust/crates/ca-core/src/distance.rs": "c9371ec4fb0a6fcafe4a775777d3e29035d664714ca54979834f7be708acc3f7",
+        "rust/crates/ca-core/src/dynamic.rs": "5872d51f2e566774d45aee94b971d6e8ffbd5b31b4461dba5b2d9bb0013fec27",
+        "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+        "rust/crates/ca-core/src/geotiff.rs": "36785efa8d8864e8e40d9ca068c592e225e7b7d49c98cf6fee187aae12bb6ac9",
+        "rust/crates/ca-core/src/gicp.rs": "4ee7e1122c0e96facf911f6a6989825712a44099ac15cdf0ef3b4179d3ac8c96",
+        "rust/crates/ca-core/src/gicp_cycle.rs": "5543daad13bb4bcce754ec5a4cdfeeb46f8f5590ced06ba8b183021281b95250",
+        "rust/crates/ca-core/src/gicp_registration.rs": "ce661ea78e2f34d4eb6f9eb6c87e60cf28a76f5d384915d45e77331e44b2a311",
+        "rust/crates/ca-core/src/gicp_shapes.rs": "805b1c5fb24a895bcacb6dd6ae678c8ced61af9b334249548063a83ffece2ec0",
+        "rust/crates/ca-core/src/gicp_transported.rs": "46408f6c1c079b51ca8f166b4f0b6214d2f89fc77292e09141dccca7b68eb4f9",
+        "rust/crates/ca-core/src/ground.rs": "3f0db870f9ebc017573561ca5328bdda1b6fc885c786619349333708175c9665",
+        "rust/crates/ca-core/src/icp.rs": "8c0e8b13718719468492e6e4f5e0dc2c00cdbcb7a0164f3406ec714002dceb7e",
+        "rust/crates/ca-core/src/imu.rs": "5f18d02ffdc8a1ff762af3df040161cf06a893538b4572352a238f8a3900f3c4",
+        "rust/crates/ca-core/src/imu_factor.rs": "0f458a52bee55703a915aa73ca3c110094a6b3c7f8b824cdc27a1e31cd519d96",
+        "rust/crates/ca-core/src/imu_initialization.rs": "9d1e7cb43070cb254c2b3a5b1f0d733484c941abee529a6b580801841746c571",
+        "rust/crates/ca-core/src/imu_rotation.rs": "f36f28c8072054f34c2ae8b9d870251d9d6c4b0c50e95a63be7cbd536bf37acc",
+        "rust/crates/ca-core/src/imu_trajectory.rs": "9b9b27dca63090e455b169d481fed0643695bd3039aa6bc76827936299f60350",
+        "rust/crates/ca-core/src/imu_window.rs": "53ee0a293706bbf6d7d0531af21ea069f6cf1869d68bec921108a3faf2e07e1c",
+        "rust/crates/ca-core/src/io/copc.rs": "ee83822f3d0843d033f63fda4036400e5ae2ab356f9c63b0d6a3bdcadd41a597",
+        "rust/crates/ca-core/src/io/copc_query.rs": "6f365ca5f7370e59c066b5202500755fb5c1f09213571abdbc9b29f15b9b1820",
+        "rust/crates/ca-core/src/io/e57.rs": "22c5a8dc7b942944f03ae976e357bd7c693c7e78a83bc72a4d684fc746568993",
+        "rust/crates/ca-core/src/io/kitti.rs": "e4fddf18e105cd617ee0c8660dc1bda77cd9c61ea1b506cc299dfb4419249f86",
+        "rust/crates/ca-core/src/io/las.rs": "97ee86bc57ab5924e1c37c277f7d7c10d96f41c8052487dfa22e63cb0830fc2e",
+        "rust/crates/ca-core/src/io/las_chunks.rs": "6f7e26401e17b781cb9728228d3113f456ddc59833215c676f152c935f29503c",
+        "rust/crates/ca-core/src/io/las_write.rs": "7104b0ef630e845251dd2bb9f275c4f3166a591c3edf92dcec8d99eb312135b4",
+        "rust/crates/ca-core/src/io/mod.rs": "e0a108f6707dcf741c5007b938675ae3fb2e34d6a140d88c46f7665b0d10cde3",
+        "rust/crates/ca-core/src/io/obj.rs": "b19e1f672498b26a3abbf76d327b206af9989c4d2dcd803165f671a30d18769c",
+        "rust/crates/ca-core/src/io/pcd.rs": "3d60a5fcebb829a67df3a6f5864141da7ce053e04bc848281bd75391e0e5c74b",
+        "rust/crates/ca-core/src/io/ply.rs": "2c8698ea790484c1db0c1d0c9678427b25c573c55774db52b8654d657bb3067e",
+        "rust/crates/ca-core/src/io/scalar.rs": "04e1bb7994af83fb59d7fa7f12ab9ee23586ec674d286b57eaeef72e0c8887f2",
+        "rust/crates/ca-core/src/io/splat.rs": "53acdec7392c65a66e2069c2935d3fa61e3f962ad79cba7b767cf85e0733d9a8",
+        "rust/crates/ca-core/src/io/stl.rs": "95bbedf1b3608a38d7aff62f117f6c005aa0a279b4e7d16eebb0cbd412999c30",
+        "rust/crates/ca-core/src/io/stream.rs": "ac65258ad1d96de66f0ee6c3fdcc2d641797461273cd10bb1acb497cf0d1db85",
+        "rust/crates/ca-core/src/io/write.rs": "fcc9314c1bc93f32e1dd52636c97c5a701cb958394bb56dbef15a0b3353949a6",
+        "rust/crates/ca-core/src/io/xyz.rs": "49286f55ddfb0faaa6a9e36726109782bb4046e9e99204e8f37a1f0284247b77",
+        "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+        "rust/crates/ca-core/src/lib.rs": "e08fefad6ac8a670f12072fa73dc9ee8eeeee482ee4d9f0ec584ff056fb0d948",
+        "rust/crates/ca-core/src/loop_search.rs": "30e3772b49765c6f1c716513694dd1ec5e18e66e1dc730755dee7e9cff6701bf",
+        "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+        "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+        "rust/crates/ca-core/src/merge.rs": "61c3fb9548c15efc35ab57dc80798147a40bfff2be1909a8748f11396420d4c9",
+        "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+        "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+        "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+        "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+        "rust/crates/ca-core/src/odometry.rs": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f",
+        "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+        "rust/crates/ca-core/src/odometry_profile.rs": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+        "rust/crates/ca-core/src/odometry_target_balance.rs": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+        "rust/crates/ca-core/src/point_time.rs": "1145e025fbaa1f50cb152ff58889c00b6cd440e3bb45064ca51511018dde0a43",
+        "rust/crates/ca-core/src/pose_graph.rs": "22169e673aed0c829261cb4e76f8cd968c03dad68d7f8a5554eabe9391b241a4",
+        "rust/crates/ca-core/src/profile.rs": "ce48f96d92b747f9225222dcaf1370b49b8d029c1fae4e82d77a89bb68daaa3a",
+        "rust/crates/ca-core/src/raster.rs": "92d88d8fb601f1baea5d75a0fd69716bf77436ae8a1b15f55f691bbf698ca5fd",
+        "rust/crates/ca-core/src/rosbag2.rs": "5c0ea9f979843bfef084f4a9c691bcdb219b5a588e9b42b8524c3a8ea5c66c44",
+        "rust/crates/ca-core/src/segment.rs": "15f816f744ce2edd33940c067e34a18c21d6b3292c9d106c910625a5f8d7bfd1",
+        "rust/crates/ca-core/src/shapes.rs": "e5932e31c68774383f4f7333e9aac2c75e7a930251a46b0cc7b766a46a530da1",
+        "rust/crates/ca-core/src/trajectory.rs": "8fecd20a9260be103603efa5858221c56450332a49ea7ebf48163036d82a1310",
+        "rust/crates/ca-core/src/vector_map.rs": "b03e6c83ba296a4f45346c99dd8c7c828bf76722e562c80c02025b65713f09ed",
+        "rust/crates/ca-core/src/vector_map/corridors.rs": "a448eb2a25144612c307949abf76ab3eea18da13081675a046aabe734ae1ae57",
+        "rust/crates/ca-core/src/vector_map/crosswalks.rs": "71c70574450653a2e078424a7f5c839faf98c7802fe7f5b3a4baa65c4e114aba",
+        "rust/crates/ca-core/src/vector_map/discovery.rs": "23b3db8aa9d758850efb5b5e644315b03c74a919a245085f066f089e4c1585e2",
+        "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "cbea4ddfb6a1afc3e18a073d6683203815a83169f1ff75a099c2f9c0e670bc6e",
+        "rust/crates/ca-core/src/vector_map/evidence.rs": "cd1189bb39b42ecc3eb3c8356069adb8e0779b4d317dd2b6b3e69a5b22c236fc",
+        "rust/crates/ca-core/src/vector_map/feature_editing.rs": "725cff8a25e095a4a24ed146ef4c807ee7f00146fd6e3a17b9f5ad5e9497f6b4",
+        "rust/crates/ca-core/src/vector_map/fitting.rs": "b2d3a1e2f130a5d296e8c5954a70de8617d1e72e6194efe0c84fdddb33bcecf4",
+        "rust/crates/ca-core/src/vector_map/integration.rs": "662970db0abd31ee42f5faff24162c7544f171891cc416bcaf0f9de241400c3f",
+        "rust/crates/ca-core/src/vector_map/junctions.rs": "85da61860390a38c2470a4e00270a6227707ea059b1a8842c7b0ca70d259516c",
+        "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "37db6fa0394d90e067b1486782ed779faebd08ff5b65ccb0707ac977191e509d",
+        "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "e09c1a1aba04fb5e6abb3a607821b8ffb3aa7b78f1532eb2a493db3bf27fcfb7",
+        "rust/crates/ca-core/src/vector_map/paint_divider.rs": "d145c696082084e6c8c8eb56c81c112890879d8f2f9261543002f31ac9dbf9da",
+        "rust/crates/ca-core/src/vector_map/quality.rs": "58b15c3fa53dc22bb1bb71c36aa95badecb47c6ef0d62f0e2b928390517095c2",
+        "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "db316733520608c28fbced25503fc83cb3e33ef9f7b9c6cece5d30a83d5dc176",
+        "rust/crates/ca-core/src/vector_map/relations.rs": "1fa302063cb4958915ea8311d24027ab98544886422ce0955b230c97f466d38f",
+        "rust/crates/ca-core/src/vector_map/segmentation.rs": "5cdc6641848bcc40c759d4b07e5033cb78ca73bf55b27e4a92796051439ab092",
+        "rust/crates/ca-core/src/vector_map/signals.rs": "48f4c5926203aadb1c8de504fb489f760ab9679af91a087345c06221450d38fd",
+        "rust/crates/ca-core/src/vector_map/surface.rs": "c20bd0ccbf7a3e59d34d9d8522655a0cb4ec4629f40f650f341f999007825c8d",
+        "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "2c58685ce97e4b6a2ae44bbf80aafb3927d203d414c72eb0f4e5782e64cf6415",
+        "rust/crates/ca-core/src/volume.rs": "6842e46cefa1145d750515430a6e4c472996fea20c0bacd4a348b9b432a8990e",
+        "web/experiments/shared-gpu-c2c/Cargo.lock": "b7210cb4fd5ed3e2d705938a01b97357801f228af288eb4d303fcc9c7dbf23e4",
+        "web/experiments/shared-gpu-c2c/Cargo.toml": "2bdd62092d0f0472484b3c1fb186316b59bf885e72aaee5a2a9e3daff1a1a116",
+        "web/experiments/shared-gpu-c2c/src/lib.rs": "00b5e539d1373edae81948b4e96b3633fda20e439525ad7245551ec0042167e2",
+        "web/scripts/build-shared-gpu-c2c.mjs": "dbabbf028772eaaf29bf3620f96ac36b047f5a46272627df4ce87a6220fbcc5a"
+      },
+      "normalizedInputs": {
+        "rust/Cargo.lock": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12",
+        "rust/Cargo.toml": "2b1c299f65ecb0a601e84a230f701dd709347c1e04787e7e1dec94b3a0e67287",
+        "rust/crates/ca-core/Cargo.toml": "84524d63173454cd474c8e20b65e0b64d757e3dd09535eb98175ff990183fb80",
+        "rust/crates/ca-core/src/bag.rs": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27",
+        "rust/crates/ca-core/src/cluster.rs": "079d36fe74ec0ea3f9f5d1595eccafa0035b1dea5b6f1de17f709cbf07388b8d",
+        "rust/crates/ca-core/src/delaunay.rs": "2ef24589d77f892be59ea1e6fb7619a7cbff37f60eb48ea0fbcd4f9e62bdb224",
+        "rust/crates/ca-core/src/distance.rs": "410f865c1af7394f1f154ae8f3b4589b6676ec7ae167fb1b9bf9f64358612ef0",
+        "rust/crates/ca-core/src/dynamic.rs": "2df0614fb291a9e84f0ba0d4dcdff865b31f4ae320fa94f5325d3f1aac65bf44",
+        "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+        "rust/crates/ca-core/src/geotiff.rs": "2c1f567bf444c5962f78cbc6f0a7150a33750c2b30ece29942a7a6e38c89de9f",
+        "rust/crates/ca-core/src/gicp.rs": "e786435b2bdcb710b0a3e25e7521c06d2cc7015c102a796861786d304c21dacd",
+        "rust/crates/ca-core/src/gicp_cycle.rs": "c23efc209e4a3ce0e3733d031f43fa81707ab2687901d98d2f8409fb3e3d9c15",
+        "rust/crates/ca-core/src/gicp_registration.rs": "b4b5503847b3b9ce8a9b45ad5d2e3280c9af22ea65f35521dd6ad1d07d1cb5bd",
+        "rust/crates/ca-core/src/gicp_shapes.rs": "a5b162f271092634ee9b0ab225972c357c5e4e5c731211bcc03fff5f4e551f6e",
+        "rust/crates/ca-core/src/gicp_transported.rs": "f2c2674e9029bd632bba6b6c451e7c7e701d3db8443b0fbc564f6ea9ff926812",
+        "rust/crates/ca-core/src/ground.rs": "f856a75c8f12ff948efac32cfb8b3b42d0360e60f648c20f4e227c317ccb7795",
+        "rust/crates/ca-core/src/icp.rs": "de673c6e7ed6c6e85ee9a3c7a0a479919aefd203bb717527cf8f04bdbb4f9bcc",
+        "rust/crates/ca-core/src/imu.rs": "8179c6e52ae72af670811ceb7ccaaba20bcb1656f0f0570f15655235f9e5b778",
+        "rust/crates/ca-core/src/imu_factor.rs": "fda0361bbdad60809aa050582c6bd2bded6ed02f8373d575c6d878c5eb0a042c",
+        "rust/crates/ca-core/src/imu_initialization.rs": "b99c4cd91abf6acb91eb851403966385a448ebc51d32ba8413399cb8df2190c6",
+        "rust/crates/ca-core/src/imu_rotation.rs": "e0664c9b1b19b9e3b470c5fc7720ffcaa25daea0044a43dca691cb496f5ca8eb",
+        "rust/crates/ca-core/src/imu_trajectory.rs": "6f9c88e0211309f59700a55565c7c6ec877eedb8ab9b0672e6917591f5e5abe9",
+        "rust/crates/ca-core/src/imu_window.rs": "87dc928057bc59185793ba9da2c62ad0bfd00c04a050b69c7e97d9230e0741e9",
+        "rust/crates/ca-core/src/io/copc.rs": "c3476826dd0bea65862f790dc0010c5ea3119d6d997e1c2065be2e5b41c9b942",
+        "rust/crates/ca-core/src/io/copc_query.rs": "455c4af2c600dd22d5a895c5b456d787b4e5bb1316cb527d436b1ecff5f5d53d",
+        "rust/crates/ca-core/src/io/e57.rs": "ae1a84f9a45e5900f883b3ff999502712adeaf0334c3e4a2cbe554489bb585e0",
+        "rust/crates/ca-core/src/io/kitti.rs": "26ebab2c46b34e2cf15c56cce5261742f27288e2eb2131949092f27d35d4856f",
+        "rust/crates/ca-core/src/io/las.rs": "4ec3c8167322da838156b31acb2b9bb510396386b3b5812656d0525731ebff07",
+        "rust/crates/ca-core/src/io/las_chunks.rs": "034e3d2d844b752827014e84742abcf62421ca3a8fae311c10951be66ff1f5e3",
+        "rust/crates/ca-core/src/io/las_write.rs": "6c550c19d4a42cdbc38ca6e475a03e9a1104fd4126739a2889ebca9a66ff8b79",
+        "rust/crates/ca-core/src/io/mod.rs": "1ca32726a6e25794ac93e006ff94d0fbfc20f18cf498db842692203bfd019b19",
+        "rust/crates/ca-core/src/io/obj.rs": "70bb6733f762eced1f004ff07c9ebecdf46f0e1eeaf2bfb98cc19fa1c82e6e64",
+        "rust/crates/ca-core/src/io/pcd.rs": "cab567d7947c1da6ca6ea6da88a1400ab2cd3cf6c6fe4067695b7861eef2d350",
+        "rust/crates/ca-core/src/io/ply.rs": "4f47e5116a4e73f14aa988bdb56461fe5844eca17356b4ade508ed276b43bf5a",
+        "rust/crates/ca-core/src/io/scalar.rs": "46ea569d6b815f511ad6c504f4fb52083ee81cb6f6877f2e1fe51de25ade717c",
+        "rust/crates/ca-core/src/io/splat.rs": "70ddf158833ac1807cdebfefc663541514ff466931db54c0a4158a5d25b67713",
+        "rust/crates/ca-core/src/io/stl.rs": "840682bc1e64af1b47b5b7e722a79981a551d756963ce91e36bd5fc14c7bfd9b",
+        "rust/crates/ca-core/src/io/stream.rs": "ca9101f4b96ded4a0e1bfce6871bd2043b601d5ea7f5419f936fd15ec0de3737",
+        "rust/crates/ca-core/src/io/write.rs": "0f97ad9503bbb312b52f12ce6f71a12abee6a8990eb51526bb880e5374cc3fdf",
+        "rust/crates/ca-core/src/io/xyz.rs": "03cd929c03faa40e2dbef1ce1c524acca20d6392ee69f23b4a9d48170871eb00",
+        "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+        "rust/crates/ca-core/src/lib.rs": "1b0970ecbf4f9062562c0ec7133b1fe2d8e751b44387a666d8122a6ada48d08b",
+        "rust/crates/ca-core/src/loop_search.rs": "e7ff9f4809498882eabadcdf1bddd51ed52300a3c6809b5ef52e74a39a66133e",
+        "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+        "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+        "rust/crates/ca-core/src/merge.rs": "5ca91917dd274fcc0c00a6d7c88766e19fcfbe4a79a0d40ebad7ba2affba1d15",
+        "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+        "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+        "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+        "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+        "rust/crates/ca-core/src/odometry.rs": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f",
+        "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+        "rust/crates/ca-core/src/odometry_profile.rs": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+        "rust/crates/ca-core/src/odometry_target_balance.rs": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+        "rust/crates/ca-core/src/point_time.rs": "dcf1421fd44d8a3964493dd09355e3c84d75bb82076013f631fd63d33f7c1616",
+        "rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799",
+        "rust/crates/ca-core/src/profile.rs": "59f9ad78d46326e876cb51f689910d7ca7858d24c3624d4482bdf7b807a6f31c",
+        "rust/crates/ca-core/src/raster.rs": "628b6f003c20af7216c61dd55099d4662328039c6a78a8fd012bfbb97f806f25",
+        "rust/crates/ca-core/src/rosbag2.rs": "79a28698dc5845c2c66ac2432ac52f4f3800d479992e056c4dbf7eeef909cd3e",
+        "rust/crates/ca-core/src/segment.rs": "bd72608909130122615969a2d68d9c01845d637c32fc14963dc982f0985b8257",
+        "rust/crates/ca-core/src/shapes.rs": "1f1713298357d3857433373fa3663fe8643086aecc86381303c5e019e9bfd1bf",
+        "rust/crates/ca-core/src/trajectory.rs": "6deb08d34f5f4a0abf8ac9c9147647747cd92abe0db2ce525f5da61f8a9c3e58",
+        "rust/crates/ca-core/src/vector_map.rs": "bf394963d140a6eb0e2262a678faf9645bdce2d0cd7617904da34a43ed8fd8f2",
+        "rust/crates/ca-core/src/vector_map/corridors.rs": "e68ecb82589f3b52296d6abb0723553a95245f99000f2b1e6bddf066ccd01ba7",
+        "rust/crates/ca-core/src/vector_map/crosswalks.rs": "2d69b6429598bfe212d372b49744fc45117609271d77c4d12f95b8c1c8369c79",
+        "rust/crates/ca-core/src/vector_map/discovery.rs": "7129c127883a5a759e48ef823ca803b0878b642f1c9e3b647a428619ed6a927a",
+        "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "eb4c05d9edc1770042e155437876c21efae44907e93b9725e1bd8c53b5088301",
+        "rust/crates/ca-core/src/vector_map/evidence.rs": "dfc796728c2b8a1881f60c75f0c1caf102fa028f88aae481e26615d96e0cdea4",
+        "rust/crates/ca-core/src/vector_map/feature_editing.rs": "822d0c8b037826ee7f3cfe28ee4dd81b962cf81cfe34bbafa6826e4a4760f775",
+        "rust/crates/ca-core/src/vector_map/fitting.rs": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60",
+        "rust/crates/ca-core/src/vector_map/integration.rs": "527554f31539257b4590cef0e7a1cb1205d03aef055d12c5c395100ae57bd3a3",
+        "rust/crates/ca-core/src/vector_map/junctions.rs": "2338f1ef2b603e000a734d143836826dcd78e9434e3b004d840f3a6de90884f1",
+        "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "e317ec1b13b1467c6d0d8c0c8fd9cb1795612e5b904f53a8139d89e454c38568",
+        "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "adc4fbd658a91b9f102c73128a1b2bbe252cae22247a745f077b692cb2d5ad84",
+        "rust/crates/ca-core/src/vector_map/paint_divider.rs": "f963ed9c38e6681dc0753aeb0a75f3b11c5f9e299e4a613989be2345bfaf0204",
+        "rust/crates/ca-core/src/vector_map/quality.rs": "cc9068bd9375fe0ea5cc326f46a6d4301e3616fbe9eec4d5b70fd2176cbf9486",
+        "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "29a3032e4c84c800775853e846a926ee7c8e1c1071862ab6569bd53915f5755e",
+        "rust/crates/ca-core/src/vector_map/relations.rs": "49a22608c60c4cc62adc186894f1f064685a86dfa23365c15b14d6f2d4c22204",
+        "rust/crates/ca-core/src/vector_map/segmentation.rs": "d6be5e3e38627fffdfab4beeb108f5f0390215020838deb97f2c25d7aea0dcc5",
+        "rust/crates/ca-core/src/vector_map/signals.rs": "e0dbaecc81df7da5f490261c58d6c938ec6066d29823f8bd455fb92f882de5cb",
+        "rust/crates/ca-core/src/vector_map/surface.rs": "fbd80681a0c085e72526cdb9cc9ff53213ff613435e3b9887677348ead9817c2",
+        "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "41ea32508d05136f1a5383a1aec45042263e7f052492ad8b3f27e7b7c897f371",
+        "rust/crates/ca-core/src/volume.rs": "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4",
+        "web/experiments/shared-gpu-c2c/Cargo.lock": "b7210cb4fd5ed3e2d705938a01b97357801f228af288eb4d303fcc9c7dbf23e4",
+        "web/experiments/shared-gpu-c2c/Cargo.toml": "2bdd62092d0f0472484b3c1fb186316b59bf885e72aaee5a2a9e3daff1a1a116",
+        "web/experiments/shared-gpu-c2c/src/lib.rs": "00b5e539d1373edae81948b4e96b3633fda20e439525ad7245551ec0042167e2",
+        "web/scripts/build-shared-gpu-c2c.mjs": "dbabbf028772eaaf29bf3620f96ac36b047f5a46272627df4ce87a6220fbcc5a"
+      },
+      "artifacts": {
+        "ca_wasm_shared_gpu_c2c.d.ts": "6804b4d520633e956457471b87eb4d797b679aab9ee45cf3e7dab3d8b7b62402",
+        "ca_wasm_shared_gpu_c2c.js": "e05c112e433c7982a4d11b81c14909e3782e67dcfaea83f5d50adf3c03f90183",
+        "ca_wasm_shared_gpu_c2c_bg.wasm": "af0f59e77e27c3bbdfe06909af2864d7d9f8a3800521d5d360d22c9bdd189dda",
+        "ca_wasm_shared_gpu_c2c_bg.wasm.d.ts": "18a6b5dcb4570b54ac8de3c8842b904d15ad67091196a391dce3bbdb4f872f91",
+        "snippets/wasm-bindgen-rayon-38edf6e439f6d70d/src/workerHelpers.no-bundler.js": "9801503f464f848c6c7405462fca9a5c721556904c5fee5ee0afcb0887ea1b7f"
+      }
+    },
+    "driver": {
+      "schemaVersion": 1,
+      "normalizedInputs": {
+        "web/experiments/shared-gpu-c2c/driver.ts": "f103634062edf61b41fd6f23c7c58eb16441ab1d8ae8207f6769e6d3eb0eaf54",
+        "web/scripts/build-shared-gpu-driver.mjs": "2f182ddbf20dfa9d6a3ca495386796da3c220230dbb098cc916e06d901df2aa2",
+        "web/package.json": "1b69b6e7d9c43f2dda55f4dc0683200f13d8e491b87350cb2a7416623b039124",
+        "web/package-lock.json": "50b7341b036461456dfe5b33a474f473d488ccaff2333b7da68ae8c4bdc6e770",
+        "web/src/gpu-verifiers.ts": "d564568d5964c0e20058f068e990fe2f27b7f3144b86bc91c97a424d3320e0da",
+        "web/src/gpu-candidates.ts": "64581efaf65094054b086caa0abe2c2e70256475eab9010405249ff2ee06b586",
+        "web/src/pool.ts": "e9d31924dac65157a70b69c53adad64b670eb1803fa4f636b929e1c88f0d40d6",
+        "web/src/c2c-worker.ts": "db904cf68a8d2f1b722ccf8ae9ab2088d8cfdd6fc3bf78615af906fc75237240",
+        "web/src/protocol.ts": "ab78c071010caa89b8770e4a3a1cf2436cf0d83f3eca66748c913df26717b457",
+        "web/src/wasm/ca_wasm.js": "c41105b92fe4d8892b2577f41d00e9bbf48c2e84a9e7a31fa910378c6b289260",
+        "web/src/wasm/ca_wasm_bg.wasm": "65f4be55a24dbb1f418e757bf9088005b92b974204e33ef420492b67aec1b0ac"
+      },
+      "artifacts": {
+        "assets/c2c-worker-vTOfZQ5_.js": "427a088be0fb7c64cb36bed7e9fb16bee9252b3c610c8741f2bcbdcad3fe9d46",
+        "assets/ca_wasm_bg-DUVFAHFQ.wasm": "65f4be55a24dbb1f418e757bf9088005b92b974204e33ef420492b67aec1b0ac",
+        "driver.js": "5f0de9c0cce261916eef4c5a3c95f8cba8b6fa63bb6b18519a6c0ddb8c02a3df"
+      }
+    }
+  },
+  "inputManifestSha256": "fbb6f1ea135f910469a501ccafce898b45587351d568b2635b501847406c87da",
+  "sources": {
+    "web/scripts/benchmark-shared-gpu-c2c.mjs": "f7efdcec8f4a3ab0cff848d3ac6b839e733f1d59de5391ff9955efd56acc6675",
+    "web/experiments/shared-gpu-c2c/worker.mjs": "04b9123251feae4be33704ffe3b2c560db2350fd0fbfc4076f404a6a208101d9",
+    "web/experiments/shared-gpu-c2c/coi-sw.js": "493728b990b88b429cc29991a2128214540d2d666143c2a70aedea9537c15f1b"
+  },
+  "commit": "2f6275e4d1cc09f9033c9917437342075bd6406e",
+  "note": "Standalone shared candidate-verification experiment. No production defaults or isolation registration change. A plain HTTP static server and experiment-scoped service worker isolate the page and nested workers. Driver caps production pool capacity to threads+1 before initialization. Production candidate shader, f64 verification and ordered summary arithmetic are reused. Fixed pipeline reuses identical captured physical-WebGPU hints; GPU pipeline repeats rounded query packing, actual dispatch/readback and one-batch prefetch before verification. All modes retain identical owner tree and immutable query order. Pool streams exact query coordinates per batch; pool-staged retains distributed queries once per job. Both share the same production per-lane reference trees. Shared serial and parallel hold one extra imported tree and full query snapshot in the same threaded binary; stable serial is an untimed correctness/fallback control. Initialization, imports and first calls are separate; prepare boundaries differ and do not establish cold whole-job speedup. Warm RPC times include the complete chosen pipeline, exact verification, ordered f64 summaries, f32 export and output transfer; diagnostic f64 exports occur only outside timed trials. GPU wait and verification intervals can overlap and must not be summed into wall time. Snapshot transfer bytes describe wire payload, not retained tree allocation. WASM committed pages are high-water counters, not RSS; all alternatives coexist, so no whole-application memory-saving claim is made. Measured point subsets are not independent surveys or SLAM-accuracy ground truth. Other host activity, GC, clocks and power are uncontrolled. No adapter identity is collected.",
+  "browserVersion": "153.0.8010.12",
+  "preflight": {
+    "rejectedUnisolatedThreads": true,
+    "serialFallbackInitialized": true
+  },
+  "measurement": {
+    "isolated": true,
+    "actualHardwareConcurrency": 12,
+    "initialization": {
+      "value": {
+        "wasmInitMillis": 36.36500000953674,
+        "poolInitMillis": 4540.415000200272,
+        "sharedInitMillis": 107.55999994277954,
+        "sharedInit": {
+          "threads": 4,
+          "isolated": true,
+          "indices": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "committedBytes": 9895936,
+          "sharedMemory": true,
+          "snapshotBytes": 0,
+          "queryBytes": 0
+        },
+        "gpuInitMillis": 474.4850001335144,
+        "physicalGpuRequired": true,
+        "effectivePoolSize": 4,
+        "mainCommittedBytes": 1310720,
+        "poolCommittedBytes": 84934656
+      },
+      "elapsedMillis": 5185.050000190735
+    },
+    "preparation": {
+      "value": {
+        "referenceCount": 531908,
+        "queryCount": 531908,
+        "batchSize": 131072,
+        "commonPrepareMillis": 259.0499999523163,
+        "poolReferenceMillis": 120.49000000953674,
+        "poolQueryMillis": 9.475000143051147,
+        "sharedPrepareMillis": 91.20000004768372,
+        "gpuPrepareMillis": 420.57999992370605,
+        "hintCaptureMillis": 129.17499995231628,
+        "poolWorkers": 4,
+        "poolReferenceReused": true,
+        "poolSnapshotTransferredBytes": 67328160,
+        "poolStagedQueryBytes": 12765792,
+        "sharedSnapshotTransferredBytes": 16832040,
+        "sharedQueryBytes": 12765792,
+        "sharedMemory": {
+          "committedBytes": 83427328,
+          "sharedMemory": true,
+          "snapshotBytes": 16832040,
+          "queryBytes": 12765792
+        },
+        "candidateSource": "physical-webgpu",
+        "mainCommittedBytes": 86376448,
+        "poolCommittedBytes": 198443008
+      },
+      "elapsedMillis": 1030.9100000858307
+    },
+    "guards": {
+      "rejectedNonfiniteReplacement": true,
+      "rejectedInvalidSnapshot": true,
+      "rejectedRange": true,
+      "rejectedNegativeRange": true,
+      "failedReplacementPreservedSnapshot": true
+    },
+    "releaseVerified": true,
+    "memory": {
+      "committedBytes": 83427328,
+      "sharedMemory": true,
+      "snapshotBytes": 0,
+      "queryBytes": 0
+    },
+    "inputPointCountsVerified": true,
+    "candidateSource": "physical-webgpu",
+    "candidateSha256": "4634c17eb3e254d95fb9d88e21b225c3756347ef6659242a5a55cf0aaea21581",
+    "exactF64Sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9",
+    "displayedF32Sha256": "9b876ddcf492e4fcfaf5d094cf75c774d4ef2f7dc8d431bee18c13c5e9278dcd",
+    "stats": {
+      "count": 531908,
+      "min": 0.0011159376115308776,
+      "max": 22.133454559864617,
+      "mean": 0.1122068329956848,
+      "rms": 0.2091378612746644,
+      "stdDev": 0.17648872952010075,
+      "median": 0.07472814965335946
+    },
+    "certified": 235714,
+    "exactDistancesMatchFullSearch": true,
+    "distanceBitsExact": true,
+    "summaryFieldsExact": true,
+    "certificateCountsExact": true,
+    "stableSerialBitsExact": true,
+    "measurements": {
+      "fixed": {
+        "cold": {
+          "pool": {
+            "elapsedMillis": 136.42499995231628,
+            "workerMillis": 136.0199999809265,
+            "verifyMillis": 113.43499994277954,
+            "gpuWaitMillis": 0,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008
+          },
+          "pool-staged": {
+            "elapsedMillis": 113.67499995231628,
+            "workerMillis": 113.24000000953674,
+            "verifyMillis": 103.94500017166138,
+            "gpuWaitMillis": 0,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008
+          },
+          "shared-serial": {
+            "elapsedMillis": 277.0150001049042,
+            "workerMillis": 276.6100001335144,
+            "verifyMillis": 268.0499997138977,
+            "gpuWaitMillis": 0,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008,
+            "sharedCommittedBytes": 83427328
+          },
+          "shared": {
+            "elapsedMillis": 91.62999987602234,
+            "workerMillis": 91.1800000667572,
+            "verifyMillis": 81.62499976158142,
+            "gpuWaitMillis": 0,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008,
+            "sharedCommittedBytes": 83427328
+          }
+        },
+        "warming": [
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 104.65999984741211,
+                "workerMillis": 104.22000002861023,
+                "verifyMillis": 94.14000010490417,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 98.61999988555908,
+                "workerMillis": 98.19000005722046,
+                "verifyMillis": 90.15000009536743,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 357.32999992370605,
+                "workerMillis": 356.9949998855591,
+                "verifyMillis": 349.1650002002716,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 98.24499988555908,
+                "workerMillis": 97.87999987602234,
+                "verifyMillis": 87.96999979019165,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 94.5699999332428,
+                "workerMillis": 94.25999999046326,
+                "verifyMillis": 83.85999989509583,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 261.4450001716614,
+                "workerMillis": 261.15000009536743,
+                "verifyMillis": 252.5,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 87.1949999332428,
+                "workerMillis": 86.875,
+                "verifyMillis": 78.85999989509583,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 95.99500012397766,
+                "workerMillis": 95.59999990463257,
+                "verifyMillis": 87.4549994468689,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 363.75,
+                "workerMillis": 363.4150002002716,
+                "verifyMillis": 354.1600000858307,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 95.17499995231628,
+                "workerMillis": 94.86500000953674,
+                "verifyMillis": 85.26500010490417,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 113.32500004768372,
+                "workerMillis": 113.01500010490417,
+                "verifyMillis": 102.9300000667572,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 95.08999991416931,
+                "workerMillis": 94.77500009536743,
+                "verifyMillis": 86.9300000667572,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared",
+              "pool",
+              "pool-staged",
+              "shared-serial"
+            ],
+            "results": {
+              "shared": {
+                "elapsedMillis": 89.93500018119812,
+                "workerMillis": 89.60500001907349,
+                "verifyMillis": 80.49500012397766,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 97.85999989509583,
+                "workerMillis": 97.54499983787537,
+                "verifyMillis": 88.47000026702881,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 89.91499996185303,
+                "workerMillis": 89.61500000953674,
+                "verifyMillis": 78.22499990463257,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 322.49000000953674,
+                "workerMillis": 322.1949999332428,
+                "verifyMillis": 313.01000022888184,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 101.99000000953674,
+                "workerMillis": 101.70499992370605,
+                "verifyMillis": 92.8349997997284,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 96.66499996185303,
+                "workerMillis": 96.375,
+                "verifyMillis": 88.07999968528748,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 254.33500003814697,
+                "workerMillis": 254.02999997138977,
+                "verifyMillis": 244.8399999141693,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 89.04999995231628,
+                "workerMillis": 88.72000002861023,
+                "verifyMillis": 78.78000020980835,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          }
+        ],
+        "trials": [
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 113.51999998092651,
+                "workerMillis": 113.15499997138977,
+                "verifyMillis": 99.30499982833862,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 332.38499999046326,
+                "workerMillis": 332.0550000667572,
+                "verifyMillis": 322.6049997806549,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 91.66999983787537,
+                "workerMillis": 91.39499998092651,
+                "verifyMillis": 82.66999983787537,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 117.31000018119812,
+                "workerMillis": 116.99000000953674,
+                "verifyMillis": 108.32999992370605,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 319.38499999046326,
+                "workerMillis": 318.8949999809265,
+                "verifyMillis": 310.4300003051758,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 102.74000000953674,
+                "workerMillis": 102.43499994277954,
+                "verifyMillis": 88.07500004768372,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 108.54999995231628,
+                "workerMillis": 108.22000002861023,
+                "verifyMillis": 98.46499991416931,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 151.25499987602234,
+                "workerMillis": 150.95499992370605,
+                "verifyMillis": 140.67499995231628,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared",
+              "pool",
+              "pool-staged",
+              "shared-serial"
+            ],
+            "results": {
+              "shared": {
+                "elapsedMillis": 103.92499995231628,
+                "workerMillis": 103.63499999046326,
+                "verifyMillis": 93.30499958992004,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 127.64499998092651,
+                "workerMillis": 127.33000016212463,
+                "verifyMillis": 115.9949996471405,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 106.12999987602234,
+                "workerMillis": 105.4300000667572,
+                "verifyMillis": 94.21000003814697,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 280.18499994277954,
+                "workerMillis": 279.64999985694885,
+                "verifyMillis": 269.68499994277954,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 132.27500009536743,
+                "workerMillis": 131.96000003814697,
+                "verifyMillis": 117.69999980926514,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 166.65499997138977,
+                "workerMillis": 166.3050000667572,
+                "verifyMillis": 156.08000016212463,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 344.9650001525879,
+                "workerMillis": 344.59500002861023,
+                "verifyMillis": 334.4249999523163,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 97.0550000667572,
+                "workerMillis": 96.71000003814697,
+                "verifyMillis": 86.35500001907349,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 124.60999989509583,
+                "workerMillis": 124.29999995231628,
+                "verifyMillis": 114.77499985694885,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 381.3399999141693,
+                "workerMillis": 380.9300000667572,
+                "verifyMillis": 371.00499987602234,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 105.25999999046326,
+                "workerMillis": 104.92000007629395,
+                "verifyMillis": 94.47500014305115,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 127.0550000667572,
+                "workerMillis": 126.72500014305115,
+                "verifyMillis": 116.60000014305115,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 371.40499997138977,
+                "workerMillis": 371.1050000190735,
+                "verifyMillis": 361.125,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 98.61500000953674,
+                "workerMillis": 98.26999998092651,
+                "verifyMillis": 88.90499997138977,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 123.84500002861023,
+                "workerMillis": 123.52999997138977,
+                "verifyMillis": 113.58000040054321,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 101.92499995231628,
+                "workerMillis": 101.56500005722046,
+                "verifyMillis": 90.99500036239624,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared",
+              "pool",
+              "pool-staged",
+              "shared-serial"
+            ],
+            "results": {
+              "shared": {
+                "elapsedMillis": 126.28000020980835,
+                "workerMillis": 126.00500011444092,
+                "verifyMillis": 115.86499977111816,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 118.41000008583069,
+                "workerMillis": 118.10999989509583,
+                "verifyMillis": 108.10500001907349,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 107.92499995231628,
+                "workerMillis": 107.58000016212463,
+                "verifyMillis": 98.01999998092651,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 280.30999994277954,
+                "workerMillis": 279.9849998950958,
+                "verifyMillis": 271.84999990463257,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 107.00999999046326,
+                "workerMillis": 106.73000001907349,
+                "verifyMillis": 97.84499979019165,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 154.91999983787537,
+                "workerMillis": 154.63000011444092,
+                "verifyMillis": 144.1800000667572,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 292.5699999332428,
+                "workerMillis": 292.2699999809265,
+                "verifyMillis": 283.2449996471405,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 94.08500003814697,
+                "workerMillis": 93.75500011444092,
+                "verifyMillis": 84.47000002861023,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 94.62999987602234,
+                "workerMillis": 94.3199999332428,
+                "verifyMillis": 85.4300000667572,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 270.42000007629395,
+                "workerMillis": 270.1100001335144,
+                "verifyMillis": 262.7149999141693,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 118.39499998092651,
+                "workerMillis": 118.06500005722046,
+                "verifyMillis": 108.54500007629395,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 133.77999997138977,
+                "workerMillis": 133.44500017166138,
+                "verifyMillis": 123.27999973297119,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 278.1899998188019,
+                "workerMillis": 277.875,
+                "verifyMillis": 267.94000005722046,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 84.86999988555908,
+                "workerMillis": 84.55999994277954,
+                "verifyMillis": 76.51999998092651,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 96.9300000667572,
+                "workerMillis": 96.22500014305115,
+                "verifyMillis": 88.96000003814697,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 84.02999997138977,
+                "workerMillis": 83.5550000667572,
+                "verifyMillis": 76.9300000667572,
+                "gpuWaitMillis": 0,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          }
+        ]
+      },
+      "gpu": {
+        "cold": {
+          "pool": {
+            "elapsedMillis": 139.22000002861023,
+            "workerMillis": 138.8550000190735,
+            "verifyMillis": 90.13499975204468,
+            "gpuWaitMillis": 22.140000104904175,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008
+          },
+          "pool-staged": {
+            "elapsedMillis": 187.2150001525879,
+            "workerMillis": 186.57999992370605,
+            "verifyMillis": 141.0699999332428,
+            "gpuWaitMillis": 20.014999866485596,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008
+          },
+          "shared-serial": {
+            "elapsedMillis": 324.7300000190735,
+            "workerMillis": 324.2849998474121,
+            "verifyMillis": 278.77999997138977,
+            "gpuWaitMillis": 20.079999923706055,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008,
+            "sharedCommittedBytes": 83427328
+          },
+          "shared": {
+            "elapsedMillis": 126.19500017166138,
+            "workerMillis": 125.5699999332428,
+            "verifyMillis": 77.27500009536743,
+            "gpuWaitMillis": 23.52500009536743,
+            "poolReferenceReused": true,
+            "mainCommittedBytes": 86376448,
+            "poolCommittedBytes": 198443008,
+            "sharedCommittedBytes": 83427328
+          }
+        },
+        "warming": [
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 171.35000014305115,
+                "workerMillis": 170.92499995231628,
+                "verifyMillis": 120.34999990463257,
+                "gpuWaitMillis": 21.28499960899353,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 157.07999992370605,
+                "workerMillis": 156.75,
+                "verifyMillis": 105.25999999046326,
+                "gpuWaitMillis": 19.575000047683716,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 349.97000002861023,
+                "workerMillis": 349.47499990463257,
+                "verifyMillis": 302.1950001716614,
+                "gpuWaitMillis": 20.174999713897705,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 129.74000000953674,
+                "workerMillis": 129.44000005722046,
+                "verifyMillis": 82.90999984741211,
+                "gpuWaitMillis": 23.15999984741211,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 144.6800000667572,
+                "workerMillis": 144.33000016212463,
+                "verifyMillis": 90.94000005722046,
+                "gpuWaitMillis": 21.165000438690186,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 288.61500000953674,
+                "workerMillis": 288.335000038147,
+                "verifyMillis": 244.06500029563904,
+                "gpuWaitMillis": 20.440000295639038,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 167.93499994277954,
+                "workerMillis": 167.6600000858307,
+                "verifyMillis": 115.68499994277954,
+                "gpuWaitMillis": 25.360000133514404,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 135.91499996185303,
+                "workerMillis": 135.59500002861023,
+                "verifyMillis": 89.25999999046326,
+                "gpuWaitMillis": 22.12999987602234,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 291.3550000190735,
+                "workerMillis": 290.95500016212463,
+                "verifyMillis": 248.05499982833862,
+                "gpuWaitMillis": 20.515000104904175,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 121.54500007629395,
+                "workerMillis": 120.90999984741211,
+                "verifyMillis": 71.20499992370605,
+                "gpuWaitMillis": 28.759999752044678,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 132.79500007629395,
+                "workerMillis": 132.25999999046326,
+                "verifyMillis": 89.81499981880188,
+                "gpuWaitMillis": 20.395000219345093,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 133.5849997997284,
+                "workerMillis": 133.29500007629395,
+                "verifyMillis": 85.4300000667572,
+                "gpuWaitMillis": 22.62999987602234,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared",
+              "pool",
+              "pool-staged",
+              "shared-serial"
+            ],
+            "results": {
+              "shared": {
+                "elapsedMillis": 164.21000003814697,
+                "workerMillis": 163.90000009536743,
+                "verifyMillis": 115.59500002861023,
+                "gpuWaitMillis": 21.424999713897705,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 137.67000007629395,
+                "workerMillis": 137.375,
+                "verifyMillis": 90.53999972343445,
+                "gpuWaitMillis": 21.820000171661377,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 141,
+                "workerMillis": 140.7350001335144,
+                "verifyMillis": 92.90999984741211,
+                "gpuWaitMillis": 22.02500009536743,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 297.13499999046326,
+                "workerMillis": 296.8250000476837,
+                "verifyMillis": 253.86999988555908,
+                "gpuWaitMillis": 20.234999895095825,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 134.6949999332428,
+                "workerMillis": 134.38499999046326,
+                "verifyMillis": 89.75000023841858,
+                "gpuWaitMillis": 19.660000324249268,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 179.97000002861023,
+                "workerMillis": 179.65500020980835,
+                "verifyMillis": 126.36500000953674,
+                "gpuWaitMillis": 19.430000066757202,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 333.69000005722046,
+                "workerMillis": 333.414999961853,
+                "verifyMillis": 284.0799996852875,
+                "gpuWaitMillis": 19.785000324249268,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 608.8499999046326,
+                "workerMillis": 608.5,
+                "verifyMillis": 87.20499992370605,
+                "gpuWaitMillis": 485.4650001525879,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          }
+        ],
+        "trials": [
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 143.6600000858307,
+                "workerMillis": 142.83500003814697,
+                "verifyMillis": 96.75,
+                "gpuWaitMillis": 21.21499991416931,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 322.75999999046326,
+                "workerMillis": 322.4500000476837,
+                "verifyMillis": 274.7350001335144,
+                "gpuWaitMillis": 22.110000133514404,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 638.085000038147,
+                "workerMillis": 637.7599999904633,
+                "verifyMillis": 115.82499980926514,
+                "gpuWaitMillis": 490.49000000953674,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 142.54499983787537,
+                "workerMillis": 141.78999996185303,
+                "verifyMillis": 95.74500036239624,
+                "gpuWaitMillis": 19.390000104904175,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 326.039999961853,
+                "workerMillis": 325.64999985694885,
+                "verifyMillis": 279.39499974250793,
+                "gpuWaitMillis": 20.950000047683716,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 131.61499977111816,
+                "workerMillis": 131.30999994277954,
+                "verifyMillis": 85.85500001907349,
+                "gpuWaitMillis": 19.59000015258789,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 140.49000000953674,
+                "workerMillis": 140.16999983787537,
+                "verifyMillis": 92.49999976158142,
+                "gpuWaitMillis": 21.225000143051147,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 188.99000000953674,
+                "workerMillis": 188.6800000667572,
+                "verifyMillis": 133.21000003814697,
+                "gpuWaitMillis": 26.15000009536743,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared",
+              "pool",
+              "pool-staged",
+              "shared-serial"
+            ],
+            "results": {
+              "shared": {
+                "elapsedMillis": 129.375,
+                "workerMillis": 129.06500005722046,
+                "verifyMillis": 81.02000021934509,
+                "gpuWaitMillis": 22.21500015258789,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 138.97500014305115,
+                "workerMillis": 138.70499992370605,
+                "verifyMillis": 90.17499995231628,
+                "gpuWaitMillis": 20.41000008583069,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 121.69000005722046,
+                "workerMillis": 121.39999985694885,
+                "verifyMillis": 78.12000012397766,
+                "gpuWaitMillis": 21.039999961853027,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 268.0050001144409,
+                "workerMillis": 267.6599998474121,
+                "verifyMillis": 226.74500012397766,
+                "gpuWaitMillis": 19.15499997138977,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 135.5199999809265,
+                "workerMillis": 135.25999999046326,
+                "verifyMillis": 89.23000025749207,
+                "gpuWaitMillis": 21.924999952316284,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 174.74500012397766,
+                "workerMillis": 174.4300000667572,
+                "verifyMillis": 125.38500022888184,
+                "gpuWaitMillis": 20.165000200271606,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 308.4800000190735,
+                "workerMillis": 308.18499994277954,
+                "verifyMillis": 262.2849998474121,
+                "gpuWaitMillis": 20.665000200271606,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 123.90000009536743,
+                "workerMillis": 123.59000015258789,
+                "verifyMillis": 77.39000010490417,
+                "gpuWaitMillis": 23.33999991416931,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 128.15000009536743,
+                "workerMillis": 127.875,
+                "verifyMillis": 84.09499955177307,
+                "gpuWaitMillis": 20.40499973297119,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 391.57499980926514,
+                "workerMillis": 391.2550001144409,
+                "verifyMillis": 345.5550000667572,
+                "gpuWaitMillis": 20.05999994277954,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 595.2750000953674,
+                "workerMillis": 594.9099998474121,
+                "verifyMillis": 81.51000022888184,
+                "gpuWaitMillis": 486.3349997997284,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 130.15499997138977,
+                "workerMillis": 129.85999989509583,
+                "verifyMillis": 83.89000010490417,
+                "gpuWaitMillis": 21.885000467300415,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 389.19000005722046,
+                "workerMillis": 388.875,
+                "verifyMillis": 341.4200003147125,
+                "gpuWaitMillis": 21.259999990463257,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 589.4750001430511,
+                "workerMillis": 588.7999999523163,
+                "verifyMillis": 82.25499963760376,
+                "gpuWaitMillis": 480.5200002193451,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 140.33500003814697,
+                "workerMillis": 139.8400001525879,
+                "verifyMillis": 91.3600001335144,
+                "gpuWaitMillis": 21.96000051498413,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 193.05999994277954,
+                "workerMillis": 192.7350001335144,
+                "verifyMillis": 134.7299997806549,
+                "gpuWaitMillis": 20.93000030517578,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared",
+              "pool",
+              "pool-staged",
+              "shared-serial"
+            ],
+            "results": {
+              "shared": {
+                "elapsedMillis": 140.12000012397766,
+                "workerMillis": 139.81500005722046,
+                "verifyMillis": 88.3349997997284,
+                "gpuWaitMillis": 20.75,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 138.3199999332428,
+                "workerMillis": 138.00499987602234,
+                "verifyMillis": 93.78000020980835,
+                "gpuWaitMillis": 20.134999990463257,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 147.52500009536743,
+                "workerMillis": 147.21000003814697,
+                "verifyMillis": 96.32499980926514,
+                "gpuWaitMillis": 25.329999685287476,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 760.2549998760223,
+                "workerMillis": 759.9800000190735,
+                "verifyMillis": 243.76000022888184,
+                "gpuWaitMillis": 495.29499983787537,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool",
+              "pool-staged",
+              "shared-serial",
+              "shared"
+            ],
+            "results": {
+              "pool": {
+                "elapsedMillis": 127.61500000953674,
+                "workerMillis": 127.36500000953674,
+                "verifyMillis": 81.41500043869019,
+                "gpuWaitMillis": 23.71000027656555,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 125.24500012397766,
+                "workerMillis": 124.98499989509583,
+                "verifyMillis": 80.93000030517578,
+                "gpuWaitMillis": 20.46999955177307,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 285.7850000858307,
+                "workerMillis": 285.47500014305115,
+                "verifyMillis": 240.67499947547913,
+                "gpuWaitMillis": 20.855000019073486,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 153.18999981880188,
+                "workerMillis": 152.8550000190735,
+                "verifyMillis": 92.83000040054321,
+                "gpuWaitMillis": 21.505000114440918,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              }
+            }
+          },
+          {
+            "order": [
+              "pool-staged",
+              "shared-serial",
+              "shared",
+              "pool"
+            ],
+            "results": {
+              "pool-staged": {
+                "elapsedMillis": 129.55000019073486,
+                "workerMillis": 129.06500005722046,
+                "verifyMillis": 80.77000021934509,
+                "gpuWaitMillis": 22.329999685287476,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "shared-serial": {
+                "elapsedMillis": 277.54499983787537,
+                "workerMillis": 277.22500014305115,
+                "verifyMillis": 236.37500023841858,
+                "gpuWaitMillis": 21.075000047683716,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 123.72000002861023,
+                "workerMillis": 123.4300000667572,
+                "verifyMillis": 70.03000020980835,
+                "gpuWaitMillis": 29.084999799728394,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 120.77499985694885,
+                "workerMillis": 120.50999999046326,
+                "verifyMillis": 76.17999982833862,
+                "gpuWaitMillis": 23.044999837875366,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          },
+          {
+            "order": [
+              "shared-serial",
+              "shared",
+              "pool",
+              "pool-staged"
+            ],
+            "results": {
+              "shared-serial": {
+                "elapsedMillis": 317.8949999809265,
+                "workerMillis": 317.63500022888184,
+                "verifyMillis": 275.1749999523163,
+                "gpuWaitMillis": 20.145000219345093,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "shared": {
+                "elapsedMillis": 127.26999998092651,
+                "workerMillis": 126.93499994277954,
+                "verifyMillis": 80.02499985694885,
+                "gpuWaitMillis": 23.820000171661377,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008,
+                "sharedCommittedBytes": 83427328
+              },
+              "pool": {
+                "elapsedMillis": 128.17000007629395,
+                "workerMillis": 127.86500000953674,
+                "verifyMillis": 81.93499994277954,
+                "gpuWaitMillis": 21.87000012397766,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              },
+              "pool-staged": {
+                "elapsedMillis": 121.91499996185303,
+                "workerMillis": 121.58500003814697,
+                "verifyMillis": 77.4850001335144,
+                "gpuWaitMillis": 21.670000076293945,
+                "poolReferenceReused": true,
+                "mainCommittedBytes": 86376448,
+                "poolCommittedBytes": 198443008
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "filesUnchangedDuringMeasurement": true,
+  "status": "passed"
+}

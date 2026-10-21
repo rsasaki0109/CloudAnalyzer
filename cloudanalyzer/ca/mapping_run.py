@@ -794,7 +794,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                                    if h.get("gap_observation", {}).get("candidate_id") == action["baseline_candidate_id"]]
                 if not append_receipts:
                     raise ValueError("inspect baseline gaps through this run before appending a draft")
-                append_evidence = append_receipts[-1]["file"]
+                append_evidence = appends.collect_gaps(root, action["baseline_candidate_id"], action["gap_ids"], append_receipts)
                 append_prepared = appends.validate(root, action["baseline_candidate_id"], action["addition_candidate_id"],
                     action["gap_ids"], append_evidence, run["layout_file"])
                 append_inputs = append_prepared["inputs"]

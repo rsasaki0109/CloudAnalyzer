@@ -31,19 +31,24 @@ def prepared_run(external_pair, tmp_path):
     cloud.write_text("ply\nformat ascii 1.0\nelement vertex " + str(len(points))
         + "\nproperty double x\nproperty double y\nproperty double z\nend_header\n" + "\n".join(points) + "\n")
 
+    split_gap_at = None
+
     def proposal(cloud, trajectory, options):
         report = _corridor_report()
         report["protocol"] = {"options": json.loads(options)}
         if json.loads(options).get("association", "all_supported_bands") == "all_supported_bands":
-            report["ambiguous_intervals"] = [{"from_m": 4., "to_m": 8., "reason": "competing_bands"}]
-            report["ambiguous_station_length_m"] = 4.
+            stop = split_gap_at if split_gap_at is not None else 8.
+            report["ambiguous_intervals"] = [{"from_m": 4., "to_m": stop, "reason": "competing_bands"}]
+            report["ambiguous_station_length_m"] = stop - 4.
         report["profiles"] = [{"station_m": s["station_m"], "trajectory": s["center"], "heading_usable": True,
             "reference_ground_height_m": 1., "bands": [{**s, "support_span_m": 2., "path_level_supported": True}]}
             for s in report["candidates"][0]["sections"]]
         return json.dumps(report)
     module.propose_road_corridors = proposal
 
-    def prepare(interval=(4., 6.), seen=True, attempts=6, preview=True):
+    def prepare(interval=(4., 6.), seen=True, attempts=6, preview=True, split_at=None):
+        nonlocal split_gap_at
+        split_gap_at = split_at
         root = tmp_path / "run"
         runs.start_mapping_run_from_slam(str(cloud), str(trajectory), str(root), producer, _run_layout(), max_attempts=attempts)
         _step(root, {"type": "inspect", "candidate_ids": [1]})
@@ -66,6 +71,89 @@ def prepared_run(external_pair, tmp_path):
 
 ACTION = {"type": "append_draft", "baseline_candidate_id": 2, "addition_candidate_id": 4, "gap_ids": [1],
           "pairs": [{"from": 3, "to": 9, "reason": "Explicit exact adjacent endpoints"}]}
+
+
+@pytest.mark.parametrize("intervals,expected", [
+    ([(4., 6.), (6., 8.)], True),
+    ([(6., 8.), (4., 6.)], True),
+    ([(3., 6.), (6., 9.)], True),
+    ([(4., 6. - 1e-9), (6., 8.)], False),
+    ([(4., 6.)], False),
+    ([(6., 8.)], False),
+    ([(4., 5.), (7., 8.)], False),
+    ([], False),
+])
+def test_selected_gap_union_never_bridges_unselected_original_stations(intervals, expected):
+    gaps = [{"from_m": a, "to_m": b} for a, b in intervals]
+    assert appends._inside_gap_union(4., 8., gaps) is expected
+
+
+@pytest.mark.parametrize("page_size", [8, 1])
+def test_native_append_can_cross_a_boundary_between_adjacent_seen_gap_ids(prepared_run, monkeypatch, page_size):
+    from ca import mapping_map_gaps
+    monkeypatch.setitem(mapping_map_gaps.PROTOCOL, "gaps_per_page", page_size)
+    prepare, _, _, _ = prepared_run
+    root = prepare(interval=(4., 8.), preview=False, split_at=6.)
+    gaps = _step(root, {"type": "inspect_gaps", "candidate_id": 2, "offset": 0})["gap_observation"]
+    if page_size == 1:
+        second = _step(root, {"type": "inspect_gaps", "candidate_id": 2, "offset": 1})["gap_observation"]
+        rows = gaps["gaps"] + second["gaps"]
+    else:
+        rows = gaps["gaps"]
+    assert [(g["id"], g["from_m"], g["to_m"]) for g in rows] == [(1, 4., 6.), (2, 6., 8.)]
+    frozen = _frozen(root)
+    observation = _step(root, {"type": "inspect_append", "baseline_candidate_id": 2, "addition_candidate_id": 4, "gap_ids": [1, 2]})["append_observation"]
+    pairs = [{"from": p["from"], "to": p["to"], "reason": "Adopt the inspected coincident endpoint pair"} for p in observation["candidates"]]
+    result = _step(root, {**ACTION, "gap_ids": [1, 2], "pairs": pairs})
+    assert result["append_result"]["status"] == "audited_draft", result
+    assert jobs._load(root)["attempts"][-1]["extent"]["retained_fraction"] == 1.
+    if page_size == 1:
+        inputs = jobs._load(root)["attempts"][-1]["patch_inputs"]
+        assert {inputs[k]["path"] for k in ("gap_page_0", "gap_page_1")} == {gaps["file"]["path"], second["file"]["path"]}
+    _unchanged(frozen)
+
+
+def test_append_requires_inspection_of_every_selected_page(prepared_run, monkeypatch):
+    from ca import mapping_map_gaps
+    monkeypatch.setitem(mapping_map_gaps.PROTOCOL, "gaps_per_page", 1)
+    prepare, _, _, _ = prepared_run
+    root = prepare(interval=(4., 8.), preview=False, split_at=6.)
+    state = (root / "job.json").read_bytes(), (root / "run.json").read_bytes()
+    with pytest.raises(ValueError, match="inspect every"):
+        _step(root, {"type": "inspect_append", "baseline_candidate_id": 2, "addition_candidate_id": 4, "gap_ids": [1, 2]})
+    assert state == ((root / "job.json").read_bytes(), (root / "run.json").read_bytes())
+
+
+@pytest.mark.parametrize("fault", ["changed_bytes", "different_inputs"])
+def test_collecting_gap_pages_rejects_changed_or_incompatible_evidence(prepared_run, monkeypatch, fault):
+    from ca import mapping_map_gaps
+    monkeypatch.setitem(mapping_map_gaps.PROTOCOL, "gaps_per_page", 1)
+    prepare, _, _, _ = prepared_run
+    root = prepare(interval=(4., 8.), preview=False, split_at=6.)
+    _step(root, {"type": "inspect_gaps", "candidate_id": 2, "offset": 1})
+    observations = [h["gap_observation"] for h in runs._load(root)["history"] if "gap_observation" in h]
+    page = Path(observations[0]["file"]["path"])
+    if fault == "changed_bytes":
+        page.write_text(page.read_text() + "\n")
+        pattern = "changed"
+    else:
+        value = _read(page)
+        value["inputs"]["unrelated"] = jobs._artifact(root / "layout-hypothesis.json")
+        page.write_text(json.dumps(value))
+        observations[0]["file"] = jobs._artifact(page)
+        pattern = "different frozen inputs"
+    with pytest.raises(ValueError, match=pattern):
+        appends.collect_gaps(root, 2, [1, 2], observations)
+
+
+@pytest.mark.parametrize("selected", [[1], [2]])
+def test_append_rejects_omitting_either_adjacent_gap_before_spending_an_attempt(prepared_run, selected):
+    prepare, _, _, _ = prepared_run
+    root = prepare(interval=(4., 8.), preview=False, split_at=6.)
+    state = (root / "job.json").read_bytes(), (root / "run.json").read_bytes()
+    with pytest.raises(ValueError, match="union of chosen seen baseline gaps"):
+        _step(root, {"type": "inspect_append", "baseline_candidate_id": 2, "addition_candidate_id": 4, "gap_ids": selected})
+    assert state == ((root / "job.json").read_bytes(), (root / "run.json").read_bytes())
 
 
 def _frozen(root):

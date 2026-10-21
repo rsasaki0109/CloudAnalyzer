@@ -1243,3 +1243,109 @@ test("GPU candidates match brute force on both sides of a split", async ({ page 
   expect(runs).toEqual([expected, expected.slice(0, 3), expected, [...expected, ...expected], expected.slice(0, 1)]);
   expect(allocations).toEqual([5, 5, 8, 8]);
 });
+
+
+test("GPU inherited split bounds preserve f64 verification and cached pipeline switches", async ({ page }) => {
+  const modulePath = "/__inherited-wasm.js";
+  const wasmPath = "/assets/" + readdirSync(new URL("../dist/assets/", import.meta.url)).find(n => /^ca_wasm.*\.wasm$/.test(n));
+  await page.route("**" + modulePath, route => route.fulfill({ contentType: "text/javascript",
+    body: readFileSync(new URL("../src/wasm/ca_wasm.js", import.meta.url), "utf8") }));
+  const source = stripTypeScriptTypes(readFileSync(new URL("../src/gpu-candidates.ts", import.meta.url), "utf8"), { mode: "transform" });
+  const gpuModule = "data:text/javascript;base64," + Buffer.from(source).toString("base64");
+  await page.goto("/");
+  test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
+  const result = await page.evaluate(async ({ modulePath, wasmPath, gpuModule }) => {
+    const { default: init, Cloud, GpuC2cReference, GpuC2cJob } = await import(modulePath);
+    await init({ module_or_path: wasmPath });
+    const { GpuCandidateSearch } = await import(gpuModule);
+    const cloud = (points: number[][]) => {
+      const header = new TextEncoder().encode(`ply\nformat binary_little_endian 1.0\nelement vertex ${points.length}\nproperty double x\nproperty double y\nproperty double z\nend_header\n`);
+      const bytes = new Uint8Array(header.length + points.length * 24); bytes.set(header);
+      const view = new DataView(bytes.buffer, header.length);
+      points.forEach((p, i) => p.forEach((v, a) => view.setFloat64(i * 24 + a * 8, v, true)));
+      return Cloud.parse("inherited.ply", bytes);
+    };
+    // Untimed correctness data: duplicate ties, wide coordinates, split-plane
+    // neighbours, submillimetre offsets and a query overflowing f32 distance.
+    const points = Array.from({ length: 4096 }, (_, i) => {
+      const j = i % 4000;
+      return [368000 + j % 80 * .1 + (i === 0 ? 100000 : 0),
+        3955000 + Math.floor(j / 80) * .1, 40 + Math.sin(j / 7) * .2];
+    });
+    const queries = Array.from({ length: 258 }, (_, i) => {
+      const p = points[i * 37 % points.length];
+      return [p[0] + (i % 3 ? .05 : 0), p[1] + (i % 2 ? 1e-9 : -.05), p[2] + 9e-6];
+    });
+    queries.push([1e30, -1e30, 1e30]);
+    const brute = Float64Array.from(queries.map(q => {
+      let best = Infinity;
+      for (const p of points) {
+        const dx = p[0] - q[0], dy = p[1] - q[1], dz = p[2] - q[2];
+        best = Math.min(best, dx * dx + dy * dy + dz * dz);
+      }
+      return Math.sqrt(best);
+    }));
+    const reference = cloud(points), compared = cloud(queries), index = new GpuC2cReference(reference);
+    const job = new GpuC2cJob(compared, index), packed = index.candidateBuffers();
+    const gpuPoints = packed.takePoints(), nodes = packed.takeNodes(), xyz = job.queries(0, queries.length);
+    packed.free(); reference.free(); compared.free(); index.free();
+    let requests = 0, injected = false, checked = 0;
+    const create = GPUDevice.prototype.createComputePipelineAsync;
+    GPUDevice.prototype.createComputePipelineAsync = function(desc) {
+      requests++;
+      if (desc.compute.constants?.inheritedBounds === 1 && !injected) {
+        injected = true;
+        return Promise.reject(new Error("injected inherited pipeline failure"));
+      }
+      return create.call(this, desc);
+    };
+    let search;
+    try {
+      search = await GpuCandidateSearch.create(gpuPoints, nodes);
+      const verify = (candidates: Uint32Array) => {
+        const result = job.verify(0, candidates);
+        try {
+          const values = result.takeDistances(), actual = new BigUint64Array(values.buffer), expected = new BigUint64Array(brute.buffer);
+          if (actual.length !== expected.length || actual.some((v, i) => v !== expected[i])) throw new Error("GPU hints changed exact f64 distances");
+          checked++;
+        } finally { result.free(); }
+      };
+      verify(new Uint32Array(queries.length).fill(0xffffffff));
+      for (const inherited of [false, true]) for (const size of [64, 32, 128, 256]) {
+        if (inherited && size === 64) await search.find(xyz, false, size, false, true).then(
+          () => { throw new Error("Expected injected pipeline failure"); },
+          error => { if (!String(error).includes("injected inherited pipeline failure")) throw error; });
+        verify(await search.find(xyz, false, size, size !== 64, inherited));
+      }
+      const pending = await Promise.all([search.find(xyz, false, 64, true, true), search.find(xyz, false, 32, true, false)]);
+      pending.forEach(verify);
+      const first = await search.find(xyz, true, 64, false, false);
+      const second = await search.find(xyz, true, 64, false, true);
+      verify(first); verify(second);
+      if (first.some((v, i) => v !== second[i])) throw new Error("Unused inherited flag changed the leaf-only kernel");
+      return { checked, requests, injected, queries: queries.length };
+    } finally { search?.dispose(); job.free(); GPUDevice.prototype.createComputePipelineAsync = create; }
+  }, { modulePath, wasmPath, gpuModule });
+  expect(result).toEqual({ checked: 13, requests: 10, injected: true, queries: 259 });
+});
+
+test("a failed optional inherited pipeline completes on CPU and retries on the shared device", async ({ page }) => {
+  await alterWorker(page, `
+    self.addEventListener("message", event => {
+      if (event.data.req?.kind === "c2c" && event.data.req.backend === "webgpu") { event.data.req.gpuInheritedBounds = true; event.data.req.gpuWorkgroupSize = 32; }
+    });
+    let failed = false;
+    const create = GPUDevice.prototype.createComputePipelineAsync;
+    GPUDevice.prototype.createComputePipelineAsync = function(desc) {
+      if (desc.compute.constants?.inheritedBounds === 1 && desc.compute.constants?.workgroupSize === 32 && !failed) {
+        failed = true;
+        return Promise.reject(new Error("synthetic inherited pipeline failure"));
+      }
+      return create.call(this, desc);
+    };
+  `);
+  await open(page);
+  const cpu = await runAndExport(page, "cpu");
+  expect(await runAndExport(page, "webgpu", "CPU fallback: synthetic inherited pipeline failure")).toEqual(cpu);
+  expect(await runAndExport(page, "webgpu", "with WebGPU")).toEqual(cpu);
+});

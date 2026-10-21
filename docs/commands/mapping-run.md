@@ -56,6 +56,15 @@ ca mapping-import external/map.ply \
   --provenance provenance.json --layout layout.json --out runs/external
 ~~~
 
+Both startup tools accept optional `sample_spacing_m` (0.5..2 m), exposed as
+`--corridor-sample-spacing` on `ca mapping-run` and `ca mapping-import`. Omission
+keeps the native default. Specify it before the original proposal when both that
+proposal and its later path-association refinement need the same station grid.
+An association-only `refine` inherits this spacing. The grid also changes local
+headings; it does not relax source thresholds or change the map, trajectory,
+layout or extent goal. Explicit spacing requires the native report to confirm
+the requested value. Invalid values are rejected before a job is created.
+
 Use the explicit layout described below. Import writes only metadata, a KITTI
 pose file and a vertex-only g2o pose snapshot; it does not copy the map. The g2o
 is for pose display/export and does not contain the external estimator's factors

@@ -1967,12 +1967,14 @@ def mapping_run_cmd(
     layout: str = typer.Option(..., "--layout", help="JSON object with fixed, explicit unverified lane assumptions"),
     max_attempts: int = typer.Option(6, "--max-attempts", min=2, max=8),
     minimum_retained_fraction: float = typer.Option(.9, "--minimum-retained-fraction", min=0, max=1),
+    sample_spacing_m: float | None = typer.Option(None, "--corridor-sample-spacing", min=.5, max=2., help="Initial corridor station spacing in metres; omission uses the native default"),
 ) -> None:
     """Start the MCP agent's mapping loop and return its next decision contract."""
     from ca.mapping_run import start_mapping_run
     try:
         result = start_mapping_run(source, out, json.loads(Path(layout).read_text(encoding="utf-8")),
-                                   max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
+                                   max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction,
+                                   sample_spacing_m=sample_spacing_m)
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
     typer.echo(json.dumps(result, indent=2))
@@ -1989,13 +1991,15 @@ def mapping_import_cmd(
     layout: str = typer.Option(..., "--layout", help="JSON fixed, explicit unverified lane assumptions"),
     max_attempts: int = typer.Option(6, "--max-attempts", min=2, max=8),
     minimum_retained_fraction: float = typer.Option(.9, "--minimum-retained-fraction", min=0, max=1),
+    sample_spacing_m: float | None = typer.Option(None, "--corridor-sample-spacing", min=.5, max=2., help="Initial corridor station spacing in metres; omission uses the native default"),
 ) -> None:
     """Start HD drafting from an external SLAM map and trajectory."""
     from ca.mapping_run import start_mapping_run_from_slam
     try:
         result = start_mapping_run_from_slam(point_map, trajectory, out,
             _load_json_mapping(provenance), _load_json_mapping(layout),
-            max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
+            max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction,
+            sample_spacing_m=sample_spacing_m)
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
     typer.echo(json.dumps(result, indent=2))

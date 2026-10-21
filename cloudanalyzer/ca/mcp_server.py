@@ -111,6 +111,9 @@ Declared provenance and imported-pose extent do not prove full recording
 coverage or independent accuracy. The import checks free space for a 10 GiB
 reserve plus its estimated metadata/pose output budget before creating a run.
 
+Both startup tools accept optional sample_spacing_m (0.5..2 m) to freeze the
+initial corridor grid. Association-only refinement inherits it; omission retains
+the native default. Map/trajectory, source thresholds and lane layout stay fixed.
 For the complete agent-driven mapping loop from a raw recording, use start_mapping_run(source,
 out_dir, layout_hypothesis). Supply the user's explicit unverified lane layout
 once, without predefined corridor IDs. It generates the point map and proposals,

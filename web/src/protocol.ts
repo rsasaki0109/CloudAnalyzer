@@ -210,6 +210,14 @@ export interface C2cOutput {
     inheritedBounds?: boolean;
     /** Ordinary GPU DFS uses 20 slots; ignored by leaf/box/parent entry points. */
     compactStack?: boolean;
+    /** Two-word nodes for ordinary 32-slot traversal; ignored by leaf/box/parent. */
+    packedNodes?: boolean;
+    /** Node readiness interval, including any pending initial device/reference setup. */
+    nodePrepareMillis?: number;
+    /** Selected representation existed before this request. */
+    nodeRepresentationReused?: boolean;
+    /** Selected node-buffer bytes versus all cached node-buffer bytes; excludes points/batches. */
+    nodeCount?: number; nodeBytes?: number; retainedNodeBytes?: number;
     /** Rounded per-node GPU boxes; authoritative f64 verification is unchanged. */
     boxBounds?: boolean;
     /** Lazy export/packing/upload readiness, including device-scope scheduling. */
@@ -876,6 +884,8 @@ export type Request =
       gpuParentTraversal?: boolean;
       /** Internal comparison: 20 ordinary DFS slots instead of 32. */
       gpuCompactStack?: boolean;
+      /** Internal 8-byte ordinary node comparison; supersedes compact-stack flag. */
+      gpuPackedNodes?: boolean;
       /** Internal profiling only; disabled by default. May perturb operation time. */
       gpuDiagnostics?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */

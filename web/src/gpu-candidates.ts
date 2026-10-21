@@ -185,6 +185,82 @@ fn nearestParent(@builtin(global_invocation_id) id: vec3<u32>) {
     candidates[id.x] = slot;
 }`;
 
+const PACKED_SHADER = `
+override workgroupSize: u32 = 64u;
+override inheritedBounds: bool = false;
+@group(0) @binding(0) var<storage, read> points: array<vec4<f32>>;
+// Top two bits encode axis (3 = leaf); low 30 bits encode right child/start.
+@group(0) @binding(1) var<storage, read> nodes: array<vec2<u32>>;
+@group(0) @binding(2) var<storage, read> queries: array<vec4<f32>>;
+@group(0) @binding(3) var<storage, read_write> candidates: array<u32>;
+@compute @workgroup_size(workgroupSize)
+fn nearest(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (id.x >= arrayLength(&queries)) { return; }
+    let q = queries[id.x].xyz;
+    var best = 3.402823e38f;
+    var slot = 0xffffffffu;
+    var stack: array<u32, 32>;
+    var lower: array<f32, 32>;
+    var pending = 1u;
+    stack[0] = 0u; lower[0] = 0.0;
+    var visits = 0u;
+    loop {
+        if (pending == 0u || visits >= 4096u) { break; }
+        pending -= 1u;
+        let node = stack[pending];
+        let parentLower = lower[pending];
+        if (parentLower > best) { continue; }
+        visits += 1u;
+        let entry = nodes[node];
+        let axis = entry.x >> 30u;
+        let data = entry.x & 0x3fffffffu;
+        if (axis == 3u) {
+            let end = min(entry.y, data + 4096u);
+            for (var i = data; i < end; i += 1u) {
+                let delta = points[i].xyz - q;
+                let d = dot(delta, delta);
+                if (d < best) { best = d; slot = i; }
+            }
+        } else {
+            let delta = q[axis] - bitcast<f32>(entry.y);
+            let near = select(data, node + 1u, delta < 0.0);
+            let far = select(node + 1u, data, delta < 0.0);
+            if (pending + 2u > 32u) { break; }
+            stack[pending] = far;
+            lower[pending] = select(delta * delta, max(parentLower, delta * delta), inheritedBounds);
+            pending += 1u;
+            stack[pending] = near;
+            lower[pending] = select(0.0, parentLower, inheritedBounds);
+            pending += 1u;
+        }
+    }
+    candidates[id.x] = slot;
+}`;
+
+/** Preserve every GPU-used field; connectivity validation uses temporary bytes only. */
+export function packGpuNodePairs(nodes: Uint32Array, pointCount: number): Uint32Array<ArrayBuffer> {
+  if (!nodes.length || nodes.length % 5 || !Number.isSafeInteger(pointCount) || pointCount < 1 || pointCount > 2_000_000 ||
+    nodes[0] !== 0 || nodes[1] !== pointCount) throw new Error("Invalid packed GPU node source dimensions");
+  const count = nodes.length / 5;
+  if (count > pointCount * 2 - 1 || count >= 0x40000000) throw new Error("Packed GPU node count exceeded");
+  const packed = new Uint32Array(count * 2), seen = new Uint8Array(count);
+  seen[0] = 1;
+  for (let node = 0; node < count; node++) {
+    const base = node * 5, start = nodes[base], end = nodes[base + 1], axis = nodes[base + 3];
+    if (!seen[node] || start >= end || end > pointCount) throw new Error("Invalid packed GPU node range");
+    const leaf = axis === 255, right = nodes[base + 2], left = node + 1;
+    if (!leaf) {
+      if (axis > 2 || left >= count || right <= left || right >= count || seen[left] || seen[right] ||
+        nodes[left * 5] !== start || nodes[left * 5 + 1] !== nodes[right * 5] || nodes[right * 5 + 1] !== end)
+        throw new Error("Invalid packed GPU child ranges");
+      seen[left] = 1; seen[right] = 1;
+    }
+    packed[node * 2] = ((leaf ? 3 : axis) << 30) | (leaf ? start : right);
+    packed[node * 2 + 1] = nodes[base + (leaf ? 1 : 4)];
+  }
+  return packed;
+}
+
 /** Boxes enclose the rounded points used by the GPU; exact distances stay in WASM. */
 export function packGpuNodeBoxes(points: Float32Array, nodes: Uint32Array): Float32Array<ArrayBuffer> {
   if (!points.length || points.length % 4 || !nodes.length || nodes.length % 5)
@@ -288,21 +364,23 @@ export class GpuCandidateDevice {
     }
   }
 
-  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false, parentTraversal = false, compactStack = false): GPUComputePipeline | undefined {
-    compactStack &&= !leafOnly && !boxBounds && !parentTraversal;
-    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && !parentTraversal && inheritedBounds}:${!leafOnly && boxBounds}:${!leafOnly && parentTraversal}:${compactStack}`);
+  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false, parentTraversal = false, compactStack = false, packedNodes = false): GPUComputePipeline | undefined {
+    packedNodes &&= !leafOnly && !boxBounds && !parentTraversal;
+    compactStack &&= !leafOnly && !boxBounds && !parentTraversal && !packedNodes;
+    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && !parentTraversal && inheritedBounds}:${!leafOnly && boxBounds}:${!leafOnly && parentTraversal}:${compactStack}:${packedNodes}`);
   }
 
   /** Called inside the serialized device scope; optional variants compile once. */
-  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false, parentTraversal = false, compactStack = false): Promise<GPUComputePipeline> {
+  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false, parentTraversal = false, compactStack = false, packedNodes = false): Promise<GPUComputePipeline> {
     this.batchLimit(size);
-    compactStack &&= !leafOnly && !boxBounds && !parentTraversal;
+    packedNodes &&= !leafOnly && !boxBounds && !parentTraversal;
+    compactStack &&= !leafOnly && !boxBounds && !parentTraversal && !packedNodes;
     if (!leafOnly && boxBounds && parentTraversal) throw new Error("Choose one GPU traversal variant");
-    const key = `${leafOnly}:${size}:${!leafOnly && !parentTraversal && inheritedBounds}:${!leafOnly && boxBounds}:${!leafOnly && parentTraversal}:${compactStack}`;
+    const key = `${leafOnly}:${size}:${!leafOnly && !parentTraversal && inheritedBounds}:${!leafOnly && boxBounds}:${!leafOnly && parentTraversal}:${compactStack}:${packedNodes}`;
     let ready = this.preparing.get(key);
     if (!ready) {
-      const ready = this.device.createComputePipelineAsync({ layout: "auto", label: `c2c:${leafOnly ? "leaf" : parentTraversal ? "parents" : boxBounds ? "boxes" : compactStack ? "stack20" : "stack32"}:${size}`, compute: {
-        module: this.device.createShaderModule({ code: SHADER(compactStack ? 20 : 32) }),
+      const ready = this.device.createComputePipelineAsync({ layout: "auto", label: `c2c:${leafOnly ? "leaf" : parentTraversal ? "parents" : boxBounds ? "boxes" : packedNodes ? "packed" : compactStack ? "stack20" : "stack32"}:${size}`, compute: {
+        module: this.device.createShaderModule({ code: packedNodes ? PACKED_SHADER : SHADER(compactStack ? 20 : 32) }),
         entryPoint: leafOnly ? "leafNearest" : parentTraversal ? "nearestParent" : boxBounds ? "nearestBox" : "nearest",
         constants: { workgroupSize: size, ...(leafOnly || parentTraversal ? {} : { inheritedBounds: Number(inheritedBounds) }) },
       } }).then(pipeline => { this.pipelines.set(key, pipeline); return pipeline; });
@@ -359,7 +437,9 @@ export class GpuCandidateSearch {
   private buffers: GPUBuffer[] = [];
   private querySets: GPUQuerySet[] = [];
   private points!: GPUBuffer;
-  private nodes!: GPUBuffer;
+  private nodeBuffers = new Map<boolean, GPUBuffer>();
+  private nodePreparing = new Map<boolean, Promise<void>>();
+  private originalNodeBytes = 0;
   private boxBuffer?: GPUBuffer;
   private boxPreparing?: Promise<void>;
   private boxPrepared = false;
@@ -377,17 +457,22 @@ export class GpuCandidateSearch {
   get boxBoundsBytes(): number { return this.boxBuffer?.size ?? 0; }
   get parentTraversalReady(): boolean { return this.parentPrepared; }
   get parentTraversalBytes(): number { return this.parentBuffer?.size ?? 0; }
+  get nodeCount(): number { return this.originalNodeBytes / 20; }
+  get retainedNodeBytes(): number { return this.nodeBytes(false) + this.nodeBytes(true); }
+  nodeBytes(packed = false): number { return this.nodeBuffers.get(packed)?.size ?? 0; }
+  nodeRepresentationReady(packed = false): boolean { return this.nodeBuffers.has(packed); }
   batchLimit(size: number): number { return this.runtime.batchLimit(size); }
   private get device(): GPUDevice { return this.runtime.device; }
 
   private constructor(private runtime: GpuCandidateDevice, private ownsDevice: boolean) {}
 
-  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false, timestamps = false): Promise<GpuCandidateSearch> {
+  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false, timestamps = false, packedNodes = false): Promise<GpuCandidateSearch> {
     const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(false, inheritedBounds, timestamps), !runtime);
     try {
+      search.originalNodeBytes = nodes.byteLength;
       await search.runtime.run(async () => {
         search.points = search.upload(points);
-        search.nodes = search.upload(nodes);
+        search.nodeBuffers.set(packedNodes, search.upload(packedNodes ? packGpuNodePairs(nodes, points.length / 4) : nodes));
       });
       return search;
     } catch (error) {
@@ -406,6 +491,35 @@ export class GpuCandidateSearch {
     return buffer;
   }
 
+  /** Lazily add a node representation; points and batch slots remain shared. */
+  prepareNodes(packed: boolean, source: () => Uint32Array): Promise<void> {
+    if (!this.usable) return Promise.reject(new Error("WebGPU reference was disposed or its device was lost"));
+    if (this.nodeRepresentationReady(packed)) return Promise.resolve();
+    let ready = this.nodePreparing.get(packed);
+    if (!ready) {
+      let buffer: GPUBuffer | undefined;
+      ready = this.runtime.run(async () => {
+        if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
+        const nodes = source();
+        if (nodes.byteLength !== this.originalNodeBytes) throw new Error("GPU node source does not match the reference dimensions");
+        const data = packed ? packGpuNodePairs(nodes, this.points.size / 16) : nodes;
+        buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
+        this.device.queue.writeBuffer(buffer, 0, data as Uint32Array<ArrayBuffer>);
+      }).then(() => {
+        if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
+        this.nodeBuffers.set(packed, buffer!);
+      }).catch(error => {
+        if (buffer) {
+          buffer.destroy(); const i = this.buffers.indexOf(buffer); if (i >= 0) this.buffers.splice(i, 1);
+        }
+        this.nodePreparing.delete(packed);
+        throw error;
+      });
+      this.nodePreparing.set(packed, ready);
+    }
+    return ready;
+  }
+
   /** Export/pack/upload only once, sharing ordinary point/node buffers. */
   prepareBoxBounds(source: () => { points: Float32Array; nodes: Uint32Array }): Promise<void> {
     if (!this.usable) return Promise.reject(new Error("WebGPU reference was disposed or its device was lost"));
@@ -414,7 +528,7 @@ export class GpuCandidateSearch {
       this.boxPreparing = this.runtime.run(async () => {
         if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
         const { points, nodes } = source();
-        if (points.byteLength !== this.points.size || nodes.byteLength !== this.nodes.size)
+        if (points.byteLength !== this.points.size || nodes.byteLength !== this.originalNodeBytes)
           throw new Error("GPU box source does not match the reference dimensions");
         const bounds = packGpuNodeBoxes(points, nodes);
         this.boxBuffer = this.buffer(bounds.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
@@ -438,7 +552,7 @@ export class GpuCandidateSearch {
       this.parentPreparing = this.runtime.run(async () => {
         if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
         const nodes = source();
-        if (nodes.byteLength !== this.nodes.size) throw new Error("GPU parent source does not match the reference dimensions");
+        if (nodes.byteLength !== this.originalNodeBytes) throw new Error("GPU parent source does not match the reference dimensions");
         const parents = packGpuParentLinks(nodes, this.points.size / 16);
         this.parentBuffer = this.buffer(parents.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
         this.device.queue.writeBuffer(this.parentBuffer, 0, parents);
@@ -460,14 +574,14 @@ export class GpuCandidateSearch {
   }
 
   find(queries: Float32Array, leafOnly = false, workgroupSize = 64,
-    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming, boxBounds = false, parentTraversal = false, compactStack = false): Promise<Uint32Array<ArrayBuffer>> {
+    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming, boxBounds = false, parentTraversal = false, compactStack = false, packedNodes = false): Promise<Uint32Array<ArrayBuffer>> {
     const slot = this.slots[bufferedReadback ? this.nextSlot++ % 2 : 0];
     // A slot stays leased through mapping/copy/unmap, including failed scopes.
     // The ordinary path keeps its historical single-buffer serialization.
     const execute = async () => {
       if (!bufferedReadback) {
         return this.runtime.run(async () => {
-          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds, parentTraversal, compactStack);
+          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds, parentTraversal, compactStack, packedNodes);
           const result = await batch.result;
           if (!result.ok) throw result.error;
           return result.candidates;
@@ -478,7 +592,7 @@ export class GpuCandidateSearch {
         // Return a wrapper, not the readback promise: close this submission's
         // device scopes before another slot submits while mapping is in flight.
         await this.runtime.run(async () => {
-          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds, parentTraversal, compactStack);
+          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds, parentTraversal, compactStack, packedNodes);
         });
         const result = await batch!.result;
         if (!result.ok) throw result.error;
@@ -496,7 +610,7 @@ export class GpuCandidateSearch {
   }
 
   private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number, inheritedBounds: boolean,
-    timing: import("./gpu-diagnostics").GpuBatchTiming | undefined, boxBounds: boolean, parentTraversal: boolean, compactStack: boolean) {
+    timing: import("./gpu-diagnostics").GpuBatchTiming | undefined, boxBounds: boolean, parentTraversal: boolean, compactStack: boolean, packedNodes: boolean) {
     const batchSize = this.batchLimit(workgroupSize);
     const count = queries.length / 4;
     if (!Number.isInteger(count) || count < 1 || count > batchSize) throw new Error("Invalid WebGPU query batch");
@@ -506,8 +620,11 @@ export class GpuCandidateSearch {
     if (!leafOnly && boxBounds && parentTraversal) throw new Error("Choose one GPU traversal variant");
     if (parentTraversal && !leafOnly && !this.parentPrepared) throw new Error("GPU parent links are not prepared");
     if (boxBounds && !leafOnly && !this.boxPrepared) throw new Error("GPU box bounds are not prepared");
-    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds, parentTraversal, compactStack) ??
-      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds, parentTraversal, compactStack);
+    packedNodes &&= !leafOnly && !boxBounds && !parentTraversal;
+    const nodes = this.nodeBuffers.get(packedNodes);
+    if (!nodes) throw new Error("GPU node representation is not prepared");
+    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds, parentTraversal, compactStack, packedNodes) ??
+      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds, parentTraversal, compactStack, packedNodes);
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     if (!slot.work || slot.work.capacity < count) {
       // Grow only this idle slot; the other readback may still be mapped.
@@ -545,7 +662,7 @@ export class GpuCandidateSearch {
       // Bind only the live range so arrayLength excludes retained capacity
       // and the final partial workgroup cannot access stale query values.
       work.bindings = this.device.createBindGroup({ layout: pipeline.getBindGroupLayout(0),
-        entries: (boxBounds && !leafOnly ? [this.points, this.nodes, input, output, this.boxBuffer!] : [this.points, this.nodes, input, output]).map((buffer, binding) => ({ binding,
+        entries: (boxBounds && !leafOnly ? [this.points, nodes, input, output, this.boxBuffer!] : [this.points, nodes, input, output]).map((buffer, binding) => ({ binding,
           resource: { buffer, size: binding === 2 ? count * 16 : binding === 3 ? count * 4 : buffer.size } })).concat(
             parentTraversal && !leafOnly ? [{ binding: 5, resource: { buffer: this.parentBuffer!, size: this.parentBuffer!.size } }] : []),
       });
@@ -620,6 +737,7 @@ export class GpuCandidateSearch {
     for (const slot of this.slots) { slot.work = undefined; slot.timestamps = undefined; }
     this.boxBuffer = undefined; this.boxPrepared = false;
     this.parentBuffer = undefined; this.parentPrepared = false;
+    this.nodeBuffers.clear(); this.nodePreparing.clear();
     if (this.ownsDevice) this.runtime.dispose();
   }
 }

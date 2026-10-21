@@ -23,6 +23,10 @@ on:
       - "web/tests/gpu-compact-stack.test.mjs"
       - "web/tests/gpu-compact-stack-packet.test.mjs"
       - "benchmarks/wasm-gpu-compact-stack/**"
+      - "web/scripts/benchmark-packed-nodes.mjs"
+      - "web/tests/gpu-packed-nodes.test.mjs"
+      - "web/tests/gpu-packed-nodes-packet.test.mjs"
+      - "benchmarks/wasm-gpu-packed-nodes/**"
       - "web/tests/gpu-diagnostics.test.mjs"
       - "benchmarks/wasm-gpu-diagnostics/**"
       - "web/tests/inherited-bounds-packet.test.mjs"
@@ -74,6 +78,10 @@ on:
       - "web/tests/gpu-compact-stack.test.mjs"
       - "web/tests/gpu-compact-stack-packet.test.mjs"
       - "benchmarks/wasm-gpu-compact-stack/**"
+      - "web/scripts/benchmark-packed-nodes.mjs"
+      - "web/tests/gpu-packed-nodes.test.mjs"
+      - "web/tests/gpu-packed-nodes-packet.test.mjs"
+      - "benchmarks/wasm-gpu-packed-nodes/**"
       - "web/tests/gpu-diagnostics.test.mjs"
       - "benchmarks/wasm-gpu-diagnostics/**"
       - "web/tests/inherited-bounds-packet.test.mjs"
@@ -153,7 +161,7 @@ jobs:
       - name: Verify static-host isolation and exact candidate verification
         working-directory: web
         run: |
-          node --test tests/shared-gpu-c2c-order.test.mjs tests/shared-gpu-packets.test.mjs tests/query-export-packet.test.mjs tests/owned-query-export-packet.test.mjs tests/inherited-bounds-packet.test.mjs tests/gpu-diagnostics.test.mjs tests/gpu-boxes.test.mjs tests/gpu-box-bounds-packet.test.mjs tests/gpu-parents.test.mjs tests/gpu-parent-traversal-packet.test.mjs tests/gpu-compact-stack.test.mjs tests/gpu-compact-stack-packet.test.mjs
+          node --test tests/shared-gpu-c2c-order.test.mjs tests/shared-gpu-packets.test.mjs tests/query-export-packet.test.mjs tests/owned-query-export-packet.test.mjs tests/inherited-bounds-packet.test.mjs tests/gpu-diagnostics.test.mjs tests/gpu-boxes.test.mjs tests/gpu-box-bounds-packet.test.mjs tests/gpu-parents.test.mjs tests/gpu-parent-traversal-packet.test.mjs tests/gpu-compact-stack.test.mjs tests/gpu-compact-stack-packet.test.mjs tests/gpu-packed-nodes.test.mjs tests/gpu-packed-nodes-packet.test.mjs
           npx playwright install --with-deps chromium
           node scripts/benchmark-query-export.mjs --output query-export-smoke.json --build-info query-export-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software
           node scripts/benchmark-owned-query-export.mjs --output owned-query-export-smoke.json --build-info query-export-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software
@@ -162,6 +170,7 @@ jobs:
           node scripts/benchmark-box-bounds.mjs --output box-bounds-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software --cold-first local
           node scripts/benchmark-parent-traversal.mjs --output parent-traversal-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software --cold-first local
           node scripts/benchmark-compact-stack.mjs --output compact-stack-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software --cold-first stack32
+          node scripts/benchmark-packed-nodes.mjs --output packed-nodes-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software --cold-first flat
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-fresh-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-overlap-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh --overlap compare
@@ -179,6 +188,7 @@ jobs:
             web/box-bounds-smoke.json
             web/parent-traversal-smoke.json
             web/compact-stack-smoke.json
+            web/packed-nodes-smoke.json
             web/owned-query-export-smoke.json
             web/query-export-smoke.json
             web/query-export-build.json

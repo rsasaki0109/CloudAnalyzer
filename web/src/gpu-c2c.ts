@@ -9,6 +9,7 @@ const DEFAULT_GPU_INHERITED_BOUNDS = false;
 const DEFAULT_GPU_BOX_BOUNDS = false;
 const DEFAULT_GPU_PARENT_TRAVERSAL = false;
 const DEFAULT_GPU_COMPACT_STACK = false;
+const DEFAULT_GPU_PACKED_NODES = false;
 
 interface SearchEntry { ready: Promise<GpuCandidateSearch>; gpu?: GpuCandidateSearch }
 interface ReferenceEntry {
@@ -88,12 +89,14 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
   mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false,
   ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS, diagnosticsEnabled = false,
-  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL, compactStack = DEFAULT_GPU_COMPACT_STACK): Promise<{
+  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL, compactStack = DEFAULT_GPU_COMPACT_STACK, packedNodes = DEFAULT_GPU_PACKED_NODES): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
   if (!globalThis.navigator?.gpu) throw new Error("WebGPU is unavailable in this browser");
   validateGpuWorkgroupSize(workgroupSize);
+  packedNodes &&= !leafOnly && !boxBounds && !parentTraversal;
+  compactStack &&= !packedNodes;
   if (!Number.isSafeInteger(requestedVerifyWorkers) || requestedVerifyWorkers < 1 || requestedVerifyWorkers > 8)
     throw new Error("GPU verification workers must be an integer in 1..8");
   if (requestedBatchSize !== undefined && (!Number.isSafeInteger(requestedBatchSize) ||
@@ -142,6 +145,8 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   let parentTraversalPrepareMillis = 0;
   let parentTraversalReused = false;
   let parentSource: Uint32Array | undefined;
+  let nodePrepareMillis = 0;
+  let nodeRepresentationReused = false;
   let queryJob: GpuVerifierQueries | undefined;
   let verifyReferenceReused = false;
   let verifyFallback: string | undefined;
@@ -183,7 +188,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
         const points = packed.takePoints(), nodes = packed.takeNodes();
         if (parentTraversal && !leafOnly) parentSource = nodes;
         const prepared: SearchEntry = { ready: (async () => GpuCandidateSearch.create(points, nodes,
-          deviceReady ? await deviceReady : undefined, inheritedBounds, diagnosticsEnabled))() };
+          deviceReady ? await deviceReady : undefined, inheritedBounds, diagnosticsEnabled, packedNodes))() };
         prepared.ready = prepared.ready.then(gpu => {
           prepared.gpu = gpu;
           if (entry.disposed) gpu.dispose();
@@ -197,7 +202,15 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     let t = performance.now();
     let deviceBatchSize = 65_536;
     try {
-      gpu = await search!.ready;
+      const nodeStarted = performance.now();
+      nodeRepresentationReused = search!.gpu?.nodeRepresentationReady(packedNodes) ?? false;
+      try {
+        gpu = await search!.ready;
+        await gpu.prepareNodes(packedNodes, () => {
+          const source = entry.index.candidateBuffers();
+          try { return source.takeNodes(); } finally { source.free(); }
+        });
+      } finally { nodePrepareMillis = performance.now() - nodeStarted; }
       if (diagnostics) diagnostics.timestampQuery = gpu.timestampQueries ? "enabled" : "unsupported";
       deviceBatchSize = gpu.batchLimit(workgroupSize);
       if (!leafOnly && boxBounds && parentTraversal) throw new Error("Choose one GPU traversal variant");
@@ -249,7 +262,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       const queries = job!.queries(first, count);
       if (timing) timing.queryExportMillis = performance.now() - exportStarted;
       // Handle rejection immediately, including while CPU verification runs.
-      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing, boxBounds, parentTraversal, compactStack).then<BatchResult, BatchResult>(
+      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing, boxBounds, parentTraversal, compactStack, packedNodes).then<BatchResult, BatchResult>(
         candidates => ({ ok: true, candidates }),
         error => ({ ok: false, error: error instanceof Error ? error.message || error.name : String(error) }),
       );
@@ -317,6 +330,9 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       prepareMillis, gpuMillis, gpuWaitMillis, verifyMillis, batches, batchSize, referenceReused, deviceReused,
       inheritedBounds: !leafOnly && !parentTraversal && inheritedBounds,
       compactStack: !leafOnly && !boxBounds && !parentTraversal && compactStack,
+      packedNodes, nodePrepareMillis, nodeRepresentationReused,
+      nodeCount: gpu?.nodeCount ?? 0, nodeBytes: gpu?.nodeBytes(packedNodes) ?? 0,
+      retainedNodeBytes: gpu?.retainedNodeBytes ?? 0,
       boxBounds: !leafOnly && boxBounds, boxBoundsPrepareMillis, boxBoundsReused,
       boxBoundsBytes: gpu?.boxBoundsBytes ?? 0,
       parentTraversal: !leafOnly && parentTraversal, parentTraversalPrepareMillis, parentTraversalReused,

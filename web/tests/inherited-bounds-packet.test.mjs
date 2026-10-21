@@ -12,11 +12,12 @@ const median = values => { const a = values.toSorted((x, y) => x - y); return (a
 test('inherited GPU bound packet retains exact outputs, reused WASM identity and the failed adoption gate', () => {
   const manifest = JSON.parse(bytes(`${directory}/manifest.json`));
   const diagnostics = JSON.parse(bytes("benchmarks/wasm-gpu-diagnostics/manifest.json"));
-  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...diagnostics.historicalSourceAliases };
+  const boxes = JSON.parse(bytes("benchmarks/wasm-gpu-box-bounds/manifest.json"));
+  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...diagnostics.historicalSourceAliases, ...boxes.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
     const alias = aliases[expected]; assert.equal(alias?.original, name);
-    assert.ok((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith("benchmarks/wasm-gpu-diagnostics/executed-source/")) && !alias.archived.includes('..'));
+    assert.ok((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith("benchmarks/wasm-gpu-diagnostics/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/")) && !alias.archived.includes('..'));
     assert.equal(normalizedHash(alias.archived), expected);
   };
   assert.equal(manifest.adopted, false); assert.equal(manifest.finalDefault, 'local');

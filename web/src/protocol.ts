@@ -208,6 +208,14 @@ export interface C2cOutput {
     verifyQueryPrepareMillis?: number; querySliceCopy?: boolean; queryOwnedCopy?: boolean;
     /** Rounded GPU traversal carries ancestor split lower bounds. */
     inheritedBounds?: boolean;
+    /** Rounded per-node GPU boxes; authoritative f64 verification is unchanged. */
+    boxBounds?: boolean;
+    /** Lazy export/packing/upload readiness, including device-scope scheduling. */
+    boxBoundsPrepareMillis?: number;
+    /** A ready immutable box buffer existed before this request. */
+    boxBoundsReused?: boolean;
+    /** Retained box-buffer bytes on this GPU reference, including after switching to local hints. */
+    boxBoundsBytes?: number;
     /** Total f64 coordinate bytes staged across lanes (no reference replication). */
     verifyQueryBytes?: number;
     verifyReferenceReused?: boolean;
@@ -852,6 +860,8 @@ export type Request =
       gpuLeafOnly?: boolean;
       /** Internal GPU traversal comparison; exact f64 verification is unchanged. */
       gpuInheritedBounds?: boolean;
+      /** Internal combined GPU subtree box comparison. */
+      gpuBoxBounds?: boolean;
       /** Internal profiling only; disabled by default. May perturb operation time. */
       gpuDiagnostics?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */

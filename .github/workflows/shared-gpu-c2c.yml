@@ -11,6 +11,10 @@ on:
       - "web/scripts/build-gpu-frontend.mjs"
       - "web/scripts/benchmark-inherited-bounds.mjs"
       - "web/scripts/benchmark-gpu-diagnostics.mjs"
+      - "web/scripts/benchmark-box-bounds.mjs"
+      - "web/tests/gpu-boxes.test.mjs"
+      - "web/tests/gpu-box-bounds-packet.test.mjs"
+      - "benchmarks/wasm-gpu-box-bounds/**"
       - "web/tests/gpu-diagnostics.test.mjs"
       - "benchmarks/wasm-gpu-diagnostics/**"
       - "web/tests/inherited-bounds-packet.test.mjs"
@@ -50,6 +54,10 @@ on:
       - "web/scripts/build-gpu-frontend.mjs"
       - "web/scripts/benchmark-inherited-bounds.mjs"
       - "web/scripts/benchmark-gpu-diagnostics.mjs"
+      - "web/scripts/benchmark-box-bounds.mjs"
+      - "web/tests/gpu-boxes.test.mjs"
+      - "web/tests/gpu-box-bounds-packet.test.mjs"
+      - "benchmarks/wasm-gpu-box-bounds/**"
       - "web/tests/gpu-diagnostics.test.mjs"
       - "benchmarks/wasm-gpu-diagnostics/**"
       - "web/tests/inherited-bounds-packet.test.mjs"
@@ -129,12 +137,13 @@ jobs:
       - name: Verify static-host isolation and exact candidate verification
         working-directory: web
         run: |
-          node --test tests/shared-gpu-c2c-order.test.mjs tests/shared-gpu-packets.test.mjs tests/query-export-packet.test.mjs tests/owned-query-export-packet.test.mjs tests/inherited-bounds-packet.test.mjs tests/gpu-diagnostics.test.mjs
+          node --test tests/shared-gpu-c2c-order.test.mjs tests/shared-gpu-packets.test.mjs tests/query-export-packet.test.mjs tests/owned-query-export-packet.test.mjs tests/inherited-bounds-packet.test.mjs tests/gpu-diagnostics.test.mjs tests/gpu-boxes.test.mjs tests/gpu-box-bounds-packet.test.mjs
           npx playwright install --with-deps chromium
           node scripts/benchmark-query-export.mjs --output query-export-smoke.json --build-info query-export-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software
           node scripts/benchmark-owned-query-export.mjs --output owned-query-export-smoke.json --build-info query-export-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software
           node scripts/benchmark-inherited-bounds.mjs --output inherited-bounds-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software
           node scripts/benchmark-gpu-diagnostics.mjs --output gpu-diagnostics-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software
+          node scripts/benchmark-box-bounds.mjs --output box-bounds-smoke.json --build-info inherited-bounds-build.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu software --cold-first local
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-fresh-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-overlap-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh --overlap compare
@@ -149,6 +158,7 @@ jobs:
             web/inherited-bounds-build.json
             web/inherited-bounds-smoke.json
             web/gpu-diagnostics-smoke.json
+            web/box-bounds-smoke.json
             web/owned-query-export-smoke.json
             web/query-export-smoke.json
             web/query-export-build.json

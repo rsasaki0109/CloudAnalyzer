@@ -1,0 +1,29 @@
+[package]
+name = "ca-wasm-shared-c2c"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+# Keep the optional nightly/atomics experiment out of the production workspace.
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+threads = ["ca-core/parallel", "dep:rayon", "dep:wasm-bindgen-rayon"]
+
+[dependencies]
+ca-core = { path = "../../../rust/crates/ca-core" }
+rayon = { version = "1.12.0", optional = true }
+wasm-bindgen = "=0.2.129"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-rayon = { version = "=1.3.0", features = ["no-bundler"], optional = true }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

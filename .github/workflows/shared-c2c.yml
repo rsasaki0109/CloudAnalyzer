@@ -1,0 +1,92 @@
+name: Shared C2C experiment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/experiments/shared-c2c/**"
+      - "web/scripts/*shared-c2c.mjs"
+      - "web/src/worker.ts"
+      - "web/src/pool.ts"
+      - "web/src/cpu-c2c.ts"
+      - "web/src/protocol.ts"
+      - "rust/crates/ca-core/src/distance.rs"
+      - "rust/crates/ca-core/src/kdtree.rs"
+      - "rust/crates/ca-core/Cargo.toml"
+      - "rust/crates/ca-wasm/**"
+      - "rust/Cargo.toml"
+      - "rust/Cargo.lock"
+      - "rust/.cargo/config.toml"
+      - ".github/workflows/shared-c2c.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "web/experiments/shared-c2c/**"
+      - "web/scripts/*shared-c2c.mjs"
+      - "web/src/worker.ts"
+      - "web/src/pool.ts"
+      - "web/src/cpu-c2c.ts"
+      - "web/src/protocol.ts"
+      - "rust/crates/ca-core/src/distance.rs"
+      - "rust/crates/ca-core/src/kdtree.rs"
+      - "rust/crates/ca-core/Cargo.toml"
+      - "rust/crates/ca-wasm/**"
+      - "rust/Cargo.toml"
+      - "rust/Cargo.lock"
+      - "rust/.cargo/config.toml"
+      - ".github/workflows/shared-c2c.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  shared-c2c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-10-20
+          targets: wasm32-unknown-unknown
+          components: rust-src
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            rust
+            web/experiments/shared-c2c
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack,wasm-bindgen-cli@0.2.129
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Check standalone Rust API
+        run: |
+          cargo +stable fmt --manifest-path web/experiments/shared-c2c/Cargo.toml --check
+          cargo +stable clippy --manifest-path web/experiments/shared-c2c/Cargo.toml --all-targets --features threads --locked -- -D warnings
+          cargo +stable test --manifest-path web/experiments/shared-c2c/Cargo.toml --locked
+          cargo +stable test --manifest-path web/experiments/shared-c2c/Cargo.toml --features threads --locked
+      - name: Build production and experimental WASM
+        working-directory: web
+        run: |
+          npm ci
+          RUSTUP_TOOLCHAIN=stable npm run wasm
+          npm run build
+          node scripts/build-shared-c2c.mjs serial
+          node scripts/build-shared-c2c.mjs threads
+      - name: Verify static-host isolation and exact shared C2C
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/benchmark-shared-c2c.mjs --output shared-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shared-c2c-smoke
+          path: web/shared-c2c-smoke.json

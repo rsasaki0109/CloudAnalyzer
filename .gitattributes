@@ -1,4 +1,5 @@
 # Keep hashed source-footprint artifacts byte-identical across checkouts.
+benchmarks/wasm-shared-c2c/** text eol=lf
 benchmarks/slam/executed-source/** -text
 benchmarks/slam/executed-source/corridor-lanes-c72de64e.rs -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 benchmarks/slam/executed-source/ca-py-lib-185dcbe7.rs -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

@@ -229,6 +229,31 @@ impl PreparedC2c {
     pub fn distances(&self, simd: bool) -> Vec<f64> {
         distances_with_tree(&self.queries, &self.tree, &self.order, simd)
     }
+
+    /// Owned tree, query and Morton-order vector capacity, excluding the allocator.
+    pub fn retained_bytes(&self) -> usize {
+        self.tree.storage_bytes()
+            + self.queries.capacity() * std::mem::size_of::<[f64; 3]>()
+            + self.order.capacity() * std::mem::size_of::<usize>()
+    }
+
+    /// Share the immutable tree and cached query order across Rayon lanes.
+    /// Each Morton chunk starts with its own guessed hit; output stays in query order.
+    #[cfg(feature = "parallel")]
+    pub fn distances_par(&self) -> Vec<f64> {
+        let query = |p: &[f64; 3], guess: &mut Option<crate::kdtree::Nearest>| {
+            let hit = self.tree.nearest(p, *guess);
+            *guess = Some(hit);
+            hit.distance_sq.sqrt()
+        };
+        let parts =
+            par_morton_values::<Option<crate::kdtree::Nearest>>(&self.queries, &self.order, &query);
+        let mut distances = vec![0.0; self.queries.len()];
+        for (&index, distance) in self.order.iter().zip(parts.into_iter().flatten()) {
+            distances[index] = distance;
+        }
+        distances
+    }
 }
 
 /// Owned reference tree for repeated C2C queries, including changed query clouds.
@@ -1129,6 +1154,7 @@ mod tests {
                 );
                 let prepared =
                     PreparedC2c::new(compared.positions.clone(), &reference.positions).unwrap();
+                assert!(prepared.retained_bytes() >= count * (24 + std::mem::size_of::<usize>()));
                 for simd in [false, true, false] {
                     let actual = prepared.distances(simd);
                     let expected = cloud_to_cloud_with_simd(&compared, &reference, simd).unwrap();
@@ -1137,6 +1163,19 @@ mod tests {
                         expected.iter().map(|d| d.to_bits()).collect::<Vec<_>>()
                     );
                 }
+                #[cfg(feature = "parallel")]
+                assert_eq!(
+                    prepared
+                        .distances_par()
+                        .iter()
+                        .map(|d| d.to_bits())
+                        .collect::<Vec<_>>(),
+                    prepared
+                        .distances(false)
+                        .iter()
+                        .map(|d| d.to_bits())
+                        .collect::<Vec<_>>()
+                );
             }
         }
         assert!(PreparedC2c::new(vec![[0.0; 3]], &[]).is_none());
@@ -1174,6 +1213,15 @@ mod tests {
                 expected.iter().map(|d| d.to_bits()).collect::<Vec<_>>()
             );
         }
+        #[cfg(feature = "parallel")]
+        assert_eq!(
+            prepared
+                .distances_par()
+                .iter()
+                .map(|d| d.to_bits())
+                .collect::<Vec<_>>(),
+            expected.iter().map(|d| d.to_bits()).collect::<Vec<_>>()
+        );
     }
 
     /// Run every part independently and scatter the results back.

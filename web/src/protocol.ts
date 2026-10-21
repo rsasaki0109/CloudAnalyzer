@@ -206,6 +206,8 @@ export interface C2cOutput {
     verifyStagedQueries?: boolean;
     /** Per-job packing/transfers/WASM query ownership; may overlap first GPU batch. */
     verifyQueryPrepareMillis?: number; querySliceCopy?: boolean; queryOwnedCopy?: boolean;
+    /** Rounded GPU traversal carries ancestor split lower bounds. */
+    inheritedBounds?: boolean;
     /** Total f64 coordinate bytes staged across lanes (no reference replication). */
     verifyQueryBytes?: number;
     verifyReferenceReused?: boolean;
@@ -846,6 +848,8 @@ export type Request =
       gpuBatchSize?: number;
       /** Internal comparison of near-leaf hints and backtracking GPU search. */
       gpuLeafOnly?: boolean;
+      /** Internal GPU traversal comparison; exact f64 verification is unchanged. */
+      gpuInheritedBounds?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */
       gpuWorkgroupSize?: number;
       /** Experimental exact CPU verification pool; 1 (serial) by default. */

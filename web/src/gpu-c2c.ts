@@ -4,6 +4,8 @@ import type { C2cOutput } from "./protocol";
 import { GpuVerifiers, type GpuVerifierQueries } from "./gpu-verifiers";
 import { poolSize } from "./pool";
 
+const DEFAULT_GPU_INHERITED_BOUNDS = false;
+
 interface ReferenceEntry {
   cloud: Cloud;
   index: GpuC2cReference;
@@ -23,13 +25,13 @@ let current: ReferenceEntry | undefined;
 interface DeviceEntry { ready: Promise<GpuCandidateDevice>; device?: GpuCandidateDevice }
 let sharedDevice: DeviceEntry | undefined;
 
-function acquireDevice(): Promise<GpuCandidateDevice> {
+function acquireDevice(inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS): Promise<GpuCandidateDevice> {
   if (sharedDevice?.device && !sharedDevice.device.usable) {
     sharedDevice.device.dispose();
     sharedDevice = undefined;
   }
   if (!sharedDevice) {
-    const entry: DeviceEntry = { ready: GpuCandidateDevice.create() };
+    const entry: DeviceEntry = { ready: GpuCandidateDevice.create(false, inheritedBounds) };
     sharedDevice = entry;
     entry.ready = entry.ready.then(device => { entry.device = device; return device; });
     // Handle failure immediately, even if synchronous snapshot preparation
@@ -66,7 +68,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   verifyBounds = true, reuseDevice = true, verifySimd = true, requestedBatchSize?: number, leafOnly = false,
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
   mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false,
-  ownedQueryCopy = false): Promise<{
+  ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
@@ -95,7 +97,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   const deviceReused = referenceReused ? !!current?.gpu?.usable : reuseDevice && !!sharedDevice?.device?.usable;
   // Start native adapter discovery before synchronous tree/query preparation.
   // The snapshots are still owned before the first yield to other requests.
-  const deviceReady = reuseDevice ? acquireDevice() : undefined;
+  const deviceReady = reuseDevice ? acquireDevice(inheritedBounds) : undefined;
   if (!referenceReused) {
     if (current) retire(current);
     current = { cloud: reference, index: new GpuC2cReference(reference), users: 0,
@@ -150,7 +152,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       try {
         const points = packed.takePoints(), nodes = packed.takeNodes();
         entry.ready = (async () => GpuCandidateSearch.create(points, nodes,
-          deviceReady ? await deviceReady : undefined))().then(search => {
+          deviceReady ? await deviceReady : undefined, inheritedBounds))().then(search => {
           entry.gpu = search;
           if (entry.disposed) search.dispose();
           return search;
@@ -179,7 +181,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       const started = performance.now();
       const count = Math.min(batchSize, job!.length - first);
       // Handle rejection immediately, including while CPU verification runs.
-      const result = gpu!.find(job!.queries(first, count), leafOnly, workgroupSize, readbackAhead).then<BatchResult, BatchResult>(
+      const result = gpu!.find(job!.queries(first, count), leafOnly, workgroupSize, readbackAhead, inheritedBounds).then<BatchResult, BatchResult>(
         candidates => ({ ok: true, candidates }),
         error => ({ ok: false, error: error instanceof Error ? error.message || error.name : String(error) }),
       );
@@ -243,6 +245,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     }
     return { distances, compute: { backend: fallback ? "cpu" : "webgpu", fallback,
       prepareMillis, gpuMillis, gpuWaitMillis, verifyMillis, batches, batchSize, referenceReused, deviceReused,
+      inheritedBounds: !leafOnly && inheritedBounds,
       certified: certified + job.certified, prefetch, bufferedReadback: readbackAhead,
       verifyBounds, verifySimd: job.simdEnabled, leafOnly, workgroupSize,
       verifyWorkers, verifyMainWorker: resident && verifyWorkers > 1,

@@ -21,8 +21,9 @@ test('shared GPU measurement packets retain executed sources, raw reports and fr
   const overlap = json(`${overlapDirectory}/manifest.json`);
   const queryExport = json('benchmarks/wasm-query-export/manifest.json');
   const ownedExport = json('benchmarks/wasm-owned-query-export/manifest.json');
+  const bounds = json('benchmarks/wasm-gpu-inherited-bounds/manifest.json');
   const aliases = { ...previous.sourceAliases, ...fresh.historicalSourceAliases, ...overlap.historicalSourceAliases,
-    ...queryExport.historicalSourceAliases, ...ownedExport.historicalSourceAliases };
+    ...queryExport.historicalSourceAliases, ...ownedExport.historicalSourceAliases, ...bounds.historicalSourceAliases };
   const source = (name, expected) => {
     try { if (normalizedHash(name) === expected) return; } catch { /* Try a preserved source version. */ }
     const alias = aliases[expected];

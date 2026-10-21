@@ -1,6 +1,7 @@
 /** Rounded GPU nearest-neighbour candidates. Callers must verify them in f64. */
 const SHADER = `
 override workgroupSize: u32 = 64u;
+override inheritedBounds: bool = false;
 @group(0) @binding(0) var<storage, read> points: array<vec4<f32>>;
 // start, end, right child, axis (255 = leaf), split coordinate bits.
 @group(0) @binding(1) var<storage, read> nodes: array<u32>;
@@ -55,7 +56,8 @@ fn nearest(@builtin(global_invocation_id) id: vec3<u32>) {
         if (pending == 0u || visits >= 4096u) { break; }
         pending -= 1u;
         let node = stack[pending];
-        if (lower[pending] > best) { continue; }
+        let parentLower = lower[pending];
+        if (parentLower > best) { continue; }
         visits += 1u;
         let base = node * 5u;
         let axis = nodes[base + 3u];
@@ -72,10 +74,11 @@ fn nearest(@builtin(global_invocation_id) id: vec3<u32>) {
             let far = select(node + 1u, nodes[base + 2u], delta < 0.0);
             if (pending + 2u > 32u) { break; }
             stack[pending] = far;
-            lower[pending] = delta * delta;
+            // Retain ancestor exclusions after a closer near-leaf hit.
+            lower[pending] = select(delta * delta, max(parentLower, delta * delta), inheritedBounds);
             pending += 1u;
             stack[pending] = near;
-            lower[pending] = 0.0;
+            lower[pending] = select(0.0, parentLower, inheritedBounds);
             pending += 1u;
         }
     }
@@ -111,14 +114,14 @@ export class GpuCandidateDevice {
       Math.floor(limits.maxStorageBufferBindingSize / 16), Math.floor(limits.maxBufferSize / 16));
   }
 
-  static async create(requirePhysical = false): Promise<GpuCandidateDevice> {
+  static async create(requirePhysical = false, inheritedBounds = false): Promise<GpuCandidateDevice> {
     if (!globalThis.navigator?.gpu) throw new Error("WebGPU is unavailable in this browser");
     const adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
     if (!adapter) throw new Error("No WebGPU adapter is available");
     if (requirePhysical && adapter.info.isFallbackAdapter) throw new Error("A physical WebGPU adapter is required");
     const runtime = new GpuCandidateDevice(await adapter.requestDevice());
     try {
-      await runtime.run(() => runtime.preparePipeline(false, 64));
+      await runtime.run(() => runtime.preparePipeline(false, 64, inheritedBounds));
       return runtime;
     } catch (error) {
       runtime.dispose();
@@ -126,19 +129,19 @@ export class GpuCandidateDevice {
     }
   }
 
-  getPipeline(leafOnly: boolean, size: number): GPUComputePipeline | undefined {
-    return this.pipelines.get(`${leafOnly}:${size}`);
+  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false): GPUComputePipeline | undefined {
+    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && inheritedBounds}`);
   }
 
   /** Called inside the serialized device scope; optional variants compile once. */
-  preparePipeline(leafOnly: boolean, size: number): Promise<GPUComputePipeline> {
+  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false): Promise<GPUComputePipeline> {
     this.batchLimit(size);
-    const key = `${leafOnly}:${size}`;
+    const key = `${leafOnly}:${size}:${!leafOnly && inheritedBounds}`;
     let ready = this.preparing.get(key);
     if (!ready) {
       const ready = this.device.createComputePipelineAsync({ layout: "auto", compute: {
         module: this.device.createShaderModule({ code: SHADER }),
-        entryPoint: leafOnly ? "leafNearest" : "nearest", constants: { workgroupSize: size },
+        entryPoint: leafOnly ? "leafNearest" : "nearest", constants: { workgroupSize: size, ...(leafOnly ? {} : { inheritedBounds: Number(inheritedBounds) }) },
       } }).then(pipeline => { this.pipelines.set(key, pipeline); return pipeline; });
       this.preparing.set(key, ready);
       void ready.catch(() => { if (this.preparing.get(key) === ready) this.preparing.delete(key); });
@@ -203,8 +206,8 @@ export class GpuCandidateSearch {
 
   private constructor(private runtime: GpuCandidateDevice, private ownsDevice: boolean) {}
 
-  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice): Promise<GpuCandidateSearch> {
-    const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(), !runtime);
+  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false): Promise<GpuCandidateSearch> {
+    const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(false, inheritedBounds), !runtime);
     try {
       await search.runtime.run(async () => {
         search.points = search.upload(points);
@@ -234,14 +237,14 @@ export class GpuCandidateSearch {
   }
 
   find(queries: Float32Array, leafOnly = false, workgroupSize = 64,
-    bufferedReadback = false): Promise<Uint32Array<ArrayBuffer>> {
+    bufferedReadback = false, inheritedBounds = false): Promise<Uint32Array<ArrayBuffer>> {
     const slot = this.slots[bufferedReadback ? this.nextSlot++ % 2 : 0];
     // A slot stays leased through mapping/copy/unmap, including failed scopes.
     // The ordinary path keeps its historical single-buffer serialization.
     const execute = async () => {
       if (!bufferedReadback) {
         return this.runtime.run(async () => {
-          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize);
+          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds);
           const result = await batch.result;
           if (!result.ok) throw result.error;
           return result.candidates;
@@ -252,7 +255,7 @@ export class GpuCandidateSearch {
         // Return a wrapper, not the readback promise: close this submission's
         // device scopes before another slot submits while mapping is in flight.
         await this.runtime.run(async () => {
-          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize);
+          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds);
         });
         const result = await batch!.result;
         if (!result.ok) throw result.error;
@@ -269,15 +272,15 @@ export class GpuCandidateSearch {
     return result;
   }
 
-  private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number) {
+  private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number, inheritedBounds: boolean) {
     const batchSize = this.batchLimit(workgroupSize);
     const count = queries.length / 4;
     if (!Number.isInteger(count) || count < 1 || count > batchSize) throw new Error("Invalid WebGPU query batch");
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     // A separate entry point keeps the large DFS stacks out of the hint
     // kernel. Ready pipelines dispatch synchronously for CPU/GPU overlap.
-    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize) ??
-      await this.runtime.preparePipeline(leafOnly, workgroupSize);
+    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds) ??
+      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds);
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     if (!slot.work || slot.work.capacity < count) {
       // Grow only this idle slot; the other readback may still be mapped.

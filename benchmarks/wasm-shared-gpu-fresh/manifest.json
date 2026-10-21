@@ -1,0 +1,705 @@
+{
+  "schemaVersion": 1,
+  "experiment": "Shared exact GPU C2C verification with fresh query jobs",
+  "baseCommit": "708dff6e94ab83d74620b6cee17b27bc4beb04d4",
+  "measuredFromWorkingTree": true,
+  "productionDefaultChanged": false,
+  "reports": [
+    {
+      "file": "pandaset-4-01.json",
+      "sha256": "f297abba68df32728143321efe14662ef90ebd11b506f7d9aeab39fc99cfaa6d",
+      "bytes": 174842,
+      "dataset": "pandaset",
+      "summary": {
+        "fixed": {
+          "medianMillis": {
+            "pool": 73.1800000667572,
+            "pool-staged": 81.0275000333786,
+            "shared-serial": 186.87749993801117,
+            "shared": 77.5074999332428
+          },
+          "maximumMillis": {
+            "pool": 95.77499985694885,
+            "pool-staged": 88.66499996185303,
+            "shared-serial": 228.25499987602234,
+            "shared": 102.67500019073486
+          },
+          "sharedVsStreamingPairedPercent": 2.690605775677224,
+          "sharedVsStagedPairedPercent": -5.1592919630606024,
+          "sameBinarySerialOverParallelPairedRatio": 2.4361708287263966,
+          "medianQueryJobMillis": {
+            "pool": 1.165000081062317,
+            "pool-staged": 1.15500009059906,
+            "shared-serial": 1.2049999237060547,
+            "shared": 1.1750000715255737
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 6.297500014305115,
+            "shared-serial": 9.115000128746033,
+            "shared": 8.335000038146973
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.004999876022338867,
+            "pool-staged": 0.22499990463256836,
+            "shared-serial": 0.17750012874603271,
+            "shared": 0.1625000238418579
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 0,
+            "pool-staged": 0,
+            "shared-serial": 0,
+            "shared": 0
+          }
+        },
+        "gpu": {
+          "medianMillis": {
+            "pool": 112.86250007152557,
+            "pool-staged": 115.20749998092651,
+            "shared-serial": 198.32250010967255,
+            "shared": 118.14499986171722
+          },
+          "maximumMillis": {
+            "pool": 130.375,
+            "pool-staged": 125.70000004768372,
+            "shared-serial": 220.56000018119812,
+            "shared": 621.0099999904633
+          },
+          "sharedVsStreamingPairedPercent": 7.044339223592178,
+          "sharedVsStagedPairedPercent": 1.3606320701783248,
+          "sameBinarySerialOverParallelPairedRatio": 1.6385668469599908,
+          "medianQueryJobMillis": {
+            "pool": 1.087499976158142,
+            "pool-staged": 1.1349999904632568,
+            "shared-serial": 1.0950000286102295,
+            "shared": 1.1200000047683716
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 5.064999938011169,
+            "shared-serial": 6.870000004768372,
+            "shared": 7.452499985694885
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.0,
+            "pool-staged": 0.2250000238418579,
+            "shared-serial": 0.18249988555908203,
+            "shared": 0.1499999761581421
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 48.9300000667572,
+            "pool-staged": 42.94000029563904,
+            "shared-serial": 21.169999837875366,
+            "shared": 554.3450000286102
+          }
+        }
+      },
+      "exactF64Sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9",
+      "displayedF32Sha256": "9b876ddcf492e4fcfaf5d094cf75c774d4ef2f7dc8d431bee18c13c5e9278dcd",
+      "candidateSha256": "4634c17eb3e254d95fb9d88e21b225c3756347ef6659242a5a55cf0aaea21581",
+      "certified": 235714
+    },
+    {
+      "file": "autoware-4-01.json",
+      "sha256": "a5cb3f3e4130022e6c6e06b9e80492797e76868de62a75cadff829a686450c49",
+      "bytes": 175133,
+      "dataset": "autoware",
+      "summary": {
+        "fixed": {
+          "medianMillis": {
+            "pool": 92.85749995708466,
+            "pool-staged": 94.8474999666214,
+            "shared-serial": 236.64749991893768,
+            "shared": 93.82249999046326
+          },
+          "maximumMillis": {
+            "pool": 117.64499998092651,
+            "pool-staged": 125.28499984741211,
+            "shared-serial": 263.6749999523163,
+            "shared": 104.41499996185303
+          },
+          "sharedVsStreamingPairedPercent": -1.6742500256407944,
+          "sharedVsStagedPairedPercent": -1.791592304834938,
+          "sameBinarySerialOverParallelPairedRatio": 2.619218118534752,
+          "medianQueryJobMillis": {
+            "pool": 1.7549999952316284,
+            "pool-staged": 1.8199999332427979,
+            "shared-serial": 1.8324999809265137,
+            "shared": 1.7549999952316284
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 8.582499980926514,
+            "shared-serial": 11.857499957084656,
+            "shared": 12.027499914169312
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.004999995231628418,
+            "pool-staged": 0.24250006675720215,
+            "shared-serial": 0.1950000524520874,
+            "shared": 0.18499994277954102
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 0,
+            "pool-staged": 0,
+            "shared-serial": 0,
+            "shared": 0
+          }
+        },
+        "gpu": {
+          "medianMillis": {
+            "pool": 150.50499999523163,
+            "pool-staged": 159.4725000858307,
+            "shared-serial": 278.8250000476837,
+            "shared": 160.7424999475479
+          },
+          "maximumMillis": {
+            "pool": 662.3199999332428,
+            "pool-staged": 172.99500012397766,
+            "shared-serial": 792.8100001811981,
+            "shared": 169.02499985694885
+          },
+          "sharedVsStreamingPairedPercent": 5.242251176424217,
+          "sharedVsStagedPairedPercent": 0.39320805555364546,
+          "sameBinarySerialOverParallelPairedRatio": 1.7699725743844232,
+          "medianQueryJobMillis": {
+            "pool": 1.8675000667572021,
+            "pool-staged": 1.7999999523162842,
+            "shared-serial": 1.8200000524520874,
+            "shared": 1.8300000429153442
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 8.78249990940094,
+            "shared-serial": 12.172500014305115,
+            "shared": 11.837499976158142
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.004999995231628418,
+            "pool-staged": 0.23749995231628418,
+            "shared-serial": 0.2124999761581421,
+            "shared": 0.18499994277954102
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 555.5999999046326,
+            "pool-staged": 50.69499969482422,
+            "shared-serial": 529.4099998474121,
+            "shared": 54.14500021934509
+          }
+        }
+      },
+      "exactF64Sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e",
+      "displayedF32Sha256": "314261190be24300d096b5bd977fd36dcb2e677329a2884f9c013ef63fac10c4",
+      "candidateSha256": "b8b508abd87bbf264ab27524c4eb2054f2b6f6ea325e6a182deb657594c72030",
+      "certified": 420852
+    },
+    {
+      "file": "autoware-4-02.json",
+      "sha256": "438c49cf6a311ebce6780a71dff2761fcf8c8ccaee494c0a1a7773c25c7b4f8d",
+      "bytes": 175140,
+      "dataset": "autoware",
+      "summary": {
+        "fixed": {
+          "medianMillis": {
+            "pool": 96.02999997138977,
+            "pool-staged": 98.19249999523163,
+            "shared-serial": 248.49500000476837,
+            "shared": 93.87000000476837
+          },
+          "maximumMillis": {
+            "pool": 109.46000003814697,
+            "pool-staged": 119.625,
+            "shared-serial": 265.63499999046326,
+            "shared": 106.95499992370605
+          },
+          "sharedVsStreamingPairedPercent": -3.8025709258968474,
+          "sharedVsStagedPairedPercent": -3.7024886765456513,
+          "sameBinarySerialOverParallelPairedRatio": 2.6301401443281502,
+          "medianQueryJobMillis": {
+            "pool": 1.8725000619888306,
+            "pool-staged": 1.8050000667572021,
+            "shared-serial": 1.8249999284744263,
+            "shared": 1.8225001096725464
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 8.927499890327454,
+            "shared-serial": 12.509999990463257,
+            "shared": 12.399999976158142
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.004999876022338867,
+            "pool-staged": 0.24750006198883057,
+            "shared-serial": 0.2174999713897705,
+            "shared": 0.1950000524520874
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 0,
+            "pool-staged": 0,
+            "shared-serial": 0,
+            "shared": 0
+          }
+        },
+        "gpu": {
+          "medianMillis": {
+            "pool": 153.76249992847443,
+            "pool-staged": 162.03250002861023,
+            "shared-serial": 280.5150001049042,
+            "shared": 162.42250001430511
+          },
+          "maximumMillis": {
+            "pool": 179.87000012397766,
+            "pool-staged": 648.1600000858307,
+            "shared-serial": 313.02500009536743,
+            "shared": 678.3150000572205
+          },
+          "sharedVsStreamingPairedPercent": 5.55010173286724,
+          "sharedVsStagedPairedPercent": 0.3368921803431846,
+          "sameBinarySerialOverParallelPairedRatio": 1.7190253889967657,
+          "medianQueryJobMillis": {
+            "pool": 1.9199999570846558,
+            "pool-staged": 1.7700001001358032,
+            "shared-serial": 1.7700001001358032,
+            "shared": 1.840000033378601
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 8.202499985694885,
+            "shared-serial": 12.702499866485596,
+            "shared": 11.805000066757202
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.005000114440917969,
+            "pool-staged": 0.2275000810623169,
+            "shared-serial": 0.2174999713897705,
+            "shared": 0.18999993801116943
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 44.49500036239624,
+            "pool-staged": 518.0249996185303,
+            "shared-serial": 16.819999933242798,
+            "shared": 555.2049996852875
+          }
+        }
+      },
+      "exactF64Sha256": "c6e0fe253a938efa543eeec5d6f298654d1935e1253b63995fd63280827f808e",
+      "displayedF32Sha256": "314261190be24300d096b5bd977fd36dcb2e677329a2884f9c013ef63fac10c4",
+      "candidateSha256": "b8b508abd87bbf264ab27524c4eb2054f2b6f6ea325e6a182deb657594c72030",
+      "certified": 420852
+    },
+    {
+      "file": "pandaset-4-02.json",
+      "sha256": "d7683156f3fc7f3214cbf40a437a803fa35000a1f1c57f4256788f509bdc9b31",
+      "bytes": 174672,
+      "dataset": "pandaset",
+      "summary": {
+        "fixed": {
+          "medianMillis": {
+            "pool": 73.39999997615814,
+            "pool-staged": 68.69749999046326,
+            "shared-serial": 176.80000007152557,
+            "shared": 71.4650000333786
+          },
+          "maximumMillis": {
+            "pool": 88.83000016212463,
+            "pool-staged": 87.22000002861023,
+            "shared-serial": 180.9300000667572,
+            "shared": 90.40000009536743
+          },
+          "sharedVsStreamingPairedPercent": 1.1016979154977236,
+          "sharedVsStagedPairedPercent": 6.275626514554022,
+          "sameBinarySerialOverParallelPairedRatio": 2.4671341271595795,
+          "medianQueryJobMillis": {
+            "pool": 1.1200001239776611,
+            "pool-staged": 1.1375000476837158,
+            "shared-serial": 1.100000023841858,
+            "shared": 1.1024998426437378
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 4.814999938011169,
+            "shared-serial": 7.042499899864197,
+            "shared": 7.072499990463257
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.005000114440917969,
+            "pool-staged": 0.20500004291534424,
+            "shared-serial": 0.17250001430511475,
+            "shared": 0.18499994277954102
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 0,
+            "pool-staged": 0,
+            "shared-serial": 0,
+            "shared": 0
+          }
+        },
+        "gpu": {
+          "medianMillis": {
+            "pool": 111.57999992370605,
+            "pool-staged": 117.21000003814697,
+            "shared-serial": 204.9650000333786,
+            "shared": 115.875
+          },
+          "maximumMillis": {
+            "pool": 129.18499994277954,
+            "pool-staged": 137.7649998664856,
+            "shared-serial": 214.70499992370605,
+            "shared": 619.210000038147
+          },
+          "sharedVsStreamingPairedPercent": 4.869044357504338,
+          "sharedVsStagedPairedPercent": 1.3092892078635843,
+          "sameBinarySerialOverParallelPairedRatio": 1.7359747381342583,
+          "medianQueryJobMillis": {
+            "pool": 1.087499976158142,
+            "pool-staged": 1.152500033378601,
+            "shared-serial": 1.0799999237060547,
+            "shared": 1.0850000381469727
+          },
+          "medianQueryStageMillis": {
+            "pool": 0.0,
+            "pool-staged": 5.190000057220459,
+            "shared-serial": 7.230000019073486,
+            "shared": 6.939999938011169
+          },
+          "medianQueryReleaseMillis": {
+            "pool": 0.0024999380111694336,
+            "pool-staged": 0.21500003337860107,
+            "shared-serial": 0.15749990940093994,
+            "shared": 0.1474999189376831
+          },
+          "maximumGpuWaitMillis": {
+            "pool": 38.80999970436096,
+            "pool-staged": 45.21999955177307,
+            "shared-serial": 20.894999980926514,
+            "shared": 555.9550001621246
+          }
+        }
+      },
+      "exactF64Sha256": "f9518c9ad78c2813a270226af665d19354e2d46778e7cf47d9147703efbf96e9",
+      "displayedF32Sha256": "9b876ddcf492e4fcfaf5d094cf75c774d4ef2f7dc8d431bee18c13c5e9278dcd",
+      "candidateSha256": "4634c17eb3e254d95fb9d88e21b225c3756347ef6659242a5a55cf0aaea21581",
+      "certified": 235714
+    }
+  ],
+  "inputs": {
+    "pandaset": {
+      "file": "inputs-pandaset-01.json",
+      "sha256": "82564e93183b56b460ee0d53d389a678ee8fc47ce8eff340928abdc8dc65c5b4",
+      "bytes": 1680
+    },
+    "autoware": {
+      "file": "inputs-autoware-01.json",
+      "sha256": "10b4e25cee774a4a09c2d8ba7146233f62311b8f9796d473cbaccd96c317e523",
+      "bytes": 1691
+    }
+  },
+  "normalizedSourceFootprint": {
+    "rust/Cargo.lock": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12",
+    "rust/Cargo.toml": "2b1c299f65ecb0a601e84a230f701dd709347c1e04787e7e1dec94b3a0e67287",
+    "rust/crates/ca-core/Cargo.toml": "84524d63173454cd474c8e20b65e0b64d757e3dd09535eb98175ff990183fb80",
+    "rust/crates/ca-core/src/bag.rs": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27",
+    "rust/crates/ca-core/src/cluster.rs": "079d36fe74ec0ea3f9f5d1595eccafa0035b1dea5b6f1de17f709cbf07388b8d",
+    "rust/crates/ca-core/src/delaunay.rs": "2ef24589d77f892be59ea1e6fb7619a7cbff37f60eb48ea0fbcd4f9e62bdb224",
+    "rust/crates/ca-core/src/distance.rs": "410f865c1af7394f1f154ae8f3b4589b6676ec7ae167fb1b9bf9f64358612ef0",
+    "rust/crates/ca-core/src/dynamic.rs": "2df0614fb291a9e84f0ba0d4dcdff865b31f4ae320fa94f5325d3f1aac65bf44",
+    "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+    "rust/crates/ca-core/src/geotiff.rs": "2c1f567bf444c5962f78cbc6f0a7150a33750c2b30ece29942a7a6e38c89de9f",
+    "rust/crates/ca-core/src/gicp.rs": "e786435b2bdcb710b0a3e25e7521c06d2cc7015c102a796861786d304c21dacd",
+    "rust/crates/ca-core/src/gicp_cycle.rs": "c23efc209e4a3ce0e3733d031f43fa81707ab2687901d98d2f8409fb3e3d9c15",
+    "rust/crates/ca-core/src/gicp_registration.rs": "b4b5503847b3b9ce8a9b45ad5d2e3280c9af22ea65f35521dd6ad1d07d1cb5bd",
+    "rust/crates/ca-core/src/gicp_shapes.rs": "a5b162f271092634ee9b0ab225972c357c5e4e5c731211bcc03fff5f4e551f6e",
+    "rust/crates/ca-core/src/gicp_transported.rs": "f2c2674e9029bd632bba6b6c451e7c7e701d3db8443b0fbc564f6ea9ff926812",
+    "rust/crates/ca-core/src/ground.rs": "f856a75c8f12ff948efac32cfb8b3b42d0360e60f648c20f4e227c317ccb7795",
+    "rust/crates/ca-core/src/icp.rs": "de673c6e7ed6c6e85ee9a3c7a0a479919aefd203bb717527cf8f04bdbb4f9bcc",
+    "rust/crates/ca-core/src/imu.rs": "8179c6e52ae72af670811ceb7ccaaba20bcb1656f0f0570f15655235f9e5b778",
+    "rust/crates/ca-core/src/imu_factor.rs": "fda0361bbdad60809aa050582c6bd2bded6ed02f8373d575c6d878c5eb0a042c",
+    "rust/crates/ca-core/src/imu_initialization.rs": "b99c4cd91abf6acb91eb851403966385a448ebc51d32ba8413399cb8df2190c6",
+    "rust/crates/ca-core/src/imu_rotation.rs": "e0664c9b1b19b9e3b470c5fc7720ffcaa25daea0044a43dca691cb496f5ca8eb",
+    "rust/crates/ca-core/src/imu_trajectory.rs": "6f9c88e0211309f59700a55565c7c6ec877eedb8ab9b0672e6917591f5e5abe9",
+    "rust/crates/ca-core/src/imu_window.rs": "87dc928057bc59185793ba9da2c62ad0bfd00c04a050b69c7e97d9230e0741e9",
+    "rust/crates/ca-core/src/io/copc.rs": "c3476826dd0bea65862f790dc0010c5ea3119d6d997e1c2065be2e5b41c9b942",
+    "rust/crates/ca-core/src/io/copc_query.rs": "455c4af2c600dd22d5a895c5b456d787b4e5bb1316cb527d436b1ecff5f5d53d",
+    "rust/crates/ca-core/src/io/e57.rs": "ae1a84f9a45e5900f883b3ff999502712adeaf0334c3e4a2cbe554489bb585e0",
+    "rust/crates/ca-core/src/io/kitti.rs": "26ebab2c46b34e2cf15c56cce5261742f27288e2eb2131949092f27d35d4856f",
+    "rust/crates/ca-core/src/io/las.rs": "4ec3c8167322da838156b31acb2b9bb510396386b3b5812656d0525731ebff07",
+    "rust/crates/ca-core/src/io/las_chunks.rs": "034e3d2d844b752827014e84742abcf62421ca3a8fae311c10951be66ff1f5e3",
+    "rust/crates/ca-core/src/io/las_write.rs": "6c550c19d4a42cdbc38ca6e475a03e9a1104fd4126739a2889ebca9a66ff8b79",
+    "rust/crates/ca-core/src/io/mod.rs": "1ca32726a6e25794ac93e006ff94d0fbfc20f18cf498db842692203bfd019b19",
+    "rust/crates/ca-core/src/io/obj.rs": "70bb6733f762eced1f004ff07c9ebecdf46f0e1eeaf2bfb98cc19fa1c82e6e64",
+    "rust/crates/ca-core/src/io/pcd.rs": "cab567d7947c1da6ca6ea6da88a1400ab2cd3cf6c6fe4067695b7861eef2d350",
+    "rust/crates/ca-core/src/io/ply.rs": "4f47e5116a4e73f14aa988bdb56461fe5844eca17356b4ade508ed276b43bf5a",
+    "rust/crates/ca-core/src/io/scalar.rs": "46ea569d6b815f511ad6c504f4fb52083ee81cb6f6877f2e1fe51de25ade717c",
+    "rust/crates/ca-core/src/io/splat.rs": "70ddf158833ac1807cdebfefc663541514ff466931db54c0a4158a5d25b67713",
+    "rust/crates/ca-core/src/io/stl.rs": "840682bc1e64af1b47b5b7e722a79981a551d756963ce91e36bd5fc14c7bfd9b",
+    "rust/crates/ca-core/src/io/stream.rs": "ca9101f4b96ded4a0e1bfce6871bd2043b601d5ea7f5419f936fd15ec0de3737",
+    "rust/crates/ca-core/src/io/write.rs": "0f97ad9503bbb312b52f12ce6f71a12abee6a8990eb51526bb880e5374cc3fdf",
+    "rust/crates/ca-core/src/io/xyz.rs": "03cd929c03faa40e2dbef1ce1c524acca20d6392ee69f23b4a9d48170871eb00",
+    "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "rust/crates/ca-core/src/lib.rs": "1b0970ecbf4f9062562c0ec7133b1fe2d8e751b44387a666d8122a6ada48d08b",
+    "rust/crates/ca-core/src/loop_search.rs": "e7ff9f4809498882eabadcdf1bddd51ed52300a3c6809b5ef52e74a39a66133e",
+    "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+    "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+    "rust/crates/ca-core/src/merge.rs": "5ca91917dd274fcc0c00a6d7c88766e19fcfbe4a79a0d40ebad7ba2affba1d15",
+    "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+    "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+    "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+    "rust/crates/ca-core/src/odometry.rs": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f",
+    "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+    "rust/crates/ca-core/src/odometry_profile.rs": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+    "rust/crates/ca-core/src/odometry_target_balance.rs": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+    "rust/crates/ca-core/src/point_time.rs": "dcf1421fd44d8a3964493dd09355e3c84d75bb82076013f631fd63d33f7c1616",
+    "rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799",
+    "rust/crates/ca-core/src/profile.rs": "59f9ad78d46326e876cb51f689910d7ca7858d24c3624d4482bdf7b807a6f31c",
+    "rust/crates/ca-core/src/raster.rs": "628b6f003c20af7216c61dd55099d4662328039c6a78a8fd012bfbb97f806f25",
+    "rust/crates/ca-core/src/rosbag2.rs": "79a28698dc5845c2c66ac2432ac52f4f3800d479992e056c4dbf7eeef909cd3e",
+    "rust/crates/ca-core/src/segment.rs": "bd72608909130122615969a2d68d9c01845d637c32fc14963dc982f0985b8257",
+    "rust/crates/ca-core/src/shapes.rs": "1f1713298357d3857433373fa3663fe8643086aecc86381303c5e019e9bfd1bf",
+    "rust/crates/ca-core/src/trajectory.rs": "6deb08d34f5f4a0abf8ac9c9147647747cd92abe0db2ce525f5da61f8a9c3e58",
+    "rust/crates/ca-core/src/vector_map.rs": "bf394963d140a6eb0e2262a678faf9645bdce2d0cd7617904da34a43ed8fd8f2",
+    "rust/crates/ca-core/src/vector_map/corridors.rs": "e68ecb82589f3b52296d6abb0723553a95245f99000f2b1e6bddf066ccd01ba7",
+    "rust/crates/ca-core/src/vector_map/crosswalks.rs": "2d69b6429598bfe212d372b49744fc45117609271d77c4d12f95b8c1c8369c79",
+    "rust/crates/ca-core/src/vector_map/discovery.rs": "7129c127883a5a759e48ef823ca803b0878b642f1c9e3b647a428619ed6a927a",
+    "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "eb4c05d9edc1770042e155437876c21efae44907e93b9725e1bd8c53b5088301",
+    "rust/crates/ca-core/src/vector_map/evidence.rs": "dfc796728c2b8a1881f60c75f0c1caf102fa028f88aae481e26615d96e0cdea4",
+    "rust/crates/ca-core/src/vector_map/feature_editing.rs": "822d0c8b037826ee7f3cfe28ee4dd81b962cf81cfe34bbafa6826e4a4760f775",
+    "rust/crates/ca-core/src/vector_map/fitting.rs": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60",
+    "rust/crates/ca-core/src/vector_map/integration.rs": "527554f31539257b4590cef0e7a1cb1205d03aef055d12c5c395100ae57bd3a3",
+    "rust/crates/ca-core/src/vector_map/junctions.rs": "2338f1ef2b603e000a734d143836826dcd78e9434e3b004d840f3a6de90884f1",
+    "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "e317ec1b13b1467c6d0d8c0c8fd9cb1795612e5b904f53a8139d89e454c38568",
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "adc4fbd658a91b9f102c73128a1b2bbe252cae22247a745f077b692cb2d5ad84",
+    "rust/crates/ca-core/src/vector_map/paint_divider.rs": "f963ed9c38e6681dc0753aeb0a75f3b11c5f9e299e4a613989be2345bfaf0204",
+    "rust/crates/ca-core/src/vector_map/quality.rs": "cc9068bd9375fe0ea5cc326f46a6d4301e3616fbe9eec4d5b70fd2176cbf9486",
+    "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "29a3032e4c84c800775853e846a926ee7c8e1c1071862ab6569bd53915f5755e",
+    "rust/crates/ca-core/src/vector_map/relations.rs": "49a22608c60c4cc62adc186894f1f064685a86dfa23365c15b14d6f2d4c22204",
+    "rust/crates/ca-core/src/vector_map/segmentation.rs": "d6be5e3e38627fffdfab4beeb108f5f0390215020838deb97f2c25d7aea0dcc5",
+    "rust/crates/ca-core/src/vector_map/signals.rs": "e0dbaecc81df7da5f490261c58d6c938ec6066d29823f8bd455fb92f882de5cb",
+    "rust/crates/ca-core/src/vector_map/surface.rs": "fbd80681a0c085e72526cdb9cc9ff53213ff613435e3b9887677348ead9817c2",
+    "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "41ea32508d05136f1a5383a1aec45042263e7f052492ad8b3f27e7b7c897f371",
+    "rust/crates/ca-core/src/volume.rs": "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4",
+    "rust/crates/ca-wasm/Cargo.toml": "0d63e753b90f65cb58cc7fc9d8832cc2a9a6bec006413407b3c0172cac3cb452",
+    "rust/crates/ca-wasm/src/bag.rs": "ca8d1f207b227c7c6126ff8208b17174c33fe17ae63aed89d999c3967fc8e915",
+    "rust/crates/ca-wasm/src/copc_box.rs": "f054bacedaf801d621ed52309ae90bb91b8c8c172c7079667517bc6628146b41",
+    "rust/crates/ca-wasm/src/gpu_c2c.rs": "819a9554a3dce1ffaaed1ca5948bee4066a2bfe40edf419794f4f79effbd7fdd",
+    "rust/crates/ca-wasm/src/lib.rs": "6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555",
+    "rust/crates/ca-wasm/src/m3c2.rs": "9825189b37efb4e6255f9b676ef0e1719b2a9afafb2c55b7b8576b4c72849bf9",
+    "rust/crates/ca-wasm/src/odometry.rs": "7b5a9f034adf7d7f63e5b57af6b2d3ef6ba7c6e2a4275f88cea3c6777ee593d8",
+    "rust/crates/ca-wasm/src/pose_graph.rs": "cf43d65ab90fedc2dd1fac21e5eb96fba45ab47e9a8ef93c8dffffd4c526d1c4",
+    "rust/crates/ca-wasm/src/pose_graph_project_tests.rs": "049fa4eaf339cc64494a04c89117a52eebbbfc629a2fd47f73a8acb53392cf36",
+    "rust/crates/ca-wasm/src/vector_map.rs": "60fe4f91460466fe5b3dd09409301e1b75754633ddcdf2defd5bea319b1d3611",
+    "web/experiments/shared-gpu-c2c/Cargo.lock": "b7210cb4fd5ed3e2d705938a01b97357801f228af288eb4d303fcc9c7dbf23e4",
+    "web/experiments/shared-gpu-c2c/Cargo.toml": "2bdd62092d0f0472484b3c1fb186316b59bf885e72aaee5a2a9e3daff1a1a116",
+    "web/experiments/shared-gpu-c2c/coi-sw.js": "493728b990b88b429cc29991a2128214540d2d666143c2a70aedea9537c15f1b",
+    "web/experiments/shared-gpu-c2c/driver.ts": "da38f64d2434418aee1f0877ab05b109f3506353f1b608439215d9e74cb0c93c",
+    "web/experiments/shared-gpu-c2c/src/lib.rs": "8ef4e2547ae986de9e87b567aaf16672f3cecd536bba8cf4fa143d3116d55b39",
+    "web/experiments/shared-gpu-c2c/trial-order.mjs": "7bf9e21dcb38c73a187da65ea9543f8877c98732d3f8ce5c137e1e942e8081f4",
+    "web/experiments/shared-gpu-c2c/worker.mjs": "3348d462f82982e4d6fdc6dbb0fb54cb8ce10e5a6333759e7a44be161315fd50",
+    "web/package-lock.json": "50b7341b036461456dfe5b33a474f473d488ccaff2333b7da68ae8c4bdc6e770",
+    "web/package.json": "1b69b6e7d9c43f2dda55f4dc0683200f13d8e491b87350cb2a7416623b039124",
+    "web/scripts/benchmark-shared-gpu-c2c.mjs": "b80cbe7486c4439c30ecbcef1c80792200be80fcd092d4fdd5b697cf8eb8456a",
+    "web/scripts/build-shared-gpu-c2c.mjs": "dbabbf028772eaaf29bf3620f96ac36b047f5a46272627df4ce87a6220fbcc5a",
+    "web/scripts/build-shared-gpu-driver.mjs": "2f182ddbf20dfa9d6a3ca495386796da3c220230dbb098cc916e06d901df2aa2",
+    "web/src/c2c-worker.ts": "db904cf68a8d2f1b722ccf8ae9ab2088d8cfdd6fc3bf78615af906fc75237240",
+    "web/src/gpu-candidates.ts": "64581efaf65094054b086caa0abe2c2e70256475eab9010405249ff2ee06b586",
+    "web/src/gpu-verifiers.ts": "d564568d5964c0e20058f068e990fe2f27b7f3144b86bc91c97a424d3320e0da",
+    "web/src/pool.ts": "e9d31924dac65157a70b69c53adad64b670eb1803fa4f636b929e1c88f0d40d6",
+    "web/src/protocol.ts": "ab78c071010caa89b8770e4a3a1cf2436cf0d83f3eca66748c913df26717b457"
+  },
+  "sourceFingerprintRecipe": "SHA-256 of sorted UTF-8 path + NUL + normalized SHA-256 + LF records",
+  "normalizedSourceFingerprintSha256": "3385fdee1d6a599720a34145b1bbffe6e0ccb6d3765beb9771353bddf9e30279",
+  "historicalSourceAliases": {
+    "00b5e539d1373edae81948b4e96b3633fda20e439525ad7245551ec0042167e2": {
+      "original": "web/experiments/shared-gpu-c2c/src/lib.rs",
+      "archived": "benchmarks/wasm-shared-gpu-fresh/executed-source/pr336/web/experiments/shared-gpu-c2c/src/lib.rs",
+      "measuredAtCommit": "708dff6e94ab83d74620b6cee17b27bc4beb04d4"
+    },
+    "04b9123251feae4be33704ffe3b2c560db2350fd0fbfc4076f404a6a208101d9": {
+      "original": "web/experiments/shared-gpu-c2c/worker.mjs",
+      "archived": "benchmarks/wasm-shared-gpu-fresh/executed-source/pr336/web/experiments/shared-gpu-c2c/worker.mjs",
+      "measuredAtCommit": "708dff6e94ab83d74620b6cee17b27bc4beb04d4"
+    },
+    "f103634062edf61b41fd6f23c7c58eb16441ab1d8ae8207f6769e6d3eb0eaf54": {
+      "original": "web/experiments/shared-gpu-c2c/driver.ts",
+      "archived": "benchmarks/wasm-shared-gpu-fresh/executed-source/pr336/web/experiments/shared-gpu-c2c/driver.ts",
+      "measuredAtCommit": "708dff6e94ab83d74620b6cee17b27bc4beb04d4"
+    },
+    "46499bc10c14a20592c54d186dc80890c0e54d8f02716b2adecbcccad3a67a7b": {
+      "original": "web/scripts/benchmark-shared-gpu-c2c.mjs",
+      "archived": "benchmarks/wasm-shared-gpu-fresh/executed-source/pr336/web/scripts/benchmark-shared-gpu-c2c.mjs",
+      "measuredAtCommit": "708dff6e94ab83d74620b6cee17b27bc4beb04d4"
+    }
+  },
+  "historicalPacket": "benchmarks/wasm-shared-gpu-c2c/manifest.json",
+  "productionBuildReuse": {
+    "fromStudy": "wasm-shared-gpu-c2c-20261021",
+    "recipe": "production-build-02.json",
+    "priorMetadataSha256": "191ff94d9d8edb987f00cdfc92bf512114e64d789f747512da84cebf5284cb79",
+    "allProductionSourcesMatch": true,
+    "productionWasmAndGlueMatchPriorMeasuredOptimizedBuild": true,
+    "productionBuild": {
+      "rustflags": "-C target-feature=+simd128",
+      "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+      "sources": {
+        "rust/Cargo.toml": "2b1c299f65ecb0a601e84a230f701dd709347c1e04787e7e1dec94b3a0e67287",
+        "rust/Cargo.lock": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12",
+        "rust/crates/ca-core/Cargo.toml": "84524d63173454cd474c8e20b65e0b64d757e3dd09535eb98175ff990183fb80",
+        "rust/crates/ca-core/src/bag.rs": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27",
+        "rust/crates/ca-core/src/cluster.rs": "079d36fe74ec0ea3f9f5d1595eccafa0035b1dea5b6f1de17f709cbf07388b8d",
+        "rust/crates/ca-core/src/delaunay.rs": "2ef24589d77f892be59ea1e6fb7619a7cbff37f60eb48ea0fbcd4f9e62bdb224",
+        "rust/crates/ca-core/src/distance.rs": "410f865c1af7394f1f154ae8f3b4589b6676ec7ae167fb1b9bf9f64358612ef0",
+        "rust/crates/ca-core/src/dynamic.rs": "2df0614fb291a9e84f0ba0d4dcdff865b31f4ae320fa94f5325d3f1aac65bf44",
+        "rust/crates/ca-core/src/filter.rs": "0870ff5d148bd511c0f7120540793d13cfcf292eff499038b7bda0bfdcc0ef39",
+        "rust/crates/ca-core/src/geotiff.rs": "2c1f567bf444c5962f78cbc6f0a7150a33750c2b30ece29942a7a6e38c89de9f",
+        "rust/crates/ca-core/src/gicp.rs": "e786435b2bdcb710b0a3e25e7521c06d2cc7015c102a796861786d304c21dacd",
+        "rust/crates/ca-core/src/gicp_cycle.rs": "c23efc209e4a3ce0e3733d031f43fa81707ab2687901d98d2f8409fb3e3d9c15",
+        "rust/crates/ca-core/src/gicp_registration.rs": "b4b5503847b3b9ce8a9b45ad5d2e3280c9af22ea65f35521dd6ad1d07d1cb5bd",
+        "rust/crates/ca-core/src/gicp_shapes.rs": "a5b162f271092634ee9b0ab225972c357c5e4e5c731211bcc03fff5f4e551f6e",
+        "rust/crates/ca-core/src/gicp_transported.rs": "f2c2674e9029bd632bba6b6c451e7c7e701d3db8443b0fbc564f6ea9ff926812",
+        "rust/crates/ca-core/src/ground.rs": "f856a75c8f12ff948efac32cfb8b3b42d0360e60f648c20f4e227c317ccb7795",
+        "rust/crates/ca-core/src/icp.rs": "de673c6e7ed6c6e85ee9a3c7a0a479919aefd203bb717527cf8f04bdbb4f9bcc",
+        "rust/crates/ca-core/src/imu.rs": "8179c6e52ae72af670811ceb7ccaaba20bcb1656f0f0570f15655235f9e5b778",
+        "rust/crates/ca-core/src/imu_factor.rs": "fda0361bbdad60809aa050582c6bd2bded6ed02f8373d575c6d878c5eb0a042c",
+        "rust/crates/ca-core/src/imu_initialization.rs": "b99c4cd91abf6acb91eb851403966385a448ebc51d32ba8413399cb8df2190c6",
+        "rust/crates/ca-core/src/imu_rotation.rs": "e0664c9b1b19b9e3b470c5fc7720ffcaa25daea0044a43dca691cb496f5ca8eb",
+        "rust/crates/ca-core/src/imu_trajectory.rs": "6f9c88e0211309f59700a55565c7c6ec877eedb8ab9b0672e6917591f5e5abe9",
+        "rust/crates/ca-core/src/imu_window.rs": "87dc928057bc59185793ba9da2c62ad0bfd00c04a050b69c7e97d9230e0741e9",
+        "rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+        "rust/crates/ca-core/src/lib.rs": "1b0970ecbf4f9062562c0ec7133b1fe2d8e751b44387a666d8122a6ada48d08b",
+        "rust/crates/ca-core/src/loop_search.rs": "e7ff9f4809498882eabadcdf1bddd51ed52300a3c6809b5ef52e74a39a66133e",
+        "rust/crates/ca-core/src/m3c2.rs": "52e5cd949495762d2a1b4deee47fb123142b3f06560ab5d29f41dee081afc312",
+        "rust/crates/ca-core/src/map_quality.rs": "797f8c18be3a94acd5294d5cd42c8ef3b7a2246bdc9aca4bc4133e913b8b0f91",
+        "rust/crates/ca-core/src/merge.rs": "5ca91917dd274fcc0c00a6d7c88766e19fcfbe4a79a0d40ebad7ba2affba1d15",
+        "rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+        "rust/crates/ca-core/src/normals.rs": "780ee949df82e55172c902caf55d858368ef141a70bdf22f13866b029cdfd2c9",
+        "rust/crates/ca-core/src/normal_pair.rs": "eaa5ea6dcaa0bccbc37c87ccb9185b3a2dbbd4c797b6b1776a89caf0557d48ef",
+        "rust/crates/ca-core/src/octree.rs": "ee2ccac9c55eb0533bfd2123a876bdba9df90c7a38d7e83c8044df188ab06e60",
+        "rust/crates/ca-core/src/odometry.rs": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f",
+        "rust/crates/ca-core/src/odometry_linearization.rs": "e1f9658f0da129485e173ebc48d1f761f898d174ee51418ac49cfd9c46a43c2f",
+        "rust/crates/ca-core/src/odometry_profile.rs": "512f577da770d08ebfdc2362c6e991cf5b49fbfa8931646e6d6c0dbb8d0d8108",
+        "rust/crates/ca-core/src/odometry_target_balance.rs": "fd0637ae816fb06d9043f342e94e0db125186c0c79ba2e91dfd02ecaa0496414",
+        "rust/crates/ca-core/src/point_time.rs": "dcf1421fd44d8a3964493dd09355e3c84d75bb82076013f631fd63d33f7c1616",
+        "rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799",
+        "rust/crates/ca-core/src/profile.rs": "59f9ad78d46326e876cb51f689910d7ca7858d24c3624d4482bdf7b807a6f31c",
+        "rust/crates/ca-core/src/raster.rs": "628b6f003c20af7216c61dd55099d4662328039c6a78a8fd012bfbb97f806f25",
+        "rust/crates/ca-core/src/rosbag2.rs": "79a28698dc5845c2c66ac2432ac52f4f3800d479992e056c4dbf7eeef909cd3e",
+        "rust/crates/ca-core/src/segment.rs": "bd72608909130122615969a2d68d9c01845d637c32fc14963dc982f0985b8257",
+        "rust/crates/ca-core/src/shapes.rs": "1f1713298357d3857433373fa3663fe8643086aecc86381303c5e019e9bfd1bf",
+        "rust/crates/ca-core/src/trajectory.rs": "6deb08d34f5f4a0abf8ac9c9147647747cd92abe0db2ce525f5da61f8a9c3e58",
+        "rust/crates/ca-core/src/vector_map.rs": "bf394963d140a6eb0e2262a678faf9645bdce2d0cd7617904da34a43ed8fd8f2",
+        "rust/crates/ca-core/src/volume.rs": "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4",
+        "rust/crates/ca-core/src/io/copc.rs": "c3476826dd0bea65862f790dc0010c5ea3119d6d997e1c2065be2e5b41c9b942",
+        "rust/crates/ca-core/src/io/copc_query.rs": "455c4af2c600dd22d5a895c5b456d787b4e5bb1316cb527d436b1ecff5f5d53d",
+        "rust/crates/ca-core/src/io/e57.rs": "ae1a84f9a45e5900f883b3ff999502712adeaf0334c3e4a2cbe554489bb585e0",
+        "rust/crates/ca-core/src/io/kitti.rs": "26ebab2c46b34e2cf15c56cce5261742f27288e2eb2131949092f27d35d4856f",
+        "rust/crates/ca-core/src/io/las.rs": "4ec3c8167322da838156b31acb2b9bb510396386b3b5812656d0525731ebff07",
+        "rust/crates/ca-core/src/io/las_chunks.rs": "034e3d2d844b752827014e84742abcf62421ca3a8fae311c10951be66ff1f5e3",
+        "rust/crates/ca-core/src/io/las_write.rs": "6c550c19d4a42cdbc38ca6e475a03e9a1104fd4126739a2889ebca9a66ff8b79",
+        "rust/crates/ca-core/src/io/mod.rs": "1ca32726a6e25794ac93e006ff94d0fbfc20f18cf498db842692203bfd019b19",
+        "rust/crates/ca-core/src/io/obj.rs": "70bb6733f762eced1f004ff07c9ebecdf46f0e1eeaf2bfb98cc19fa1c82e6e64",
+        "rust/crates/ca-core/src/io/pcd.rs": "cab567d7947c1da6ca6ea6da88a1400ab2cd3cf6c6fe4067695b7861eef2d350",
+        "rust/crates/ca-core/src/io/ply.rs": "4f47e5116a4e73f14aa988bdb56461fe5844eca17356b4ade508ed276b43bf5a",
+        "rust/crates/ca-core/src/io/scalar.rs": "46ea569d6b815f511ad6c504f4fb52083ee81cb6f6877f2e1fe51de25ade717c",
+        "rust/crates/ca-core/src/io/splat.rs": "70ddf158833ac1807cdebfefc663541514ff466931db54c0a4158a5d25b67713",
+        "rust/crates/ca-core/src/io/stl.rs": "840682bc1e64af1b47b5b7e722a79981a551d756963ce91e36bd5fc14c7bfd9b",
+        "rust/crates/ca-core/src/io/stream.rs": "ca9101f4b96ded4a0e1bfce6871bd2043b601d5ea7f5419f936fd15ec0de3737",
+        "rust/crates/ca-core/src/io/write.rs": "0f97ad9503bbb312b52f12ce6f71a12abee6a8990eb51526bb880e5374cc3fdf",
+        "rust/crates/ca-core/src/io/xyz.rs": "03cd929c03faa40e2dbef1ce1c524acca20d6392ee69f23b4a9d48170871eb00",
+        "rust/crates/ca-core/src/vector_map/corridors.rs": "e68ecb82589f3b52296d6abb0723553a95245f99000f2b1e6bddf066ccd01ba7",
+        "rust/crates/ca-core/src/vector_map/crosswalks.rs": "2d69b6429598bfe212d372b49744fc45117609271d77c4d12f95b8c1c8369c79",
+        "rust/crates/ca-core/src/vector_map/discovery.rs": "7129c127883a5a759e48ef823ca803b0878b642f1c9e3b647a428619ed6a927a",
+        "rust/crates/ca-core/src/vector_map/discovery_tests.rs": "eb4c05d9edc1770042e155437876c21efae44907e93b9725e1bd8c53b5088301",
+        "rust/crates/ca-core/src/vector_map/evidence.rs": "dfc796728c2b8a1881f60c75f0c1caf102fa028f88aae481e26615d96e0cdea4",
+        "rust/crates/ca-core/src/vector_map/feature_editing.rs": "822d0c8b037826ee7f3cfe28ee4dd81b962cf81cfe34bbafa6826e4a4760f775",
+        "rust/crates/ca-core/src/vector_map/fitting.rs": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60",
+        "rust/crates/ca-core/src/vector_map/integration.rs": "527554f31539257b4590cef0e7a1cb1205d03aef055d12c5c395100ae57bd3a3",
+        "rust/crates/ca-core/src/vector_map/junctions.rs": "2338f1ef2b603e000a734d143836826dcd78e9434e3b004d840f3a6de90884f1",
+        "rust/crates/ca-core/src/vector_map/lane_edge_inference.rs": "e317ec1b13b1467c6d0d8c0c8fd9cb1795612e5b904f53a8139d89e454c38568",
+        "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "adc4fbd658a91b9f102c73128a1b2bbe252cae22247a745f077b692cb2d5ad84",
+        "rust/crates/ca-core/src/vector_map/paint_divider.rs": "f963ed9c38e6681dc0753aeb0a75f3b11c5f9e299e4a613989be2345bfaf0204",
+        "rust/crates/ca-core/src/vector_map/quality.rs": "cc9068bd9375fe0ea5cc326f46a6d4301e3616fbe9eec4d5b70fd2176cbf9486",
+        "rust/crates/ca-core/src/vector_map/relations.rs": "49a22608c60c4cc62adc186894f1f064685a86dfa23365c15b14d6f2d4c22204",
+        "rust/crates/ca-core/src/vector_map/relation_proposals.rs": "29a3032e4c84c800775853e846a926ee7c8e1c1071862ab6569bd53915f5755e",
+        "rust/crates/ca-core/src/vector_map/segmentation.rs": "d6be5e3e38627fffdfab4beeb108f5f0390215020838deb97f2c25d7aea0dcc5",
+        "rust/crates/ca-core/src/vector_map/signals.rs": "e0dbaecc81df7da5f490261c58d6c938ec6066d29823f8bd455fb92f882de5cb",
+        "rust/crates/ca-core/src/vector_map/surface.rs": "fbd80681a0c085e72526cdb9cc9ff53213ff613435e3b9887677348ead9817c2",
+        "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "41ea32508d05136f1a5383a1aec45042263e7f052492ad8b3f27e7b7c897f371",
+        "rust/crates/ca-wasm/Cargo.toml": "0d63e753b90f65cb58cc7fc9d8832cc2a9a6bec006413407b3c0172cac3cb452",
+        "rust/crates/ca-wasm/src/bag.rs": "ca8d1f207b227c7c6126ff8208b17174c33fe17ae63aed89d999c3967fc8e915",
+        "rust/crates/ca-wasm/src/copc_box.rs": "f054bacedaf801d621ed52309ae90bb91b8c8c172c7079667517bc6628146b41",
+        "rust/crates/ca-wasm/src/gpu_c2c.rs": "819a9554a3dce1ffaaed1ca5948bee4066a2bfe40edf419794f4f79effbd7fdd",
+        "rust/crates/ca-wasm/src/lib.rs": "6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555",
+        "rust/crates/ca-wasm/src/m3c2.rs": "9825189b37efb4e6255f9b676ef0e1719b2a9afafb2c55b7b8576b4c72849bf9",
+        "rust/crates/ca-wasm/src/odometry.rs": "7b5a9f034adf7d7f63e5b57af6b2d3ef6ba7c6e2a4275f88cea3c6777ee593d8",
+        "rust/crates/ca-wasm/src/pose_graph.rs": "cf43d65ab90fedc2dd1fac21e5eb96fba45ab47e9a8ef93c8dffffd4c526d1c4",
+        "rust/crates/ca-wasm/src/pose_graph_project_tests.rs": "049fa4eaf339cc64494a04c89117a52eebbbfc629a2fd47f73a8acb53392cf36",
+        "rust/crates/ca-wasm/src/vector_map.rs": "60fe4f91460466fe5b3dd09409301e1b75754633ddcdf2defd5bea319b1d3611"
+      },
+      "generated": {
+        "ca_wasm.d.ts": "05d13c31439f219f92e275029cab3eb75fcb7fbc3a7459eb71bfed98ad4d6c82",
+        "ca_wasm.js": "c41105b92fe4d8892b2577f41d00e9bbf48c2e84a9e7a31fa910378c6b289260",
+        "ca_wasm_bg.wasm": "65f4be55a24dbb1f418e757bf9088005b92b974204e33ef420492b67aec1b0ac",
+        "ca_wasm_bg.wasm.d.ts": "7ebafc7f97a727a132b9b33dc82896b46ca6ddb9df4af66540441244ac2e550b"
+      },
+      "wasmPackVersion": "wasm-pack 0.15.0",
+      "wasmPackArgs": [
+        "build",
+        "rust/crates/ca-wasm",
+        "--target",
+        "web",
+        "--release",
+        "--out-dir",
+        "../../../web/src/wasm",
+        "--no-pack"
+      ]
+    }
+  },
+  "protocol": {
+    "status": "planned",
+    "createdUtc": "2026-10-21T04:58:07.552266+00:00",
+    "baseCommit": "708dff6e94ab83d74620b6cee17b27bc4beb04d4",
+    "question": "Does shared exact GPU verification improve fresh query operations with one cached immutable reference?",
+    "inputs": [
+      "pandaset even/odd original points",
+      "autoware even/odd original points"
+    ],
+    "modes": [
+      "pool",
+      "pool-staged",
+      "shared-serial",
+      "shared"
+    ],
+    "pipelines": [
+      "fixed",
+      "gpu"
+    ],
+    "threads": 4,
+    "warmups": 5,
+    "repeats": 12,
+    "orderScheme": "Williams 4 rows; 12 measured trials = three balanced blocks",
+    "timingReportBudget": 4,
+    "datasetOrder": [
+      "pandaset",
+      "autoware",
+      "autoware",
+      "pandaset"
+    ],
+    "batchSize": 131072,
+    "timed": "Fresh owned GpuC2cJob from already parsed cloud, per-operation query staging, full chosen pipeline, ordered summary and f32 export, acknowledged release and output transfer",
+    "excluded": "File parsing, reference import, GPU initialization, correctness oracles, diagnostic f64 export",
+    "transientBytesLimit": 3221225472,
+    "retainedBytesLimit": 67108864,
+    "diskReserveBytes": 53687091200,
+    "defaultChangeGate": "No default change in this increment; bounded measurement only",
+    "safety": "No adapter identity; unchanged original maps; preserve all timing tails and failed reports; no heavy builds during timing; remove scoped target/toolchain/data after verification"
+  },
+  "limitations": [
+    "Already loaded query cloud; file parsing and initial reference cache preparation excluded.",
+    "Four modes coexist; committed WASM pages are not isolated application RSS.",
+    "Release acknowledgements are awaited for this experiment; the normal application schedules pool releases asynchronously.",
+    "Fixed-hint and GPU pipelines have different timing scopes; do not pool them.",
+    "Median paired ratios need not equal a ratio of separate medians. All raw trials and long waits are retained.",
+    "Repeated fresh snapshots use the same measured cloud coordinates; no scene-change or SLAM accuracy claim.",
+    "No production integration, recovery, cancellation, automatic selection or default change."
+  ]
+}

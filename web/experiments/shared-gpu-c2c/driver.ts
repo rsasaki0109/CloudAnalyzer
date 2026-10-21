@@ -2,11 +2,11 @@
 import init, { Cloud, GpuC2cJob, GpuC2cReference, summarizeDistances } from "../../src/wasm/ca_wasm.js";
 import { GpuCandidateDevice, GpuCandidateSearch } from "../../src/gpu-candidates";
 import { GpuVerifiers, type GpuVerifierQueries } from "../../src/gpu-verifiers";
-import { poolMemory, poolSize, warmUpPool } from "../../src/pool";
+import { poolMemory, poolSize, releaseOn, warmUpPool } from "../../src/pool";
 
 type Mode = "pool" | "pool-staged" | "shared-serial" | "shared";
 type Pipeline = "fixed" | "gpu";
-interface Memory { committedBytes: number; sharedMemory: boolean; snapshotBytes: number; queryBytes: number }
+interface Memory { committedBytes: number; sharedMemory: boolean; snapshotBytes: number; queryBytes: number; referenceGeneration: number; queryGeneration: number }
 interface Verification extends Memory { distances: Float64Array; certified: number; millis: number; threads: number }
 interface SharedInit extends Memory { threads: number; indices: number[]; isolated: boolean }
 interface FileInput { name: string; bytes: Uint8Array }
@@ -46,6 +46,7 @@ let runtime: GpuCandidateDevice | undefined, gpu: GpuCandidateSearch | undefined
 let index: GpuC2cReference | undefined, job: GpuC2cJob | undefined;
 let verifiers: GpuVerifiers | undefined, staged: GpuVerifierQueries | undefined;
 let hints: Uint32Array | undefined;
+let queryCloud: Cloud | undefined, freshJobs = false, jobSequence = 0;
 let gpuRequested = false;
 const memory = () => ({ mainCommittedBytes: main?.memory.buffer.byteLength ?? 0, poolCommittedBytes: poolMemory() });
 const verifyShared = (first: number, candidates: Uint32Array, parallel: boolean) => {
@@ -63,7 +64,7 @@ function output(exact: Float64Array, certified: number, includeExact: boolean, e
   } finally { summary.free(); }
 }
 
-async function prepare(reference: FileInput, compared: FileInput, requestedBatch: number) {
+async function prepare(reference: FileInput, compared: FileInput, requestedBatch: number, retainQueries: boolean) {
   if (job) throw new Error("Already prepared");
   const start = performance.now();
   const r = Cloud.parse(reference.name, reference.bytes), q = Cloud.parse(compared.name, compared.bytes);
@@ -72,7 +73,7 @@ async function prepare(reference: FileInput, compared: FileInput, requestedBatch
     r.free(); q.free(); throw new Error("Invalid cloud counts");
   }
   try { index = new GpuC2cReference(r); job = new GpuC2cJob(q, index); }
-  finally { r.free(); q.free(); }
+  finally { r.free(); if (retainQueries) queryCloud = q; else q.free(); }
   batchSize = Math.min(requestedBatch, runtime?.batchLimit(64) ?? 262_144);
   const commonPrepareMillis = performance.now() - start;
   let t = performance.now();
@@ -107,32 +108,73 @@ async function prepare(reference: FileInput, compared: FileInput, requestedBatch
     candidateSource: gpu ? "physical-webgpu" : "full-search-sentinel", ...memory() };
 }
 
+async function releaseStaged(queries: GpuVerifierQueries) {
+  // Use the production release primitive and wait for every acknowledgement.
+  // dispose() deliberately schedules releases without waiting in the application.
+  const results = await Promise.allSettled(Array.from({ length: threads }, (_, lane) =>
+    releaseOn(lane, { kind: "gpu-query-release", queryJob: queries.id })));
+  if (results.some(result => result.status === "rejected" || !result.value))
+    throw new Error("Staged query release was not acknowledged by every lane");
+}
+
+async function beginFreshJobs() {
+  if (!job || !queryCloud || !staged || freshJobs) throw new Error("Retain parsed queries before starting fresh jobs");
+  await releaseStaged(staged); staged = undefined;
+  const released = await shared.call<Memory>({ kind: "release-queries" });
+  if (released.queryBytes || released.referenceGeneration !== 1 || !released.snapshotBytes)
+    throw new Error("Expected an empty query job with the reference still cached");
+  try {
+    await verifyShared(0, new Uint32Array([0]), true);
+    throw new Error("Released queries were still available");
+  } catch (error) { if (!String(error).includes("No prepared queries")) throw error; }
+  job.free(); job = undefined; freshJobs = true;
+  return { freshJobs, cachedReferenceGeneration: released.referenceGeneration, initialQueriesReleased: true,
+    releasedQueryVerificationRejected: true };
+}
+
 async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
   if (!modes.includes(mode) || !["fixed", "gpu"].includes(pipeline)) throw new Error("Unknown comparison mode");
-  if (!job || !index || !verifiers || !hints) throw new Error("Prepare the clouds first");
+  if ((!job && !freshJobs) || !index || !verifiers || !hints) throw new Error("Prepare the clouds first");
   if (pipeline === "gpu" && !gpu) throw new Error("GPU pipeline not available");
-  const started = performance.now(), distances = new Float64Array(job.length);
+  const started = performance.now(), sequence = ++jobSequence;
+  const activeJob = freshJobs ? new GpuC2cJob(queryCloud!, index) : job!;
+  const queryJobMillis = performance.now() - started;
+  let activeStaged = freshJobs ? undefined : staged;
+  let queryStageMillis = 0, queryReleaseMillis = 0, stagedQueryBytes = 0;
   let certified = 0, verifyMillis = 0, gpuWaitMillis = 0, sharedMemory: Memory | undefined;
+  let sharedPrepared = false, queryReleaseAcknowledged = !freshJobs, result;
   type Batch = { ok: true; candidates: Uint32Array } | { ok: false; error: unknown };
-  const dispatch = (first: number) => gpu!.find(job!.queries(first, Math.min(batchSize, job!.length - first)))
+  const dispatch = (first: number) => gpu!.find(activeJob.queries(first, Math.min(batchSize, activeJob.length - first)))
     .then<Batch, Batch>(candidates => ({ ok: true, candidates }), error => ({ ok: false, error }));
-  let pending = pipeline === "gpu" ? dispatch(0) : undefined;
+  let pending: Promise<Batch> | undefined;
   try {
-    for (let first = 0; first < job.length; first += batchSize) {
-      const count = Math.min(batchSize, job.length - first);
+    const stageStart = performance.now();
+    if (freshJobs && mode === "pool-staged") {
+      activeStaged = verifiers.queries(batchSize, threads);
+      await activeStaged.prepare(activeJob); stagedQueryBytes = activeStaged.bytes;
+    } else if (freshJobs && mode.startsWith("shared")) {
+      const queries = activeJob.queriesF64(0, activeJob.length); stagedQueryBytes = queries.byteLength;
+      sharedMemory = await shared.call<Memory>({ kind: "queries", queries }, [queries.buffer]);
+      sharedPrepared = true;
+      if (sharedMemory.referenceGeneration !== 1) throw new Error("Shared reference unexpectedly rebuilt");
+    }
+    queryStageMillis = performance.now() - stageStart;
+    const distances = new Float64Array(activeJob.length);
+    pending = pipeline === "gpu" ? dispatch(0) : undefined;
+    for (let first = 0; first < activeJob.length; first += batchSize) {
+      const count = Math.min(batchSize, activeJob.length - first);
       let candidates = hints.subarray(first, first + count);
       if (pending) {
         const t = performance.now(), batch = await pending;
         gpuWaitMillis += performance.now() - t; pending = undefined;
         if (!batch.ok) throw batch.error;
         candidates = batch.candidates;
-        // Submit the next GPU batch before exact CPU verification.
-        if (first + count < job.length) pending = dispatch(first + count);
+        if (first + count < activeJob.length) pending = dispatch(first + count);
       }
       const t = performance.now();
       if (mode.startsWith("pool")) {
-        certified += await verifiers.complete(job, first, candidates, threads, true, true, distances,
-          mode === "pool-staged" ? staged : undefined);
+        certified += await verifiers.complete(activeJob, first, candidates, threads, true, true, distances,
+          mode === "pool-staged" ? activeStaged : undefined);
       } else {
         const verified = await verifyShared(first, candidates, mode === "shared");
         if (verified.distances.length !== count) throw new Error("Incomplete shared verification batch");
@@ -140,10 +182,26 @@ async function run(mode: Mode, pipeline: Pipeline, includeExact: boolean) {
       }
       verifyMillis += performance.now() - t;
     }
-    const result = output(distances, certified, includeExact, { verifyMillis, gpuWaitMillis,
-      poolReferenceReused: verifiers.reused(threads), ...(sharedMemory ? { sharedCommittedBytes: sharedMemory.committedBytes } : {}) });
-    return { ...result, millis: performance.now() - started };
-  } finally { if (pending) await pending; }
+    result = output(distances, certified, includeExact, { verifyMillis, gpuWaitMillis,
+      poolReferenceReused: verifiers.reused(threads), ...(sharedMemory ? { sharedCommittedBytes: sharedMemory.committedBytes,
+        sharedReferenceGeneration: sharedMemory.referenceGeneration, sharedQueryGeneration: sharedMemory.queryGeneration } : {}) });
+  } finally {
+    if (pending) await pending;
+    if (freshJobs) {
+      const releaseStart = performance.now();
+      try {
+        if (activeStaged) await releaseStaged(activeStaged);
+        if (sharedPrepared) {
+          const released = await shared.call<Memory>({ kind: "release-queries" });
+          if (released.queryBytes || released.referenceGeneration !== 1 || !released.snapshotBytes)
+            throw new Error("Shared query release lost the cached reference");
+        }
+        queryReleaseAcknowledged = true;
+      } finally { activeJob.free(); queryReleaseMillis = performance.now() - releaseStart; }
+    }
+  }
+  return { ...result, millis: performance.now() - started, freshJob: freshJobs, jobSequence: sequence,
+    queryJobMillis, queryStageMillis, queryReleaseMillis, stagedQueryBytes, queryReleaseAcknowledged };
 }
 
 async function expected() {
@@ -172,15 +230,17 @@ async function guards() {
   };
   await reject({ kind: "prepare", snapshot: new Uint8Array([1]), queries: new Float64Array([NaN, 0, 0]) }, "finite");
   await reject({ kind: "prepare", snapshot: new Uint8Array([1]), queries: new Float64Array([0, 0, 0]) }, "snapshot");
+  await reject({ kind: "queries", queries: new Float64Array([NaN, 0, 0]) }, "finite");
+  await reject({ kind: "queries", queries: new Float64Array(0) }, "triples");
   await reject({ kind: "verify", first: job.length, candidates: new Uint32Array([0]), parallel: true, bounds: true, simd: true }, "range");
   await reject({ kind: "verify", first: -1, candidates: new Uint32Array([0]), parallel: true, bounds: true, simd: true }, "request");
-  return { rejectedNonfiniteReplacement: true, rejectedInvalidSnapshot: true, rejectedRange: true, rejectedNegativeRange: true };
+  return { rejectedNonfiniteReplacement: true, rejectedInvalidSnapshot: true, rejectedRange: true, rejectedNegativeRange: true, rejectedInvalidQueryReplacement: true };
 }
 
 type Request = { kind: "init"; threads: number; sharedWorkerUrl: string; gpu: boolean } |
-  { kind: "prepare"; reference: FileInput; compared: FileInput; batchSize: number } |
+  { kind: "prepare"; reference: FileInput; compared: FileInput; batchSize: number; retainQueries?: boolean } |
   { kind: "run"; mode: Mode; pipeline: Pipeline; exact?: boolean } |
-  { kind: "expected" | "snapshot" | "guards" | "finish" };
+  { kind: "expected" | "snapshot" | "guards" | "begin-fresh-jobs" | "finish" };
 async function handle(req: Request) {
   if (req.kind === "init") {
     if (threads) throw new Error("Already initialized");
@@ -203,9 +263,10 @@ async function handle(req: Request) {
   if (!main) throw new Error("Initialize the driver first");
   if (req.kind === "prepare") {
     if (!Number.isInteger(req.batchSize) || req.batchSize < 1 || req.batchSize > 262_144) throw new Error("Invalid batch size");
-    return prepare(req.reference, req.compared, req.batchSize);
+    return prepare(req.reference, req.compared, req.batchSize, req.retainQueries ?? false);
   }
   if (req.kind === "run") return run(req.mode, req.pipeline, req.exact ?? false);
+  if (req.kind === "begin-fresh-jobs") return beginFreshJobs();
   if (req.kind === "expected") return expected();
   if (req.kind === "snapshot") {
     if (!index || !job) throw new Error("Prepare the clouds first");
@@ -217,8 +278,8 @@ async function handle(req: Request) {
     if (released.snapshotBytes || released.queryBytes) throw new Error("Shared snapshot was not released");
     try { await verifyShared(0, new Uint32Array([0]), true); throw new Error("Expected released snapshot rejection"); }
     catch (error) { if (!String(error).includes("No prepared snapshot")) throw error; }
-    shared.close(); staged?.dispose(); verifiers?.dispose(); gpu?.dispose(); runtime?.dispose(); job?.free(); index?.free();
-    job = undefined; index = undefined; hints = undefined;
+    shared.close(); staged?.dispose(); verifiers?.dispose(); gpu?.dispose(); runtime?.dispose(); job?.free(); index?.free(); queryCloud?.free();
+    job = undefined; index = undefined; hints = undefined; queryCloud = undefined;
     return { releaseVerified: true, memory: released };
   }
   throw new Error("Unknown request");

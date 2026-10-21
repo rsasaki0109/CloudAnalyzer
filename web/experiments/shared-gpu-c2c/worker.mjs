@@ -1,9 +1,9 @@
-// Standalone exact verifier. Coordinates and the tree are immutable after prepare.
+// Standalone exact verifier. Each query job owns coordinates; the reference stays cached.
 let module, wasm, snapshot, ready;
-let threads = 0, snapshotBytes = 0, queryBytes = 0;
+let threads = 0, snapshotBytes = 0, queryBytes = 0, referenceGeneration = 0, queryGeneration = 0;
 const memory = () => ({ committedBytes: wasm?.memory.buffer.byteLength ?? 0,
   sharedMemory: !!wasm && typeof SharedArrayBuffer === 'function' && wasm.memory.buffer instanceof SharedArrayBuffer,
-  snapshotBytes, queryBytes });
+  snapshotBytes, queryBytes, referenceGeneration, queryGeneration });
 
 self.onmessage = async ({ data: { seq, req } }) => {
   try {
@@ -29,11 +29,23 @@ self.onmessage = async ({ data: { seq, req } }) => {
         const next = new module.SharedGpuC2c(req.snapshot, req.queries);
         snapshot?.free(); snapshot = next;
         snapshotBytes = req.snapshot.byteLength; queryBytes = req.queries.byteLength;
+        referenceGeneration++; queryGeneration++;
+        value = memory();
+      } else if (req.kind === 'queries') {
+        if (!snapshot) throw new Error('No prepared snapshot');
+        if (!(req.queries instanceof Float64Array)) throw new Error('Invalid query array');
+        snapshot.setQueries(req.queries);
+        queryBytes = req.queries.byteLength; queryGeneration++;
+        value = memory();
+      } else if (req.kind === 'release-queries') {
+        if (!snapshot) throw new Error('No prepared snapshot');
+        snapshot.releaseQueries(); queryBytes = 0;
         value = memory();
       } else if (req.kind === 'release') {
         snapshot?.free(); snapshot = undefined; snapshotBytes = 0; queryBytes = 0; value = memory();
       } else if (req.kind === 'verify') {
         if (!snapshot) throw new Error('No prepared snapshot');
+        if (!queryBytes) throw new Error('No prepared queries');
         if (!Number.isSafeInteger(req.first) || req.first < 0 || req.first > 2_000_000 ||
             !(req.candidates instanceof Uint32Array) ||
             !['parallel', 'bounds', 'simd'].every(key => typeof req[key] === 'boolean')) throw new Error('Invalid verification request');

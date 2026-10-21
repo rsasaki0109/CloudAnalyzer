@@ -10,6 +10,9 @@ on:
       - "web/package.json"
       - "web/package-lock.json"
       - "web/tests/shared-gpu-c2c-order.test.mjs"
+      - "web/tests/shared-gpu-packets.test.mjs"
+      - "benchmarks/wasm-shared-gpu-fresh/**"
+      - "benchmarks/wasm-shared-gpu-c2c/**"
       - "web/src/worker.ts"
       - "web/src/pool.ts"
       - "web/src/gpu-c2c.ts"
@@ -32,6 +35,9 @@ on:
       - "web/package.json"
       - "web/package-lock.json"
       - "web/tests/shared-gpu-c2c-order.test.mjs"
+      - "web/tests/shared-gpu-packets.test.mjs"
+      - "benchmarks/wasm-shared-gpu-fresh/**"
+      - "benchmarks/wasm-shared-gpu-c2c/**"
       - "web/src/worker.ts"
       - "web/src/pool.ts"
       - "web/src/gpu-c2c.ts"
@@ -95,11 +101,14 @@ jobs:
       - name: Verify static-host isolation and exact candidate verification
         working-directory: web
         run: |
-          node --test tests/shared-gpu-c2c-order.test.mjs
+          node --test tests/shared-gpu-c2c-order.test.mjs tests/shared-gpu-packets.test.mjs
           npx playwright install --with-deps chromium
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled
+          node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-fresh-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: shared-gpu-c2c-smoke
-          path: web/shared-gpu-c2c-smoke.json
+          path: |
+            web/shared-gpu-c2c-smoke.json
+            web/shared-gpu-c2c-fresh-smoke.json

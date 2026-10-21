@@ -10,18 +10,18 @@ import { fileURLToPath } from 'node:url';
 import { cpus, platform, release, totalmem } from 'node:os';
 
 const args = process.argv.slice(2);
-const allowed = ['--output', '--reference', '--compared', '--input-manifest', '--threads', '--warmups', '--repeats', '--gpu', '--batch-size'];
+const allowed = ['--output', '--reference', '--compared', '--input-manifest', '--threads', '--warmups', '--repeats', '--gpu', '--batch-size', '--jobs'];
 for (let i = 0; i < args.length; i += 2) if (!allowed.includes(args[i]) || !args[i + 1] || args[i + 1].startsWith('--') || args.indexOf(args[i]) !== i)
   throw new Error(`Invalid or repeated option: ${args[i]}`);
 const option = (key, fallback) => args.includes(key) ? args[args.indexOf(key) + 1] : fallback;
 const output = option('--output'), reference = option('--reference'), compared = option('--compared');
-if (!output || !reference || !compared) throw new Error('Supply --output NEW.json --reference FILE --compared FILE [--threads 4] [--gpu physical|disabled]');
+if (!output || !reference || !compared) throw new Error('Supply --output NEW.json --reference FILE --compared FILE [--threads 4] [--gpu physical|disabled] [--jobs prepared|fresh]');
 if (existsSync(output)) throw new Error('Report already exists');
 const threads = Number(option('--threads', '4')), warmups = Number(option('--warmups', '5')), repeats = Number(option('--repeats', '10'));
-const batchSize = Number(option('--batch-size', '131072')), gpu = option('--gpu', 'physical');
+const batchSize = Number(option('--batch-size', '131072')), gpu = option('--gpu', 'physical'), jobs = option('--jobs', 'prepared');
 if (!Number.isInteger(threads) || threads < 1 || threads > 8 || !Number.isInteger(warmups) || warmups < 0 ||
     !Number.isInteger(repeats) || repeats < 1 || !Number.isInteger(batchSize) || batchSize < 1 || batchSize > 262_144 ||
-    !['physical', 'disabled'].includes(gpu)) throw new Error('Invalid trial options');
+    !['physical', 'disabled'].includes(gpu) || !['prepared', 'fresh'].includes(jobs)) throw new Error('Invalid trial options');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 const experiment = resolve(repository, 'web/experiments/shared-gpu-c2c');
@@ -65,7 +65,7 @@ const server = createServer((request, response) => {
   catch { response.writeHead(404).end(); }
 });
 
-async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, gpu, trialOrders }) {
+async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, gpu, jobs, trialOrders }) {
   function rpc(url) {
     const worker = new Worker(url, { type: 'module' }); let seq = 0;
     const pending = new Map();
@@ -108,7 +108,7 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
       const response = await fetch(`./${role}`); if (!response.ok) throw new Error('Input fetch failed');
       files[role] = { name: inputs[role].name, bytes: new Uint8Array(await response.arrayBuffer()) };
     }
-    const preparation = await driver.call({ kind: 'prepare', ...files, batchSize }, Object.values(files).map(f => f.bytes.buffer));
+    const preparation = await driver.call({ kind: 'prepare', ...files, batchSize, retainQueries: jobs === 'fresh' }, Object.values(files).map(f => f.bytes.buffer));
     if (inputs.reference.points && inputs.reference.points !== preparation.value.referenceCount ||
         inputs.compared.points && inputs.compared.points !== preparation.value.queryCount) throw new Error('Input point count changed');
     if (!preparation.value.poolReferenceReused || initialization.value.effectivePoolSize !== threads) throw new Error('Expected pool capacity and cached references');
@@ -139,21 +139,38 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
     const guards = (await driver.call({ kind: 'guards' })).value;
     parity((await driver.call({ kind: 'run', mode: 'shared', pipeline: 'fixed', exact: true })).value, true);
     guards.failedReplacementPreservedSnapshot = true;
+    const freshSetup = jobs === 'fresh' ? (await driver.call({ kind: 'begin-fresh-jobs' })).value : undefined;
+    let lastJobSequence = 0, lastSharedQueryGeneration = 0;
+    const validateLifecycle = value => {
+      if (jobs !== 'fresh') return;
+      if (!value.freshJob || !value.queryReleaseAcknowledged || !Number.isInteger(value.jobSequence) || value.jobSequence <= lastJobSequence)
+        throw new Error('Fresh query ownership or acknowledged release was not established');
+      lastJobSequence = value.jobSequence;
+      if (value.sharedReferenceGeneration !== undefined) {
+        if (value.sharedReferenceGeneration !== 1 || value.sharedQueryGeneration <= lastSharedQueryGeneration)
+          throw new Error('Shared query reused an old job or rebuilt the cached reference');
+        lastSharedQueryGeneration = value.sharedQueryGeneration;
+      }
+    };
     const modes = ['pool', 'pool-staged', 'shared-serial', 'shared'], pipelines = gpu === 'physical' ? ['fixed', 'gpu'] : ['fixed'];
     const compact = result => ({ elapsedMillis: result.elapsedMillis, workerMillis: result.value.millis,
       verifyMillis: result.value.verifyMillis, gpuWaitMillis: result.value.gpuWaitMillis,
       poolReferenceReused: result.value.poolReferenceReused, mainCommittedBytes: result.value.mainCommittedBytes,
-      poolCommittedBytes: result.value.poolCommittedBytes, sharedCommittedBytes: result.value.sharedCommittedBytes });
+      poolCommittedBytes: result.value.poolCommittedBytes, sharedCommittedBytes: result.value.sharedCommittedBytes,
+      freshJob: result.value.freshJob, jobSequence: result.value.jobSequence, queryJobMillis: result.value.queryJobMillis,
+      queryStageMillis: result.value.queryStageMillis, queryReleaseMillis: result.value.queryReleaseMillis,
+      queryReleaseAcknowledged: result.value.queryReleaseAcknowledged, stagedQueryBytes: result.value.stagedQueryBytes,
+      sharedReferenceGeneration: result.value.sharedReferenceGeneration, sharedQueryGeneration: result.value.sharedQueryGeneration });
     const measurements = {};
     for (const pipeline of pipelines) {
       const cold = {}, warming = [], trials = [];
       for (const mode of modes) {
-        const result = await driver.call({ kind: 'run', mode, pipeline, exact: true }); parity(result.value, true); cold[mode] = compact(result);
+        const result = await driver.call({ kind: 'run', mode, pipeline, exact: true }); parity(result.value, true); validateLifecycle(result.value); cold[mode] = compact(result);
       }
       for (let i = 0; i < warmups + repeats; i++) {
         const order = trialOrders[i], results = {};
         for (const mode of order) {
-          const result = await driver.call({ kind: 'run', mode, pipeline }); parity(result.value);
+          const result = await driver.call({ kind: 'run', mode, pipeline }); parity(result.value); validateLifecycle(result.value);
           if (!result.value.poolReferenceReused) throw new Error('Verifier reference unexpectedly rebuilt');
           results[mode] = compact(result);
         }
@@ -164,7 +181,7 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
     }
     const finished = (await driver.call({ kind: 'finish' })).value;
     return { isolated: self.crossOriginIsolated, actualHardwareConcurrency: navigator.hardwareConcurrency,
-      initialization, preparation, guards, ...finished, inputPointCountsVerified: !!inputs.reference.points && !!inputs.compared.points,
+      initialization, preparation, guards, freshSetup, freshJobsValidated: jobs === 'fresh', ...finished, inputPointCountsVerified: !!inputs.reference.points && !!inputs.compared.points,
       candidateSource: preparation.value.candidateSource, candidateSha256: await digest(expected.hints),
       exactF64Sha256: await digest(expected.exact), displayedF32Sha256: await digest(expected.distances),
       stats: expected.stats, certified: expected.certified, exactDistancesMatchFullSearch: true,
@@ -174,7 +191,9 @@ async function inPage({ isolated, inputs, threads, warmups, repeats, batchSize, 
 }
 
 const trialOrders = Array.from({ length: warmups + repeats }, (_, i) => verifierTrialOrder(i));
-const report = { schemaVersion: 1, orderScheme: 'williams-4', createdUtc: new Date().toISOString(), inputs, inputManifest,
+const report = { schemaVersion: 2, queryJobs: jobs, operationScope: jobs === 'fresh' ?
+  'Fresh owned queries from an already parsed cloud, per-operation staging, selected pipeline, ordered summaries, f32 export, acknowledged query release and output transfer; immutable reference caches stay fixed. Excludes file parsing, initialization, reference import and diagnostic f64 export.' :
+  'Prepared immutable query job reused across requests; per-job query preparation and release excluded.', orderScheme: 'williams-4', createdUtc: new Date().toISOString(), inputs, inputManifest,
   purpose: gpu === 'physical' && warmups >= 5 && repeats >= 10 ? 'timing-comparison' : 'compatibility-smoke',
   machine: { platform: platform(), release: release(), cpu: cpus()[0]?.model, logicalCpus: cpus().length,
     memoryBytes: totalmem(), node: process.version }, threads, warmups, repeats, batchSize, gpu, builds,
@@ -182,7 +201,7 @@ const report = { schemaVersion: 1, orderScheme: 'williams-4', createdUtc: new Da
   sources: Object.fromEntries(['web/scripts/benchmark-shared-gpu-c2c.mjs', 'web/experiments/shared-gpu-c2c/worker.mjs',
     'web/experiments/shared-gpu-c2c/coi-sw.js', 'web/experiments/shared-gpu-c2c/trial-order.mjs'].map(name => [name, hash(readFileSync(resolve(repository, name), 'utf8').replaceAll('\r\n', '\n'))])),
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', windowsHide: true }).trim(),
-  note: 'Standalone shared candidate-verification experiment. No production defaults or isolation registration change. A plain HTTP static server and experiment-scoped service worker isolate the page and nested workers. Driver caps production pool capacity to threads+1 before initialization. Production candidate shader, f64 verification and ordered summary arithmetic are reused. Fixed pipeline reuses identical captured physical-WebGPU hints; GPU pipeline repeats rounded query packing, actual dispatch/readback and one-batch prefetch before verification. All modes retain identical owner tree and immutable query order. Pool streams exact query coordinates per batch; pool-staged retains distributed queries once per job. Both share the same production per-lane reference trees. Shared serial and parallel hold one extra imported tree and full query snapshot in the same threaded binary; stable serial is an untimed correctness/fallback control. Initialization, imports and first calls are separate; prepare boundaries differ and do not establish cold whole-job speedup. Warm RPC times include the complete chosen pipeline, exact verification, ordered f64 summaries, f32 export and output transfer; diagnostic f64 exports occur only outside timed trials. GPU wait and verification intervals can overlap and must not be summed into wall time. Snapshot transfer bytes describe wire payload, not retained tree allocation. WASM committed pages are high-water counters, not RSS; all alternatives coexist, so no whole-application memory-saving claim is made. Measured point subsets are not independent surveys or SLAM-accuracy ground truth. Other host activity, GC, clocks and power are uncontrolled. No adapter identity is collected.' };
+  note: 'Standalone shared candidate-verification experiment. No production defaults or isolation registration change. A plain HTTP static server and experiment-scoped service worker isolate the page and nested workers. Driver caps production pool capacity to threads+1 before initialization. Production candidate shader, f64 verification and ordered summary arithmetic are reused. Fixed pipeline reuses identical captured physical-WebGPU hints; GPU pipeline repeats rounded query packing, actual dispatch/readback and one-batch prefetch before verification. All modes retain identical owner reference and query order. Pool streams exact query coordinates per batch; pool-staged retains distributed queries once per job. The queryJobs and operationScope fields distinguish prepared reuse from fresh per-request jobs. Fresh jobs retain the already parsed cloud, create a new production owner snapshot on every call, stage only the current queries, and await one release acknowledgement per participating worker before freeing the owner job. Shared jobs replace only owned queries; reference generation must remain one. The fixed oracle and stable fallback are checked before releasing the initial prepared job. Diagnostic f64 export is outside warm trials. Both share the same production per-lane reference trees. Shared serial and parallel hold one extra imported tree and full query snapshot in the same threaded binary; stable serial is an untimed correctness/fallback control. Initialization and reference imports are separate; validation calls do not establish cold first-call speedup. The legacy cold field contains post-guard validation requests. Warm RPC times include the complete chosen pipeline, exact verification, ordered f64 summaries, f32 export and output transfer; diagnostic f64 exports occur only outside timed trials. GPU wait and verification intervals can overlap and must not be summed into wall time. Snapshot transfer bytes describe wire payload, not retained tree allocation. WASM committed pages are high-water counters, not RSS; all alternatives coexist, so no whole-application memory-saving claim is made. Measured point subsets are not independent surveys or SLAM-accuracy ground truth. Other host activity, GC, clocks and power are uncontrolled. No adapter identity is collected.' };
 let browser;
 try {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -198,7 +217,7 @@ try {
         await page.evaluate(async () => { await navigator.serviceWorker.register('./coi-sw.js'); await navigator.serviceWorker.ready; });
         await page.reload(); await page.waitForFunction(() => self.crossOriginIsolated, undefined, { timeout: 15_000 });
       }
-      report[isolated ? 'measurement' : 'preflight'] = await page.evaluate(inPage, { isolated, inputs, threads, warmups, repeats, batchSize, gpu, trialOrders });
+      report[isolated ? 'measurement' : 'preflight'] = await page.evaluate(inPage, { isolated, inputs, threads, warmups, repeats, batchSize, gpu, jobs, trialOrders });
     } finally { await context.close(); }
   }
   for (const input of Object.values(inputs)) if (hash(readFileSync(input.path)) !== input.sha256) throw new Error('Input changed during measurement');

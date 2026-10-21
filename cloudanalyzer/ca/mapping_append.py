@@ -23,6 +23,64 @@ PREVIEW_PROTOCOL = {"maximum_endpoint_pairs": 32, "maximum_bytes": 2 * 1024**2,
                     "native_processing_performed": False, "shared_hd_attempts_spent": 0}
 
 
+def _inside_gap_union(start: float, stop: float, gaps: list[dict[str, Any]]) -> bool:
+    """Cover every original station, including boundaries between selected gaps."""
+    if not start < stop:
+        return False
+    cuts = sorted({start, stop, *[v for g in gaps for v in (g["from_m"], g["to_m"]) if start < v < stop]})
+    return all(any(g["from_m"] <= a and b <= g["to_m"] for g in gaps) for a, b in zip(cuts, cuts[1:]))
+
+
+def collect_gaps(root: Path, cid: int, gap_ids: Any, observations: list[dict[str, Any]]) -> dict[str, Any]:
+    """Freeze selected, already seen rows across compatible saved gap pages."""
+    if not isinstance(gap_ids, list) or not 1 <= len(gap_ids) <= 8 or any(type(v) is not int or v < 1 for v in gap_ids):
+        raise ValueError("append needs 1..8 positive inspected gap IDs")
+    if len(set(gap_ids)) != len(gap_ids):
+        raise ValueError("choose distinct inspected append gaps")
+    latest = patches._read(observations[-1]["file"])
+    keys = ("schema", "candidate_id", "inputs", "source_extent", "source_protocol", "inspection_protocol", "raw_evidence_available")
+    signature = {k: latest.get(k) for k in keys}
+    selected = set(gap_ids)
+    rows: dict[int, Any] = {}
+    pages = []
+    for observation in reversed(observations):
+        seen = {g["id"] for g in observation["gaps"]} & selected
+        if not seen - rows.keys():
+            continue
+        artifact = observation["file"]
+        if artifact["bytes"] > PREVIEW_PROTOCOL["maximum_bytes"]:
+            raise ValueError("gap observation exceeds the 2 MiB page bound")
+        page = patches._read(artifact)
+        if ({k: page.get(k) for k in keys} != signature or page["schema"] != GAP_SCHEMA or page["candidate_id"] != cid):
+            raise ValueError("append gap pages belong to different frozen inputs or inspection protocols")
+        retries._verify_inputs(page["inputs"])
+        for row in page["gaps"]:
+            if row["id"] in seen:
+                if row["id"] in rows and rows[row["id"]] != row:
+                    raise ValueError("overlapping gap observations disagree")
+                rows[row["id"]] = row
+        pages.append(artifact)
+        if rows.keys() == selected:
+            break
+    if rows.keys() != selected:
+        raise ValueError("inspect every chosen append gap through this run")
+    if len(pages) == 1:
+        return cast(dict[str, Any], pages[0])
+    value = {**latest, "offset": None, "gaps": [rows[k] for k in sorted(rows)], "next_offset": None,
+             "selected_gap_ids": gap_ids, "selected_gaps_only": True, "page_files": pages,
+             "note": "Selected rows from already inspected pages with identical frozen inputs and protocols; no source processing."}
+    if len((json.dumps(value, indent=2, allow_nan=False) + "\n").encode()) > PREVIEW_PROTOCOL["maximum_bytes"]:
+        raise ValueError("selected gap evidence exceeds its 2 MiB bound")
+    key = hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+    path = root / f"append-gaps-{cid:02d}-{key[:16]}.json"
+    if path.exists():
+        if patches._read(jobs._artifact(path)) != value:
+            raise ValueError("combined gap observation changed")
+    else:
+        jobs._save(path, value)
+    return jobs._artifact(path)
+
+
 def validate(root: Path, baseline_id: int, addition_id: int, gap_ids: list[int],
              evidence: dict[str, Any], layout: dict[str, Any]) -> dict[str, Any]:
     """Bind two own audited sources to the same fixed map, layout and seen gaps."""
@@ -79,8 +137,8 @@ def validate(root: Path, baseline_id: int, addition_id: int, gap_ids: list[int],
         raise ValueError("addition lane intervals must be finite, increasing and disjoint")
     if any(max(lo, a) < min(hi, b) for lo, hi in intervals for a, b in before.values()):
         raise ValueError("addition overlaps a retained lane or connector")
-    if any(not any(g["from_m"] <= lo < hi <= g["to_m"] for g in gaps) for lo, hi in intervals):
-        raise ValueError("every addition must stay within a chosen seen baseline gap")
+    if any(not _inside_gap_union(lo, hi, gaps) for lo, hi in intervals):
+        raise ValueError("every addition must stay within the union of chosen seen baseline gaps")
     original, trial = [patches._read(p["files"]["editable_map"]) for p in (baseline, addition)]
     if (len(original["lanes"]) + len(trial["lanes"]) > 256
             or sum(len(b["geometry"]) for m in (original, trial) for b in m["boundaries"]) > 100000):
@@ -92,6 +150,7 @@ def validate(root: Path, baseline_id: int, addition_id: int, gap_ids: list[int],
     route_metrics(original, before)
     inputs = {"gap_evidence": evidence, "layout": layout, "native": job["runtime"]["native"]["extension"],
               **{f"pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}}
+    inputs.update({f"gap_page_{i}": artifact for i, artifact in enumerate(saved.get("page_files", []))})
     for label, parent in (("baseline", baseline), ("addition", addition)):
         inputs.update({f"{label}_{k}": v for k, v in parent["files"].items()})
         inputs.update({f"{label}_geometry_{k}": v for k, v in parent["geometry_inputs"].items()})

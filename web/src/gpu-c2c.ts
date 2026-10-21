@@ -65,7 +65,7 @@ export function invalidateGpuReference(cloud: Cloud): void {
 export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetch = true,
   verifyBounds = true, reuseDevice = true, verifySimd = true, requestedBatchSize?: number, leafOnly = false,
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
-  mainWorker = false, reuseImportBounds = true, bufferedReadback = false): Promise<{
+  mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
@@ -228,7 +228,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       if (verifiers) {
         try {
           certified += await verifiers.complete(job, first, candidates, verifyWorkers,
-            verifyBounds, verifySimd, distances, queryJob, resident);
+            verifyBounds, verifySimd, distances, queryJob, resident, sliceQueryCopy);
         } catch (error) {
           // All submitted lanes have settled. Recompute the entire batch from
           // this job's immutable snapshot, including any partially joined lane.
@@ -249,7 +249,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       verifyPrepareMillis, verifyReferenceReused, verifyFallback, verifySnapshot,
       verifyReuseImportBounds: verifySnapshot && reuseImportBounds,
       verifyReferenceBytes: verifiers?.referenceBytes,
-      verifyStagedQueries: !!queryJob && verifyWorkers > 1, verifyQueryPrepareMillis,
+      verifyStagedQueries: !!queryJob && verifyWorkers > 1, verifyQueryPrepareMillis, querySliceCopy: sliceQueryCopy,
       verifyQueryBytes: queryJob?.bytes } };
   } finally {
     await Promise.all(pending.map(batch => batch.result));

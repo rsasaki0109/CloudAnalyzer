@@ -202,3 +202,5 @@ benchmarks/wasm-shared-gpu-fresh/** text eol=lf
 benchmarks/wasm-shared-gpu-fresh/inputs-*-01.json -text -eol whitespace=cr-at-eol
 
 benchmarks/wasm-shared-gpu-overlap/** text eol=lf
+
+benchmarks/wasm-query-export/** text eol=lf

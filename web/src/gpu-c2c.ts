@@ -3,14 +3,15 @@ import { GpuCandidateDevice, GpuCandidateSearch, validateGpuWorkgroupSize } from
 import type { C2cOutput } from "./protocol";
 import { GpuVerifiers, type GpuVerifierQueries } from "./gpu-verifiers";
 import { poolSize } from "./pool";
+import { GPU_DIAGNOSTIC_BATCH_LIMIT, timeGpuVerification, type GpuC2cDiagnostics, type GpuBatchTiming, type GpuLaneTiming } from "./gpu-diagnostics";
 
 const DEFAULT_GPU_INHERITED_BOUNDS = false;
 
+interface SearchEntry { ready: Promise<GpuCandidateSearch>; gpu?: GpuCandidateSearch }
 interface ReferenceEntry {
   cloud: Cloud;
   index: GpuC2cReference;
-  ready?: Promise<GpuCandidateSearch>;
-  gpu?: GpuCandidateSearch;
+  searches: Map<boolean, SearchEntry>;
   users: number;
   retired: boolean;
   disposed: boolean;
@@ -23,20 +24,24 @@ interface ReferenceEntry {
 let current: ReferenceEntry | undefined;
 
 interface DeviceEntry { ready: Promise<GpuCandidateDevice>; device?: GpuCandidateDevice }
-let sharedDevice: DeviceEntry | undefined;
+// At most two devices: ordinary requests never negotiate timestamp-query.
+const sharedDevices = new Map<boolean, DeviceEntry>();
 
-function acquireDevice(inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS): Promise<GpuCandidateDevice> {
+function acquireDevice(inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS, diagnostics = false): Promise<GpuCandidateDevice> {
+  let sharedDevice = sharedDevices.get(diagnostics);
   if (sharedDevice?.device && !sharedDevice.device.usable) {
     sharedDevice.device.dispose();
+    sharedDevices.delete(diagnostics);
     sharedDevice = undefined;
   }
   if (!sharedDevice) {
-    const entry: DeviceEntry = { ready: GpuCandidateDevice.create(false, inheritedBounds) };
+    const entry: DeviceEntry = { ready: GpuCandidateDevice.create(false, inheritedBounds, diagnostics) };
     sharedDevice = entry;
+    sharedDevices.set(diagnostics, entry);
     entry.ready = entry.ready.then(device => { entry.device = device; return device; });
     // Handle failure immediately, even if synchronous snapshot preparation
     // later throws. A failed preparation must not prevent a future retry.
-    void entry.ready.catch(() => { if (sharedDevice === entry) sharedDevice = undefined; });
+    void entry.ready.catch(() => { if (sharedDevices.get(diagnostics) === entry) sharedDevices.delete(diagnostics); });
   }
   return sharedDevice.ready;
 }
@@ -48,7 +53,7 @@ function release(entry: ReferenceEntry): void {
   if (!entry.retired || entry.users || entry.disposed) return;
   entry.disposed = true;
   entry.index.free();
-  entry.gpu?.dispose();
+  for (const search of entry.searches.values()) search.gpu?.dispose();
   for (const verifier of entry.verifiers?.values() ?? []) verifier.dispose();
 }
 
@@ -63,12 +68,23 @@ export function invalidateGpuReference(cloud: Cloud): void {
   if (current?.cloud === cloud) retire(current);
 }
 
+function completeHere(job: GpuC2cJob, first: number, candidates: Uint32Array, distances: Float64Array,
+  timings?: GpuLaneTiming[]): number {
+  if (!timings) { distances.set(job.complete(first, candidates), first); return 0; }
+  const started = performance.now();
+  const result = timeGpuVerification(() => job.verify(first, candidates));
+  distances.set(result.distances, first);
+  timings.push({ first, count: candidates.length, lane: 0, resident: true, queryExportMillis: 0,
+    roundTripMillis: performance.now() - started, ...result.timing });
+  return result.certified;
+}
+
 /** Experimental hybrid: GPU hints, authoritative f64 verification per query. */
 export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetch = true,
   verifyBounds = true, reuseDevice = true, verifySimd = true, requestedBatchSize?: number, leafOnly = false,
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
   mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false,
-  ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS): Promise<{
+  ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS, diagnosticsEnabled = false): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
@@ -80,6 +96,9 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     requestedBatchSize < 1 || requestedBatchSize > 262_144))
     throw new Error("WebGPU C2C batch size must be an integer in 1..262144");
   const start = performance.now();
+  const diagnostics: GpuC2cDiagnostics | undefined = diagnosticsEnabled ? {
+    timestampQuery: "unavailable", gpu: [], verification: [], gpuBatchesOmitted: 0, verificationBatchesOmitted: 0,
+  } : undefined;
   if (!compared.length || !reference.length) throw new Error("WebGPU C2C requires nonempty clouds");
   if (compared.length > 2_000_000 || reference.length > 2_000_000) {
     throw new Error("WebGPU C2C currently supports up to 2,000,000 points per cloud");
@@ -92,16 +111,17 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   // Capture this before source mutations can run.
   const wantedBatchSize = requestedBatchSize ?? (compared.length >= 1_000_000 ||
     verifyWorkers >= 4 && compared.length >= 524_288 ? 131_072 : 65_536);
-  if (current?.gpu && !current.gpu.usable) retire(current);
+  const cachedSearch = current?.searches.get(diagnosticsEnabled)?.gpu;
+  if (cachedSearch && !cachedSearch.usable) retire(current!);
   const referenceReused = current?.cloud === reference && current.reuseDevice === reuseDevice;
-  const deviceReused = referenceReused ? !!current?.gpu?.usable : reuseDevice && !!sharedDevice?.device?.usable;
+  const deviceReused = referenceReused && !!cachedSearch?.usable || reuseDevice && !!sharedDevices.get(diagnosticsEnabled)?.device?.usable;
   // Start native adapter discovery before synchronous tree/query preparation.
   // The snapshots are still owned before the first yield to other requests.
-  const deviceReady = reuseDevice ? acquireDevice(inheritedBounds) : undefined;
+  const deviceReady = reuseDevice ? acquireDevice(inheritedBounds, diagnosticsEnabled) : undefined;
   if (!referenceReused) {
     if (current) retire(current);
     current = { cloud: reference, index: new GpuC2cReference(reference), users: 0,
-      retired: false, disposed: false, reuseDevice };
+      retired: false, disposed: false, reuseDevice, searches: new Map() };
   }
   const entry = current!;
   entry.users++;
@@ -147,23 +167,28 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
         verifyWorkers = 1;
       }).finally(() => { verifyPrepareMillis = performance.now() - started; });
     }
-    if (!entry.ready) {
+    let search = entry.searches.get(diagnosticsEnabled);
+    if (!search) {
       const packed = entry.index.candidateBuffers();
       try {
         const points = packed.takePoints(), nodes = packed.takeNodes();
-        entry.ready = (async () => GpuCandidateSearch.create(points, nodes,
-          deviceReady ? await deviceReady : undefined, inheritedBounds))().then(search => {
-          entry.gpu = search;
-          if (entry.disposed) search.dispose();
-          return search;
+        const prepared: SearchEntry = { ready: (async () => GpuCandidateSearch.create(points, nodes,
+          deviceReady ? await deviceReady : undefined, inheritedBounds, diagnosticsEnabled))() };
+        prepared.ready = prepared.ready.then(gpu => {
+          prepared.gpu = gpu;
+          if (entry.disposed) gpu.dispose();
+          return gpu;
         });
+        entry.searches.set(diagnosticsEnabled, prepared);
+        search = prepared;
       } finally { packed.free(); }
     }
     const prepareMillis = performance.now() - start;
     let t = performance.now();
     let deviceBatchSize = 65_536;
     try {
-      gpu = await entry.ready;
+      gpu = await search!.ready;
+      if (diagnostics) diagnostics.timestampQuery = gpu.timestampQueries ? "enabled" : "unsupported";
       deviceBatchSize = gpu.batchLimit(workgroupSize);
     } catch (error) {
       fallback = error instanceof Error ? error.message : String(error);
@@ -180,8 +205,18 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     const dispatch = (first: number) => {
       const started = performance.now();
       const count = Math.min(batchSize, job!.length - first);
+      let timing: GpuBatchTiming | undefined;
+      if (diagnostics) {
+        if (diagnostics.gpu.length < GPU_DIAGNOSTIC_BATCH_LIMIT) {
+          timing = { first, count, queryExportMillis: 0 };
+          diagnostics.gpu.push(timing);
+        } else diagnostics.gpuBatchesOmitted++;
+      }
+      const exportStarted = timing ? performance.now() : 0;
+      const queries = job!.queries(first, count);
+      if (timing) timing.queryExportMillis = performance.now() - exportStarted;
       // Handle rejection immediately, including while CPU verification runs.
-      const result = gpu!.find(job!.queries(first, count), leafOnly, workgroupSize, readbackAhead, inheritedBounds).then<BatchResult, BatchResult>(
+      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing).then<BatchResult, BatchResult>(
         candidates => ({ ok: true, candidates }),
         error => ({ ok: false, error: error instanceof Error ? error.message || error.name : String(error) }),
       );
@@ -228,19 +263,21 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
         if (gpu && prefetch && ahead < job.length) pending.push(dispatch(ahead));
       }
       t = performance.now();
+      const laneTimings = diagnostics && first / batchSize < GPU_DIAGNOSTIC_BATCH_LIMIT ? diagnostics.verification : undefined;
+      if (diagnostics && !laneTimings) diagnostics.verificationBatchesOmitted++;
       if (verifiers) {
         try {
           certified += await verifiers.complete(job, first, candidates, verifyWorkers,
-            verifyBounds, verifySimd, distances, queryJob, resident, sliceQueryCopy, ownedQueryCopy);
+            verifyBounds, verifySimd, distances, queryJob, resident, sliceQueryCopy, ownedQueryCopy, laneTimings);
         } catch (error) {
           // All submitted lanes have settled. Recompute the entire batch from
           // this job's immutable snapshot, including any partially joined lane.
           verifyFallback = error instanceof Error ? error.message : String(error);
           verifiers = undefined;
           verifyWorkers = 1;
-          distances.set(job.complete(first, candidates), first);
+          certified += completeHere(job, first, candidates, distances, laneTimings);
         }
-      } else distances.set(job.complete(first, candidates), first);
+      } else certified += completeHere(job, first, candidates, distances, laneTimings);
       verifyMillis += performance.now() - t;
     }
     return { distances, compute: { backend: fallback ? "cpu" : "webgpu", fallback,
@@ -255,7 +292,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       verifyReferenceBytes: verifiers?.referenceBytes,
       verifyStagedQueries: !!queryJob && verifyWorkers > 1, verifyQueryPrepareMillis,
       querySliceCopy: sliceQueryCopy && !ownedQueryCopy, queryOwnedCopy: ownedQueryCopy,
-      verifyQueryBytes: queryJob?.bytes } };
+      verifyQueryBytes: queryJob?.bytes, ...(diagnostics ? { diagnostics } : {}) } };
   } finally {
     await Promise.all(pending.map(batch => batch.result));
     queryJob?.dispose();
@@ -263,7 +300,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     entry.users--;
     // An unexpected failure before GPU initialization should not retain a
     // partially prepared reference. Successful entries stay for reuse.
-    if (!entry.ready) retire(entry);
+    if (!entry.searches.size) retire(entry);
     release(entry);
   }
 }

@@ -212,7 +212,9 @@ export interface C2cOutput {
     verifyQueryBytes?: number;
     verifyReferenceReused?: boolean;
     /** Worker failure recovered by exact verification on the main snapshot. */
-    verifyFallback?: string };
+    verifyFallback?: string;
+    /** Opt-in instrumentation; phase durations overlap and use separate clocks. */
+    diagnostics?: import("./gpu-diagnostics").GpuC2cDiagnostics };
 }
 
 export interface IcpOutput {
@@ -850,6 +852,8 @@ export type Request =
       gpuLeafOnly?: boolean;
       /** Internal GPU traversal comparison; exact f64 verification is unchanged. */
       gpuInheritedBounds?: boolean;
+      /** Internal profiling only; disabled by default. May perturb operation time. */
+      gpuDiagnostics?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */
       gpuWorkgroupSize?: number;
       /** Experimental exact CPU verification pool; 1 (serial) by default. */

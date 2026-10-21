@@ -27,13 +27,15 @@ import init, {
   warmUp,
 } from "./wasm/ca_wasm.js";
 
+import { timeGpuVerification, type GpuVerificationTiming } from "./gpu-diagnostics";
+
 export type Slice =
   | { kind: "cloud"; reference: Float64Array; queries: Float64Array; simd?: boolean }
   | { kind: "cloud-prepare"; job: number; reference: Float64Array; queries: Float64Array }
   | { kind: "cloud-prepared"; job: number; simd?: boolean }
   | { kind: "cloud-release"; job: number }
   | { kind: "gpu-verify-prepare"; referenceId: number; reference: Float64Array | Uint8Array; reuseBounds?: boolean }
-  | ({ kind: "gpu-verify"; referenceId: number; candidates: Uint32Array; bounds: boolean; simd: boolean } &
+  | ({ kind: "gpu-verify"; referenceId: number; candidates: Uint32Array; bounds: boolean; simd: boolean; diagnostics?: boolean } &
       ({ queries: Float64Array } | { queryJob: number; first: number }))
   | { kind: "gpu-query-prepare"; referenceId: number; queryJob: number; queries: Float64Array }
   | { kind: "gpu-query-release"; queryJob: number }
@@ -191,7 +193,7 @@ const m3c2Jobs = new Map<number, M3c2Prepared>();
 const USE_MESH_QUERY_ORDER = false;
 let meshQueryOrder: MeshQueryOrder | undefined;
 export interface MeshPartResult { distances: Float64Array; queryOrderHit: boolean; queryOrderBytes: number; queryOrderEntries: number }
-export interface GpuVerifyResult { distances: Float64Array; certified: number }
+export interface GpuVerifyResult { distances: Float64Array; certified: number; timing?: GpuVerificationTiming }
 export interface M3c2PartResult { distances: Float64Array; normalCacheHit: boolean; normalCacheBytes: number; fusedProjection: boolean }
 /** This worker's copy of the odometry's local map, and its share of the scan being registered. */
 let odometryMap: OdometryMap | null = null;
@@ -251,6 +253,19 @@ async function run(request: SliceRequest): Promise<{ value: Value; transfer: Tra
       return { value: new Float64Array(0), transfer: [] };
     }
     case "gpu-verify": {
+      if (request.diagnostics) {
+        const value = timeGpuVerification(() => {
+          if ("queries" in request) {
+            const reference = gpuReferences.get(request.referenceId);
+            if (!reference) throw new Error("GPU verification reference is unavailable");
+            return reference.verify(request.queries, request.candidates, request.bounds, request.simd);
+          }
+          const job = gpuQueries.get(request.queryJob);
+          if (!job) throw new Error("GPU verification queries are unavailable");
+          return job.verify(request.first, request.candidates, request.bounds, request.simd);
+        });
+        return { value, transfer: [value.distances.buffer] };
+      }
       let verified;
       if ("queries" in request) {
         const reference = gpuReferences.get(request.referenceId);

@@ -8,26 +8,37 @@ pub use wasm_bindgen_rayon::init_thread_pool;
 
 const MAX_POINTS: usize = 2_000_000;
 
-/// One validated tree and immutable query snapshot for every Rayon lane.
+/// One validated tree and one owned query job for every Rayon lane.
 #[wasm_bindgen]
 pub struct SharedGpuC2c {
     tree: CandidateKdTree,
-    queries: Vec<[f64; 3]>,
+    queries: Vec<f64>,
 }
 
 impl SharedGpuC2c {
-    fn prepare(snapshot: &[u8], xyz: &[f64]) -> Result<Self, &'static str> {
+    fn validate_queries(xyz: &[f64]) -> Result<(), &'static str> {
         if xyz.is_empty() || !xyz.len().is_multiple_of(3) || xyz.len() / 3 > MAX_POINTS {
             return Err("expected 1..2000000 query XYZ triples");
         }
         if !xyz.iter().all(|v| v.is_finite()) {
             return Err("query coordinates must be finite");
         }
+        Ok(())
+    }
+
+    fn prepare(snapshot: &[u8], xyz: &[f64]) -> Result<Self, &'static str> {
+        Self::validate_queries(xyz)?;
+        let queries = xyz.to_vec();
         let tree = CandidateKdTree::from_snapshot(snapshot, MAX_POINTS)?;
-        Ok(Self {
-            tree,
-            queries: xyz.as_chunks::<3>().0.to_vec(),
-        })
+        Ok(Self { tree, queries })
+    }
+
+    fn replace_queries(&mut self, xyz: Vec<f64>) -> Result<(), &'static str> {
+        // Own the transferred WASM allocation, with no second coordinate copy.
+        // Validation failure leaves the current job intact.
+        Self::validate_queries(&xyz)?;
+        self.queries = xyz;
+        Ok(())
     }
 
     fn calculate(
@@ -43,6 +54,8 @@ impl SharedGpuC2c {
             .ok_or("invalid staged query range")?;
         let queries = self
             .queries
+            .as_chunks::<3>()
+            .0
             .get(first..end)
             .ok_or("invalid staged query range")?;
         let mut distances = vec![0.0; candidates.len()];
@@ -84,6 +97,17 @@ impl SharedGpuC2c {
     #[wasm_bindgen(constructor)]
     pub fn new(snapshot: &[u8], queries: &[f64]) -> Result<Self, JsError> {
         Self::prepare(snapshot, queries).map_err(JsError::new)
+    }
+
+    /// Start a fresh query job without importing the reference tree again.
+    #[wasm_bindgen(js_name = setQueries)]
+    pub fn set_queries(&mut self, queries: Vec<f64>) -> Result<(), JsError> {
+        self.replace_queries(queries).map_err(JsError::new)
+    }
+
+    #[wasm_bindgen(js_name = releaseQueries)]
+    pub fn release_queries(&mut self) {
+        self.queries = Vec::new();
     }
 
     /// Invalid hints use the core's complete f64 search, just as in production.
@@ -227,6 +251,54 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn replaces_and_releases_jobs_without_changing_reference_or_distance_bits() {
+        let points = [[0.0, 0.0, 0.0], [4.0, 0.0, 0.0]];
+        let bytes = CandidateKdTree::new(&points).unwrap().snapshot();
+        let mut job = SharedGpuC2c::prepare(&bytes, &[1.0, 0.0, 0.0]).unwrap();
+        let reference_bytes = job.tree.snapshot();
+        let mut next = [2.0, 0.0, 0.0, 4.0, 0.0, 0.0];
+        job.replace_queries(next.to_vec()).unwrap();
+        next.fill(999.0);
+        for invalid in [&[][..], &[1.0, 2.0], &[f64::NAN, 0.0, 0.0]] {
+            assert!(job.replace_queries(invalid.to_vec()).is_err());
+        }
+        let expected = job.calculate(0, &[u32::MAX, 1], true, true, false).unwrap();
+        assert_eq!(expected.distances, [2.0, 0.0]);
+        assert_eq!(job.tree.snapshot(), reference_bytes);
+        #[cfg(feature = "threads")]
+        for n in [1, 2, 4] {
+            let actual = rayon::ThreadPoolBuilder::new()
+                .num_threads(n)
+                .build()
+                .unwrap()
+                .install(|| job.calculate(0, &[u32::MAX, 1], true, true, true).unwrap());
+            assert_eq!(
+                actual
+                    .distances
+                    .iter()
+                    .map(|x| x.to_bits())
+                    .collect::<Vec<_>>(),
+                expected
+                    .distances
+                    .iter()
+                    .map(|x| x.to_bits())
+                    .collect::<Vec<_>>()
+            );
+            assert_eq!(actual.certified, expected.certified);
+        }
+        job.release_queries();
+        job.release_queries();
+        assert!(job.queries.is_empty());
+        assert!(job.calculate(0, &[0], true, true, false).is_err());
+        job.replace_queries(vec![3.0, 0.0, 0.0]).unwrap();
+        assert_eq!(
+            job.calculate(0, &[0], true, true, false).unwrap().distances,
+            [1.0]
+        );
+        assert_eq!(job.tree.snapshot(), reference_bytes);
     }
 
     #[cfg(feature = "threads")]

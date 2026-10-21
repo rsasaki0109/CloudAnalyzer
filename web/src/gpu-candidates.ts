@@ -7,6 +7,8 @@ override inheritedBounds: bool = false;
 @group(0) @binding(1) var<storage, read> nodes: array<u32>;
 @group(0) @binding(2) var<storage, read> queries: array<vec4<f32>>;
 @group(0) @binding(3) var<storage, read_write> candidates: array<u32>;
+// Lazily uploaded rounded subtree boxes, six components per node.
+@group(0) @binding(4) var<storage, read> boxes: array<f32>;
 
 // A near-leaf seed is only a hint. The f64 verifier scans that leaf and
 // searches every ancestral sibling whose exact bounds cannot exclude it.
@@ -83,7 +85,96 @@ fn nearest(@builtin(global_invocation_id) id: vec3<u32>) {
         }
     }
     candidates[id.x] = slot;
+}
+
+// Separate entry keeps box loads and the fifth binding out of ordinary searches.
+@compute @workgroup_size(workgroupSize)
+fn nearestBox(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (id.x >= arrayLength(&queries)) { return; }
+    let q = queries[id.x].xyz;
+    var best = 3.402823e38f;
+    var slot = 0xffffffffu;
+    var stack: array<u32, 32>;
+    var lower: array<f32, 32>;
+    var pending = 1u;
+    stack[0] = 0u;
+    lower[0] = 0.0;
+    // Bound a dispatch even on degenerate data. An unfinished search still
+    // provides only a hint, which the authoritative CPU search checks.
+    var visits = 0u;
+    loop {
+        if (pending == 0u || visits >= 4096u) { break; }
+        pending -= 1u;
+        let node = stack[pending];
+        let parentLower = lower[pending];
+        if (parentLower > best) { continue; }
+        let boundsBase = node * 6u;
+        let lo = vec3<f32>(boxes[boundsBase], boxes[boundsBase + 1u], boxes[boundsBase + 2u]);
+        let hi = vec3<f32>(boxes[boundsBase + 3u], boxes[boundsBase + 4u], boxes[boundsBase + 5u]);
+        let gap = max(max(lo - q, q - hi), vec3<f32>(0.0));
+        if (dot(gap, gap) > best) { continue; }
+        visits += 1u;
+        let base = node * 5u;
+        let axis = nodes[base + 3u];
+        if (axis == 255u) {
+            let end = min(nodes[base + 1u], nodes[base] + 4096u);
+            for (var i = nodes[base]; i < end; i += 1u) {
+                let delta = points[i].xyz - q;
+                let d = dot(delta, delta);
+                if (d < best) { best = d; slot = i; }
+            }
+        } else {
+            let delta = q[axis] - bitcast<f32>(nodes[base + 4u]);
+            let near = select(nodes[base + 2u], node + 1u, delta < 0.0);
+            let far = select(node + 1u, nodes[base + 2u], delta < 0.0);
+            if (pending + 2u > 32u) { break; }
+            stack[pending] = far;
+            // Retain ancestor exclusions after a closer near-leaf hit.
+            lower[pending] = select(delta * delta, max(parentLower, delta * delta), inheritedBounds);
+            pending += 1u;
+            stack[pending] = near;
+            lower[pending] = select(0.0, parentLower, inheritedBounds);
+            pending += 1u;
+        }
+    }
+    candidates[id.x] = slot;
 }`;
+
+/** Boxes enclose the rounded points used by the GPU; exact distances stay in WASM. */
+export function packGpuNodeBoxes(points: Float32Array, nodes: Uint32Array): Float32Array<ArrayBuffer> {
+  if (!points.length || points.length % 4 || !nodes.length || nodes.length % 5)
+    throw new Error("Invalid GPU box source dimensions");
+  const count = nodes.length / 5, pointCount = points.length / 4;
+  if (nodes[0] !== 0 || nodes[1] !== pointCount) throw new Error("Incomplete GPU box root range");
+  const bounds = new Float32Array(count * 6);
+  for (let node = count - 1; node >= 0; node--) {
+    const base = node * 5, box = node * 6;
+    const start = nodes[base], end = nodes[base + 1], axis = nodes[base + 3];
+    if (start >= end || end > pointCount) throw new Error("Invalid GPU box node range");
+    if (axis === 255) {
+      for (let a = 0; a < 3; a++) {
+        let lo = Infinity, hi = -Infinity;
+        for (let i = start; i < end; i++) {
+          const v = points[i * 4 + a];
+          // Nonfinite rounded coordinates provide no exclusion on this axis.
+          if (!Number.isFinite(v)) { lo = -Infinity; hi = Infinity; break; }
+          lo = Math.min(lo, v); hi = Math.max(hi, v);
+        }
+        bounds[box + a] = lo; bounds[box + 3 + a] = hi;
+      }
+    } else {
+      const left = node + 1, right = nodes[base + 2];
+      if (axis > 2 || left >= count || right <= left || right >= count ||
+        nodes[left * 5] !== start || nodes[left * 5 + 1] !== nodes[right * 5] || nodes[right * 5 + 1] !== end)
+        throw new Error("Invalid GPU box child ranges");
+      for (let a = 0; a < 3; a++) {
+        bounds[box + a] = Math.min(bounds[left * 6 + a], bounds[right * 6 + a]);
+        bounds[box + 3 + a] = Math.max(bounds[left * 6 + 3 + a], bounds[right * 6 + 3 + a]);
+      }
+    }
+  }
+  return bounds;
+}
 
 export function validateGpuWorkgroupSize(size: number): void {
   if (![32, 64, 128, 256].includes(size))
@@ -131,19 +222,19 @@ export class GpuCandidateDevice {
     }
   }
 
-  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false): GPUComputePipeline | undefined {
-    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && inheritedBounds}`);
+  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false): GPUComputePipeline | undefined {
+    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && inheritedBounds}:${!leafOnly && boxBounds}`);
   }
 
   /** Called inside the serialized device scope; optional variants compile once. */
-  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false): Promise<GPUComputePipeline> {
+  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false): Promise<GPUComputePipeline> {
     this.batchLimit(size);
-    const key = `${leafOnly}:${size}:${!leafOnly && inheritedBounds}`;
+    const key = `${leafOnly}:${size}:${!leafOnly && inheritedBounds}:${!leafOnly && boxBounds}`;
     let ready = this.preparing.get(key);
     if (!ready) {
       const ready = this.device.createComputePipelineAsync({ layout: "auto", compute: {
         module: this.device.createShaderModule({ code: SHADER }),
-        entryPoint: leafOnly ? "leafNearest" : "nearest", constants: { workgroupSize: size, ...(leafOnly ? {} : { inheritedBounds: Number(inheritedBounds) }) },
+        entryPoint: leafOnly ? "leafNearest" : boxBounds ? "nearestBox" : "nearest", constants: { workgroupSize: size, ...(leafOnly ? {} : { inheritedBounds: Number(inheritedBounds) }) },
       } }).then(pipeline => { this.pipelines.set(key, pipeline); return pipeline; });
       this.preparing.set(key, ready);
       void ready.catch(() => { if (this.preparing.get(key) === ready) this.preparing.delete(key); });
@@ -199,6 +290,9 @@ export class GpuCandidateSearch {
   private querySets: GPUQuerySet[] = [];
   private points!: GPUBuffer;
   private nodes!: GPUBuffer;
+  private boxBuffer?: GPUBuffer;
+  private boxPreparing?: Promise<void>;
+  private boxPrepared = false;
   private slots: BatchSlot[] = [{ pending: Promise.resolve(), active: 0 }, { pending: Promise.resolve(), active: 0 }];
   private nextSlot = 0;
   private disposed = false;
@@ -206,6 +300,8 @@ export class GpuCandidateSearch {
   get usable(): boolean { return !this.disposed && this.runtime.usable; }
   get batchSize(): number { return this.runtime.batchSize; }
   get timestampQueries(): boolean { return this.runtime.timestampQueries; }
+  get boxBoundsReady(): boolean { return this.boxPrepared; }
+  get boxBoundsBytes(): number { return this.boxBuffer?.size ?? 0; }
   batchLimit(size: number): number { return this.runtime.batchLimit(size); }
   private get device(): GPUDevice { return this.runtime.device; }
 
@@ -235,6 +331,30 @@ export class GpuCandidateSearch {
     return buffer;
   }
 
+  /** Export/pack/upload only once, sharing ordinary point/node buffers. */
+  prepareBoxBounds(source: () => { points: Float32Array; nodes: Uint32Array }): Promise<void> {
+    if (!this.usable) return Promise.reject(new Error("WebGPU reference was disposed or its device was lost"));
+    if (this.boxPrepared) return Promise.resolve();
+    if (!this.boxPreparing) {
+      this.boxPreparing = this.runtime.run(async () => {
+        if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
+        const { points, nodes } = source();
+        if (points.byteLength !== this.points.size || nodes.byteLength !== this.nodes.size)
+          throw new Error("GPU box source does not match the reference dimensions");
+        const bounds = packGpuNodeBoxes(points, nodes);
+        this.boxBuffer = this.buffer(bounds.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
+        this.device.queue.writeBuffer(this.boxBuffer, 0, bounds);
+      }).then(() => { this.boxPrepared = true; }).catch(error => {
+        if (this.boxBuffer) {
+          this.boxBuffer.destroy(); this.buffers.splice(this.buffers.indexOf(this.boxBuffer), 1);
+        }
+        this.boxBuffer = undefined; this.boxPreparing = undefined;
+        throw error;
+      });
+    }
+    return this.boxPreparing;
+  }
+
   private upload(data: Float32Array | Uint32Array): GPUBuffer {
     const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
     this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
@@ -242,14 +362,14 @@ export class GpuCandidateSearch {
   }
 
   find(queries: Float32Array, leafOnly = false, workgroupSize = 64,
-    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming): Promise<Uint32Array<ArrayBuffer>> {
+    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming, boxBounds = false): Promise<Uint32Array<ArrayBuffer>> {
     const slot = this.slots[bufferedReadback ? this.nextSlot++ % 2 : 0];
     // A slot stays leased through mapping/copy/unmap, including failed scopes.
     // The ordinary path keeps its historical single-buffer serialization.
     const execute = async () => {
       if (!bufferedReadback) {
         return this.runtime.run(async () => {
-          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing);
+          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds);
           const result = await batch.result;
           if (!result.ok) throw result.error;
           return result.candidates;
@@ -260,7 +380,7 @@ export class GpuCandidateSearch {
         // Return a wrapper, not the readback promise: close this submission's
         // device scopes before another slot submits while mapping is in flight.
         await this.runtime.run(async () => {
-          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing);
+          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds);
         });
         const result = await batch!.result;
         if (!result.ok) throw result.error;
@@ -278,15 +398,16 @@ export class GpuCandidateSearch {
   }
 
   private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number, inheritedBounds: boolean,
-    timing?: import("./gpu-diagnostics").GpuBatchTiming) {
+    timing: import("./gpu-diagnostics").GpuBatchTiming | undefined, boxBounds: boolean) {
     const batchSize = this.batchLimit(workgroupSize);
     const count = queries.length / 4;
     if (!Number.isInteger(count) || count < 1 || count > batchSize) throw new Error("Invalid WebGPU query batch");
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     // A separate entry point keeps the large DFS stacks out of the hint
     // kernel. Ready pipelines dispatch synchronously for CPU/GPU overlap.
-    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds) ??
-      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds);
+    if (boxBounds && !leafOnly && !this.boxPrepared) throw new Error("GPU box bounds are not prepared");
+    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds) ??
+      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds);
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     if (!slot.work || slot.work.capacity < count) {
       // Grow only this idle slot; the other readback may still be mapped.
@@ -324,7 +445,7 @@ export class GpuCandidateSearch {
       // Bind only the live range so arrayLength excludes retained capacity
       // and the final partial workgroup cannot access stale query values.
       work.bindings = this.device.createBindGroup({ layout: pipeline.getBindGroupLayout(0),
-        entries: [this.points, this.nodes, input, output].map((buffer, binding) => ({ binding,
+        entries: (boxBounds && !leafOnly ? [this.points, this.nodes, input, output, this.boxBuffer!] : [this.points, this.nodes, input, output]).map((buffer, binding) => ({ binding,
           resource: { buffer, size: binding === 2 ? count * 16 : binding === 3 ? count * 4 : buffer.size } })),
       });
       work.count = count;
@@ -396,6 +517,7 @@ export class GpuCandidateSearch {
     for (const buffer of this.buffers.splice(0)) buffer.destroy();
     for (const queries of this.querySets.splice(0)) queries.destroy();
     for (const slot of this.slots) { slot.work = undefined; slot.timestamps = undefined; }
+    this.boxBuffer = undefined; this.boxPrepared = false;
     if (this.ownsDevice) this.runtime.dispose();
   }
 }

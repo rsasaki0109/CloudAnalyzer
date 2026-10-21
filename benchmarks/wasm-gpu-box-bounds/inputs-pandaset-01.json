@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "path": "demo_data/pandaset-vector-map/map.pcd",
+    "bytes": 17021251,
+    "sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+    "declaredPoints": 1063816,
+    "decodedPoints": 1063816,
+    "url": "https://github.com/scaleapi/pandaset-devkit",
+    "attribution": "PandaSet, Hesai and Scale AI; scene 019 Pandar64 frames 0,8,...,72 in world coordinates",
+    "license": "CC-BY-4.0"
+  },
+  "split": {
+    "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+    "disjointSourceIndices": true,
+    "geometricDuplicatesPossible": true,
+    "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+    "attributes": "Only XYZ is exported; original source attributes are not modified",
+    "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+  },
+  "inputs": {
+    "reference": {
+      "file": "reference.ply",
+      "points": 531908,
+      "bytes": 12765915,
+      "sha256": "52b27ac005edad41107262c100bf877d78411b29f1f0e48071cd6711a0abb6ba"
+    },
+    "compared": {
+      "file": "compared.ply",
+      "points": 531908,
+      "bytes": 12765915,
+      "sha256": "08475ea4cd8e77cf4660ecf91a86efbe3380e39c34b4c8ce2d6bc2b6c938db23"
+    }
+  },
+  "currentPreparation": "Python struct little-endian binary PCD f32 XYZ to f64 PLY; declared point count; zero trailing padding ignored",
+  "reproducesPriorInputBytes": true,
+  "priorSpecificationSha256": "838184314ec4de1074274e01ebe26279bed07fcaa1d1b739d966bb3bd86a1506",
+  "preparationStudy": "GPU subtree boxes; byte-identical real measured subsets"
+}

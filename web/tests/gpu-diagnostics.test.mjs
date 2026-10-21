@@ -22,11 +22,12 @@ test('diagnostic verification frees its WASM result when distance export fails',
 
 test('GPU diagnostic packet retains identical outputs, complete traces and paired overhead', () => {
   const manifest = JSON.parse(bytes(`${directory}/manifest.json`));
-  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases };
+  const boxes = JSON.parse(bytes("benchmarks/wasm-gpu-box-bounds/manifest.json"));
+  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...boxes.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
     const a = aliases[expected]; assert.equal(a?.original, name);
-    assert.ok(a.archived.startsWith(`${directory}/executed-source/`) && !a.archived.includes('..'));
+    assert.ok((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/")) && !a.archived.includes('..'));
     assert.equal(normalizedHash(a.archived), expected);
   };
   assert.equal(manifest.diagnosticsDefault, false); assert.equal(manifest.backendSelectionChanged, false);

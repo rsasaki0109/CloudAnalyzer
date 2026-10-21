@@ -169,6 +169,7 @@ def _locked(root: Path) -> Iterator[None]:
 def start_mapping_run(source: str, out_dir: str, layout_hypothesis: dict[str, Any],
     max_attempts: int = 6, minimum_retained_fraction: float = .9, keyframe_spacing: float = 1.,
     remove_dynamic: bool = True, pointcloud_topic: str | None = None, imu_topic: str | None = None,
+    sample_spacing_m: float | None = None,
 ) -> dict[str, Any]:
     """Start an agent-driven raw-log-to-both-maps loop with one fixed layout hypothesis.
 
@@ -181,20 +182,25 @@ def start_mapping_run(source: str, out_dir: str, layout_hypothesis: dict[str, An
     No LLM or model API key is required by this runner. Existing outputs are never reused
     as new jobs; inspection resumes saved runs. max_attempts must allow at least one
     geometry/lane pair. Processing failures and partial outputs remain visible.
+    Optional sample_spacing_m (0.5..2) fixes the initial corridor station grid;
+    omission retains the native default. This changes headings, not source thresholds.
     """
     _layout(layout_hypothesis)
     if type(max_attempts) is not int or not 2 <= max_attempts <= 8:
         raise ValueError("mapping runs need 2..8 shared HD attempts")
+    if sample_spacing_m is not None:
+        jobs._corridor_spacing(sample_spacing_m)
     job = jobs.start_mapping_job(source, out_dir, keyframe_spacing=keyframe_spacing,
         remove_dynamic=remove_dynamic, max_attempts=max_attempts, pointcloud_topic=pointcloud_topic,
         imu_topic=imu_topic, minimum_retained_fraction=minimum_retained_fraction)
-    return _prepare_run(out_dir, layout_hypothesis, job)
+    return _prepare_run(out_dir, layout_hypothesis, job, sample_spacing_m)
 
 
 def start_mapping_run_from_slam(
     map_path: str, trajectory_path: str, out_dir: str, provenance: dict[str, Any],
     layout_hypothesis: dict[str, Any], max_attempts: int = 6,
     minimum_retained_fraction: float = .9,
+    sample_spacing_m: float | None = None,
 ) -> dict[str, Any]:
     """Start HD drafting from an existing external SLAM PLY/TUM pair.
 
@@ -204,16 +210,21 @@ def start_mapping_run_from_slam(
     accessible and unchanged. Inspect, refine, draft, connect and finish use
     the existing quality/extent gates; raw-recording and fusion actions are
     unavailable. No external SLAM package or model API key is required.
+    Optional sample_spacing_m (0.5..2) sets the initial corridor station grid;
+    an association-only refinement inherits it. The map and trajectory stay fixed.
     """
     from ca.mapping_import import import_mapping_job
 
     _layout(layout_hypothesis)
+    if sample_spacing_m is not None:
+        jobs._corridor_spacing(sample_spacing_m)
     job = import_mapping_job(map_path, trajectory_path, out_dir, provenance,
         max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
-    return _prepare_run(out_dir, layout_hypothesis, job)
+    return _prepare_run(out_dir, layout_hypothesis, job, sample_spacing_m)
 
 
-def _prepare_run(out_dir: str, layout_hypothesis: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]:
+def _prepare_run(out_dir: str, layout_hypothesis: dict[str, Any], job: dict[str, Any],
+                 sample_spacing_m: float | None = None) -> dict[str, Any]:
     root = Path(out_dir).resolve()
     jobs._save(root / "layout-hypothesis.json", layout_hypothesis)
     run = {"schema": SCHEMA, "revision": 0, "status": "preparing", "layout_file": jobs._artifact(root / "layout-hypothesis.json"),
@@ -221,7 +232,8 @@ def _prepare_run(out_dir: str, layout_hypothesis: dict[str, Any], job: dict[str,
     jobs._save(root / "run.json", run)
     try:
         if job["status"] == "pointcloud_ready":
-            stage = jobs.propose_mapping_corridors(str(root))
+            stage = jobs.propose_mapping_corridors(str(root), **(
+                {"sample_spacing_m": sample_spacing_m} if sample_spacing_m is not None else {}))
             run["status"] = "needs_agent" if stage["status"] == "ready" else "processing_failed"
         else:
             run["status"] = "processing_failed"

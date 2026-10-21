@@ -198,3 +198,5 @@ docs/slam-flatwall-count-reserve.md text eol=lf
 
 benchmarks/wasm-shared-gpu-c2c/** text eol=lf
 benchmarks/wasm-shared-gpu-fresh/** text eol=lf
+# Input specifications retain the exact bytes hashed during measurement.
+benchmarks/wasm-shared-gpu-fresh/inputs-*-01.json -text -eol whitespace=cr-at-eol

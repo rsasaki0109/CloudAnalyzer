@@ -216,6 +216,14 @@ export interface C2cOutput {
     boxBoundsReused?: boolean;
     /** Retained box-buffer bytes on this GPU reference, including after switching to local hints. */
     boxBoundsBytes?: number;
+    /** Experimental parent-link traversal; mutually exclusive with GPU boxes. */
+    parentTraversal?: boolean;
+    /** Host export/pack/upload readiness interval, not isolated transfer time. */
+    parentTraversalPrepareMillis?: number;
+    /** Parent links already existed before this request. */
+    parentTraversalReused?: boolean;
+    /** Retained parent-buffer bytes, including on later local-mode requests. */
+    parentTraversalBytes?: number;
     /** Total f64 coordinate bytes staged across lanes (no reference replication). */
     verifyQueryBytes?: number;
     verifyReferenceReused?: boolean;
@@ -862,6 +870,8 @@ export type Request =
       gpuInheritedBounds?: boolean;
       /** Internal combined GPU subtree box comparison. */
       gpuBoxBounds?: boolean;
+      /** Experimental bounded stackless hints; ignored for leaf-only hints. */
+      gpuParentTraversal?: boolean;
       /** Internal profiling only; disabled by default. May perturb operation time. */
       gpuDiagnostics?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */

@@ -9,6 +9,8 @@ override inheritedBounds: bool = false;
 @group(0) @binding(3) var<storage, read_write> candidates: array<u32>;
 // Lazily uploaded rounded subtree boxes, six components per node.
 @group(0) @binding(4) var<storage, read> boxes: array<f32>;
+// Optional stackless traversal shares the ordinary point/node buffers.
+@group(0) @binding(5) var<storage, read> parents: array<u32>;
 
 // A near-leaf seed is only a hint. The f64 verifier scans that leaf and
 // searches every ancestral sibling whose exact bounds cannot exclude it.
@@ -138,6 +140,49 @@ fn nearestBox(@builtin(global_invocation_id) id: vec3<u32>) {
         }
     }
     candidates[id.x] = slot;
+}
+
+@compute @workgroup_size(workgroupSize)
+fn nearestParent(@builtin(global_invocation_id) id: vec3<u32>) {
+    if (id.x >= arrayLength(&queries)) { return; }
+    let q = queries[id.x].xyz;
+    let missing = 0xffffffffu;
+    var best = 3.402823e38f;
+    var slot = missing;
+    var node = 0u;
+    var previous = missing;
+    var visits = 0u;
+    var steps = 0u;
+    loop {
+        if (node == missing || steps >= 12288u || visits >= 4096u) { break; }
+        steps += 1u;
+        let base = node * 5u;
+        let axis = nodes[base + 3u];
+        let parent = parents[node];
+        var next = parent;
+        if (previous == parent) {
+            visits += 1u;
+            if (axis == 255u) {
+                let end = min(nodes[base + 1u], nodes[base] + 4096u);
+                for (var i = nodes[base]; i < end; i += 1u) {
+                    let delta = points[i].xyz - q;
+                    let d = dot(delta, delta);
+                    if (d < best) { best = d; slot = i; }
+                }
+            } else {
+                let delta = q[axis] - bitcast<f32>(nodes[base + 4u]);
+                next = select(nodes[base + 2u], node + 1u, delta < 0.0);
+            }
+        } else if (axis != 255u) {
+            let delta = q[axis] - bitcast<f32>(nodes[base + 4u]);
+            let near = select(nodes[base + 2u], node + 1u, delta < 0.0);
+            let far = select(node + 1u, nodes[base + 2u], delta < 0.0);
+            if (previous == near && delta * delta <= best) { next = far; }
+        }
+        previous = node;
+        node = next;
+    }
+    candidates[id.x] = slot;
 }`;
 
 /** Boxes enclose the rounded points used by the GPU; exact distances stay in WASM. */
@@ -174,6 +219,27 @@ export function packGpuNodeBoxes(points: Float32Array, nodes: Uint32Array): Floa
     }
   }
   return bounds;
+}
+
+/** One parent per preorder node; root uses the missing-candidate sentinel. */
+export function packGpuParentLinks(nodes: Uint32Array, pointCount: number): Uint32Array<ArrayBuffer> {
+  if (!nodes.length || nodes.length % 5 || !Number.isSafeInteger(pointCount) || pointCount < 1 ||
+    nodes[0] !== 0 || nodes[1] !== pointCount) throw new Error("Invalid GPU parent source dimensions");
+  const count = nodes.length / 5, missing = 0xffffffff;
+  const parents = new Uint32Array(count).fill(missing);
+  for (let node = 0; node < count; node++) {
+    const base = node * 5, start = nodes[base], end = nodes[base + 1], axis = nodes[base + 3];
+    if (start >= end || end > pointCount) throw new Error("Invalid GPU parent node range");
+    if (axis === 255) continue;
+    const left = node + 1, right = nodes[base + 2];
+    if (axis > 2 || left >= count || right <= left || right >= count ||
+      parents[left] !== missing || parents[right] !== missing ||
+      nodes[left * 5] !== start || nodes[left * 5 + 1] !== nodes[right * 5] || nodes[right * 5 + 1] !== end)
+      throw new Error("Invalid GPU parent child ranges");
+    parents[left] = node; parents[right] = node;
+  }
+  if (parents.subarray(1).some(parent => parent === missing)) throw new Error("Disconnected GPU parent nodes");
+  return parents;
 }
 
 export function validateGpuWorkgroupSize(size: number): void {
@@ -222,19 +288,21 @@ export class GpuCandidateDevice {
     }
   }
 
-  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false): GPUComputePipeline | undefined {
-    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && inheritedBounds}:${!leafOnly && boxBounds}`);
+  getPipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false, parentTraversal = false): GPUComputePipeline | undefined {
+    return this.pipelines.get(`${leafOnly}:${size}:${!leafOnly && !parentTraversal && inheritedBounds}:${!leafOnly && boxBounds}:${!leafOnly && parentTraversal}`);
   }
 
   /** Called inside the serialized device scope; optional variants compile once. */
-  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false): Promise<GPUComputePipeline> {
+  preparePipeline(leafOnly: boolean, size: number, inheritedBounds = false, boxBounds = false, parentTraversal = false): Promise<GPUComputePipeline> {
     this.batchLimit(size);
-    const key = `${leafOnly}:${size}:${!leafOnly && inheritedBounds}:${!leafOnly && boxBounds}`;
+    if (!leafOnly && boxBounds && parentTraversal) throw new Error("Choose one GPU traversal variant");
+    const key = `${leafOnly}:${size}:${!leafOnly && !parentTraversal && inheritedBounds}:${!leafOnly && boxBounds}:${!leafOnly && parentTraversal}`;
     let ready = this.preparing.get(key);
     if (!ready) {
       const ready = this.device.createComputePipelineAsync({ layout: "auto", compute: {
         module: this.device.createShaderModule({ code: SHADER }),
-        entryPoint: leafOnly ? "leafNearest" : boxBounds ? "nearestBox" : "nearest", constants: { workgroupSize: size, ...(leafOnly ? {} : { inheritedBounds: Number(inheritedBounds) }) },
+        entryPoint: leafOnly ? "leafNearest" : parentTraversal ? "nearestParent" : boxBounds ? "nearestBox" : "nearest",
+        constants: { workgroupSize: size, ...(leafOnly || parentTraversal ? {} : { inheritedBounds: Number(inheritedBounds) }) },
       } }).then(pipeline => { this.pipelines.set(key, pipeline); return pipeline; });
       this.preparing.set(key, ready);
       void ready.catch(() => { if (this.preparing.get(key) === ready) this.preparing.delete(key); });
@@ -293,6 +361,9 @@ export class GpuCandidateSearch {
   private boxBuffer?: GPUBuffer;
   private boxPreparing?: Promise<void>;
   private boxPrepared = false;
+  private parentBuffer?: GPUBuffer;
+  private parentPreparing?: Promise<void>;
+  private parentPrepared = false;
   private slots: BatchSlot[] = [{ pending: Promise.resolve(), active: 0 }, { pending: Promise.resolve(), active: 0 }];
   private nextSlot = 0;
   private disposed = false;
@@ -302,6 +373,8 @@ export class GpuCandidateSearch {
   get timestampQueries(): boolean { return this.runtime.timestampQueries; }
   get boxBoundsReady(): boolean { return this.boxPrepared; }
   get boxBoundsBytes(): number { return this.boxBuffer?.size ?? 0; }
+  get parentTraversalReady(): boolean { return this.parentPrepared; }
+  get parentTraversalBytes(): number { return this.parentBuffer?.size ?? 0; }
   batchLimit(size: number): number { return this.runtime.batchLimit(size); }
   private get device(): GPUDevice { return this.runtime.device; }
 
@@ -355,6 +428,29 @@ export class GpuCandidateSearch {
     return this.boxPreparing;
   }
 
+  /** Lazy immutable parents, with shared preparation and retry after failure. */
+  prepareParentTraversal(source: () => Uint32Array): Promise<void> {
+    if (!this.usable) return Promise.reject(new Error("WebGPU reference was disposed or its device was lost"));
+    if (this.parentPrepared) return Promise.resolve();
+    if (!this.parentPreparing) {
+      this.parentPreparing = this.runtime.run(async () => {
+        if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
+        const nodes = source();
+        if (nodes.byteLength !== this.nodes.size) throw new Error("GPU parent source does not match the reference dimensions");
+        const parents = packGpuParentLinks(nodes, this.points.size / 16);
+        this.parentBuffer = this.buffer(parents.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
+        this.device.queue.writeBuffer(this.parentBuffer, 0, parents);
+      }).then(() => { this.parentPrepared = true; }).catch(error => {
+        if (this.parentBuffer) {
+          this.parentBuffer.destroy(); this.buffers.splice(this.buffers.indexOf(this.parentBuffer), 1);
+        }
+        this.parentBuffer = undefined; this.parentPreparing = undefined;
+        throw error;
+      });
+    }
+    return this.parentPreparing;
+  }
+
   private upload(data: Float32Array | Uint32Array): GPUBuffer {
     const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
     this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
@@ -362,14 +458,14 @@ export class GpuCandidateSearch {
   }
 
   find(queries: Float32Array, leafOnly = false, workgroupSize = 64,
-    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming, boxBounds = false): Promise<Uint32Array<ArrayBuffer>> {
+    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming, boxBounds = false, parentTraversal = false): Promise<Uint32Array<ArrayBuffer>> {
     const slot = this.slots[bufferedReadback ? this.nextSlot++ % 2 : 0];
     // A slot stays leased through mapping/copy/unmap, including failed scopes.
     // The ordinary path keeps its historical single-buffer serialization.
     const execute = async () => {
       if (!bufferedReadback) {
         return this.runtime.run(async () => {
-          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds);
+          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds, parentTraversal);
           const result = await batch.result;
           if (!result.ok) throw result.error;
           return result.candidates;
@@ -380,7 +476,7 @@ export class GpuCandidateSearch {
         // Return a wrapper, not the readback promise: close this submission's
         // device scopes before another slot submits while mapping is in flight.
         await this.runtime.run(async () => {
-          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds);
+          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing, boxBounds, parentTraversal);
         });
         const result = await batch!.result;
         if (!result.ok) throw result.error;
@@ -398,16 +494,18 @@ export class GpuCandidateSearch {
   }
 
   private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number, inheritedBounds: boolean,
-    timing: import("./gpu-diagnostics").GpuBatchTiming | undefined, boxBounds: boolean) {
+    timing: import("./gpu-diagnostics").GpuBatchTiming | undefined, boxBounds: boolean, parentTraversal: boolean) {
     const batchSize = this.batchLimit(workgroupSize);
     const count = queries.length / 4;
     if (!Number.isInteger(count) || count < 1 || count > batchSize) throw new Error("Invalid WebGPU query batch");
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     // A separate entry point keeps the large DFS stacks out of the hint
     // kernel. Ready pipelines dispatch synchronously for CPU/GPU overlap.
+    if (!leafOnly && boxBounds && parentTraversal) throw new Error("Choose one GPU traversal variant");
+    if (parentTraversal && !leafOnly && !this.parentPrepared) throw new Error("GPU parent links are not prepared");
     if (boxBounds && !leafOnly && !this.boxPrepared) throw new Error("GPU box bounds are not prepared");
-    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds) ??
-      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds);
+    const pipeline = this.runtime.getPipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds, parentTraversal) ??
+      await this.runtime.preparePipeline(leafOnly, workgroupSize, inheritedBounds, boxBounds, parentTraversal);
     if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
     if (!slot.work || slot.work.capacity < count) {
       // Grow only this idle slot; the other readback may still be mapped.
@@ -446,7 +544,8 @@ export class GpuCandidateSearch {
       // and the final partial workgroup cannot access stale query values.
       work.bindings = this.device.createBindGroup({ layout: pipeline.getBindGroupLayout(0),
         entries: (boxBounds && !leafOnly ? [this.points, this.nodes, input, output, this.boxBuffer!] : [this.points, this.nodes, input, output]).map((buffer, binding) => ({ binding,
-          resource: { buffer, size: binding === 2 ? count * 16 : binding === 3 ? count * 4 : buffer.size } })),
+          resource: { buffer, size: binding === 2 ? count * 16 : binding === 3 ? count * 4 : buffer.size } })).concat(
+            parentTraversal && !leafOnly ? [{ binding: 5, resource: { buffer: this.parentBuffer!, size: this.parentBuffer!.size } }] : []),
       });
       work.count = count;
       work.pipeline = pipeline;
@@ -518,6 +617,7 @@ export class GpuCandidateSearch {
     for (const queries of this.querySets.splice(0)) queries.destroy();
     for (const slot of this.slots) { slot.work = undefined; slot.timestamps = undefined; }
     this.boxBuffer = undefined; this.boxPrepared = false;
+    this.parentBuffer = undefined; this.parentPrepared = false;
     if (this.ownsDevice) this.runtime.dispose();
   }
 }

@@ -1564,6 +1564,114 @@ test("a failed optional parent pipeline completes on CPU and retries with identi
   expect(await runAndExport(page, "webgpu", "with WebGPU")).toEqual(cpu);
 });
 
+test("GPU compact stacks preserve f64 real-query bits, independent uploads and normalized pipeline switches", async ({ page }) => {
+  const modulePath = "/__parents-wasm.js";
+  const wasmPath = "/assets/" + readdirSync(new URL("../dist/assets/", import.meta.url)).find(n => /^ca_wasm.*\.wasm$/.test(n));
+  await page.route("**" + modulePath, route => route.fulfill({ contentType: "text/javascript", body: readFileSync(new URL("../src/wasm/ca_wasm.js", import.meta.url), "utf8") }));
+  for (const [role, name] of [["reference", "lidar_reference.pcd"], ["compared", "lidar_candidate.pcd"]])
+    await page.route(`**/__parents-${role}`, route => route.fulfill({ body: readFileSync(new URL(`../public/samples/${name}`, import.meta.url)) }));
+  const source = stripTypeScriptTypes(readFileSync(new URL("../src/gpu-candidates.ts", import.meta.url), "utf8"), { mode: "transform" });
+  const gpuModule = "data:text/javascript;base64," + Buffer.from(source).toString("base64");
+  await page.goto("/");
+  test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
+  const result = await page.evaluate(async ({ modulePath, wasmPath, gpuModule }) => {
+    const wasm = await import(modulePath); await wasm.default({ module_or_path: wasmPath });
+    const { GpuCandidateSearch } = await import(gpuModule);
+    const r = wasm.Cloud.parse("r.pcd", new Uint8Array(await (await fetch("/__parents-reference")).arrayBuffer()));
+    const q = wasm.Cloud.parse("q.pcd", new Uint8Array(await (await fetch("/__parents-compared")).arrayBuffer()));
+    const index = new wasm.GpuC2cReference(r), initial = new wasm.GpuC2cJob(q, index);
+    const originals = index.xyz(), queries = Array.from(initial.queriesF64(0, 258)); initial.free(); q.free();
+    // Untimed guards: overflowing f32/f64 squared distances and an exact hit.
+    queries.push(1e30, -1e30, 1e30, 1e200, -1e200, 1e200, ...originals.slice(0, 3));
+    const count = queries.length / 3, header = new TextEncoder().encode(`ply\nformat binary_little_endian 1.0\nelement vertex ${count}\nproperty double x\nproperty double y\nproperty double z\nend_header\n`);
+    const bytes = new Uint8Array(header.length + count * 24); bytes.set(header);
+    const view = new DataView(bytes.buffer, header.length); queries.forEach((v, i) => view.setFloat64(i * 8, v, true));
+    const compared = wasm.Cloud.parse("queries.ply", bytes), job = new wasm.GpuC2cJob(compared, index), packed = index.candidateBuffers();
+    const points = packed.takePoints(), nodes = packed.takeNodes();
+    packed.free(); r.free(); compared.free(); index.free();
+    const brute = new Float64Array(count);
+    for (let i = 0; i < count; i++) {
+      let best = Infinity;
+      for (let p = 0; p < originals.length; p += 3) {
+        const dx = originals[p] - queries[i * 3], dy = originals[p + 1] - queries[i * 3 + 1], dz = originals[p + 2] - queries[i * 3 + 2];
+        best = Math.min(best, (dx * dx + dy * dy) + dz * dz);
+      }
+      brute[i] = Math.sqrt(best);
+    }
+    const expected = new BigUint64Array(brute.buffer), xyz = job.queries(0, count);
+    const create = GPUDevice.prototype.createBuffer, destroy = GPUBuffer.prototype.destroy, compile = GPUDevice.prototype.createComputePipelineAsync;
+    const live = new Set<GPUBuffer>(), labels: string[] = []; let checked = 0;
+    GPUDevice.prototype.createBuffer = function(desc) { const b = create.call(this, desc); live.add(b); return b; };
+    GPUBuffer.prototype.destroy = function() { live.delete(this); return destroy.call(this); };
+    GPUDevice.prototype.createComputePipelineAsync = function(desc) { labels.push(desc.label ?? ""); return compile.call(this, desc); };
+    let search;
+    const verify = (candidates: Uint32Array) => {
+      const result = job.verify(0, candidates);
+      try { const actual = new BigUint64Array(result.takeDistances().buffer); if (actual.length !== expected.length || actual.some((v, i) => v !== expected[i])) throw new Error("Compact hints changed full f64 distances"); checked++; }
+      finally { result.free(); }
+    };
+    try {
+      search = await GpuCandidateSearch.create(points, nodes);
+      if (live.size !== 2 || search.boxBoundsBytes || search.parentTraversalBytes) throw new Error("Ordinary reference allocated extra buffers");
+      verify(await search.find(xyz));
+      for (const inherited of [false, true]) for (const size of [32, 64, 128, 256]) verify(await search.find(xyz, false, size, false, inherited, undefined, false, false, true));
+      if (live.size !== 5 || search.boxBoundsBytes || search.parentTraversalBytes) throw new Error("Compact switches duplicated reference buffers");
+      const a = await search.find(xyz, true, 64), b = await search.find(xyz, true, 64, false, false, undefined, false, false, true);
+      if (a.some((v, i) => v !== b[i])) throw new Error("Compact flag changed leaf hints"); verify(a); verify(b);
+      const pending = await Promise.all(Array.from({ length: 5 }, () => search.find(xyz, false, 64, true, false, undefined, false, false, true))); pending.forEach(verify);
+      if (live.size !== 8 || search.boxBoundsBytes || search.parentTraversalBytes) throw new Error("Buffered compact switches retained extra buffers");
+      await search.prepareBoxBounds(() => ({ points, nodes })); await search.prepareParentTraversal(() => nodes);
+      for (const [boxes, parents] of [[true, false], [false, true]]) {
+        const plain = await search.find(xyz, false, 64, false, false, undefined, boxes, parents);
+        const flagged = await search.find(xyz, false, 64, false, false, undefined, boxes, parents, true);
+        if (plain.some((v, i) => v !== flagged[i])) throw new Error("Compact flag changed another traversal"); verify(plain); verify(flagged);
+      }
+      points.fill(NaN); nodes.fill(0);
+      verify(await search.find(xyz, false, 64, false, false, undefined, false, false, true));
+      search.dispose(); search = undefined;
+      return { checked, queries: count, liveBuffers: live.size, pipelines: labels.length, compactPipelines: labels.filter(label => label.startsWith("c2c:stack20:")).length };
+    } finally { search?.dispose(); job.free(); GPUDevice.prototype.createBuffer = create; GPUBuffer.prototype.destroy = destroy; GPUDevice.prototype.createComputePipelineAsync = compile; }
+  }, { modulePath, wasmPath, gpuModule });
+  expect(result.checked).toBe(21); expect(result.queries).toBe(261); expect(result.liveBuffers).toBe(0);
+  expect(result.pipelines).toBe(12); expect(result.compactPipelines).toBe(8);
+});
+
+test("GPU compact stack switches reuse shared reference buffers and invalidate after source edits", async ({ page }) => {
+  await page.goto("/");
+  test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
+  await alterWorker(page, gpuMetrics + `let requests=0;self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c"&&data.req.backend==="webgpu")data.req.gpuCompactStack=++requests%2===1;});`);
+  const { computed, metrics, changed } = await workerScenario(page, false, 4);
+  expect(computed.map(c => c.compactStack)).toEqual([true,false,true,false,true,false,true,false]);
+  expect(computed.map(c => c.referenceReused)).toEqual([false,true,false,true,false,false,true,false]);
+  expect(computed.every(c => c.boxBoundsBytes === 0 && c.parentTraversalBytes === 0 && !c.verifyFallback)).toBe(true);
+  expect(metrics).toEqual({ devices: 1, pipelines: 2, buffers: 5, maxScopes: 3 }); expect(changed).toBe(true);
+});
+
+test("GPU compact stacks retain concurrent snapshots through mutation and buffered maps", async ({ page }) => {
+  await page.goto("/");
+  test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
+  await alterWorker(page, gpuMetrics + `
+    self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c")data.req.gpuCompactStack=true;});
+    const submit=GPUQueue.prototype.submit;GPUQueue.prototype.submit=function(...args){submit.apply(this,args);self.postMessage({gpuSubmitted:true});};
+    const map=GPUBuffer.prototype.mapAsync;GPUBuffer.prototype.mapAsync=async function(...args){await map.apply(this,args);await new Promise(resolve=>setTimeout(resolve,100));};
+  `);
+  const { computed, metrics, changed } = await workerScenario(page, true, 4, false, false, true);
+  expect(computed.every(c => c.compactStack && c.boxBoundsBytes === 0 && c.parentTraversalBytes === 0 && !c.verifyFallback)).toBe(true);
+  expect(metrics.devices).toBe(1); expect(metrics.buffers).toBe(0); expect(changed).toBe(true);
+});
+
+test("a failed compact stack pipeline completes on CPU and retries with identical exports", async ({ page }) => {
+  await alterWorker(page, `
+    self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c")data.req.gpuCompactStack=true;});
+    let failed=false;const create=GPUDevice.prototype.createComputePipelineAsync;
+    GPUDevice.prototype.createComputePipelineAsync=function(desc){if(desc.label?.startsWith("c2c:stack20:")&&!failed){failed=true;return Promise.reject(new Error("injected compact stack pipeline failure"));}return create.call(this,desc);};
+  `);
+  await open(page);
+  const cpu = await runAndExport(page, "cpu");
+  expect(await runAndExport(page, "webgpu", "CPU fallback: injected compact stack pipeline failure")).toEqual(cpu);
+  expect(await runAndExport(page, "webgpu", "with WebGPU")).toEqual(cpu);
+});
+
 test("a failed optional inherited pipeline completes on CPU and retries on the shared device", async ({ page }) => {
   await alterWorker(page, `
     self.addEventListener("message", event => {

@@ -24,11 +24,12 @@ test('GPU diagnostic packet retains identical outputs, complete traces and paire
   const manifest = JSON.parse(bytes(`${directory}/manifest.json`));
   const boxes = JSON.parse(bytes("benchmarks/wasm-gpu-box-bounds/manifest.json"));
   const parents = JSON.parse(bytes("benchmarks/wasm-gpu-parent-traversal/manifest.json"));
-  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases };
+  const compact = JSON.parse(bytes("benchmarks/wasm-gpu-compact-stack/manifest.json"));
+  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases, ...compact.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
     const a = aliases[expected]; assert.equal(a?.original, name);
-    assert.ok((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/") || a.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/")) && !a.archived.includes('..'));
+    assert.ok((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/") || a.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/") || a.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !a.archived.includes('..'));
     assert.equal(normalizedHash(a.archived), expected);
   };
   assert.equal(manifest.diagnosticsDefault, false); assert.equal(manifest.backendSelectionChanged, false);

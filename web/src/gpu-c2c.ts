@@ -8,6 +8,7 @@ import { GPU_DIAGNOSTIC_BATCH_LIMIT, timeGpuVerification, type GpuC2cDiagnostics
 const DEFAULT_GPU_INHERITED_BOUNDS = false;
 const DEFAULT_GPU_BOX_BOUNDS = false;
 const DEFAULT_GPU_PARENT_TRAVERSAL = false;
+const DEFAULT_GPU_COMPACT_STACK = false;
 
 interface SearchEntry { ready: Promise<GpuCandidateSearch>; gpu?: GpuCandidateSearch }
 interface ReferenceEntry {
@@ -87,7 +88,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
   mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false,
   ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS, diagnosticsEnabled = false,
-  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL): Promise<{
+  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL, compactStack = DEFAULT_GPU_COMPACT_STACK): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
@@ -248,7 +249,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       const queries = job!.queries(first, count);
       if (timing) timing.queryExportMillis = performance.now() - exportStarted;
       // Handle rejection immediately, including while CPU verification runs.
-      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing, boxBounds, parentTraversal).then<BatchResult, BatchResult>(
+      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing, boxBounds, parentTraversal, compactStack).then<BatchResult, BatchResult>(
         candidates => ({ ok: true, candidates }),
         error => ({ ok: false, error: error instanceof Error ? error.message || error.name : String(error) }),
       );
@@ -315,6 +316,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     return { distances, compute: { backend: fallback ? "cpu" : "webgpu", fallback,
       prepareMillis, gpuMillis, gpuWaitMillis, verifyMillis, batches, batchSize, referenceReused, deviceReused,
       inheritedBounds: !leafOnly && !parentTraversal && inheritedBounds,
+      compactStack: !leafOnly && !boxBounds && !parentTraversal && compactStack,
       boxBounds: !leafOnly && boxBounds, boxBoundsPrepareMillis, boxBoundsReused,
       boxBoundsBytes: gpu?.boxBoundsBytes ?? 0,
       parentTraversal: !leafOnly && parentTraversal, parentTraversalPrepareMillis, parentTraversalReused,

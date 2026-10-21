@@ -208,6 +208,8 @@ export interface C2cOutput {
     verifyQueryPrepareMillis?: number; querySliceCopy?: boolean; queryOwnedCopy?: boolean;
     /** Rounded GPU traversal carries ancestor split lower bounds. */
     inheritedBounds?: boolean;
+    /** Ordinary GPU DFS uses 20 slots; ignored by leaf/box/parent entry points. */
+    compactStack?: boolean;
     /** Rounded per-node GPU boxes; authoritative f64 verification is unchanged. */
     boxBounds?: boolean;
     /** Lazy export/packing/upload readiness, including device-scope scheduling. */
@@ -872,6 +874,8 @@ export type Request =
       gpuBoxBounds?: boolean;
       /** Experimental bounded stackless hints; ignored for leaf-only hints. */
       gpuParentTraversal?: boolean;
+      /** Internal comparison: 20 ordinary DFS slots instead of 32. */
+      gpuCompactStack?: boolean;
       /** Internal profiling only; disabled by default. May perturb operation time. */
       gpuDiagnostics?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */

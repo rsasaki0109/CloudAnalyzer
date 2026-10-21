@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "path": "demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+    "bytes": 28125828,
+    "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+    "declaredPoints": 1757841,
+    "decodedPoints": 1757841,
+    "url": "https://docs.autoware.org/main/demos/planning-sim/",
+    "attribution": "Autoware surveyed planning sample; Copyright 2020 TIER IV, Inc.; no separate survey license asserted"
+  },
+  "split": {
+    "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+    "disjointSourceIndices": true,
+    "geometricDuplicatesPossible": true,
+    "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+    "attributes": "Only XYZ is exported; original source attributes are not modified",
+    "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+  },
+  "inputs": {
+    "reference": {
+      "file": "reference.ply",
+      "points": 878921,
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "compared": {
+      "file": "compared.ply",
+      "points": 878920,
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "currentPreparation": "Python struct little-endian binary PCD f32 XYZ to f64 PLY; declared point count; zero trailing padding ignored",
+  "reproducesPriorInputBytes": true,
+  "priorSpecificationSha256": "fc956401f2418f63b75bc8770993f14f983ac99b65f44ab620cff4344e77f958",
+  "preparationStudy": "GPU ordinary stack capacity; byte-identical real measured subsets"
+}

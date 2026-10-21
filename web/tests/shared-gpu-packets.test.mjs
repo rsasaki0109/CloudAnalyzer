@@ -24,8 +24,9 @@ test('shared GPU measurement packets retain executed sources, raw reports and fr
   const bounds = json('benchmarks/wasm-gpu-inherited-bounds/manifest.json');
   const diagnostics = JSON.parse(bytes("benchmarks/wasm-gpu-diagnostics/manifest.json"));
   const boxes = JSON.parse(bytes("benchmarks/wasm-gpu-box-bounds/manifest.json"));
+  const parents = JSON.parse(bytes("benchmarks/wasm-gpu-parent-traversal/manifest.json"));
   const aliases = { ...previous.sourceAliases, ...fresh.historicalSourceAliases, ...overlap.historicalSourceAliases,
-    ...queryExport.historicalSourceAliases, ...ownedExport.historicalSourceAliases, ...bounds.historicalSourceAliases, ...diagnostics.historicalSourceAliases, ...boxes.historicalSourceAliases };
+    ...queryExport.historicalSourceAliases, ...ownedExport.historicalSourceAliases, ...bounds.historicalSourceAliases, ...diagnostics.historicalSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases };
   const source = (name, expected) => {
     try { if (normalizedHash(name) === expected) return; } catch { /* Try a preserved source version. */ }
     const alias = aliases[expected];

@@ -2099,7 +2099,7 @@ async function handle(
         try {
           const gpu = await gpuCloudToCloud(compared, reference.cloud, req.gpuPrefetch,
             req.gpuVerifyBounds, req.gpuReuseDevice, req.gpuVerifySimd, req.gpuBatchSize, req.gpuLeafOnly,
-            req.gpuWorkgroupSize, req.gpuVerifyWorkers, req.gpuVerifySnapshot, req.gpuStageQueries, req.gpuMainWorker, req.gpuReuseImportBounds, req.gpuBufferedReadback, req.gpuQuerySlice, req.gpuQueryOwned, req.gpuInheritedBounds, req.gpuDiagnostics, req.gpuBoxBounds);
+            req.gpuWorkgroupSize, req.gpuVerifyWorkers, req.gpuVerifySnapshot, req.gpuStageQueries, req.gpuMainWorker, req.gpuReuseImportBounds, req.gpuBufferedReadback, req.gpuQuerySlice, req.gpuQueryOwned, req.gpuInheritedBounds, req.gpuDiagnostics, req.gpuBoxBounds, req.gpuParentTraversal);
           const out = output(summarizeDistances(gpu.distances, req.summarySort), start, gpu.compute.verifyWorkers ?? 1, "c2c", false);
           out.value.compute = gpu.compute;
           out.value.summarySort = req.summarySort === true;

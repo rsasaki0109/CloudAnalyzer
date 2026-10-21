@@ -7,6 +7,7 @@ import { GPU_DIAGNOSTIC_BATCH_LIMIT, timeGpuVerification, type GpuC2cDiagnostics
 
 const DEFAULT_GPU_INHERITED_BOUNDS = false;
 const DEFAULT_GPU_BOX_BOUNDS = false;
+const DEFAULT_GPU_PARENT_TRAVERSAL = false;
 
 interface SearchEntry { ready: Promise<GpuCandidateSearch>; gpu?: GpuCandidateSearch }
 interface ReferenceEntry {
@@ -86,7 +87,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
   mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false,
   ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS, diagnosticsEnabled = false,
-  boxBounds = DEFAULT_GPU_BOX_BOUNDS): Promise<{
+  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
@@ -137,6 +138,9 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   let verifyQueryPrepareMillis = 0;
   let boxBoundsPrepareMillis = 0;
   let boxBoundsReused = false;
+  let parentTraversalPrepareMillis = 0;
+  let parentTraversalReused = false;
+  let parentSource: Uint32Array | undefined;
   let queryJob: GpuVerifierQueries | undefined;
   let verifyReferenceReused = false;
   let verifyFallback: string | undefined;
@@ -176,6 +180,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       const packed = entry.index.candidateBuffers();
       try {
         const points = packed.takePoints(), nodes = packed.takeNodes();
+        if (parentTraversal && !leafOnly) parentSource = nodes;
         const prepared: SearchEntry = { ready: (async () => GpuCandidateSearch.create(points, nodes,
           deviceReady ? await deviceReady : undefined, inheritedBounds, diagnosticsEnabled))() };
         prepared.ready = prepared.ready.then(gpu => {
@@ -194,6 +199,18 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       gpu = await search!.ready;
       if (diagnostics) diagnostics.timestampQuery = gpu.timestampQueries ? "enabled" : "unsupported";
       deviceBatchSize = gpu.batchLimit(workgroupSize);
+      if (!leafOnly && boxBounds && parentTraversal) throw new Error("Choose one GPU traversal variant");
+      if (parentTraversal && !leafOnly) {
+        parentTraversalReused = gpu.parentTraversalReady;
+        const started = performance.now();
+        try {
+          await gpu.prepareParentTraversal(() => {
+            if (parentSource) { const nodes = parentSource; parentSource = undefined; return nodes; }
+            const packed = entry.index.candidateBuffers();
+            try { return packed.takeNodes(); } finally { packed.free(); }
+          });
+        } finally { parentSource = undefined; parentTraversalPrepareMillis = performance.now() - started; }
+      }
       if (boxBounds && !leafOnly) {
         boxBoundsReused = gpu.boxBoundsReady;
         const started = performance.now();
@@ -231,7 +248,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       const queries = job!.queries(first, count);
       if (timing) timing.queryExportMillis = performance.now() - exportStarted;
       // Handle rejection immediately, including while CPU verification runs.
-      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing, boxBounds).then<BatchResult, BatchResult>(
+      const result = gpu!.find(queries, leafOnly, workgroupSize, readbackAhead, inheritedBounds, timing, boxBounds, parentTraversal).then<BatchResult, BatchResult>(
         candidates => ({ ok: true, candidates }),
         error => ({ ok: false, error: error instanceof Error ? error.message || error.name : String(error) }),
       );
@@ -297,9 +314,11 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
     }
     return { distances, compute: { backend: fallback ? "cpu" : "webgpu", fallback,
       prepareMillis, gpuMillis, gpuWaitMillis, verifyMillis, batches, batchSize, referenceReused, deviceReused,
-      inheritedBounds: !leafOnly && inheritedBounds,
+      inheritedBounds: !leafOnly && !parentTraversal && inheritedBounds,
       boxBounds: !leafOnly && boxBounds, boxBoundsPrepareMillis, boxBoundsReused,
       boxBoundsBytes: gpu?.boxBoundsBytes ?? 0,
+      parentTraversal: !leafOnly && parentTraversal, parentTraversalPrepareMillis, parentTraversalReused,
+      parentTraversalBytes: gpu?.parentTraversalBytes ?? 0,
       certified: certified + job.certified, prefetch, bufferedReadback: readbackAhead,
       verifyBounds, verifySimd: job.simdEnabled, leafOnly, workgroupSize,
       verifyWorkers, verifyMainWorker: resident && verifyWorkers > 1,

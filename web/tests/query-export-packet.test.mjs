@@ -16,12 +16,13 @@ test('query-export packet retains measured candidate sources and the failed adop
   const manifest = JSON.parse(bytes(`${directory}/manifest.json`));
   const later = JSON.parse(bytes('benchmarks/wasm-owned-query-export/manifest.json'));
   const bounds = JSON.parse(bytes('benchmarks/wasm-gpu-inherited-bounds/manifest.json'));
-  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...later.historicalSourceAliases, ...bounds.historicalSourceAliases };
+  const diagnostics = JSON.parse(bytes("benchmarks/wasm-gpu-diagnostics/manifest.json"));
+  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...later.historicalSourceAliases, ...bounds.historicalSourceAliases, ...diagnostics.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
     const alias = aliases[expected];
     assert.equal(alias?.original, name);
-    assert.ok((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith('benchmarks/wasm-owned-query-export/executed-source/') || alias.archived.startsWith('benchmarks/wasm-gpu-inherited-bounds/executed-source/')) && !alias.archived.includes('..'));
+    assert.ok((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith('benchmarks/wasm-owned-query-export/executed-source/') || alias.archived.startsWith('benchmarks/wasm-gpu-inherited-bounds/executed-source/') || alias.archived.startsWith('benchmarks/wasm-gpu-diagnostics/executed-source/')) && !alias.archived.includes('..'));
     assert.equal(normalizedHash(alias.archived), expected);
   };
   assert.equal(manifest.adopted, false);

@@ -13,7 +13,7 @@ await build({ configFile: false, root: resolve(repository, 'web'), publicDir: fa
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const inputs = ['web/experiments/shared-gpu-c2c/driver.ts', 'web/scripts/build-shared-gpu-driver.mjs',
   'web/package.json', 'web/package-lock.json', 'web/src/gpu-verifiers.ts', 'web/src/gpu-candidates.ts',
-  'web/src/pool.ts', 'web/src/c2c-worker.ts', 'web/src/protocol.ts', 'web/src/wasm/ca_wasm.js',
+  'web/src/gpu-diagnostics.ts', 'web/src/pool.ts', 'web/src/c2c-worker.ts', 'web/src/protocol.ts', 'web/src/wasm/ca_wasm.js',
   'web/src/wasm/ca_wasm_bg.wasm'];
 const artifacts = {};
 function collect(directory) {

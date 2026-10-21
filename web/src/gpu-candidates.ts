@@ -100,6 +100,7 @@ export class GpuCandidateDevice {
   get batchSize(): number { return this.batchLimit(64); }
 
   get usable(): boolean { return !this.lost; }
+  get timestampQueries(): boolean { return this.device.features.has("timestamp-query"); }
 
   private constructor(readonly device: GPUDevice) {
     void device.lost.then(() => { this.lost = true; });
@@ -114,12 +115,13 @@ export class GpuCandidateDevice {
       Math.floor(limits.maxStorageBufferBindingSize / 16), Math.floor(limits.maxBufferSize / 16));
   }
 
-  static async create(requirePhysical = false, inheritedBounds = false): Promise<GpuCandidateDevice> {
+  static async create(requirePhysical = false, inheritedBounds = false, timestamps = false): Promise<GpuCandidateDevice> {
     if (!globalThis.navigator?.gpu) throw new Error("WebGPU is unavailable in this browser");
     const adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
     if (!adapter) throw new Error("No WebGPU adapter is available");
     if (requirePhysical && adapter.info.isFallbackAdapter) throw new Error("A physical WebGPU adapter is required");
-    const runtime = new GpuCandidateDevice(await adapter.requestDevice());
+    const runtime = new GpuCandidateDevice(await adapter.requestDevice(timestamps && adapter.features.has("timestamp-query")
+      ? { requiredFeatures: ["timestamp-query"] } : undefined));
     try {
       await runtime.run(() => runtime.preparePipeline(false, 64, inheritedBounds));
       return runtime;
@@ -188,11 +190,13 @@ interface BatchBuffers {
   capacity: number; input: GPUBuffer; output: GPUBuffer; readback: GPUBuffer;
   count?: number; pipeline?: GPUComputePipeline; bindings?: GPUBindGroup;
 }
-interface BatchSlot { work?: BatchBuffers; pending: Promise<void>; active: number }
+interface BatchTimestamps { queries: GPUQuerySet; resolve: GPUBuffer; readback: GPUBuffer }
+interface BatchSlot { work?: BatchBuffers; timestamps?: BatchTimestamps; pending: Promise<void>; active: number }
 
 /** Reference buffers and reusable batches on either a shared or owned device. */
 export class GpuCandidateSearch {
   private buffers: GPUBuffer[] = [];
+  private querySets: GPUQuerySet[] = [];
   private points!: GPUBuffer;
   private nodes!: GPUBuffer;
   private slots: BatchSlot[] = [{ pending: Promise.resolve(), active: 0 }, { pending: Promise.resolve(), active: 0 }];
@@ -201,13 +205,14 @@ export class GpuCandidateSearch {
 
   get usable(): boolean { return !this.disposed && this.runtime.usable; }
   get batchSize(): number { return this.runtime.batchSize; }
+  get timestampQueries(): boolean { return this.runtime.timestampQueries; }
   batchLimit(size: number): number { return this.runtime.batchLimit(size); }
   private get device(): GPUDevice { return this.runtime.device; }
 
   private constructor(private runtime: GpuCandidateDevice, private ownsDevice: boolean) {}
 
-  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false): Promise<GpuCandidateSearch> {
-    const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(false, inheritedBounds), !runtime);
+  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false, timestamps = false): Promise<GpuCandidateSearch> {
+    const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(false, inheritedBounds, timestamps), !runtime);
     try {
       await search.runtime.run(async () => {
         search.points = search.upload(points);
@@ -237,14 +242,14 @@ export class GpuCandidateSearch {
   }
 
   find(queries: Float32Array, leafOnly = false, workgroupSize = 64,
-    bufferedReadback = false, inheritedBounds = false): Promise<Uint32Array<ArrayBuffer>> {
+    bufferedReadback = false, inheritedBounds = false, timing?: import("./gpu-diagnostics").GpuBatchTiming): Promise<Uint32Array<ArrayBuffer>> {
     const slot = this.slots[bufferedReadback ? this.nextSlot++ % 2 : 0];
     // A slot stays leased through mapping/copy/unmap, including failed scopes.
     // The ordinary path keeps its historical single-buffer serialization.
     const execute = async () => {
       if (!bufferedReadback) {
         return this.runtime.run(async () => {
-          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds);
+          const batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing);
           const result = await batch.result;
           if (!result.ok) throw result.error;
           return result.candidates;
@@ -255,7 +260,7 @@ export class GpuCandidateSearch {
         // Return a wrapper, not the readback promise: close this submission's
         // device scopes before another slot submits while mapping is in flight.
         await this.runtime.run(async () => {
-          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds);
+          batch = await this.submitBatch(slot, queries, leafOnly, workgroupSize, inheritedBounds, timing);
         });
         const result = await batch!.result;
         if (!result.ok) throw result.error;
@@ -272,7 +277,8 @@ export class GpuCandidateSearch {
     return result;
   }
 
-  private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number, inheritedBounds: boolean) {
+  private async submitBatch(slot: BatchSlot, queries: Float32Array, leafOnly: boolean, workgroupSize: number, inheritedBounds: boolean,
+    timing?: import("./gpu-diagnostics").GpuBatchTiming) {
     const batchSize = this.batchLimit(workgroupSize);
     const count = queries.length / 4;
     if (!Number.isInteger(count) || count < 1 || count > batchSize) throw new Error("Invalid WebGPU query batch");
@@ -311,7 +317,9 @@ export class GpuCandidateSearch {
     }
     const work = slot.work;
     const { input, output, readback } = work;
+    const uploadStarted = timing ? performance.now() : 0;
     this.device.queue.writeBuffer(input, 0, queries as Float32Array<ArrayBuffer>);
+    if (timing) timing.uploadCallMillis = performance.now() - uploadStarted;
     if (work.count !== count || work.pipeline !== pipeline) {
       // Bind only the live range so arrayLength excludes retained capacity
       // and the final partial workgroup cannot access stale query values.
@@ -322,19 +330,63 @@ export class GpuCandidateSearch {
       work.count = count;
       work.pipeline = pipeline;
     }
+    if (timing && this.timestampQueries && !slot.timestamps) {
+      const queries = this.device.createQuerySet({ type: "timestamp", count: 2 });
+      const allocated: GPUBuffer[] = [];
+      try {
+        const resolve = this.buffer(16, GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC);
+        allocated.push(resolve);
+        const readback = this.buffer(16, GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST);
+        allocated.push(readback);
+        slot.timestamps = { queries, resolve, readback };
+        this.querySets.push(queries);
+      } catch (error) {
+        queries.destroy();
+        for (const buffer of allocated) { buffer.destroy(); this.buffers.splice(this.buffers.indexOf(buffer), 1); }
+        throw error;
+      }
+    }
+    const timestamps = timing ? slot.timestamps : undefined;
     const encoder = this.device.createCommandEncoder();
-    const pass = encoder.beginComputePass();
+    const pass = encoder.beginComputePass(timestamps ? { timestampWrites: {
+      querySet: timestamps.queries, beginningOfPassWriteIndex: 0, endOfPassWriteIndex: 1,
+    } } : undefined);
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, work.bindings!);
     pass.dispatchWorkgroups(Math.ceil(count / workgroupSize));
     pass.end();
     encoder.copyBufferToBuffer(output, 0, readback, 0, count * 4);
+    if (timestamps) {
+      encoder.resolveQuerySet(timestamps.queries, 0, 2, timestamps.resolve, 0);
+      encoder.copyBufferToBuffer(timestamps.resolve, 0, timestamps.readback, 0, 16);
+    }
     this.device.queue.submit([encoder.finish()]);
-    const result = (async () => {
+    const readbackStarted = timing ? performance.now() : 0;
+    const candidates = (async () => {
       await readback.mapAsync(GPUMapMode.READ, 0, count * 4);
       try { return new Uint32Array(readback.getMappedRange(0, count * 4).slice(0)); }
       finally { readback.unmap(); }
-    })().then(candidates => ({ ok: true as const, candidates }), error => ({ ok: false as const, error }));
+    })();
+    const timestampResult = timestamps ? (async () => {
+      await timestamps.readback.mapAsync(GPUMapMode.READ, 0, 16);
+      try {
+        const values = new BigUint64Array(timestamps.readback.getMappedRange(0, 16));
+        const elapsed = values[1] - values[0];
+        if (elapsed < 0n || elapsed > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error("Invalid GPU timestamp interval");
+        return Number(elapsed) / 1_000_000;
+      } finally { timestamps.readback.unmap(); }
+    })() : undefined;
+    // Both maps must settle before releasing/reusing the slot, including when
+    // either rejects. A timestamp failure must not leave a candidate map alive.
+    const mapped = timestampResult ? Promise.allSettled([candidates, timestampResult]).then(results => {
+      const [candidate, timestamp] = results;
+      if (candidate.status === "rejected") throw candidate.reason;
+      if (timestamp.status === "rejected") throw timestamp.reason;
+      timing!.shaderMillis = timestamp.value;
+      return candidate.value;
+    }) : candidates;
+    const settled = mapped.then(candidates => ({ ok: true as const, candidates }), error => ({ ok: false as const, error }));
+    const result = timing ? settled.then(result => { timing.readbackMillis = performance.now() - readbackStarted; return result; }) : settled;
     return { result };
   }
 
@@ -342,7 +394,8 @@ export class GpuCandidateSearch {
     if (this.disposed) return;
     this.disposed = true;
     for (const buffer of this.buffers.splice(0)) buffer.destroy();
-    for (const slot of this.slots) slot.work = undefined;
+    for (const queries of this.querySets.splice(0)) queries.destroy();
+    for (const slot of this.slots) { slot.work = undefined; slot.timestamps = undefined; }
     if (this.ownsDevice) this.runtime.dispose();
   }
 }

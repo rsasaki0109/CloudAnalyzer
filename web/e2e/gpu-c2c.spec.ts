@@ -1329,6 +1329,23 @@ test("GPU inherited split bounds preserve f64 verification and cached pipeline s
   expect(result).toEqual({ checked: 13, requests: 10, injected: true, queries: 259 });
 });
 
+test("GPU diagnostic device variants retain concurrent snapshots through source mutation", async ({ page }) => {
+  await page.goto("/");
+  test.skip(!await page.evaluate(async () => !!await navigator.gpu?.requestAdapter()), "No WebGPU adapter");
+  await alterWorker(page, gpuMetrics + `
+    let requests=0;
+    self.addEventListener("message", ({data})=>{if(data.req?.kind==="c2c"&&data.req.backend==="webgpu")data.req.gpuDiagnostics=++requests%2===1;});
+    const submit=GPUQueue.prototype.submit;
+    GPUQueue.prototype.submit=function(...args){submit.apply(this,args);self.postMessage({gpuSubmitted:true});};
+    const map=GPUBuffer.prototype.mapAsync;
+    GPUBuffer.prototype.mapAsync=async function(...args){await map.apply(this,args);await new Promise(resolve=>setTimeout(resolve,100));};
+  `);
+  const { computed, metrics, changed } = await workerScenario(page, true, 4, false, false, true);
+  expect(computed.map(c => !!c.diagnostics)).toEqual([true, false, true]);
+  expect(computed.every(c => c.backend === "webgpu" && !c.verifyFallback)).toBe(true);
+  expect(metrics.devices).toBe(2); expect(metrics.buffers).toBe(0); expect(changed).toBe(true);
+});
+
 test("a failed optional inherited pipeline completes on CPU and retries on the shared device", async ({ page }) => {
   await alterWorker(page, `
     self.addEventListener("message", event => {

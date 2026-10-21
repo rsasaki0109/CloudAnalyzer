@@ -1,5 +1,7 @@
 import type { GpuC2cJob, GpuC2cReference } from "./wasm/ca_wasm.js";
 import { releaseOn, runOn, runOnGeneration, workerGeneration } from "./pool";
+import { timeGpuVerification, type GpuLaneTiming } from "./gpu-diagnostics";
+import type { GpuVerifyResult } from "./c2c-worker";
 
 let nextReference = 0;
 let nextQueryJob = 0;
@@ -93,7 +95,7 @@ export class GpuVerifiers {
 
   async complete(job: GpuC2cJob, first: number, candidates: Uint32Array, workers: number,
     bounds: boolean, simd: boolean, distances: Float64Array, queries?: GpuVerifierQueries,
-    mainWorker = false, sliceQueryCopy = false, ownedQueryCopy = false): Promise<number> {
+    mainWorker = false, sliceQueryCopy = false, ownedQueryCopy = false, timings?: GpuLaneTiming[]): Promise<number> {
     const lanes = Math.min(workers, candidates.length);
     const poolLanes = lanes - Number(mainWorker);
     // Post pool work before the resident synchronous lane so exact searches
@@ -101,6 +103,25 @@ export class GpuVerifiers {
     const pending = Array.from({ length: lanes }, async (_, lane) => {
       const start = Math.floor(lane * candidates.length / lanes);
       const end = Math.floor((lane + 1) * candidates.length / lanes);
+      if (timings) {
+        const started = performance.now();
+        const resident = lane === poolLanes && mainWorker;
+        let result: GpuVerifyResult;
+        let queryExportMillis = 0;
+        if (resident) result = timeGpuVerification(() => job.verify(first + start, candidates.subarray(start, end)));
+        else {
+          const exported = queries ? undefined : ownedQueryCopy ? job.queriesF64Owned(first + start, end - start) :
+            sliceQueryCopy ? job.queriesF64WithCopy(first + start, end - start, true) : job.queriesF64(first + start, end - start);
+          queryExportMillis = performance.now() - started;
+          result = await runOnGeneration(lane, this.generations.get(lane), { kind: "gpu-verify", referenceId: this.id,
+            ...(queries ? { queryJob: queries.id, first: queries.first(first, lane) } : { queries: exported! }),
+            candidates: candidates.slice(start, end), bounds, simd, diagnostics: true });
+        }
+        if (!result.timing) throw new Error("GPU verification timing is unavailable");
+        timings.push({ first: first + start, count: end - start, lane, resident, queryExportMillis,
+          roundTripMillis: performance.now() - started, ...result.timing });
+        return result;
+      }
       if (lane === poolLanes && mainWorker) {
         const verified = job.verify(first + start, candidates.subarray(start, end));
         try { return { distances: verified.takeDistances(), certified: verified.certified }; }

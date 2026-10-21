@@ -297,6 +297,27 @@ impl GpuC2cJob {
         Ok(queries.iter().flatten().copied().collect())
     }
 
+    /// Experimental contiguous export; retain the ordinary iterator API unchanged.
+    #[wasm_bindgen(js_name = queriesF64WithCopy)]
+    pub fn queries_f64_with_copy(
+        &self,
+        first: usize,
+        count: usize,
+        slice_copy: bool,
+    ) -> Result<Vec<f64>, JsError> {
+        if !slice_copy {
+            return self.queries_f64(first, count);
+        }
+        let end = first
+            .checked_add(count)
+            .ok_or_else(|| JsError::new("invalid query range"))?;
+        let queries = self
+            .queries
+            .get(first..end)
+            .ok_or_else(|| JsError::new("invalid query range"))?;
+        Ok(queries.as_flattened().to_vec())
+    }
+
     /// Concatenate one lane's ranges from all batches, preserving original f64 bits.
     #[wasm_bindgen(js_name = workerQueries)]
     pub fn worker_queries(
@@ -749,5 +770,55 @@ mod tests {
         assert_eq!(bounded.certified(), 1);
         assert_eq!(planes.certified(), 0);
         assert_eq!(scalar.certified(), bounded.certified());
+    }
+
+    #[test]
+    fn query_copy_paths_preserve_ieee_bits_ranges_and_snapshot_ownership() {
+        let reference = Cloud::unindexed(PointCloud {
+            positions: vec![[0.0; 3]],
+            colors: None,
+            attributes: vec![],
+        });
+        let original = vec![
+            [
+                -0.0,
+                f64::from_bits(1),
+                f64::from_bits(0x7ff8_1234_5678_9abc),
+            ],
+            [f64::MAX, f64::NEG_INFINITY, f64::INFINITY],
+            [6_378_137.000_009, -f64::from_bits(1), 0.0],
+        ];
+        let mut compared = Cloud::unindexed(PointCloud {
+            positions: original.clone(),
+            colors: None,
+            attributes: vec![],
+        });
+        let index = GpuC2cReference::new(&reference).unwrap();
+        let job = GpuC2cJob::new(&compared, &index).unwrap();
+        compared.inner.positions.clear();
+        drop(index);
+        for (first, count) in [(0, 0), (0, 3), (1, 1), (2, 1), (3, 0)] {
+            let expected: Vec<_> = original[first..first + count]
+                .as_flattened()
+                .iter()
+                .map(|v| v.to_bits())
+                .collect();
+            for control in [false, true] {
+                let mut exported = job.queries_f64_with_copy(first, count, control).unwrap();
+                assert_eq!(
+                    exported.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                    expected
+                );
+                exported.fill(42.0);
+                assert_eq!(
+                    job.queries_f64_with_copy(first, count, control)
+                        .unwrap()
+                        .iter()
+                        .map(|v| v.to_bits())
+                        .collect::<Vec<_>>(),
+                    expected
+                );
+            }
+        }
     }
 }

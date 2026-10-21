@@ -205,7 +205,7 @@ export interface C2cOutput {
     /** Original f64 queries retained in each lane for this job. */
     verifyStagedQueries?: boolean;
     /** Per-job packing/transfers/WASM query ownership; may overlap first GPU batch. */
-    verifyQueryPrepareMillis?: number;
+    verifyQueryPrepareMillis?: number; querySliceCopy?: boolean;
     /** Total f64 coordinate bytes staged across lanes (no reference replication). */
     verifyQueryBytes?: number;
     verifyReferenceReused?: boolean;
@@ -850,6 +850,8 @@ export type Request =
       gpuWorkgroupSize?: number;
       /** Experimental exact CPU verification pool; 1 (serial) by default. */
       gpuVerifyWorkers?: number; gpuVerifySnapshot?: boolean; gpuStageQueries?: boolean;
+      /** Experimental contiguous exact query export; false by default after mixed timings. */
+      gpuQuerySlice?: boolean;
       /** Internal validated import-extrema reuse control (default true). */
       gpuReuseImportBounds?: boolean;
       /** Experimental resident lane comparison; defaults false after mixed real timings. */

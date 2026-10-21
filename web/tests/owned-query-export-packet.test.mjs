@@ -19,12 +19,13 @@ test('owned-query export packet retains exact outputs, owned buffers and the ado
   const boxes = JSON.parse(bytes("benchmarks/wasm-gpu-box-bounds/manifest.json"));
   const parents = JSON.parse(bytes("benchmarks/wasm-gpu-parent-traversal/manifest.json"));
   const compact = JSON.parse(bytes("benchmarks/wasm-gpu-compact-stack/manifest.json"));
-  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...later.historicalSourceAliases, ...diagnostics.historicalSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases, ...compact.historicalSourceAliases };
+  const packed = JSON.parse(bytes("benchmarks/wasm-gpu-packed-nodes/manifest.json"));
+  const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...later.historicalSourceAliases, ...diagnostics.historicalSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases, ...compact.historicalSourceAliases, ...packed.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
     const alias = aliases[expected];
     assert.equal(alias?.original, name);
-    assert.ok((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith('benchmarks/wasm-gpu-inherited-bounds/executed-source/') || alias.archived.startsWith('benchmarks/wasm-gpu-diagnostics/executed-source/') || alias.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !alias.archived.includes('..'));
+    assert.ok(((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith("benchmarks/wasm-gpu-packed-nodes/executed-source/")) || alias.archived.startsWith('benchmarks/wasm-gpu-inherited-bounds/executed-source/') || alias.archived.startsWith('benchmarks/wasm-gpu-diagnostics/executed-source/') || alias.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !alias.archived.includes('..'));
     assert.equal(normalizedHash(alias.archived), expected);
   };
   assert.equal(typeof manifest.adopted, 'boolean');

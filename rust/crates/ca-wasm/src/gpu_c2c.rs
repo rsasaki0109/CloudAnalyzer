@@ -318,6 +318,24 @@ impl GpuC2cJob {
         Ok(queries.as_flattened().to_vec())
     }
 
+    /// Copy directly into an independently owned JS array without a temporary Vec.
+    /// The copying constructor never exposes a view of the job's WASM memory.
+    #[wasm_bindgen(js_name = queriesF64Owned)]
+    pub fn queries_f64_owned(
+        &self,
+        first: usize,
+        count: usize,
+    ) -> Result<js_sys::Float64Array, JsError> {
+        let end = first
+            .checked_add(count)
+            .ok_or_else(|| JsError::new("invalid query range"))?;
+        let queries = self
+            .queries
+            .get(first..end)
+            .ok_or_else(|| JsError::new("invalid query range"))?;
+        Ok(js_sys::Float64Array::from(queries.as_flattened()))
+    }
+
     /// Concatenate one lane's ranges from all batches, preserving original f64 bits.
     #[wasm_bindgen(js_name = workerQueries)]
     pub fn worker_queries(

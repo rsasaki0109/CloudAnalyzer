@@ -29,6 +29,7 @@ test('shared GPU measurement packets retain executed sources, raw reports and fr
   const packed = JSON.parse(bytes("benchmarks/wasm-gpu-packed-nodes/manifest.json"));
   const aliases = { ...previous.sourceAliases, ...fresh.historicalSourceAliases, ...overlap.historicalSourceAliases,
     ...queryExport.historicalSourceAliases, ...ownedExport.historicalSourceAliases, ...bounds.historicalSourceAliases, ...diagnostics.historicalSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases, ...compact.historicalSourceAliases, ...packed.historicalSourceAliases };
+  Object.assign(aliases, JSON.parse(readFileSync(resolve(root, "benchmarks/wasm-reference-preparation/manifest.json"), "utf8")).sourceAliases);
   const source = (name, expected) => {
     try { if (normalizedHash(name) === expected) return; } catch { /* Try a preserved source version. */ }
     const alias = aliases[expected];

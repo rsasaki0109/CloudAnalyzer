@@ -212,6 +212,8 @@ export interface C2cOutput {
     compactStack?: boolean;
     /** Two-word nodes for ordinary 32-slot traversal; ignored by leaf/box/parent. */
     packedNodes?: boolean;
+    /** Immutable reference points/nodes initialized through a mapped buffer. */
+    mappedReference?: boolean;
     /** Node readiness interval, including any pending initial device/reference setup. */
     nodePrepareMillis?: number;
     /** Selected representation existed before this request. */
@@ -886,6 +888,8 @@ export type Request =
       gpuCompactStack?: boolean;
       /** Internal 8-byte ordinary node comparison; supersedes compact-stack flag. */
       gpuPackedNodes?: boolean;
+      /** Experimental immutable reference initialization; false uses queued writes. */
+      gpuMappedReference?: boolean;
       /** Internal profiling only; disabled by default. May perturb operation time. */
       gpuDiagnostics?: boolean;
       /** Internal tuning control: 32, 64 (default), 128 or 256 invocations. */

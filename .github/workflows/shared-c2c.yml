@@ -6,6 +6,9 @@ on:
     paths:
       - "web/experiments/shared-c2c/**"
       - "web/scripts/*shared-c2c.mjs"
+      - "web/scripts/*reference-preparation*.mjs"
+      - "web/tests/gpu-reference-preparation*.test.mjs"
+      - "benchmarks/wasm-reference-preparation/**"
       - "web/src/worker.ts"
       - "web/src/pool.ts"
       - "web/src/cpu-c2c.ts"
@@ -23,6 +26,9 @@ on:
     paths:
       - "web/experiments/shared-c2c/**"
       - "web/scripts/*shared-c2c.mjs"
+      - "web/scripts/*reference-preparation*.mjs"
+      - "web/tests/gpu-reference-preparation*.test.mjs"
+      - "benchmarks/wasm-reference-preparation/**"
       - "web/src/worker.ts"
       - "web/src/pool.ts"
       - "web/src/cpu-c2c.ts"

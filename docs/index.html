@@ -3,149 +3,64 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CloudAnalyzer</title>
-  <meta name="description" content="Point cloud viewer and analyzer that runs in your browser.">
-  <style>
-    :root {
-      --bg: #ffffff;
-      --text: #16181d;
-      --muted: #5f6673;
-      --line: #e3e6eb;
-      --accent: #2f6fe4;
-      --accent-text: #ffffff;
-      color-scheme: light;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #16181d;
-        --text: #e4e7ee;
-        --muted: #8b93a5;
-        --line: #2b303a;
-        --accent: #4f8cff;
-        --accent-text: #ffffff;
-        color-scheme: dark;
-      }
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    main {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 72px 20px 48px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 2.4rem;
-      letter-spacing: -0.02em;
-    }
-    .tagline {
-      margin: 8px 0 28px;
-      color: var(--muted);
-      font-size: 1.1rem;
-    }
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--accent-text);
-    }
-    .button:hover { border-color: var(--accent); }
-    ul { margin: 0; padding-left: 20px; }
-    li { margin: 4px 0; }
-    section { margin-top: 48px; }
-    h2 {
-      margin: 0 0 12px;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    a { color: var(--accent); }
-    .demos a { text-decoration: none; }
-    .demos a:hover { text-decoration: underline; }
-    .demos span { color: var(--muted); }
-    footer {
-      margin-top: 56px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-  </style>
+  <meta name="theme-color" content="#101310">
+  <title>CloudAnalyzer — A new perspective on point clouds</title>
+  <meta name="description" content="Explore point clouds, repair SLAM maps, and measure change. An open-source workspace that runs locally in your browser.">
+  <meta property="og:title" content="CloudAnalyzer — A new perspective on point clouds">
+  <meta property="og:description" content="Explore. Align. Measure. Turn your point clouds into insight, right in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rsasaki0109.github.io/CloudAnalyzer/">
+  <meta property="og:image" content="https://rsasaki0109.github.io/CloudAnalyzer/images/web/posegraph.jpg">
+  <link rel="icon" href="./images/cloudanalyzer-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./landing.css">
 </head>
 <body>
-  <main>
-    <h1>CloudAnalyzer</h1>
-    <p class="tagline">A point cloud viewer and analyzer that runs in your browser. Your files stay on your machine.</p>
-    <div class="actions">
-      <a class="button primary" href="./app/">Open Web Viewer</a>
-      <a class="button" href="./guide.html">Guide</a>
-      <a class="button" href="https://github.com/rsasaki0109/CloudAnalyzer">GitHub</a>
-    </div>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="brand" href="./" aria-label="CloudAnalyzer home"><img src="./images/cloudanalyzer-mark.svg" width="30" height="30" alt="">CloudAnalyzer<span class="brand-tag">/ WEB</span></a>
+    <nav aria-label="Main navigation"><a href="#explore">Explore</a><a href="./guide.html">Guide</a><a class="github-link" href="https://github.com/rsasaki0109/CloudAnalyzer">GitHub <span aria-hidden="true">↗</span></a></nav>
+    <a class="button button-small" href="./app/">Open app <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> A workspace for spatial data</p>
+        <h1 id="hero-title">A new<br>perspective on<br><span>point clouds.</span></h1>
+        <p class="hero-description">Explore a scan. Bring a map together. See what changed. Go from raw points to a clearer picture, right in your browser.</p>
+        <div class="hero-actions"><a class="button button-primary" href="./app/">Open the workspace <span aria-hidden="true">↗</span></a><a class="text-link" href="#explore">Explore the demos <span aria-hidden="true">↓</span></a></div>
+        <p class="local-note"><svg width="15" height="17" viewBox="0 0 15 17" fill="none" aria-hidden="true"><rect x="2.5" y="7" width="10" height="8" rx="2" stroke="currentColor"/><path d="M4.5 7V4a3 3 0 0 1 6 0v3" stroke="currentColor"/><circle cx="7.5" cy="11" r="1" fill="currentColor"/></svg> No install. No account. Your files stay with you.</p>
+      </div>
+      <figure class="hero-visual">
+        <div class="scene-heading"><span><span class="status-dot" aria-hidden="true"></span> INSIDE THE WORKSPACE</span><span>01 / SLAM</span></div>
+        <a class="hero-scene" href="./app/?demo=nclt" aria-label="Try the NCLT real-drive SLAM demo"><img src="./images/web/posegraph.jpg" alt="A real NCLT campus point cloud in CloudAnalyzer, with the loop-closure correction shown from blue through yellow to red." width="1280" height="760" fetchpriority="high"><span class="scene-open" aria-hidden="true">Open real-drive demo ↗</span></a>
+        <figcaption><div><span class="figure-label">FROM THE FIELD</span><strong>A real drive. A map brought together.</strong></div><span class="scene-caption">NCLT campus<br>Loop-closure correction</span></figcaption>
+      </figure>
+    </section>
+    <div class="format-strip wrap" aria-label="Supported input formats"><span class="strip-label">BRING YOUR DATA</span><span>PLY <i>/</i> PCD <i>/</i> LAS &amp; LAZ <i>/</i> E57 <i>/</i> ROS bags <i>/</i> MCAP</span><a href="./guide.html">And more <span aria-hidden="true">↗</span></a></div>
 
-    <section>
-      <h2>Features</h2>
-      <ul>
-        <li>Opens PLY, PCD, LAS/LAZ and XYZ files, including clouds with tens of millions of points</li>
-        <li>Streams COPC files from a URL, reading only the octree levels that fit</li>
-        <li>Intensity and classification coloring, with per-class filtering</li>
-        <li>Cloud-to-cloud and cloud-to-mesh distance with statistics and a color scale, exportable as PLY, LAS/LAZ or CSV</li>
-        <li>M3C2 change detection with a per-point level of detection</li>
-        <li>Cut/fill volume between surveys, meshes or a reference height</li>
-        <li>ICP registration</li>
-        <li>Clipping box, cross-sections and cropping</li>
-        <li>Subsampling, outlier removal and ground extraction (CSF)</li>
-        <li>Point picking and distance measurement</li>
-        <li>Merge clouds, split by class or back into their sources</li>
-        <li>Normals with hillshade display</li>
-        <li>Cross-section profiles along a polyline, comparing clouds, with CSV export</li>
-        <li>Share links and session files that restore the view (open clouds straight from a URL)</li>
-        <li>Works on phones and tablets (touch to orbit, pinch to zoom, tap to pick)</li>
-      </ul>
+    <section class="explore-section wrap" id="explore" aria-labelledby="explore-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / GET HANDS-ON</p><h2 id="explore-title">Less setup.<br>More discovery.</h2></div><p>Start with a sample. Orbit, inspect, and run the analysis yourself.</p></div>
+      <div class="demo-grid">
+        <a class="demo-card" href="./app/?demo=nclt-seasons"><div class="card-image"><img src="./images/web/bags.jpg" width="1280" height="760" alt="The same NCLT campus block scanned in two seasons, with differences colored on the map." loading="lazy"><span class="image-label">REAL DATA · NCLT</span></div><div class="card-copy"><span class="card-number">01 / SLAM &amp; CHANGE</span><h3>Same place. Different season.<span aria-hidden="true">↗</span></h3><p>Join two recorded drives and inspect the changes between April and June.</p><span class="card-action">Explore two seasons <span class="download-note">· 19 MB sample</span></span></div></a>
+        <a class="demo-card" href="./app/?demo=c2c"><div class="card-image"><img src="./images/web/c2c.jpg" width="1280" height="760" alt="Two LiDAR scans with cloud-to-cloud distances displayed as a color heatmap." loading="lazy"><span class="image-label">CLOUD-TO-CLOUD</span></div><div class="card-copy"><span class="card-number">02 / DISTANCE</span><h3>Make the difference visible.<span aria-hidden="true">↗</span></h3><p>Compare two LiDAR scans. Turn point-to-point distances into a readable heatmap.</p><span class="card-action">Compare the scans</span></div></a>
+        <a class="demo-card" href="./app/?demo=volume"><div class="card-image"><img src="./images/web/volume.jpg" width="1280" height="760" alt="A stockpile point cloud with cut and fill volume analysis in the browser." loading="lazy"><span class="image-label">CUT / FILL</span></div><div class="card-copy"><span class="card-number">03 / VOLUME</span><h3>Put a number to the shape.<span aria-hidden="true">↗</span></h3><p>Measure a stockpile or compare surfaces. Inspect cut and fill from every angle.</p><span class="card-action">Measure the stockpile</span></div></a>
+      </div>
+      <div class="more-demos"><span>Keep exploring</span><a href="./app/?demo=nclt">Real-drive SLAM ↗</a><a href="./app/?demo=ground">Ground extraction ↗</a><a href="./app/?demo=m3c2">M3C2 change detection ↗</a><a href="./app/?demo=posegraph-drive">Interactive loop closure ↗</a></div>
     </section>
 
-    <section class="demos">
-      <h2>Try it</h2>
-      <ul>
-        <li><a href="./app/?demo=c2c">Two LiDAR scans</a> <span>— cloud-to-cloud distance</span></li>
-        <li><a href="./app/?demo=volume">Stockpile</a> <span>— cut / fill volume</span></li>
-        <li><a href="./app/?demo=ground">Town</a> <span>— ground extraction (CSF)</span></li>
-        <li><a href="./app/?demo=m3c2">Landslide</a> <span>— M3C2 change detection</span></li>
-      </ul>
-    </section>
+    <section class="workflow-section" aria-labelledby="workflow-title"><div class="wrap workflow-layout">
+      <div class="workflow-copy"><p class="eyebrow">02 / FROM SCAN TO UNDERSTANDING</p><h2 id="workflow-title">Your whole workflow.<br>One open workspace.</h2><p>Follow the geometry, from the first look to the final measurement.</p><a class="text-link" href="./guide.html">Read the field guide <span aria-hidden="true">↗</span></a></div>
+      <div class="workflow-steps"><article><span class="step-index">01</span><div><h3>Bring it into view.</h3><p>Open local scans, stream a COPC file, or replay a recorded drive. Color by height, intensity, or classification.</p></div></article><article><span class="step-index">02</span><div><h3>Find the structure.</h3><p>Align with ICP, close SLAM loops, extract the ground, and inspect cross-sections. Draft and edit Lanelet2 maps over your cloud.</p></div></article><article><span class="step-index">03</span><div><h3>Measure what matters.</h3><p>Compute distances, detect change with M3C2, and calculate cut and fill. Export results to take your work further.</p></div></article></div>
+    </div></section>
 
-    <section class="demos">
-      <h2>Other demos</h2>
-      <ul>
-        <li><a href="./demo/hdl-localization-map/index.html">LiDAR map inspection</a> <span>— heatmap and trajectories</span></li>
-        <li><a href="./demo/compare/index.html">Browser compare</a> <span>— quick heatmap of two clouds</span></li>
-        <li><a href="./leaderboard/index.html">SLAM leaderboard</a> <span>— KISS-ICP, KISS-SLAM, small-gicp</span></li>
-        <li><a href="./demo/3dgs/index.html">3DGS evaluation</a> <span>— PSNR, SSIM, LPIPS</span></li>
-        <li><a href="./demo/perception/index.html">Perception report</a> <span>— batch quality gate</span></li>
-        <li><a href="./demo/detection-tracking/index.html">Detection &amp; tracking</a> <span>— mAP, MOTA</span></li>
-      </ul>
+    <section class="capabilities wrap" aria-labelledby="capabilities-title">
+      <div class="section-heading compact"><div><p class="eyebrow">03 / UNDER THE SURFACE</p><h2 id="capabilities-title">Built for the details.</h2></div><p>Open source. Local processing.<br>Room to explore.</p></div>
+      <div class="principles"><article><span class="principle-symbol" aria-hidden="true">↳</span><h3>Your data stays local.</h3><p>Open your files directly in the browser. Analysis runs on your machine, with no account or upload step.</p></article><article><span class="principle-symbol" aria-hidden="true">∷</span><h3>Go beyond the preview.</h3><p>Inspect dense clouds with point budgets, full-detail loading, and COPC streaming. Explore with mouse or touch.</p></article><article><span class="principle-symbol" aria-hidden="true">↗</span><h3>Keep your work moving.</h3><p>Save a session, share a view of URL-loaded data, and export clouds, measurements, trajectories, and maps.</p></article></div>
+      <details class="feature-details"><summary>Explore the full toolkit <span aria-hidden="true">+</span></summary><ul><li>PLY, PCD, LAS/LAZ, E57, XYZ and URL-based COPC streaming</li><li>Cloud-to-cloud and cloud-to-mesh distances, statistics, and color scales</li><li>M3C2 change detection with a per-point level of detection</li><li>Cut/fill volume between surveys, meshes, or a reference height</li><li>ICP registration, LiDAR odometry, and SLAM loop closure</li><li>Clipping boxes, cross-sections, lasso selection, and cropping</li><li>Subsampling, outlier removal, and CSF ground extraction</li><li>Point picking, distance measurement, and polyline profiles with CSV export</li><li>Merge clouds, split by class or source, and display normals with hillshade</li><li>Lanelet2 map drafting, editing, validation, and export</li><li>Session files, URL-based share links, and touch controls</li><li>Export analysis results as PLY, LAS/LAZ, or CSV</li></ul></details>
     </section>
-
-    <footer>
-      Data: the map demo uses the BSD-2-Clause <code>hdl_localization</code> sample map with synthetic trajectories;
-      the perception and viewer samples derive from the public RELLIS-3D example (CC BY-NC-SA 3.0).
-      Each demo ships an attribution file next to its bundle.
-    </footer>
+    <section class="resources wrap" aria-labelledby="resources-title"><p class="eyebrow" id="resources-title">MORE WAYS TO EXPLORE</p><div class="resource-links"><a href="./demo/hdl-localization-map/index.html">LiDAR map inspection <span aria-hidden="true">↗</span></a><a href="./demo/compare/index.html">Browser compare <span aria-hidden="true">↗</span></a><a href="./leaderboard/index.html">SLAM leaderboard <span aria-hidden="true">↗</span></a><a href="./demo/3dgs/index.html">3DGS evaluation <span aria-hidden="true">↗</span></a><a href="./demo/perception/index.html">Perception report <span aria-hidden="true">↗</span></a><a href="./demo/detection-tracking/index.html">Detection &amp; tracking <span aria-hidden="true">↗</span></a></div></section>
+    <section class="closing wrap" aria-labelledby="closing-title"><div><p class="eyebrow">A CLEARER PICTURE STARTS HERE</p><h2 id="closing-title">Meet your next point of view.</h2></div><a class="button button-primary" href="./app/">Open CloudAnalyzer <span aria-hidden="true">↗</span></a></section>
   </main>
+  <footer class="site-footer wrap"><div class="footer-top"><a class="brand" href="./"><img src="./images/cloudanalyzer-mark.svg" width="25" height="25" alt="">CloudAnalyzer</a><span>An open-source workspace for point clouds.</span><a href="https://github.com/rsasaki0109/CloudAnalyzer">Source on GitHub ↗</a></div><p>Real-drive imagery: NCLT, University of Michigan. Viewer samples derive from the public RELLIS-3D example (CC BY-NC-SA 3.0). The map inspection demo uses the BSD-2-Clause <code>hdl_localization</code> sample map with synthetic trajectories. Each demo includes its data attribution.</p></footer>
 </body>
 </html>

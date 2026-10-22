@@ -1,6 +1,8 @@
 """Synthetic geometry/accounting cases for the independent completion oracle."""
 from array import array
+import json
 import math
+from pathlib import Path
 import struct
 import sys
 import unittest
@@ -49,6 +51,39 @@ class CompletionOracleTests(unittest.TestCase):
         bad=bytearray(tensor);bad[:4]=struct.pack('<f',float('nan'))
         with self.assertRaisesRegex(ValueError,'softmax'):reference_completion(raw,bytes(bad),baseline)
         with self.assertRaisesRegex(ValueError,'unowned'):reference_completion(raw,tensor,bytes([1,1]))
+
+    def test_f32_baseline_threshold_boundary_matches_the_native_contract(self):
+        raw,tensor,baseline=case([(10,0,0,.5),(10.02,0,0,.5)],{0:(1,.9)})
+        mask,counts=reference_completion(raw,tensor,baseline)
+        self.assertEqual(mask,baseline);self.assertEqual(counts['added'],0)
+
+    def test_frozen_completion_packet_preserves_both_failed_cases_and_separate_groups(self):
+        from evaluate_removal import sha
+        packet=Path(__file__).resolve().parents[3]/'benchmarks/lidar-ai/near-surface-completion'
+        read=lambda name: json.loads((packet/name).read_text(encoding='utf-8'))
+        protocol,frozen,summary,checks=read('protocol.json'),read('frozen-completion.json'),read('summary.json'),read('checks.json')
+        self.assertEqual(sha((packet/'protocol.json').read_bytes()),frozen['protocol_sha256'])
+        self.assertEqual(frozen['reference_inputs'],[]);self.assertEqual(len(checks),6)
+        self.assertFalse(summary['diagnostic_gate_passed_all_frames'])
+        self.assertEqual(summary['decision'],'experimental_only_not_adopted_as_default')
+        expected={'development':protocol['development_frames'],'additional':protocol['frames']}
+        for group in summary['groups']:
+            rows=[r for r in checks if r['group']==group['group']]
+            self.assertEqual(sorted(r['frame'] for r in rows),sorted(expected[group['group']]))
+            for key in ['tp','fp','fn','tn','ignored_removed']:
+                self.assertEqual(sum(r['check']['delta'][key] for r in rows),group['delta'][key])
+            self.assertEqual(group['gate_passed_all_frames'],all(r['check']['diagnostic_gate_passed'] for r in rows))
+        failed=[]
+        for row in checks:
+            result=row['check'];delta=result['delta'];before=result['baseline_audit'];after=result['completed_audit']
+            self.assertTrue(result['independent_mask_and_counts_exact'] and result['source_record_split_exact'])
+            for key in ['tp','fp','fn','tn']:
+                self.assertEqual(delta[key],after['full_scan'][key]-before['full_scan'][key])
+            self.assertEqual(delta['tp']+delta['fp']+delta['ignored_removed'],result['counts']['added'])
+            passed=delta['tp']>0 and delta['fp']==0 and delta['ignored_removed']==0
+            self.assertEqual(passed,result['diagnostic_gate_passed'])
+            if not passed:failed.append(row['frame'])
+        self.assertEqual(sorted(failed),['000000','001000'])
 
 
 if __name__=='__main__':unittest.main()

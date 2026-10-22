@@ -25,6 +25,7 @@ LIMIT = 256
 def reference_completion(scan: bytes, tensor: bytes, baseline: bytes, targets=(1,), threshold=.9) -> tuple[bytes, dict]:
     """Scalar independent projection/grid oracle, including the finite work cap."""
     points = list(struct.iter_unpack('<4f', scan))
+    threshold = struct.unpack('<f', struct.pack('<f', threshold))[0]
     check(bool(points) and len(points) <= MAX_POINTS and len(baseline) == len(points), 'source/mask budget mismatch')
     check(len(tensor) == 20 * 64 * 2048 * 4, 'invalid probability tensor shape')
     values = array('f'); values.frombytes(tensor)

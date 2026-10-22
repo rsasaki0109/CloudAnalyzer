@@ -237,3 +237,7 @@ The original `evaluate_removal.py` command still rejects non-nearest removal;
 the completion verifier explicitly validates this separate selection policy.
 Its nearest-only recall ceiling is a counterfactual baseline, not a bound on a
 completed mask. Default inference and thresholds remain unchanged.
+
+[Six-frame completion comparison](../../../benchmarks/lidar-ai/near-surface-completion/README.md)
+records improvements and two failed diagnostic gates. Added non-car removals
+keep this policy experimental; it is not adopted as the default.

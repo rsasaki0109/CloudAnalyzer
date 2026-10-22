@@ -189,3 +189,8 @@ Dataset/model terms remain separate; no scan or annotation files are distributed
 
 Label format and factual ID mapping follow [SemanticKITTI](https://semantic-kitti.org/dataset)
 and its [pinned API configuration](https://github.com/PRBonn/semantic-kitti-api/blob/a9c749e8124b2243b6eef1b8bcf971a9f1173a2d/config/semantic-kitti.yaml).
+
+[Three annotated validation frames](../../../benchmarks/lidar-ai/semantic-kitti-smoke/README.md)
+record actual car-point precision, full-scan recall, ignored labels, ownership
+limits and the threshold trade-off. These measurements leave the inference and
+default threshold unchanged.

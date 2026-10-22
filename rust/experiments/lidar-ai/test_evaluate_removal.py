@@ -95,6 +95,43 @@ class RemovalAuditTests(unittest.TestCase):
             self.assertEqual(out.read_bytes(),b'keep')
             self.assertIn(b'new JSON file',result.stderr)
 
+    def test_recorded_validation_packet_keeps_exact_inputs_outputs_and_integer_accounting(self):
+        root=Path(__file__).resolve().parents[3]
+        packet=root/'benchmarks/lidar-ai/semantic-kitti-smoke'
+        read=lambda name: json.loads((packet/name).read_text(encoding='utf-8'))
+        protocol,source,inference=read('protocol.json'),read('inputs.json'),read('frozen-inference.json')
+        summary,entries=read('summary.json'),read('audits.json')
+        self.assertEqual(sha((packet/'protocol.json').read_bytes()),inference['protocol_sha256'])
+        self.assertEqual(source['protocol_sha256'],inference['protocol_sha256'])
+        self.assertEqual(inference['reference_inputs'],[])
+        self.assertEqual(len(entries),9)
+        provenance={(v['frame'],v['role']):v for v in source['frames']}
+        frozen={v['directory']:v for v in inference['runs']}
+        reports=[]
+        for entry in entries:
+            r=entry['report'];reports.append(r);counts=r['full_scan']
+            self.assertEqual(sha((json.dumps(r,indent=2,allow_nan=False)+'\n').encode()),entry['audit_sha256'])
+            self.assertEqual(r['hashes']['mask_sha256'],frozen[entry['audit_file'][:-5]]['mask_sha256'])
+            self.assertEqual(r['hashes']['scan_sha256'],provenance[(r['frame'],'scan')]['sha256'])
+            self.assertEqual(r['hashes']['labels_sha256'],provenance[(r['frame'],'labels')]['sha256'])
+            self.assertEqual(counts['tp']+counts['fp']+r['ignored_removed'],r['removed'])
+            self.assertEqual(sum(counts[k] for k in ['tp','fp','fn','tn'])+r['ignored_removed']+r['ignored_retained'],r['points'])
+            self.assertAlmostEqual(counts['precision'],counts['tp']/(counts['tp']+counts['fp']))
+            self.assertAlmostEqual(counts['recall'],counts['tp']/(counts['tp']+counts['fn']))
+            self.assertEqual(sum(v['points'] for v in r['target_instances'])+r['target_instance_zero_points'],counts['tp']+counts['fn'])
+        for pooled in summary['pooled']:
+            selected=[r for r in reports if abs(r['score_threshold']-pooled['threshold_requested'])<1e-6]
+            self.assertEqual(len(selected),3)
+            for key in ['tp','fp','fn','tn']:
+                self.assertEqual(pooled[key],sum(r['full_scan'][key] for r in selected))
+            self.assertEqual(pooled['target_unclassified_retained'],sum(r['target_unclassified_retained'] for r in selected))
+        official=read('official-accounting-check.json')
+        self.assertTrue(official['mapping_matches_official'])
+        self.assertEqual(len(official['runs']),9)
+        for r in official['runs']:
+            self.assertTrue(r['binary_car_confusion_exact'] and r['binary_car_iou_exact'])
+        self.assertLess(source['total_downloaded_range_bytes'],protocol['network_budget_bytes'])
+
 
 if __name__ == "__main__":
     unittest.main()

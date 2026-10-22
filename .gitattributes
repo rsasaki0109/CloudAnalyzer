@@ -218,3 +218,4 @@ benchmarks/wasm-reference-preparation/** text eol=lf
 benchmarks/wasm-gpu-mapped-reference/** text eol=lf
 benchmarks/wasm-kdtree-collection/** text eol=lf
 benchmarks/lidar-ai/** text eol=lf
+benchmarks/lidar-ai/**/*.png binary

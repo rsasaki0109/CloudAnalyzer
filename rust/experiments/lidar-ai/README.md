@@ -2,8 +2,9 @@
 
 This separate package runs the **pretrained SalsaNext SemanticKITTI CNN** with
 Burn/wgpu. It is an opt-in experiment, not an installed `ca` command or a browser
-feature. The normal app, workspace build and visibility-based dynamic removal
-are unchanged. Parked and moving cars share the model's `car` class.
+inference feature. The browser can review its exported results. The normal Rust
+workspace build and visibility-based dynamic removal are unchanged. Parked and
+moving cars share the model's `car` class.
 
 The first supported input is **one KITTI-format sensor-frame HDL-64 scan**:
 
@@ -70,10 +71,37 @@ existing result or input. The result contains:
 - `candidate-mask.u8`: one 0/1 byte per original input record, in source order.
 - `report.json`: counts, class names, source/weight hashes, profile and limits.
 
-The input stays unchanged. Open the retained and candidate `.bin` files in the
-browser to review them. `--classes car,truck,other-vehicle` and `--threshold 0.95`
+The input stays unchanged. `--classes car,truck,other-vehicle` and `--threshold 0.95`
 are explicit alternatives. `--debug-tensors` writes input/output tensors for
 numerical comparison; it is off by default.
+
+## Review in the browser
+
+Open **Clouds → LiDAR AI scan review (experimental) → Open AI result…**, then
+select the **original scan `.bin`**, `report.json` and `candidate-mask.u8` together.
+The browser verifies the source SHA256, nearest-only projection, mask counts,
+source record order and both output hashes before loading anything into the
+scene. The source-order mask is never applied to reordered viewer points.
+
+The comparison adds three clouds in one Undo step: original, retained (gray)
+and candidates (red). Switch between original, highlighted, retained and
+candidate-only views while orbiting the same camera. Existing clouds stay as
+they were; Undo removes this comparison and Redo restores it. Removing or moving
+comparison clouds disables the comparison controls until reopened/restored.
+Normal cloud tools and exports remain available.
+
+**Download exact retained/candidates .bin** saves the original inference records,
+including their intensity and float bits. These downloads remain the original
+result after later viewer edits. Save edited clouds using the cloud list's normal
+export instead. Verification establishes matching files, not detection accuracy.
+
+Browser comparison currently requires finite XYZI records, a history budget
+large enough for one complete comparison, and at most 150,000 source points.
+The native path and CPU verifier retain invalid returns unchanged. Empty result
+parts have empty downloads and are skipped in the viewer. Inference and threshold
+changes still run in the native command; no browser inference or fused-map removal
+is implied. Reopen the three files to restore the review controls after reload;
+workspace snapshots can separately retain the visible comparison clouds.
 
 ## Checks
 

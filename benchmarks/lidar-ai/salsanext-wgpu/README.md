@@ -29,8 +29,10 @@ Model and raw example provenance are included; neither weights nor scan files,
 generated point sets, tensors or images are redistributed here.
 
 [Build, model preparation and reproduction](../../../rust/experiments/lidar-ai/README.md)
-describe this optional native package. It does not change the ordinary browser
-or `ca` tools. Current input support is a single HDL-64/KITTI sensor scan; a fused
+describe this optional native package. The browser's **LiDAR AI scan review** can
+now open the source/report/mask, verify the exact split and compare original,
+highlighted and retained views with Undo/Redo. Browser inference and the installed
+`ca` command remain outside this experiment. Current input support is a single HDL-64/KITTI sensor scan; a fused
 map requires different preprocessing/model validation. A warmed benchmark and
 held-out semantic evaluation remain future work. Timing in the report includes
 model loading and process-local kernel setup; driver caches were not reset.

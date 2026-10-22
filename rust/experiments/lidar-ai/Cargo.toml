@@ -1,0 +1,41 @@
+[package]
+name = "ca-lidar-ai"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[workspace]
+resolver = "3"
+
+[features]
+default = []
+gpu = ["dep:burn", "dep:burn-store", "dep:burn-onnx", "dep:sha2"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+burn = { version = "~0.22", default-features = false, features = ["std", "wgpu"], optional = true }
+burn-store = { version = "~0.22", default-features = false, features = ["std"], optional = true }
+
+sha2 = { version = "0.10", optional = true }
+
+[build-dependencies]
+sha2 = "0.10"
+serde_json = "1"
+burn-onnx = { version = "~0.22", optional = true }
+
+[[bin]]
+name = "ca-lidar-ai"
+path = "src/main.rs"
+required-features = ["gpu"]
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.release]
+debug = 0
+lto = "thin"
+codegen-units = 4
+

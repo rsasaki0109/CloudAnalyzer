@@ -1,0 +1,30 @@
+name: LiDAR AI preparation
+
+on:
+  push:
+    branches: [main]
+    paths: ["rust/experiments/lidar-ai/**", ".github/workflows/lidar-ai.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["rust/experiments/lidar-ai/**", ".github/workflows/lidar-ai.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  cpu-contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust/experiments/lidar-ai
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust/experiments/lidar-ai
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --no-default-features --all-targets -- -D warnings
+      - run: cargo test --locked --no-default-features

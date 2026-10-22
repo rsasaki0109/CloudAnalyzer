@@ -28,6 +28,14 @@ A separate run of the committed preparation script reproduced the ONNX digest.
 Model and raw example provenance are included; neither weights nor scan files,
 generated point sets, tensors or images are redistributed here.
 
+`browser-review.json` separately records the review UI source/build, 107 passing
+Web unit tests and eight browser checks. The actual native sample opens as
+124,668 original points, 121,218 retained points and 3,450 red candidates;
+browser downloads exactly match both frozen native output files, including
+after Undo/Redo. Bad input/mask, cancellation, empty candidates and insufficient
+Undo budget preserve existing work. Two existing C2C/vector-map review scenarios
+also pass. Browser rendering used SwiftShader WebGL; AI inference remains native.
+
 [Build, model preparation and reproduction](../../../rust/experiments/lidar-ai/README.md)
 describe this optional native package. The browser's **LiDAR AI scan review** can
 now open the source/report/mask, verify the exact split and compare original,

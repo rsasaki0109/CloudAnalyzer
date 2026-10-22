@@ -119,7 +119,6 @@ def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidate
     targets, threshold = selected.get("target_classes"), selected.get("threshold")
     check(isinstance(targets, list) and bool(targets) and all(c in CLASSES[1:] for c in targets), "invalid target classes")
     check(type(threshold) in (int, float) and math.isfinite(threshold) and 0 <= threshold <= 1, "invalid threshold")
-    target_ids = {CLASSES.index(c) for c in targets}
     classified, projection = projected_owners(scan)
     check(report.get("projection") == projection, "source projection differs from report")
     class_counts = selected.get("class_counts")
@@ -133,11 +132,19 @@ def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidate
     removed_expected = b"".join(scan[i * 16:(i + 1) * 16] for i, remove in enumerate(mask) if remove)
     check(retained == kept_expected and candidates == removed_expected, "result records differ from exact source split")
     check(report.get("retained_sha256") == sha(retained) and report.get("candidate_sha256") == sha(candidates), "output SHA256 differs")
+    return score_annotations(scan, labels, mask, retained, candidates, classified, targets, threshold, pairing)
+
+
+def score_annotations(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidates: bytes,
+                      classified: bytes, targets: list, threshold: float, pairing: dict) -> dict:
+    """Accounting only; callers must first validate pairing, records and selection policy."""
+    count = len(scan) // 16
+    target_ids = {CLASSES.index(c) for c in targets}
     raw_ids = [value[0] & 0xffff for value in struct.iter_unpack("<I", labels)]
     check(all(raw in LEARNING_MAP for raw in raw_ids), "unknown SemanticKITTI raw label ID")
     sums = dict(tp=0, fp=0, fn=0, tn=0)
     owner_sums = sums.copy()
-    ignored_removed = ignored_retained = target_unclassified = 0
+    ignored_removed = ignored_retained = target_unclassified = target_without_owner = 0
     false_classes: Counter = Counter()
     instances: dict[int, dict] = defaultdict(lambda: dict(points=0, removed=0, projected=0, raw_ids=set()))
     instance_zero_target = 0
@@ -153,7 +160,8 @@ def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidate
         if classified[i]:
             owner_sums[key] += 1
         elif positive:
-            target_unclassified += 1
+            target_without_owner += 1
+            target_unclassified += not remove
         if key == "fp":
             false_classes[raw] += 1
         if positive:
@@ -177,7 +185,7 @@ def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidate
         "full_scan": confusion(**sums), "projected_owners_only": confusion(**owner_sums),
         "precision_if_all_ignored_removals_are_errors": ratio(sums["tp"], sum(mask)),
         "target_unclassified_retained": target_unclassified,
-        "full_scan_recall_ceiling_from_nearest_only_ownership": ratio(targets_total - target_unclassified, targets_total),
+        "full_scan_recall_ceiling_from_nearest_only_ownership": ratio(targets_total - target_without_owner, targets_total),
         "false_removals_by_raw_class": {str(k): v for k, v in sorted(false_classes.items())},
         "target_instance_zero_points": instance_zero_target,
         "target_instances": [dict(instance_id=k, points=v["points"], removed=v["removed"], retained=v["points"] - v["removed"],

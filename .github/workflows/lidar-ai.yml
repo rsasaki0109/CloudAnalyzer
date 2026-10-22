@@ -29,6 +29,6 @@ jobs:
         with:
           workspaces: rust/experiments/lidar-ai
       - run: cargo fmt --check
-      - run: cargo clippy --locked --no-default-features --all-targets -- -D warnings
-      - run: cargo test --locked --no-default-features
-      - run: python -m unittest discover -s . -p test_evaluate_removal.py -v
+      - run: cargo clippy --locked --no-default-features --features completion --all-targets -- -D warnings
+      - run: cargo test --locked --no-default-features --features completion
+      - run: python -m unittest discover -s . -p 'test_*.py' -v

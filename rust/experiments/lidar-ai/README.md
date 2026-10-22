@@ -194,3 +194,46 @@ and its [pinned API configuration](https://github.com/PRBonn/semantic-kitti-api/
 record actual car-point precision, full-scan recall, ignored labels, ownership
 limits and the threshold trade-off. These measurements leave the inference and
 default threshold unchanged.
+
+## Optional near-surface completion experiment
+
+The separate CPU-only `ca-lidar-complete` command uses an existing native result
+with `--debug-tensors`. It does not run a model or change the original files.
+The nearest-only inference command and browser review keep their existing
+contract. This experiment emits **`completion-report.json` and
+`completed-mask.u8`**, distinct from a normal native inference report/mask.
+
+```sh
+cargo build --manifest-path rust/experiments/lidar-ai/Cargo.toml --no-default-features --features completion --bin ca-lidar-complete
+# Use the matching target directory's executable:
+ca-lidar-complete --scan scan.bin --base notes/frozen-native-debug-result --out notes/new-completion
+```
+
+The fixed rule considers only valid in-range/FOV returns that lost a pixel
+collision. The original owner and another distinct original owner must predict
+the same target class at score ≥0.99 and lie within **15 cm** of the return;
+the two seeds must be at least **2 cm** apart. A different-class owner at score
+≥0.90 within 15 cm vetoes the addition. Neighborhoods over 256 owners abstain.
+Original owner decisions never change, and added points never become seeds.
+These geometric guards are an experiment, not a guarantee against false removal.
+
+Before completing, the command checks the native model/profile, source identity,
+exact input tensor, normalized probabilities, original mask and exact output
+records. It publishes a new directory with `retained.bin`, `candidates.bin`,
+`added-mask.u8`, `completed-mask.u8` and `completion-report.json`. The source and
+base results remain unchanged. Open the point files separately for review; the
+browser's nearest-only AI-result importer does not accept a completion report.
+
+An independent standard-library Python projector/grid oracle checks the complete
+mask, rejection counts, hashes and exact source-record split:
+
+```sh
+python rust/experiments/lidar-ai/verify_completion.py --scan scan.bin --base notes/frozen-native-debug-result --result notes/new-completion --out notes/new-completion-check.json
+```
+
+Optionally supply **both** `--labels frame.label --pairing pairing.json` to score
+the frozen completed mask against annotations, using the pairing format above.
+The original `evaluate_removal.py` command still rejects non-nearest removal;
+the completion verifier explicitly validates this separate selection policy.
+Its nearest-only recall ceiling is a counterfactual baseline, not a bound on a
+completed mask. Default inference and thresholds remain unchanged.

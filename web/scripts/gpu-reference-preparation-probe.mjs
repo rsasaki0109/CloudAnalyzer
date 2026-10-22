@@ -54,17 +54,43 @@ export function instrumentPreparationSource(name, original) {
       });
       __caMark("reference-upload-ready");`);
     replace(`  private upload(data: Float32Array | Uint32Array): GPUBuffer {
-    const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
-    this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
-    return buffer;
+    const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, this.mappedReference);
+    try {
+      if (this.mappedReference) {
+        try {
+          new Uint8Array(buffer.getMappedRange()).set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+        } finally { buffer.unmap(); }
+      } else {
+        this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
+      }
+      return buffer;
+    } catch (error) {
+      // Upload can fail before the caller receives the allocated buffer.
+      buffer.destroy();
+      const i = this.buffers.indexOf(buffer); if (i >= 0) this.buffers.splice(i, 1);
+      throw error;
+    }
   }`, `  private upload(data: Float32Array | Uint32Array, label = "reference"): GPUBuffer {
     __caMark(label + "-allocate-start");
-    const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
+    const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, this.mappedReference);
     __caMark(label + "-allocate-end");
     __caMark(label + "-write-start");
-    this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
-    __caMark(label + "-write-end");
-    return buffer;
+    try {
+      if (this.mappedReference) {
+        try {
+          new Uint8Array(buffer.getMappedRange()).set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+        } finally { buffer.unmap(); }
+      } else {
+        this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
+      }
+      __caMark(label + "-write-end");
+      return buffer;
+    } catch (error) {
+      // Upload can fail before the caller receives the allocated buffer.
+      buffer.destroy();
+      const i = this.buffers.indexOf(buffer); if (i >= 0) this.buffers.splice(i, 1);
+      throw error;
+    }
   }`);
   } else if (name.endsWith('gpu-c2c.ts')) {
     replace('  const start = performance.now();', '  __caMark("c2c-start");\n  const start = performance.now();');

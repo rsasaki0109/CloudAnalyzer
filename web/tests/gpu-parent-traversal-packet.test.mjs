@@ -15,10 +15,11 @@ test('GPU parent traversal packet preserves disabled diagnostics, cold setup, me
   const compact = JSON.parse(bytes("benchmarks/wasm-gpu-compact-stack/manifest.json"));
   const packed = JSON.parse(bytes("benchmarks/wasm-gpu-packed-nodes/manifest.json"));
   const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...compact.historicalSourceAliases, ...packed.historicalSourceAliases };
+  Object.assign(aliases, JSON.parse(readFileSync(resolve(root, "benchmarks/wasm-reference-preparation/manifest.json"), "utf8")).sourceAliases);
   const source = (n, h) => {
     if (normalizedHash(n) === h) return;
     const a = aliases[h]; assert.equal(a?.original, n);
-    assert.ok(((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-gpu-packed-nodes/executed-source/")) || a.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !a.archived.includes('..'));
+    assert.ok((((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-reference-preparation/executed-source/")) || a.archived.startsWith("benchmarks/wasm-gpu-packed-nodes/executed-source/")) || a.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !a.archived.includes('..'));
     assert.equal(normalizedHash(a.archived), h);
   };
   assert.equal(manifest.adopted, false); assert.equal(manifest.finalDefault, 'local');

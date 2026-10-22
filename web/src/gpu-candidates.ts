@@ -464,10 +464,10 @@ export class GpuCandidateSearch {
   batchLimit(size: number): number { return this.runtime.batchLimit(size); }
   private get device(): GPUDevice { return this.runtime.device; }
 
-  private constructor(private runtime: GpuCandidateDevice, private ownsDevice: boolean) {}
+  private constructor(private runtime: GpuCandidateDevice, private ownsDevice: boolean, private readonly mappedReference: boolean) {}
 
-  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false, timestamps = false, packedNodes = false): Promise<GpuCandidateSearch> {
-    const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(false, inheritedBounds, timestamps), !runtime);
+  static async create(points: Float32Array, nodes: Uint32Array, runtime?: GpuCandidateDevice, inheritedBounds = false, timestamps = false, packedNodes = false, mappedReference = false): Promise<GpuCandidateSearch> {
+    const search = new GpuCandidateSearch(runtime ?? await GpuCandidateDevice.create(false, inheritedBounds, timestamps), !runtime, mappedReference);
     try {
       search.originalNodeBytes = nodes.byteLength;
       await search.runtime.run(async () => {
@@ -481,12 +481,12 @@ export class GpuCandidateSearch {
     }
   }
 
-  private buffer(size: number, usage: GPUBufferUsageFlags): GPUBuffer {
+  private buffer(size: number, usage: GPUBufferUsageFlags, mappedAtCreation = false): GPUBuffer {
     if (size <= 0 || size > this.device.limits.maxBufferSize ||
       ((usage & GPUBufferUsage.STORAGE) && size > this.device.limits.maxStorageBufferBindingSize)) {
       throw new Error("WebGPU buffer limit exceeded");
     }
-    const buffer = this.device.createBuffer({ size, usage });
+    const buffer = this.device.createBuffer({ size, usage, mappedAtCreation });
     this.buffers.push(buffer);
     return buffer;
   }
@@ -503,8 +503,7 @@ export class GpuCandidateSearch {
         const nodes = source();
         if (nodes.byteLength !== this.originalNodeBytes) throw new Error("GPU node source does not match the reference dimensions");
         const data = packed ? packGpuNodePairs(nodes, this.points.size / 16) : nodes;
-        buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
-        this.device.queue.writeBuffer(buffer, 0, data as Uint32Array<ArrayBuffer>);
+        buffer = this.upload(data);
       }).then(() => {
         if (!this.usable) throw new Error("WebGPU reference was disposed or its device was lost");
         this.nodeBuffers.set(packed, buffer!);
@@ -568,9 +567,22 @@ export class GpuCandidateSearch {
   }
 
   private upload(data: Float32Array | Uint32Array): GPUBuffer {
-    const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST);
-    this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
-    return buffer;
+    const buffer = this.buffer(data.byteLength, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, this.mappedReference);
+    try {
+      if (this.mappedReference) {
+        try {
+          new Uint8Array(buffer.getMappedRange()).set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+        } finally { buffer.unmap(); }
+      } else {
+        this.device.queue.writeBuffer(buffer, 0, data as Float32Array<ArrayBuffer> | Uint32Array<ArrayBuffer>);
+      }
+      return buffer;
+    } catch (error) {
+      // Upload can fail before the caller receives the allocated buffer.
+      buffer.destroy();
+      const i = this.buffers.indexOf(buffer); if (i >= 0) this.buffers.splice(i, 1);
+      throw error;
+    }
   }
 
   find(queries: Float32Array, leafOnly = false, workgroupSize = 64,

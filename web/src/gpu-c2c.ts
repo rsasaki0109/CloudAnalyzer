@@ -10,12 +10,13 @@ const DEFAULT_GPU_BOX_BOUNDS = false;
 const DEFAULT_GPU_PARENT_TRAVERSAL = false;
 const DEFAULT_GPU_COMPACT_STACK = false;
 const DEFAULT_GPU_PACKED_NODES = false;
+const DEFAULT_GPU_MAPPED_REFERENCE = false;
 
 interface SearchEntry { ready: Promise<GpuCandidateSearch>; gpu?: GpuCandidateSearch }
 interface ReferenceEntry {
   cloud: Cloud;
   index: GpuC2cReference;
-  searches: Map<boolean, SearchEntry>;
+  searches: Map<string, SearchEntry>;
   users: number;
   retired: boolean;
   disposed: boolean;
@@ -89,7 +90,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   workgroupSize = 64, requestedVerifyWorkers = 1, verifySnapshot = true, stageQueries = false,
   mainWorker = false, reuseImportBounds = true, bufferedReadback = false, sliceQueryCopy = false,
   ownedQueryCopy = false, inheritedBounds = DEFAULT_GPU_INHERITED_BOUNDS, diagnosticsEnabled = false,
-  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL, compactStack = DEFAULT_GPU_COMPACT_STACK, packedNodes = DEFAULT_GPU_PACKED_NODES): Promise<{
+  boxBounds = DEFAULT_GPU_BOX_BOUNDS, parentTraversal = DEFAULT_GPU_PARENT_TRAVERSAL, compactStack = DEFAULT_GPU_COMPACT_STACK, packedNodes = DEFAULT_GPU_PACKED_NODES, mappedReference = DEFAULT_GPU_MAPPED_REFERENCE): Promise<{
   distances: Float64Array;
   compute: NonNullable<C2cOutput["compute"]>;
 }> {
@@ -118,7 +119,9 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
   // Capture this before source mutations can run.
   const wantedBatchSize = requestedBatchSize ?? (compared.length >= 1_000_000 ||
     verifyWorkers >= 4 && compared.length >= 524_288 ? 131_072 : 65_536);
-  const cachedSearch = current?.searches.get(diagnosticsEnabled)?.gpu;
+  // Upload mode belongs to the immutable reference, while the device stays shared.
+  const searchKey = `${diagnosticsEnabled}:${mappedReference}`;
+  const cachedSearch = current?.searches.get(searchKey)?.gpu;
   if (cachedSearch && !cachedSearch.usable) retire(current!);
   const referenceReused = current?.cloud === reference && current.reuseDevice === reuseDevice;
   const deviceReused = referenceReused && !!cachedSearch?.usable || reuseDevice && !!sharedDevices.get(diagnosticsEnabled)?.device?.usable;
@@ -181,20 +184,20 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
         verifyWorkers = 1;
       }).finally(() => { verifyPrepareMillis = performance.now() - started; });
     }
-    let search = entry.searches.get(diagnosticsEnabled);
+    let search = entry.searches.get(searchKey);
     if (!search) {
       const packed = entry.index.candidateBuffers();
       try {
         const points = packed.takePoints(), nodes = packed.takeNodes();
         if (parentTraversal && !leafOnly) parentSource = nodes;
         const prepared: SearchEntry = { ready: (async () => GpuCandidateSearch.create(points, nodes,
-          deviceReady ? await deviceReady : undefined, inheritedBounds, diagnosticsEnabled, packedNodes))() };
+          deviceReady ? await deviceReady : undefined, inheritedBounds, diagnosticsEnabled, packedNodes, mappedReference))() };
         prepared.ready = prepared.ready.then(gpu => {
           prepared.gpu = gpu;
           if (entry.disposed) gpu.dispose();
           return gpu;
         });
-        entry.searches.set(diagnosticsEnabled, prepared);
+        entry.searches.set(searchKey, prepared);
         search = prepared;
       } finally { packed.free(); }
     }
@@ -330,7 +333,7 @@ export async function gpuCloudToCloud(compared: Cloud, reference: Cloud, prefetc
       prepareMillis, gpuMillis, gpuWaitMillis, verifyMillis, batches, batchSize, referenceReused, deviceReused,
       inheritedBounds: !leafOnly && !parentTraversal && inheritedBounds,
       compactStack: !leafOnly && !boxBounds && !parentTraversal && compactStack,
-      packedNodes, nodePrepareMillis, nodeRepresentationReused,
+      packedNodes, mappedReference, nodePrepareMillis, nodeRepresentationReused,
       nodeCount: gpu?.nodeCount ?? 0, nodeBytes: gpu?.nodeBytes(packedNodes) ?? 0,
       retainedNodeBytes: gpu?.retainedNodeBytes ?? 0,
       boxBounds: !leafOnly && boxBounds, boxBoundsPrepareMillis, boxBoundsReused,

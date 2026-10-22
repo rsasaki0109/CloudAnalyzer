@@ -1840,3 +1840,131 @@ test("a failed optional inherited pipeline completes on CPU and retries on the s
   expect(await runAndExport(page, "webgpu", "CPU fallback: synthetic inherited pipeline failure")).toEqual(cpu);
   expect(await runAndExport(page, "webgpu", "with WebGPU")).toEqual(cpu);
 });
+
+test("GPU mapped references preserve real raw hints, f64 bits, owned uploads and every traversal", async ({ page }) => {
+  const modulePath="/__mapped-wasm.js";
+  const wasmPath="/assets/"+readdirSync(new URL("../dist/assets/",import.meta.url)).find(n=>/^ca_wasm.*\.wasm$/.test(n));
+  await page.route("**"+modulePath,route=>route.fulfill({contentType:"text/javascript",body:readFileSync(new URL("../src/wasm/ca_wasm.js",import.meta.url),"utf8")}));
+  for(const[role,name]of [["reference","lidar_reference.pcd"],["compared","lidar_candidate.pcd"]])
+    await page.route(`**/__parents-${role}`,route=>route.fulfill({body:readFileSync(new URL(`../public/samples/${name}`,import.meta.url))}));
+  const source=stripTypeScriptTypes(readFileSync(new URL("../src/gpu-candidates.ts",import.meta.url),"utf8"),{mode:"transform"});
+  const gpuModule="data:text/javascript;base64,"+Buffer.from(source).toString("base64");
+  await page.goto("/");
+  test.skip(!await page.evaluate(async()=>!!await navigator.gpu?.requestAdapter()),"No WebGPU adapter");
+  const result=await page.evaluate(async({modulePath,wasmPath,gpuModule,physical})=>{
+    const wasm = await import(modulePath); await wasm.default({ module_or_path: wasmPath });
+    const { GpuCandidateDevice, GpuCandidateSearch, packGpuNodePairs } = await import(gpuModule);
+    const r = wasm.Cloud.parse("r.pcd", new Uint8Array(await (await fetch("/__parents-reference")).arrayBuffer()));
+    const q = wasm.Cloud.parse("q.pcd", new Uint8Array(await (await fetch("/__parents-compared")).arrayBuffer()));
+    const index = new wasm.GpuC2cReference(r), initial = new wasm.GpuC2cJob(q, index);
+    const originals = index.xyz(), queries = Array.from(initial.queriesF64(0, 258)); initial.free(); q.free();
+    // Untimed guards: overflowing f32/f64 squared distances and an exact hit.
+    queries.push(1e30, -1e30, 1e30, 1e200, -1e200, 1e200, ...originals.slice(0, 3));
+    const count = queries.length / 3, header = new TextEncoder().encode(`ply\nformat binary_little_endian 1.0\nelement vertex ${count}\nproperty double x\nproperty double y\nproperty double z\nend_header\n`);
+    const bytes = new Uint8Array(header.length + count * 24); bytes.set(header);
+    const view = new DataView(bytes.buffer, header.length); queries.forEach((v, i) => view.setFloat64(i * 8, v, true));
+    const compared = wasm.Cloud.parse("queries.ply", bytes), job = new wasm.GpuC2cJob(compared, index), packed = index.candidateBuffers();
+    const points = packed.takePoints(), nodes = packed.takeNodes();
+    packed.free(); r.free(); compared.free(); index.free();
+    const brute = new Float64Array(count);
+    for (let i = 0; i < count; i++) {
+      let best = Infinity;
+      for (let p = 0; p < originals.length; p += 3) {
+        const dx = originals[p] - queries[i * 3], dy = originals[p + 1] - queries[i * 3 + 1], dz = originals[p + 2] - queries[i * 3 + 2];
+        best = Math.min(best, (dx * dx + dy * dy) + dz * dz);
+      }
+      brute[i] = Math.sqrt(best);
+    }
+    const expected = new BigUint64Array(brute.buffer), xyz = job.queries(0, count);
+
+    const create=GPUDevice.prototype.createBuffer,destroy=GPUBuffer.prototype.destroy,get=GPUBuffer.prototype.getMappedRange,unmap=GPUBuffer.prototype.unmap;
+    const live=new Set<GPUBuffer>(),mapped=new WeakSet<GPUBuffer>(),ranges=new WeakMap<GPUBuffer,ArrayBuffer>();
+    const uploads:Uint8Array[]=[];
+    GPUDevice.prototype.createBuffer=function(desc){const b=create.call(this,desc);live.add(b);if(desc.mappedAtCreation)mapped.add(b);return b;};
+    GPUBuffer.prototype.destroy=function(){live.delete(this);return destroy.call(this);};
+    GPUBuffer.prototype.getMappedRange=function(...args){const range=get.apply(this,args);if(mapped.has(this))ranges.set(this,range);return range;};
+    GPUBuffer.prototype.unmap=function(...args){const range=ranges.get(this);if(range){uploads.push(new Uint8Array(range).slice());ranges.delete(this);}return unmap.apply(this,args);};
+    let runtime,control,search,checked=0,slotsCompared=0;
+    const verify=(hints:Uint32Array)=>{const result=job.verify(0,hints);try{const actual=new BigUint64Array(result.takeDistances().buffer);if(actual.length!==expected.length||actual.some((v,i)=>v!==expected[i]))throw new Error("Mapped reference changed f64 result");checked++;}finally{result.free();}};
+    const equal=(a:Uint32Array,b:Uint32Array)=>{if(a.length!==count||b.length!==count||a.some((v,i)=>v!==b[i]))throw new Error("Mapped reference changed raw GPU hints");slotsCompared+=a.length;verify(a);};
+    const rawBytes=(a:ArrayBufferView)=>new Uint8Array(a.buffer,a.byteOffset,a.byteLength);
+    const sameBytes=(a:Uint8Array,b:Uint8Array)=>a.length===b.length&&a.every((v,i)=>v===b[i]);
+    try{
+      runtime=await GpuCandidateDevice.create(physical);
+      control=await GpuCandidateSearch.create(points,nodes,runtime);
+      await control.prepareNodes(true,()=>nodes);
+      const controls=[await control.find(xyz),await control.find(xyz,false,64,false,false,undefined,false,false,false,true)];
+      controls.forEach(verify);
+      await control.prepareBoxBounds(()=>({points,nodes}));await control.prepareParentTraversal(()=>nodes);
+      for(const initialPacked of [false,true]){
+        const paddedPoints=new Float32Array(points.length+8),paddedNodes=new Uint32Array(nodes.length+8);
+        const ownedPoints=paddedPoints.subarray(4,-4),ownedNodes=paddedNodes.subarray(4,-4);ownedPoints.set(points);ownedNodes.set(nodes);
+        const start=uploads.length,before=live.size;
+        search=await GpuCandidateSearch.create(ownedPoints,ownedNodes,runtime,false,false,initialPacked,true);
+        const encoded=initialPacked?packGpuNodePairs(nodes,points.length/4):nodes;
+        if(live.size!==before+2||uploads.length!==start+2||!sameBytes(uploads[start],rawBytes(points))||!sameBytes(uploads[start+1],rawBytes(encoded)))throw new Error("Mapped upload copied outside the source range");
+        await Promise.all([search.prepareNodes(!initialPacked,()=>ownedNodes),search.prepareNodes(!initialPacked,()=>{throw new Error("Duplicate mapped node export");})]);
+        if(live.size!==before+3||uploads.length!==start+3||search.retainedNodeBytes!==nodes.length/5*28)throw new Error("Mapped nodes did not share points and preparation");
+        ownedPoints.fill(NaN);ownedNodes.fill(0);
+        for(const packed of [false,true])for(const size of [32,64,128,256])equal(await search.find(xyz,false,size,false,false,undefined,false,false,false,packed),controls[Number(packed)]);
+        const buffered=await Promise.all([search.find(xyz,false,64,true),search.find(xyz,false,64,true,false,undefined,false,false,false,true)]);
+        equal(buffered[0],controls[0]);equal(buffered[1],controls[1]);
+        equal(await search.find(xyz,false,64,false,true),await control.find(xyz,false,64,false,true));
+        equal(await search.find(xyz,true),await control.find(xyz,true));
+        await search.prepareBoxBounds(()=>({points,nodes}));await search.prepareParentTraversal(()=>nodes);
+        for(const[boxes,parents]of [[true,false],[false,true]])equal(await search.find(xyz,false,64,false,false,undefined,boxes,parents),await control.find(xyz,false,64,false,false,undefined,boxes,parents));
+        equal(await search.find(xyz,false,64,false,false,undefined,false,false,true),await control.find(xyz,false,64,false,false,undefined,false,false,true));
+        if(uploads.length!==start+3)throw new Error("Mapped mode unexpectedly changed batch/readback/optional uploads");
+        search.dispose();search=undefined;
+      }
+      control.dispose();control=undefined;
+      return{checked,slotsCompared,queries:count,liveBuffers:live.size,independentSourceOffsets:true,mappedUploads:uploads.length};
+    }finally{search?.dispose();control?.dispose();runtime?.dispose();job.free();GPUDevice.prototype.createBuffer=create;GPUBuffer.prototype.destroy=destroy;GPUBuffer.prototype.getMappedRange=get;GPUBuffer.prototype.unmap=unmap;}
+  },{modulePath,wasmPath,gpuModule,physical:process.env.CA_GPU_HARDWARE==="1"});
+  expect(result.checked).toBe(32);expect(result.slotsCompared).toBe(7830);expect(result.queries).toBe(261);expect(result.liveBuffers).toBe(0);expect(result.mappedUploads).toBe(6);expect(result.independentSourceOffsets).toBe(true);
+});
+
+test("GPU mapped reference mode switches keep separate buffers and invalidate after source edits",async({page})=>{
+  await page.goto("/");test.skip(!await page.evaluate(async()=>!!await navigator.gpu?.requestAdapter()),"No WebGPU adapter");
+  await alterWorker(page,gpuMetrics+`let mappedRequestCount=0;const mappedModes=[false,true,true,false,false,true,true,false];self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c"&&data.req.backend==="webgpu")data.req.gpuMappedReference=mappedModes[mappedRequestCount++];});`);
+  const{computed,metrics,changed}=await workerScenario(page,false,4);
+  expect(computed.map(c=>c.mappedReference)).toEqual([false,true,true,false,false,true,true,false]);
+  expect(computed.map(c=>c.referenceReused)).toEqual([false,true,false,true,false,false,true,false]);
+  expect(computed.map(c=>c.nodeRepresentationReused)).toEqual([false,false,false,false,false,false,true,false]);
+  expect(computed.every(c=>!c.verifyFallback&&c.nodeBytes===c.retainedNodeBytes)).toBe(true);
+  expect(metrics).toEqual({devices:1,pipelines:1,buffers:5,maxScopes:3});expect(changed).toBe(true);
+});
+
+test("GPU mapped references retain concurrent snapshots through mutation and buffered maps",async({page})=>{
+  await page.goto("/");test.skip(!await page.evaluate(async()=>!!await navigator.gpu?.requestAdapter()),"No WebGPU adapter");
+  await alterWorker(page,gpuMetrics+`
+    let mappedRequestCount=0;self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c"&&data.req.backend==="webgpu")data.req.gpuMappedReference=++mappedRequestCount%2===1;});
+    const submit=GPUQueue.prototype.submit;GPUQueue.prototype.submit=function(...args){submit.apply(this,args);self.postMessage({gpuSubmitted:true});};
+    const map=GPUBuffer.prototype.mapAsync;GPUBuffer.prototype.mapAsync=async function(...args){await map.apply(this,args);await new Promise(resolve=>setTimeout(resolve,100));};
+  `);
+  const{computed,metrics,changed}=await workerScenario(page,true,4,false,false,true);
+  expect(computed.map(c=>c.mappedReference)).toEqual([true,false,true]);expect(computed.every(c=>!c.verifyFallback)).toBe(true);
+  expect(metrics.devices).toBe(1);expect(metrics.buffers).toBe(0);expect(changed).toBe(true);
+});
+
+for(const phase of ["allocation","mapping","unmap","scope"])test(`GPU mapped reference ${phase} failure falls back exactly and retries`,async({page})=>{
+  await alterWorker(page,`
+    self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c")data.req.gpuMappedReference=true;});
+    const phase=${JSON.stringify(phase)},mapped=new WeakSet();let armed=true,started=false;
+    const create=GPUDevice.prototype.createBuffer;GPUDevice.prototype.createBuffer=function(desc){if(desc.mappedAtCreation){started=true;if(armed&&phase==="allocation"){armed=false;throw new Error("injected mapped allocation");}}const b=create.call(this,desc);if(desc.mappedAtCreation)mapped.add(b);return b;};
+    const get=GPUBuffer.prototype.getMappedRange;GPUBuffer.prototype.getMappedRange=function(...args){if(armed&&phase==="mapping"&&mapped.has(this)){armed=false;throw new Error("injected mapped mapping");}return get.apply(this,args);};
+    const unmap=GPUBuffer.prototype.unmap;GPUBuffer.prototype.unmap=function(...args){if(armed&&phase==="unmap"&&mapped.has(this)){armed=false;throw new Error("injected mapped unmap");}return unmap.apply(this,args);};
+    const pop=GPUDevice.prototype.popErrorScope;GPUDevice.prototype.popErrorScope=function(...args){const result=pop.apply(this,args);if(armed&&started&&phase==="scope"){armed=false;return result.then(()=>new GPUValidationError("injected mapped scope"));}return result;};
+  `);
+  await open(page);const cpu=await runAndExport(page,"cpu");
+  expect(await runAndExport(page,"webgpu",`CPU fallback: ${phase==="scope"?"WebGPU: ":""}injected mapped ${phase}`)).toEqual(cpu);
+  expect(await runAndExport(page,"webgpu","with WebGPU")).toEqual(cpu);
+});
+
+test("GPU mapped references recover from device loss after a buffered submission",async({page})=>{
+  await alterWorker(page,`
+    self.addEventListener("message",({data})=>{if(data.req?.kind==="c2c"){data.req.gpuMappedReference=true;data.req.gpuBufferedReadback=true;data.req.gpuBatchSize=512;}});
+    const request=GPUAdapter.prototype.requestDevice;let armed=true;GPUAdapter.prototype.requestDevice=async function(...args){const device=await request.apply(this,args);if(armed){armed=false;const submit=device.queue.submit.bind(device.queue);let n=0;device.queue.submit=(...args)=>{submit(...args);if(++n===2)device.destroy();};}return device;};
+  `);
+  await open(page);const cpu=await runAndExport(page,"cpu");expect(await runAndExport(page,"webgpu","CPU fallback:")).toEqual(cpu);expect(await runAndExport(page,"webgpu","with WebGPU")).toEqual(cpu);
+});

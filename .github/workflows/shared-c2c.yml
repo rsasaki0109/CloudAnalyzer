@@ -6,6 +6,9 @@ on:
     paths:
       - "web/experiments/shared-c2c/**"
       - "web/scripts/*shared-c2c.mjs"
+      - "web/scripts/*kdtree-collection*.mjs"
+      - "web/tests/kdtree-collection*.test.mjs"
+      - "benchmarks/wasm-kdtree-collection/**"
       - "web/scripts/*reference-preparation*.mjs"
       - "web/scripts/benchmark-mapped-reference.mjs"
       - "web/tests/gpu-mapped-reference*.test.mjs"
@@ -29,6 +32,9 @@ on:
     paths:
       - "web/experiments/shared-c2c/**"
       - "web/scripts/*shared-c2c.mjs"
+      - "web/scripts/*kdtree-collection*.mjs"
+      - "web/tests/kdtree-collection*.test.mjs"
+      - "benchmarks/wasm-kdtree-collection/**"
       - "web/scripts/*reference-preparation*.mjs"
       - "web/scripts/benchmark-mapped-reference.mjs"
       - "web/tests/gpu-mapped-reference*.test.mjs"
@@ -97,8 +103,19 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node scripts/benchmark-shared-c2c.mjs --output shared-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1
+      - name: Verify isolated KD-tree collection compatibility
+        working-directory: web
+        env:
+          CA_WASM_PACK_NO_INSTALL: "1"
+        run: |
+          node --test tests/kdtree-collection*.test.mjs
+          node scripts/build-kdtree-collection.mjs --output ../kdtree-collection-ci/build-info.json --out-dir ../kdtree-collection-ci
+          node scripts/benchmark-kdtree-collection.mjs --output kdtree-collection-smoke.json --build-info ../kdtree-collection-ci/build-info.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --warmups 0 --repeats 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: shared-c2c-smoke
-          path: web/shared-c2c-smoke.json
+          path: |
+            web/shared-c2c-smoke.json
+            web/kdtree-collection-smoke.json
+            kdtree-collection-ci/build-info.json

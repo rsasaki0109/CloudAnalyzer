@@ -303,6 +303,10 @@ Files never leave the browser.
   C2C and Map quality share one idle preparation group.
   Coordinate edits/removal invalidate preparation; every run still computes
   all distances and exact summaries.
+  [Reference-tree collection screening](../docs/cpu-kdtree-collection.md)
+  compares one-pass collection in two matched production WASM builds. The
+  constructor-only effect fails the frozen repeated-session gate, so the
+  production implementation stays unchanged.
 - The octree index of clouds above 1M points and statistical outlier removal
   run on the same pool. The index is built in three steps (sort slices by
   level-2 node, build each node's subtree, stitch); SOR splits the cloud along

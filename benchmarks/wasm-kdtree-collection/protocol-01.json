@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen_before_timing",
+  "createdUtc": "2026-10-22T02:21:18.755823+00:00",
+  "baseCommit": "e0269763bc2e20df205be1f6f77dcfd99517e8af",
+  "question": "Does consuming unzip improve the complete exported CPU reference constructor enough to justify a later complete production Worker RPC study?",
+  "candidate": "Only KdTree::new final points/indices collection changes from two borrowed scans to one consuming unzip. Median partition, tree, bounds, certificates, all APIs and production runtime stay unchanged.",
+  "controls": [
+    "baseline",
+    "unzip"
+  ],
+  "screenReportBudget": 4,
+  "datasetOrder": [
+    "pandaset",
+    "autoware",
+    "autoware",
+    "pandaset"
+  ],
+  "firstOrder": [
+    "baseline",
+    "unzip",
+    "baseline",
+    "unzip"
+  ],
+  "warmups": 6,
+  "repeats": 12,
+  "screenScope": "One Dedicated Worker with two independent ordinary stable/SIMD WASM memories. Entire exported GpuC2cReference constructor on parsed LOD-ordered source clouds; free, counters, validation and parsing outside the clock. No GPU, exact distance work, full C2C RPC, load timing, or verification pool in the clock.",
+  "orderScheme": "Alternate the first mode every warmup/trial pair; reverse first mode on each repeated dataset. Include all pairs and tails. Run reports sequentially without other heavy work.",
+  "screenGate": {
+    "allFourReportsRequired": true,
+    "minimumMedianPairedReduction": 0.03,
+    "minimumFasterPairsPerReport": 8,
+    "maximumCommittedMemoryRatio": 1.02,
+    "definition": "For every report: median(unzip/baseline constructor milliseconds) <=0.97, at least 8/12 unzip-faster pairs, and maximum(unzip/baseline committed WASM linear memory bytes) <=1.02. Linear memory is not live/peak heap. Any failure rejects production adoption and discards the conditional RPC budget."
+  },
+  "conditionalRpc": {
+    "reports": 4,
+    "onlyIfAllScreensPass": true,
+    "warmups": 6,
+    "repeats": 12,
+    "coldPairsPerReport": 4,
+    "datasetOrder": [
+      "pandaset",
+      "autoware",
+      "autoware",
+      "pandaset"
+    ],
+    "firstOrder": [
+      "baseline",
+      "unzip",
+      "baseline",
+      "unzip"
+    ],
+    "scope": "Matched separately built ordinary production Workers with only the measured Rust collection change. Full cold and cached C2C RPC including tree/export/upload/exact verification/statistics/f32 response; parsing excluded; device/pipeline warm. No phase probe, diagnostics, alternative traversal/upload modes or GPU timestamps.",
+    "adoptionGate": {
+      "allFourRequired": true,
+      "maximumMedianPairedColdRatio": 0.99,
+      "minimumColdWinsPerReport": 3,
+      "maximumMedianPairedWarmRatio": 1.02,
+      "maximumMedianPairedCachedFollowupRatio": 1.05
+    },
+    "notExecutedYet": true
+  },
+  "correctness": "Before and after timings: identical exact tree snapshots, GPU point/node exports, exact full query export, all full f64 distances and displayed f32 bytes across variants. Check independent query export ownership, released reference wrapper, 12 hint/bounds/SIMD combinations, range rejection and full object release. Existing bounded native correctness protocol remains closed.",
+  "buildInfoSha256": "3c8a0dee3688bcf96e3e2b437b18641cf768ce36e12d22d840f15ffab8edb3c9",
+  "normalizedSources": {
+    "web/scripts/benchmark-kdtree-collection.mjs": "26a9869c50fde78297c81d333705f7731dc50015605ed22838d0d42fda011680",
+    "web/scripts/build-kdtree-collection.mjs": "a6fe54e509c65c9eaeae66cf3e4f1d577e8ef0cae0ac436726ae92196ecf6ae8",
+    "web/scripts/kdtree-collection-source.mjs": "deb21458b7e8e15f7855f6a422ba71588ebba4942dc809fb49f9a340da574600"
+  },
+  "variantSourceSha256": {
+    "baseline": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "unzip": "71e0acfca5d018b78cad39e5320a2917b22f5f7d2c530f1d0babc7ef3a913677"
+  },
+  "variantArtifacts": {
+    "baseline": {
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-baseline/ca_wasm.js": "fc3ed2de280bc0831b35cb29460842e7d7b6d8f17a755a1aa5d741a2d8ce5488",
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-baseline/ca_wasm.d.ts": "32258e06c0f67b6879e4ff170163a6ee092d9d36071c9fc7223534fd44fc77ce",
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-baseline/ca_wasm_bg.wasm": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-baseline/ca_wasm_bg.wasm.d.ts": "de4f36fb28bf98fd97f27a578bf8a0a6268e33244f3bae1fe5925828eba2c9ae"
+    },
+    "unzip": {
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-unzip/ca_wasm.js": "fc3ed2de280bc0831b35cb29460842e7d7b6d8f17a755a1aa5d741a2d8ce5488",
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-unzip/ca_wasm.d.ts": "32258e06c0f67b6879e4ff170163a6ee092d9d36071c9fc7223534fd44fc77ce",
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-unzip/ca_wasm_bg.wasm": "d09535e48907a368cca85a047e187ac8d77308a6dfef46c77d8ef96a97f8a5ad",
+      "notes/cpu-kdtree-collection-20261022/build-02/pkg-unzip/ca_wasm_bg.wasm.d.ts": "de4f36fb28bf98fd97f27a578bf8a0a6268e33244f3bae1fe5925828eba2c9ae"
+    }
+  },
+  "transientBytesLimit": 1073741824,
+  "retainedBytesLimit": 33554432,
+  "diskReserveBytes": 53687091200,
+  "safety": "No new toolchains/downloads, GPU adapter request, hardware identity, previous budget extension or production source mutation. Keep the same real canonical even/odd subsets and retain every timing report. Screen failures do not establish application-level performance."
+}

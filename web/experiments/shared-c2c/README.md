@@ -82,3 +82,10 @@ independent surveys or SLAM accuracy ground truth.
 CI builds both variants and exercises the static-host path on the existing
 RELLIS-derived demo files. It checks compatibility and output parity; its
 single trial is not performance evidence.
+
+The separate [CPU tree collection screen](../../../docs/cpu-kdtree-collection.md)
+builds two ordinary stable/SIMD production WASM variants in one isolated source
+directory. It changes only the final point/index collection and requests no
+shared memory or GPU. Its real-data constructor timings did not pass the frozen
+gate, so no production implementation or backend selection changes. This CI
+workflow also builds those variants and checks exact real-sample compatibility.

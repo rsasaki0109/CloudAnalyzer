@@ -4,156 +4,104 @@
 [![Self QA](https://github.com/rsasaki0109/CloudAnalyzer/actions/workflows/self-qa.yml/badge.svg)](https://github.com/rsasaki0109/CloudAnalyzer/actions/workflows/self-qa.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Fix your SLAM map, clean it, measure it. In the browser.**
+**Fix maps. Draft roads. See what changed.**
 
-CloudAnalyzer is a point cloud viewer and analyzer that runs in your browser: open a ROS bag or a drive's poses
-and scans, close its loops, take out the cars that drove past, and compare the result with last month's map or
-the ground truth. Everything runs locally in Rust compiled to WebAssembly, on every core: nothing to install, and
-your data never leaves your machine.
+A point cloud viewer and analyzer that runs in your browser. Repair SLAM maps,
+create vector-map drafts and compare surveys. Processing stays on your machine,
+powered by Rust and WebAssembly.
 
 <p align="center">
   <a href="scripts/prepare_nclt.py"><img src="docs/images/web/loop.gif" alt="A loop closed by hand on a real campus drive: two scans of the same place, metres apart, lined up by ICP, then the whole drive pulled together" width="720"></a><br>
-  A loop closed by hand on a real drive (NCLT, University of Michigan): the same place seen twice a kilometre apart,
-  lined up with ICP, and the drive pulled together
+  Close a loop in a real campus drive — NCLT, University of Michigan.
 </p>
 
 <p align="center">
   <b><a href="https://rsasaki0109.github.io/CloudAnalyzer/app/">Open the app</a></b> ·
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt">A real drive from a ROS bag</a> ·
+  <a href="#try-it">Live demos</a> ·
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/guide.html">Guide</a> ·
-  <a href="#proven-on-real-data">Results on KITTI</a> ·
-  <a href="#ca-the-ci-command-line">CLI</a>
+  <a href="#proven-on-real-data">Results</a> ·
+  <a href="#cli-and-agents">CLI &amp; agents</a>
 </p>
 
-## 1. Fix the map
+<a id="1-fix-the-map"></a>
 
-Drop a recording as it is, a ROS 1 `.bag` or a ROS 2 `.mcap` (gigabytes are fine: it is read a slice at a time),
-or a folder of scans without poses: LiDAR odometry places the scans in the browser, on the worker pool, and the
-bag's IMU levels the result, its mounting estimated from the drive. Or drop a trajectory (KITTI, TUM) or a g2o
-pose graph with one scan per pose.
+## Fix SLAM maps
+
+Open ROS bags, MCAP, scans, trajectories or g2o graphs. Build odometry, close loops
+and level maps with IMU gravity; inspect and edit with Undo.
 
 <p align="center">
   <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/odometry.gif" alt="A real drive through San Francisco replayed: Pandar64 scans build up along the street, colored by height" width="49%"></a>
   <a href="scripts/prepare_nclt.py"><img src="docs/images/web/posegraph.jpg" alt="A campus map after automatic loop closure, colored by how far each point moved" width="49%"></a><br>
-  <b>Replay the drive</b> scan by scan (PandaSet, San Francisco) · <b>See the correction</b>: every point colored by how far it moved
+  <b>Replay LiDAR</b> — PandaSet, San Francisco. <b>Inspect the correction</b> — NCLT campus.
 </p>
 
-- **Close loops** between two keyframes you pick, or let it search the whole drive: candidates are found within
-  the drift the odometry could have built up, registered with ICP on the worker pool, and kept only when their
-  structure (not just the road) overlaps.
-- **Level it** with the IMU's gravity (KITTI OXTS or a plain `index ux uy uz` file) or a floor plane.
-- **Drag a keyframe** with a gizmo, fix it, undo anything; edges colored by their error show what disagrees.
-- **Join sessions**: a second drive through the same streets, as a folder or a bag, is attached where they meet
-  and tied in with loops.
-- **Export** the graph as g2o, the poses as KITTI / TUM, and the map as a cloud.
-- **Build a vector map** over the point cloud: draft boundaries from a cloud and a trajectory with measured/inferred counts, draw roads with lanes in either direction, connect junctions,
-  drag shared boundary vertices, edit vertex heights, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
-  [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
-  `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
-  If a sharp turn produces inconsistent boundary directions, the Web panel shows the rejected
-  section over the source cloud, marks its problem location, and lets you adjust lane counts or
-  width and rebuild. Failed generation retains the existing map and Undo history.
-  [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
-  bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
-  [Automatic equipment search](docs/commands/vectormap-discover.md) finds paint and elevated
-  panel proposals without feature boxes; inspect them and confirm their type and lane IDs.
-  [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossings, stop lines
-  and signal housings with complete-map Undo while retaining observed paint and lamps.
-  [Source quality checks](docs/vector-map-quality.md) expose lanes whose centres or boundaries
-  lack nearby ground support; passing format validation does not establish map accuracy.
-  The Web check marks intervals with insufficient returns or height disagreement, frames
-  them over the source, and opens the boundary editor; recheck after applying an edit.
-  [Source-footprint drafting](docs/vector-map-source-footprint.md) fits weak road candidates
-  to supported low surfaces and reports missing extent explicitly, with actual before/after maps.
-  [Physical boundary anchors](docs/vector-map-physical-anchors.md) optionally keep scan limits
-  from shifting inferred lanes, with fixed-interval comparisons that expose gains and regressions.
-  [Paired-curb trace correction](docs/vector-map-curb-alignment.md) optionally fixes straight traces
-  using source observations, with ordered lane-pair comparisons and explicit held intervals.
-  [Straight RGB paint fits](docs/vector-map-paint-corridor.md) optionally measure heading and spacing,
-  distinguishing observed paint from inferred gaps and extensions in actual map comparisons.
-  [Interior paint correction](docs/vector-map-paint-divider.md) uses paired source curbs
-  to guard a single white-line fit, with separate errors for interior and outer boundaries.
-  [Lane edges inside distant curbs](docs/vector-map-lane-edges.md) retain road-edge candidates
-  separately and label the configured-width outer edge as inferred.
-  [Build evidence inspection](docs/vector-map-evidence.md) distinguishes selected paint/curb sources,
-  inferred connectors and retained road-edge drafts without changing exports.
-  [Retained-intensity paint fits](docs/vector-map-intensity-paint.md) explicitly select the source
-  channel, with guarded corrections and recorded real-source holds.
-  [Bounded paint search](docs/vector-map-paint-search.md) reduces unrelated-cell query limits
-  and reports the remaining search failures without adopting partial fits.
-  [Bright-candidate diagnostics](docs/vector-map-paint-candidates.md) explain missing support,
-  height mismatches and insufficient paint contrast, including interrupted scans.
+- Find loops automatically or align selected keyframes with ICP.
+- Join drives, adjust poses and export corrected clouds, KITTI / TUM poses and g2o.
+- [Save a project](docs/browser-projects.md) to resume maps, constraints and review notes.
 
-To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
-and confirm its controlled lanes. For COPC surveys,
-[read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
+## Build vector maps
+
+Draft roads from points and trajectories, review equipment proposals, and edit
+shared boundaries with Undo. Export Autoware Lanelet2 with
+[vectormap-rs](https://github.com/rsasaki0109/vectormap-rs).
+**Lane counts, object types and legal control require review.**
 
 <p align="center">
   <a href="docs/vector-map-supported-intersection.md"><img src="docs/images/web/vector-map-supported-intersection.gif" alt="Actual Tokyo source points generate default and source-footprint road drafts; supported connections, paint crossings, stop markings and signal housings are reviewed; geometric signal targets are highlighted, inspected, explicitly adopted, undone and reopened as Lanelet2" width="800"></a><br>
-  <b>Build a complex intersection from points. Inspect targets, adopt, export.</b><br>
-  38 road fragments + 21 reviewed connections · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
-  Source-review flags: 9 → 0; 34.3 m of road extent deferred. 2 geometric target drafts reviewed; 2 signals remain unresolved.<br>
-  No input map: recorded arterial segments and traced branches; lane counts, object types and legal control require review.<br>
-  <a href="docs/vector-map-supported-intersection.md">Generated map, quality limits and GIF reproduction</a>
+  <b>Generate a complex intersection from points. Review, edit, export.</b><br>
+  38 road fragments + 21 reviewed connections · 7 crossings · 2 stop drafts · 4 signal housings.<br>
+  Source-review flags: 9 → 0; 34.3 m deferred; 2 signals unresolved.<br>
+  <a href="docs/vector-map-supported-intersection.md">Source-only workflow, limits and reproduction</a>
 </p>
 
+[Road drafting & fitting](docs/commands/vectormap-build.md) ·
+[Equipment discovery](docs/commands/vectormap-discover.md) ·
+[Source quality](docs/vector-map-quality.md) ·
+[Evidence inspection](docs/vector-map-evidence.md)
+
 <details>
-  <summary>Earlier intersection draft and its source-quality audit</summary>
+  <summary>More vector-map demos</summary>
   <p align="center">
     <a href="docs/vector-map-media.md#source-only-hard-intersection"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Earlier 49-lane Tokyo draft generation, equipment review, editing and Lanelet2 reload" width="800"></a><br>
-    The earlier draft has nine lanes requiring source review; see the <a href="docs/vector-map-quality.md">quality audit</a>.
+    Earlier Tokyo draft: nine lanes need <a href="docs/vector-map-quality.md">source review</a>.
   </p>
-</details>
-
-<details>
-  <summary>Road boundaries drafted directly from real LiDAR and recorded poses</summary>
   <p align="center">
     <img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a continuous lane draft; a shared boundary is edited, undone and saved" width="800"><br>
-    PandaSet scene 019: generated boundaries remain drafts requiring manual review.
+    PandaSet scene 019: draft boundaries from real LiDAR and poses, with editing and Undo.
   </p>
-</details>
-
-<details>
-  <summary>Edit an existing surveyed intersection and draft its connections</summary>
   <p align="center">
     <img src="docs/images/web/vector-map-intersection.gif" alt="An imported surveyed intersection gains twelve reviewed connection drafts; shared vertices are edited and undone" width="800"><br>
-    Approaches, crossings and signals are imported context. This example demonstrates connection drafting and existing-map editing.
+    Surveyed approaches, crossings and signals are imported; this demo drafts connections and edits the existing map.
   </p>
 </details>
 
-## 2. Clean it and see what changed
+<a id="2-clean-it-and-see-what-changed"></a>
+
+## Clean and compare
+
+Remove passing traffic, join surveys and inspect changes with M3C2.
+Score maps against a reference with accuracy, completeness, F1 and Chamfer.
 
 <p align="center">
   <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/dynamic.gif" alt="A real San Francisco street: the ghost trails the traffic left in the lanes turn red and leave the map" width="720"></a><br>
-  A real street (PandaSet scene 019, 80 Pandar64 scans): the traffic's ghost trails turn red and leave the map
+  Remove traffic trails from 80 PandaSet scans; retain the static street.
 </p>
-
-- **Remove dynamic objects**: points that nearby scans saw straight through (passing cars, pedestrians) leave the
-  map as a red cloud of their own; parked cars, seen again from every side, stay.
-- **Compare sessions or passes** with M3C2 and get the list of changed objects: a car that left, a new container,
-  or a whole season. From two bags of the same block, April and June, in the browser:
 
 <p align="center">
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons"><img src="docs/images/web/bags.jpg" alt="Two ROS bags of the same campus block, April and June, opened with odometry, joined, and compared: the changes coloured on the map" width="720"></a><br>
-  Two ROS 2 bags of the same block (NCLT, April and June 2012) opened in the app: odometry, the IMUs, 46 loops,
-  and the changes between the months (<a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons">try it</a>, 19 MB)
+  Two ROS 2 bags, one campus block: join April and June, then inspect the changes.
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons">Try it · 19 MB</a>
 </p>
-
-And the same campus trees half a year apart:
 
 <p align="center">
   <a href="scripts/prepare_nclt.py"><img src="docs/images/web/seasons.gif" alt="The same campus trees in June and in December: full crowns, then bare branches" width="640"></a><br>
-  The same campus trees in June and December 2012 (NCLT), two drives joined in the app:
-  full crowns, then bare branches
+  The same NCLT trees in June and December 2012, aligned in the app.
 </p>
 
-- **Score a map against ground truth**: accuracy, completeness, F1, Chamfer, and the Wasserstein distance between
-  voxel Gaussians (AWD) and its spread (SCS), which tells a shifted map from a bent one.
-- **Ground and terrain**: extract the ground (CSF) and rasterize a DEM of the corrected map.
+<a id="3-measure-any-point-cloud"></a>
 
-## 3. Measure any point cloud
-
-The same app is a full point cloud workbench for survey, construction and mapping data.
+## Measure point clouds
 
 <table>
   <tr>
@@ -163,210 +111,91 @@ The same app is a full point cloud workbench for survey, construction and mappin
   </tr>
   <tr>
     <td><a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=ground"><img src="docs/images/web/ground.jpg" alt="Ground extraction"></a><br><b>Ground extraction</b> (CSF)</td>
-    <td><img src="docs/images/web/profile.jpg" alt="Cross-section profile"><br><b>Cross-sections</b> along a polyline</td>
+    <td><img src="docs/images/web/profile.jpg" alt="Cross-section profile"><br><b>Cross-sections</b></td>
     <td><img src="docs/images/web/shapes.jpg" alt="RANSAC shape detection"><br><b>RANSAC shapes</b> and clustering</td>
   </tr>
 </table>
 
-Also: ICP and manual alignment, subsampling, outlier removal, normals, 2.5D meshing, DEM / DSM to GeoTIFF,
-scalar fields with a calculator, lasso segmentation with undo, trajectory ATE / RPE, and an HTML QA report with
-pass / fail gates. See the [guide](https://rsasaki0109.github.io/CloudAnalyzer/guide.html) for all of it.
+ICP, filtering, normals, meshing, DEM / DSM, scalar fields and trajectory ATE / RPE
+are also available. [Explore the tools →](https://rsasaki0109.github.io/CloudAnalyzer/guide.html)
 
-**Opens** PLY, PCD, LAS / LAZ, E57, XYZ, KITTI `.bin`, OBJ / STL, Gaussian Splatting (3DGS PLY, `.splat`) and
-COPC from a URL. LAS / LAZ larger than memory open thinned and fill in where you zoom; UTM and ECEF
-coordinates stay exact to the millimetre. **Saves** PLY, LAS / LAZ, E57, CSV and session links.
-
-See [large point cloud IO limits](docs/large-point-clouds.md) for HTTP range
-requirements, 64-bit counts, and the distinction between display LOD and full-density processing.
-[`ca copc-tile`](docs/commands/copc-tile.md) saves full-density COPC tiles with
-halo and resumable checkpoints; physical ten-billion-point processing remains unbenchmarked.
-
-## Proven on real data
-
-From recordings, in the app: the built-in odometry, then loops and the IMU.
-
-| NCLT, a block on campus as ROS 2 bags (~250 m, 190 s each) | Odometry | + loops + IMU gravity |
-|---|---|---|
-| April, trajectory ATE / SE(3)-aligned | 1.25 m / 0.17 m | **1.07 m** / 0.17 m |
-| April and June joined, SE(3)-aligned, each drive | | **0.17 m / 0.16 m** |
-
-`hdl_400.bag` (2.4 GB, a Velodyne HDL-32E and a GPS/IMU, 1,263 scans) opens in the browser in about three and a
-half minutes on a laptop: 248 keyframes, the IMU's mounting estimated (its up directions spread 8.2° before,
-1.8° after) and 6 loops.
-
-With poses from [KISS-ICP](https://github.com/PRBonn/kiss-icp) odometry as the input:
-
-| KITTI trajectory ATE (RMSE) | Odometry | + loops | + IMU gravity |
-|---|---|---|---|
-| 00 &nbsp; 4,541 scans, 3.7 km | 22.3 m | 11.1 m | **5.8 m** |
-| 07 &nbsp; 1,101 scans | 2.14 m | 1.65 m | **1.16 m** |
-| 09 &nbsp; 1,591 scans, 38 m of hills | 16.4 m | 6.2 m | **2.3 m** |
-
-| NCLT 2012-04-29 (Segway on campus, 2,777 keyframes, 3.2 km) | Odometry | + loops |
-|---|---|---|
-| Trajectory ATE, SE(3)-aligned | 4.83 m | **1.64 m** (168 loops found in 11 s) |
-
-| KITTI map against the ground-truth map | Odometry | + loops + IMU gravity |
-|---|---|---|
-| 07 &nbsp; F1 at 0.3 m | 0.45 | **0.70** |
-| 09 &nbsp; F1 at 0.3 m | 0.16 | **0.42** |
-
-- **Dynamic objects** on SemanticKITTI 07: F1 0.67 against the moving-object labels, 99.9 % of static points kept,
-  1,101 scans in 8 s.
-- **Across days**: KITTI 00 (Oct 3) joined with 07 (Sep 30) through 202 loops; the buildings agree to a mean of
-  2 mm, and the changed objects are the parked cars.
-- **Across seasons**: NCLT June 2012 joined with December 2012 through 454 loops; 26 % of where they meet changed
-  by more than the level of detection, largest first the trees.
+**Open:** PLY, PCD, LAS / LAZ, E57, XYZ, KITTI, OBJ / STL, 3DGS and COPC URLs.
+**Save:** PLY, LAS / LAZ, E57, CSV and session links.
+For large surveys, see [display LOD vs full-density processing](docs/large-point-clouds.md)
+and [resumable COPC tiles](docs/commands/copc-tile.md). Physical ten-billion-point processing remains unbenchmarked.
 
 ## Try it
 
-| Demo | |
-|---|---|
-| [Real drive from a ROS bag](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt) | Once round a block on the NCLT campus, as a ROS 2 bag of scans and IMU (10 MB): odometry, gravity and loops |
-| [Two seasons of a block](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons) | The same block in April and in June, two bags (19 MB): the drives joined, loops between them, the changes between the seasons |
-| [SLAM loop closure](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph) | A drifting drive round a block: loops found, gravity tied, correction shown |
-| [SLAM drive](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive) | The same drive to fix yourself: replay, close a loop, remove cars |
-| [Two LiDAR scans](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=c2c) | Cloud-to-cloud distance |
-| [Landslide](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=m3c2) | M3C2 change detection |
-| [Stockpile](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=volume) | Cut / fill volume |
-| [Town](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=ground) | Ground extraction |
+| Demo | Explore |
+| --- | --- |
+| [Real drive](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt) | ROS 2 bag, odometry, gravity and loops · 10 MB |
+| [Two seasons](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons) | Join and compare April / June drives · 19 MB |
+| [Loop closure](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph) | Find loops and inspect the correction |
+| [SLAM drive](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive) | Replay, close a loop, remove cars |
+| [Two scans](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=c2c) | Measure cloud-to-cloud distance |
+| [Landslide](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=m3c2) | Inspect M3C2 changes |
+| [Stockpile](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=volume) | Measure cut / fill volume |
+| [Town](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=ground) | Extract ground |
 
-Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/app/), or open one from a URL with
-`?url=https://…/cloud.laz`.
+Or drop your files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/app/).
 
-## `ca`: the command line, for CI and AI agents
+## Proven on real data
 
-[Agent-driven mapping runs](docs/commands/mapping-run.md) connect raw-recording
-point-map generation with HD-road drafting. Give a calling MCP agent the log and
-one explicit lane-layout hypothesis; it inspects source candidates, records
-include/defer choices, generates/audits drafts and returns both artifact sets.
-A finished map can seed the next bounded repair session through
-`continue_mapping_run`: retain the delivered point/HD pair, inspect a new region,
-and adopt a local patch only after comparing against that accumulated baseline.
-[Continuation evidence](benchmarks/vector-map/nclt-repair-continuation/README.md)
-records a rejected NCLT trial that returns the prior map unchanged. Agents can also
-preview density repairs that [preserve existing HD neighborhoods](benchmarks/vector-map/nclt-protected-density/README.md), keeping old query points while updating only the unprotected part of a box.
-When off-path bands fragment the route, the agent can explicitly re-extract
-path-containing candidates once and review the new geometry. The
-[NCLT comparison](benchmarks/vector-map/nclt-path-refinement/README.md) records
-added map intervals and June's longer continuous piece at unchanged source thresholds.
-The agent can then inspect and explicitly connect short source-supported gaps;
-[NCLT connection evidence](benchmarks/vector-map/nclt-route-connections/README.md)
-records local graph routes of 14 m and 22 m while preserving original lane geometry.
-Both ground estimators and reopened Lanelet2 topology are checked; permitted
-turns and whole-drive connectivity remain unresolved.
-For missing intervals, the agent can inspect raw-return neighborhoods and test
-less point thinning with frozen motion. A child run shares the original attempt
-budget; actual HD maps are compared for gained and lost intervals and route spans
-before an explicit delivery choice. Earlier maps remain available if the trial worsens.
-The [NCLT density trials](benchmarks/vector-map/nclt-pointcloud-retry/README.md)
-record both recoveries and losses, with both replacements explicitly rejected.
-The agent can also inspect unused raw frames and explicitly fuse observations
-whose pose hypotheses pass checks against both neighboring corrected scans.
-Original poses and thinning remain fixed; expanded fusion and original reference
-graphs are retained separately, with actual HD comparisons before delivery.
-The [NCLT unused-frame trials](benchmarks/vector-map/nclt-unused-frames/README.md)
-record April's adopted partial improvement and June's retained baseline after
-the trial shortened its longest route despite generating more source intervals.
-For local HD repair, the agent can draft only missing ranges and explicitly patch
-them into the retained map. Original lane geometry, IDs and connections stay fixed;
-four audits reject new failures on retained samples and require fully supported
-additions. The point map remains the complete fusion trial.
-The [NCLT local patches](benchmarks/vector-map/nclt-partial-repair/README.md)
-add 4/6 m of source intervals with zero losses and retain the original 34/66 m
-longest routes; the added pieces remain isolated.
-The runner binds per-piece lane settings automatically and resumes completed
-stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
-remain available for separate experiments and explicit draft selection.
-Recording/input/native hashes, bounded attempts and decision reasons persist across
-tool calls. Source holds and unresolved traffic rules stay visible in the result.
+KITTI starts from [KISS-ICP](https://github.com/PRBonn/kiss-icp) poses;
+correction adds loops and IMU gravity. The NCLT result uses loop closure.
 
-`ca` runs the same Rust core natively, on all cores and without the browser's memory limit. It turns SLAM, LiDAR,
-perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps. It
-reads ROS 1 bags, MCAP files, rosbag2 SQLite files and folders itself: no ROS install.
+| Trajectory ATE (RMSE) | Before | Corrected |
+| --- | ---: | ---: |
+| KITTI 00 · 3.7 km | 22.3 m | **5.8 m** |
+| KITTI 07 | 2.14 m | **1.16 m** |
+| KITTI 09 | 16.4 m | **2.3 m** |
+| NCLT 2012-04-29 · 3.2 km, SE(3)-aligned | 4.83 m | **1.64 m** |
+
+KITTI map F1 at 0.3 m: **0.45 → 0.70** (07), **0.16 → 0.42** (09).
+[Benchmark tutorial](docs/tutorial-slam-benchmark.md) ·
+[Leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/)
+
+<a id="ca-the-ci-command-line"></a>
+<a id="ca-the-command-line-for-ci-and-ai-agents"></a>
+
+## CLI and agents
+
+The same Rust core runs natively through `ca`, with JSON metrics, HTML reports
+and CI pass/fail gates. Read bags, MCAP and rosbag2 SQLite without installing ROS.
 
 ```bash
 pip install "cloudanalyzer[fast]"
-ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic --keyframe-spacing 1   # 1. a recording in, a fixed map out
-ca web-view fixed/                                                            # 2. look at it in the web app
-ca posegraph-compare june/ december/ --here 1219 --there 850 --out changes/   # 3. what changed between two drives
+ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic --keyframe-spacing 1
+ca web-view fixed/
+ca posegraph-compare june/ december/ --here 1219 --there 850 --out changes/
 ```
 
-1. From a ROS bag (or a folder of scans, or poses and scans), [`ca posegraph-fix`](docs/commands/posegraph-fix.md)
-   makes the odometry (the same as the web app's), closes the loops, levels the map with the bag's IMU (its
-   mounting estimated from the drive), leaves out what moved, and writes the fixed poses, g2o and map, with a JSON
-   report.
-2. [`ca web-view`](docs/commands/web-view.md) serves the results from your machine and opens them in the app with
-   one link, to look at, measure and fix by hand.
-3. [`ca posegraph-compare`](docs/commands/posegraph-compare.md) joins two drives through the same places and lists
-   the changed objects.
+[AI agents over MCP](docs/commands/mcp.md) can inspect inputs and run the same tools.
+[Agent-driven mapping](docs/commands/mapping-run.md) builds point-cloud maps and
+HD-road drafts from recordings and an explicit lane layout, with recorded choices
+and resumable repairs.
 
-On `hdl_400.bag` step 1 finds the same 6 loops, estimates the IMU's mounting (8.1° → 2.0°) and leaves out 5.1 %
-of the points as dynamic in under three minutes on a laptop (the 2.4 GB bag is read in ten seconds); KITTI 07 as a
-bag takes 78 s. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
-(`claude mcp add cloudanalyzer -- ca mcp`), from `slam_odometry` to `view_link`.
-
-[`ca vectormap-build`](docs/commands/vectormap-build.md) and the `build_vector_map` MCP tool
-draft Autoware Lanelet2 roads from a surveyed cloud and a trajectory, with evidence and
-validation reports. Review the draft with `ca web-view map.pcd draft-map` and edit it with
-`vectormap mcp draft-map/lanelet2_map.osm`.
-[`ca vectormap-connect`](docs/commands/vectormap-connect.md) and its MCP tool preview or
-add ground-supported branching connections; the Web panel lets you select candidates
-and undo the batch. Review turns, clearance and traffic rules before use.
-[`ca vectormap-signal`](docs/commands/vectormap-signal.md) measures a user-identified
-signal head from a point-cloud box. Preview its measured housing and explicitly
-confirm controlled lanes; the Web panel and MCP tool use the same fitting.
-[`ca vectormap-crosswalk`](docs/commands/vectormap-crosswalk.md) proposes measured
-ground-paint bands from RGB or intensity. Preview the observed footprint, then
-confirm the crossing and its lane IDs; Web additions support Undo and Lanelet2 export.
-[`ca vectormap-discover`](docs/commands/vectormap-discover.md) searches generated road
-corridors or supported ground surfaces without feature boxes. Review paint/panel
-proposals, then explicitly confirm object types and lane assignments; the Web panel
-supports inspection, rejection, measured additions, geometry editing and map Undo.
-[Equipment association review](docs/vector-map-equipment-relations.md) links vehicle
-signals to reviewed stop markings and pedestrian signals to crosswalks, retaining
-physical geometry and unresolved controls through Undo and Lanelet2 reload.
-[Geometric target suggestions](docs/vector-map-relation-proposals.md) show distance,
-orientation and road context, highlight held alternatives, and require explicit adoption.
-[Second-scene validation](docs/vector-map-cross-scene.md) reports boundary offsets,
-missing equipment and held signal targets alongside a connected-movement fix.
-
-For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
-[SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the
-[command reference](docs/commands/), [CI and quality gates](docs/ci.md) and the
-[SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/).
-
-## What's inside
-
-| Path | |
-|---|---|
-| [`web/`](web/) | The browser app (TypeScript, three.js, a pool of WebAssembly workers) |
-| [`rust/`](rust/) | The Rust core: LiDAR odometry, registration, pose graph optimisation, M3C2, visibility, octrees, ROS bag and point cloud I/O; WebAssembly and Python bindings |
-| [`cloudanalyzer/`](cloudanalyzer/) | `ca`, the Python CLI for quality gates in CI |
+[CLI reference](cloudanalyzer/) · [Commands](docs/commands/) ·
+[CI & quality gates](docs/ci.md) · [Mapping tools](docs/commands/mapping-job.md)
 
 ## Develop
 
 ```sh
 cd web
 npm install
-npm run wasm   # build the Rust core to WebAssembly
-npm run dev    # http://localhost:5173
+npm run wasm
+npm run dev
 ```
 
-Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`. `npm run media` (after `npm run build`)
-re-takes the README screenshots and GIFs.
+[`web/`](web/) — TypeScript / three.js app · [`rust/`](rust/) — Rust core / WASM / Python bindings ·
+[`cloudanalyzer/`](cloudanalyzer/) — Python CLI
 
-Browser editing can be resumed with **Save project / Open project**, including maps, pose graph constraints and lane review notes. Keep the original inputs for verified restoration. **Memory and Undo** bounds each history and releases unused caches and workers; see [browser projects and reviews](docs/browser-projects.md).
+Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`.
+Media: `npm run media` after `npm run build` in `web/`.
 
 ## License
 
-[MIT](LICENSE). Public demo data, sample data and derived images keep their upstream terms; see the
-[image attribution](docs/images/ATTRIBUTION.md) and the [sample attribution](web/public/samples/ATTRIBUTION.md).
-The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu/nclt/) session 2012-04-29
-(University of Michigan, [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/), prepared with
-[`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2012-12-01 for the loops, corrections and seasons,
-with the ROS bag demos made from 2012-04-29 and 2012-06-15 by [`scripts/make_nclt_bag.py`](scripts/make_nclt_bag.py); and [PandaSet](https://pandaset.org)
-scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
-[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects,
-and [`scripts/prepare_vector_map_pandaset.py`](scripts/prepare_vector_map_pandaset.py) for the vector map GIF.
-KITTI data is not redistributed here.
+[MIT](LICENSE). Demo data and derived images retain their upstream terms:
+[image attribution](docs/images/ATTRIBUTION.md) · [sample attribution](web/public/samples/ATTRIBUTION.md).
+Real-drive imagery includes NCLT (University of Michigan, ODbL) and PandaSet (Scale AI and Hesai, CC BY 4.0).
+KITTI data is not redistributed.

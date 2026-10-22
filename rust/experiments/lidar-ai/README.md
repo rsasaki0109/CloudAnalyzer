@@ -135,3 +135,57 @@ This separately projects the original scan, compares CPU/GPU model probabilities
 and masks, and verifies both output files against exact original source records.
 
 [Recorded native run and numerical checks](../../../benchmarks/lidar-ai/salsanext-wgpu/README.md) retain source/model hashes and the one-scan result.
+
+## Audit removal against annotations
+
+`evaluate_removal.py` separately scores a **frozen native result** against an
+explicitly paired SemanticKITTI `.label` file. It uses only the Python standard
+library and never runs inference, changes thresholds, propagates labels or writes
+point files. Annotation bytes are not model inputs. Run its contract tests with:
+
+```sh
+python -m unittest discover -s rust/experiments/lidar-ai -p test_evaluate_removal.py -v
+```
+
+Create a pairing JSON from the original scan/annotation provenance. The two
+SHA256 values must identify the exact source-order files, not just their names
+or point counts. For example (replace the hash placeholders):
+
+```json
+{
+  "app": "CloudAnalyzer SemanticKITTI pairing",
+  "version": 1,
+  "sequence": "08",
+  "frame": "000000",
+  "split": "validation",
+  "point_order": "original-kitti-xyzi",
+  "label_format": "semantickitti-uint32-le",
+  "scan_sha256": "SHA256 of the original scan.bin",
+  "labels_sha256": "SHA256 of its original .label file",
+  "scan_member": "dataset/sequences/08/velodyne/000000.bin",
+  "labels_member": "dataset/sequences/08/labels/000000.label"
+}
+```
+
+```sh
+python rust/experiments/lidar-ai/evaluate_removal.py --scan 000000.bin --labels 000000.label --pairing pairing.json --result notes/native-result --out notes/new-removal-audit.json
+```
+
+The audit verifies the native source/mask/output hashes, exact record split and
+nearest-only projection before computing binary TP/FP/FN/TN, precision, recall,
+IoU and false-removal classes. **Full-scan recall counts retained occluded and
+out-of-view car points as misses**; projected-owner recall is shown separately,
+together with the maximum full-scan recall that this ownership policy permits.
+Per-instance retained fractions expose incomplete removal. Empty denominators
+produce `null`, not perfect scores. Raw IDs 0,1,52,99 are ignored by the official
+single-scan mapping; their removed counts and a worst-case precision bound remain
+visible. Packed instance IDs are decoded separately from semantic IDs.
+
+Pairing hashes prevent accidental file substitution; their annotation provenance
+must still come from the corresponding dataset frame. A few validation frames
+cannot establish general accuracy. In particular, validation sequence 08 is not
+an independent held-out test for a public checkpoint selected using that split.
+Dataset/model terms remain separate; no scan or annotation files are distributed.
+
+Label format and factual ID mapping follow [SemanticKITTI](https://semantic-kitti.org/dataset)
+and its [pinned API configuration](https://github.com/PRBonn/semantic-kitti-api/blob/a9c749e8124b2243b6eef1b8bcf971a9f1173a2d/config/semantic-kitti.yaml).

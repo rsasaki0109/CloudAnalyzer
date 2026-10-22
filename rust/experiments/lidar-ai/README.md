@@ -105,3 +105,5 @@ python rust/experiments/lidar-ai/verify_result.py --scan scan.bin --result notes
 
 This separately projects the original scan, compares CPU/GPU model probabilities
 and masks, and verifies both output files against exact original source records.
+
+[Recorded native run and numerical checks](../../../benchmarks/lidar-ai/salsanext-wgpu/README.md) retain source/model hashes and the one-scan result.

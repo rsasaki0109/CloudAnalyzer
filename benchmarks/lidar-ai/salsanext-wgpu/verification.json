@@ -1,0 +1,341 @@
+{
+  "role": "One native wgpu pretrained-model experiment; numerical parity and source preservation, not semantic ground truth or whole-car accuracy",
+  "runtime_commit": "cc255043c43a706036dbfdece36eb748e265f932",
+  "generation_reference_inputs": [],
+  "source_example": {
+    "source_url": "https://raw.githubusercontent.com/PRBonn/rangenet_lib/3fc223ea31251dc4380f6a0013c271d408a5eefa/example/000000.bin",
+    "repository": "https://github.com/PRBonn/rangenet_lib",
+    "revision": "3fc223ea31251dc4380f6a0013c271d408a5eefa",
+    "sha256": "bf272996d5b6d25cc5589e1089137cb20a98b63bd4823a7fea5631b359f6d68c",
+    "bytes": 1994688,
+    "points": 124668,
+    "role": "Reused public RangeNet example; no held-out accuracy claim",
+    "redistributed": false
+  },
+  "pretrained_archive": {
+    "source": "https://github.com/TiagoCortinhal/SalsaNext",
+    "archive_url": "https://drive.google.com/file/d/1utfzooTDAlV5M6XGvCE0-L-vbdLe_2rD/view",
+    "sha256": "cfbbb5403f9438ccc1ff0fac6b64c3f5f21a1881e76e4172a45a0e077624e0c5",
+    "bytes": 99996751,
+    "files": [
+      {
+        "name": "pretrained/",
+        "size": 0
+      },
+      {
+        "name": "__MACOSX/._pretrained",
+        "size": 210
+      },
+      {
+        "name": "pretrained/arch_cfg.yaml",
+        "size": 2203
+      },
+      {
+        "name": "__MACOSX/pretrained/._arch_cfg.yaml",
+        "size": 179
+      },
+      {
+        "name": "pretrained/data_cfg.yaml",
+        "size": 5546
+      },
+      {
+        "name": "__MACOSX/pretrained/._data_cfg.yaml",
+        "size": 179
+      },
+      {
+        "name": "pretrained/SalsaNext",
+        "size": 107571857
+      },
+      {
+        "name": "__MACOSX/pretrained/._SalsaNext",
+        "size": 179
+      }
+    ],
+    "redistributed": false
+  },
+  "export_reproduction": {
+    "onnx_sha256": "8d61577f0d9582adfa28baea4246f915c29d4c5d5e3b1d27adac83ffef4815f5",
+    "source_weight_sha256": "1757b8917e81b39058feb78dd17d690d74a878cab272a2c7b47bd8e5869ee811",
+    "archive_sha256": "cfbbb5403f9438ccc1ff0fac6b64c3f5f21a1881e76e4172a45a0e077624e0c5",
+    "source_url": "https://drive.google.com/file/d/1utfzooTDAlV5M6XGvCE0-L-vbdLe_2rD/view",
+    "architecture_revision": "7548c124b48f0259cdc40e98dfc3aeeadca6070c",
+    "input_shape": [
+      1,
+      5,
+      64,
+      2048
+    ],
+    "output_shape": [
+      1,
+      20,
+      64,
+      2048
+    ],
+    "exporter": "torch 2.11.0+cu128",
+    "weights_only_load": true,
+    "redistributed": false
+  },
+  "runtime_freeze": {
+    "source_commit": "cc255043c43a706036dbfdece36eb748e265f932",
+    "executable_sha256": "77bd27189eff065a4c0cfe5c5dc2443ed5763f1ac3458f3ed4b78fc24d851042",
+    "onnx_sha256": "8d61577f0d9582adfa28baea4246f915c29d4c5d5e3b1d27adac83ffef4815f5",
+    "weights_sha256": "effced8d6df7c61dd5a6938daceb6e03a1bf5c318ee664e42236e9decae12438",
+    "source_sha256": "bf272996d5b6d25cc5589e1089137cb20a98b63bd4823a7fea5631b359f6d68c",
+    "reference_inputs": []
+  },
+  "native_report": {
+    "backend": "wgpu",
+    "candidate_sha256": "8c19695437d17f067a3784f85c8389fe9389b43b524f4bedd451cd7516ca00b1",
+    "class_names": [
+      "unlabeled",
+      "car",
+      "bicycle",
+      "motorcycle",
+      "truck",
+      "other-vehicle",
+      "person",
+      "bicyclist",
+      "motorcyclist",
+      "road",
+      "parking",
+      "sidewalk",
+      "other-ground",
+      "building",
+      "fence",
+      "vegetation",
+      "trunk",
+      "terrain",
+      "pole",
+      "traffic-sign"
+    ],
+    "device_selection": "discrete_gpu_0",
+    "experimental": true,
+    "inference_millis_including_model_load_and_first_kernel_setup": 2694.2873999999997,
+    "input_sha256": "bf272996d5b6d25cc5589e1089137cb20a98b63bd4823a7fea5631b359f6d68c",
+    "limitations": [
+      "Single-scan KITTI/HDL-64 profile only; no fused-map or cross-sensor validation",
+      "Class prediction does not establish motion; parked and moving cars share the car class",
+      "Only nearest projected returns can be removed; all unclassified returns retained",
+      "No k-NN label propagation; no geometry-based enlargement or source overwrite",
+      "No whole-dataset accuracy or performance claim from this experiment"
+    ],
+    "mask_bytes": 124668,
+    "model": "SalsaNext SemanticKITTI20",
+    "onnx_sha256": "8d61577f0d9582adfa28baea4246f915c29d4c5d5e3b1d27adac83ffef4815f5",
+    "projection": {
+      "invalid": 0,
+      "occluded": 24855,
+      "outside_range": 0,
+      "outside_view": 300,
+      "points": 124668,
+      "projected": 99513
+    },
+    "retained_sha256": "c558410fe095b766d643766440ed761cef85148ae2b33fa5a2e6a42d62db3d1f",
+    "selection": {
+      "class_counts": [
+        0,
+        3606,
+        0,
+        0,
+        8,
+        0,
+        9,
+        4,
+        69,
+        29796,
+        3172,
+        23905,
+        0,
+        13821,
+        1012,
+        19725,
+        1197,
+        2414,
+        650,
+        125
+      ],
+      "removed": 3450,
+      "retained": 121218,
+      "target_classes": [
+        "car"
+      ],
+      "threshold": 0.8999999761581421,
+      "unclassified_retained": 25155
+    },
+    "sensor_profile": {
+      "fov_down_deg": -25,
+      "fov_up_deg": 3,
+      "height": 64,
+      "max_range_m": 100,
+      "remission": "unchanged normalized0..1",
+      "width": 2048
+    },
+    "source_modified": false,
+    "source_weight_sha256": "1757b8917e81b39058feb78dd17d690d74a878cab272a2c7b47bd8e5869ee811",
+    "weights_sha256": "effced8d6df7c61dd5a6938daceb6e03a1bf5c318ee664e42236e9decae12438"
+  },
+  "numeric_verification": {
+    "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+    "cpu_runtime_version": "1.22.0",
+    "preprocessing_byte_exact": true,
+    "probability_max_absolute_difference": 1.8715858459472656e-05,
+    "probability_mean_absolute_difference": 1.994633258561862e-08,
+    "all_pixel_argmax_agreement": 1.0,
+    "candidate_mask_byte_exact": true,
+    "retained_and_candidate_source_records_byte_exact": true,
+    "source_points": 124668,
+    "candidate_points": 3450,
+    "unclassified_retained": 25155,
+    "source_unchanged": true
+  },
+  "negative_cli_checks": {
+    "cases": [
+      {
+        "case": "sensor_required",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "declare --sensor-frame"
+      },
+      {
+        "case": "threshold",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "invalid threshold"
+      },
+      {
+        "case": "unlabeled",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "unlabeled cannot be removed"
+      },
+      {
+        "case": "output_existing",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "output must be a new directory"
+      },
+      {
+        "case": "malformed",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "expected little-endian"
+      },
+      {
+        "case": "point_budget",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "single-scan point budget"
+      },
+      {
+        "case": "intensity_scale",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "no automatic intensity rescaling"
+      },
+      {
+        "case": "weights_digest",
+        "rejected_before_gpu_or_publication": true,
+        "output_created": false,
+        "reason": "weights differ"
+      }
+    ],
+    "source_unchanged": true,
+    "existing_files_unchanged": true,
+    "executable_sha256": "77bd27189eff065a4c0cfe5c5dc2443ed5763f1ac3458f3ed4b78fc24d851042"
+  },
+  "local_checks": {
+    "rust_unit_tests": 4,
+    "cpu_clippy": "passed",
+    "gpu_clippy_all_targets": "passed",
+    "gpu_model_import_and_build": "passed",
+    "pinned_exporter_reproduces_onnx_sha256": true,
+    "physical_discrete_gpu_run": "passed",
+    "cpu_reference": "ONNX Runtime 1.22.0"
+  },
+  "preserved_readme_media_sha256": {
+    "docs/images/web/loop.gif": "be4abffa3490e3dd584c8ec219a3a1dc8f4abba94ec97781ba2db0d737292a5c",
+    "docs/images/web/odometry.gif": "d35eb1ba0da30e716a803751d21edb462d6ca7d766e8ab79ab557003996649fb",
+    "docs/images/web/posegraph.jpg": "89b5ee88096193cae2f5d03ecf8a386b85e29c779c5fc3a39a9f0df21a0d7025",
+    "docs/images/web/vector-map-supported-intersection.gif": "6e19effb3be8bf3607422f5c0c329eb941ce86c3763863c326c240579b4042f5",
+    "docs/images/web/vector-map-hard-intersection.gif": "83dfcf852c6e327416092da03a85702bf1fbcc8f7ad79aad8012881493aa808b",
+    "docs/images/web/vector-map.gif": "137d787f27b1cc784bca08dc5f357b74cdb6fe356da22ce3f02f5b8d7a298a3f",
+    "docs/images/web/vector-map-intersection.gif": "0f8036e24680fd456548c7e8a3e52ec56073a87f36c31b2286e1ddf2e874daff",
+    "docs/images/web/dynamic.gif": "2288cbaf0cdd6364a532529dff26ef48e27d5b8c51e364b10634f02ea0d315a3",
+    "docs/images/web/bags.jpg": "29f93c244dddb17ff3356b80f44bed02bcf6cd085937936fcf0e8cc130696060",
+    "docs/images/web/seasons.gif": "23ad99bec55420ae7b9cfe974074044610a5f9ae29ed8c7e59d64d4e23765f38",
+    "docs/images/web/c2c.jpg": "2283d3c71a24bc50e16d4f675638c6a680f6cbf4c9c52332b926130922428bd9",
+    "docs/images/web/m3c2.jpg": "7c7112704bd3fe8513427bd1ea15c1fdd2ec62ca46e738c7ee27f4f7771417a8",
+    "docs/images/web/volume.jpg": "c4a5b707fb362ae41c7f19db0a9f9804f2ef6653349408ab9876cfe920e6d348",
+    "docs/images/web/ground.jpg": "62ee0c964933fadd902a8a4de5f65b8fb50c9742d336545f3481c79320cc0afd",
+    "docs/images/web/profile.jpg": "00111b47ded48573559ca8f04056969a4829527eabb61570e1b8dad1c7bd266e",
+    "docs/images/web/shapes.jpg": "b0ac2d23f752159f6e0424dcb1233e34fc99c8e24d37ec71699eba9e97a6946b"
+  },
+  "output_sha256": {
+    "candidate-mask.u8": "c02ace5bcc6b5a1e8afa3eedbd0adbf45a6aae291c047cf79a124e09229f9f58",
+    "candidates.bin": "8c19695437d17f067a3784f85c8389fe9389b43b524f4bedd451cd7516ca00b1",
+    "input.f32": "a52b8da12b9a08b9dfedce5582a8b5faeed03ff8f73d3c4a610036090e979075",
+    "probabilities.f32": "df94d14a3ef30680dbe16a5214efb525cabbc412b4f708247bb4d6299533306b",
+    "report.json": "e5febeab2efe826ca896a7ba4744d6a3d9ca0e4a14818518de61cc64d6ac32c3",
+    "retained.bin": "c558410fe095b766d643766440ed761cef85148ae2b33fa5a2e6a42d62db3d1f"
+  },
+  "limitations": [
+    "One public upstream example, no held-out semantic evaluation",
+    "Only sensor-frame KITTI/HDL-64 scan profile; fused-map/cross-sensor/browser use unimplemented",
+    "Only the nearest projected return can be removed; 25155 unclassified points retained",
+    "The car class does not distinguish parked from moving cars; no motion estimate",
+    "Softmax threshold is not a calibrated detection-precision guarantee",
+    "No k-NN spreading or geometry enlargement; no whole-object removal claim",
+    "Timing includes model load and process-local kernel setup; driver caches not reset and no speedup claim",
+    "Model weights, raw scan and generated binary point sets are local and not redistributed"
+  ],
+  "upstream_source": {
+    "repository": "https://github.com/TiagoCortinhal/SalsaNext",
+    "revision": "7548c124b48f0259cdc40e98dfc3aeeadca6070c",
+    "files": {
+      "train/tasks/semantic/modules/SalsaNext.py": {
+        "sha256": "7af43381eafa11f3124a8403cdba9880bf4026545518b5615a58328a0475b378",
+        "bytes": 6863
+      },
+      "salsanext.yml": {
+        "sha256": "1676b1a5efb0e0603dd12f4c5b08b47d35227cab0af05e19197f8609a97971d4",
+        "bytes": 2205
+      },
+      "train/tasks/semantic/config/labels/semantic-kitti.yaml": {
+        "sha256": "2d252ffd0c5397c6993e559817c199f5b0e03b62795a755d391499942c21b9f4",
+        "bytes": 5546
+      },
+      "LICENSE": {
+        "sha256": "fe22e3c35d3d1b2012eaf14c2a75bb3c9b1a598f0292d3f026ac230f4a0a16a4",
+        "bytes": 1379
+      }
+    }
+  },
+  "checkpoint_profile_checked": {
+    "sensor": {
+      "name": "HDL64",
+      "type": "spherical",
+      "fov_up": 3,
+      "fov_down": -25,
+      "img_prop": {
+        "width": 2048,
+        "height": 64
+      },
+      "img_means": [
+        12.12,
+        10.88,
+        0.23,
+        -1.04,
+        0.21
+      ],
+      "img_stds": [
+        12.32,
+        11.47,
+        6.91,
+        0.86,
+        0.16
+      ]
+    },
+    "data_cfg_sha256": "2d252ffd0c5397c6993e559817c199f5b0e03b62795a755d391499942c21b9f4",
+    "car_and_moving_car_both_learning_id": 1
+  }
+}

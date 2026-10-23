@@ -73,3 +73,13 @@ minimum support 5, there are 20,785 exceeding points, 40 components and 14 eligi
 regions; 53 points belong to below-minimum components. The largest region links
 20,421 points across much of the map. These results are a data-handling/review
 check, not evidence of 14 registration failures or an independent survey.
+
+![Fine-cell review of the same measured survey partition, with surrounding context](images/web/distance-region-cells.png)
+
+The [cell inspection receipt](../benchmarks/map-coverage/distance-region-cells.json)
+records the same largest component inspected with a 1-unit XY cell: 20,421
+exceeding points in 10,237 occupied cells. The top 50 cells contain 63 points;
+20,358 points remain explicitly unlisted. The highest-ranked cell is a single
+point with distance 16.375; its focused view includes nearby context. This shows
+why maximum-distance ranking requires source inspection and is not a defect
+classifier. The earlier region receipt remains bound to its original commit.

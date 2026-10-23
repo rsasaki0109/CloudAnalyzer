@@ -213,6 +213,21 @@
         <p class="hint small">XY projection combines heights. Enclosed empty cells are potential gaps, not confirmed missing survey data: buildings, occlusion and unmeasured areas can also be empty. This does not measure surface roughness or registration accuracy.</p>
         <label>Reference / another pass <select id="coverage-reference"></select></label>
         <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
+        <details class="options">
+          <summary>Locate distance discrepancies</summary>
+          <div class="range">
+            <label>Distance above (cloud units) <input id="regions-threshold" type="number" min="0" step="any" value="0.3" /></label>
+            <label>Grouping XY cell <input id="regions-cell" type="number" min="0" step="any" value="5" /></label>
+            <label>Min. exceeding points/region <input id="regions-min" type="number" min="1" max="1000000" step="1" value="5" /></label>
+          </div>
+          <button id="regions-run" disabled>Compute &amp; locate regions</button>
+          <div id="regions-result" hidden>
+            <p id="regions-summary" class="small" role="status"></p>
+            <ol id="regions-list" class="loop-list"></ol>
+            <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
+          </div>
+          <p class="hint small">Source → reference unsigned nearest distances only. Changes, occlusion and missing reference coverage can also produce large distances. Groups are XY inspection candidates, not confirmed registration defects. Threshold/cell edits reuse distances only while both loaded clouds remain unchanged. Cancellation discards diagnostics; an active C2C call may finish first.</p>
+        </details>
         <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>
       </section>
 
@@ -1249,5 +1264,6 @@
 
     <script type="module" src="/src/main.ts"></script>
     <script type="module" src="/src/app/map-coverage.ts"></script>
+    <script type="module" src="/src/app/distance-regions.ts"></script>
   </body>
 </html>

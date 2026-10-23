@@ -156,6 +156,8 @@ pub struct VolumeOutput {
     pub matched_cells: usize,
     #[wasm_bindgen(readonly, js_name = totalCells)]
     pub total_cells: usize,
+    #[wasm_bindgen(readonly, js_name = outsideRegionCells)]
+    pub outside_region_cells: usize,
     #[wasm_bindgen(readonly)]
     pub cell: f64,
     cells: Option<Cloud>,
@@ -184,6 +186,7 @@ pub fn compute_volume(
     cell: f64,
     height: &str,
     fill_empty: bool,
+    region: Option<Vec<f64>>,
 ) -> Result<VolumeOutput, JsError> {
     use ca_core::volume::{CellHeight, VolumeParams};
     let height = match height {
@@ -197,7 +200,13 @@ pub fn compute_volume(
         height,
         fill_empty,
     };
-    let r = ca_core::volume::volume(before.surface(), after.surface(), params)
+    let region = region
+        .map(|b| {
+            <[f64; 4]>::try_from(b)
+                .map_err(|_| JsError::new("volume region needs four world XY bounds"))
+        })
+        .transpose()?;
+    let r = ca_core::volume::volume_in_region(before.surface(), after.surface(), params, region)
         .ok_or_else(|| JsError::new("need a positive cell size and at least one cloud or mesh"))?;
     let mut positions = Vec::with_capacity(r.matched_cells);
     let mut difference = Vec::with_capacity(r.matched_cells);
@@ -238,6 +247,7 @@ pub fn compute_volume(
         removed_area: r.removed_area,
         matched_cells: r.matched_cells,
         total_cells: r.total_cells,
+        outside_region_cells: r.grid.nx * r.grid.ny - r.total_cells,
         cell: r.grid.cell,
         cells,
     })

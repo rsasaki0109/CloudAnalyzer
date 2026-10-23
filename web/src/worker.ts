@@ -2185,9 +2185,10 @@ async function handle(
       const label = (side: VolumeSide) => ("z" in side ? `z${side.z}` : items.get(side.id)!.name.replace(/\.[^.]+$/, ""));
       const before = surface(req.before);
       const after = surface(req.after);
-      const out = computeVolume(before, after, req.cell, req.height, req.fillEmpty);
-      before.free();
-      after.free();
+      let out: ReturnType<typeof computeVolume>;
+      try {
+        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined);
+      } finally { before.free(); after.free(); }
       const value: VolumeOutput = {
         added: out.added,
         removed: out.removed,
@@ -2195,6 +2196,7 @@ async function handle(
         removedArea: out.removedArea,
         matchedCells: out.matchedCells,
         totalCells: out.totalCells,
+        outsideRegionCells: out.outsideRegionCells,
         cell: out.cell,
         cells: null,
         difference: null,

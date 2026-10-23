@@ -215,7 +215,7 @@
         <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
         <button id="coverage-volume" disabled>Prepare cut/fill volume comparison</button>
         <button id="coverage-mesh" disabled>Prepare terrain mesh</button>
-        <p class="hint small">Volume uses reference as Before and source as After, across the full loaded surfaces. Crop the inputs to limit volume to a site; the expected-overlap rectangle below applies to distance review.</p>
+        <p class="hint small">Volume uses reference as Before and source as After. In the volume panel, use a review area to select grid-cell centers; copy the distance-review rectangle when both analyses should use the same bounds.</p>
         <details class="options">
           <summary>Locate distance discrepancies</summary>
           <div class="range">
@@ -302,7 +302,17 @@
         <label id="volume-before-z-row" hidden>Before height <input id="volume-before-z" type="number" step="any" value="0" /></label>
         <label>After <select id="volume-after"></select></label>
         <label id="volume-after-z-row" hidden>After height <input id="volume-after-z" type="number" step="any" value="0" /></label>
-        <details class="options">
+        <details id="volume-area-options" class="options">
+          <summary>Review area</summary>
+          <label class="check"><input id="volume-area-enabled" type="checkbox" /> Limit volume to a world XY rectangle</label>
+          <div id="volume-area-bounds" hidden>
+            <div class="range"><label>Min X <input id="volume-area-min-x" type="number" step="any" /></label><label>Min Y <input id="volume-area-min-y" type="number" step="any" /></label></div>
+            <div class="range"><label>Max X <input id="volume-area-max-x" type="number" step="any" /></label><label>Max Y <input id="volume-area-max-y" type="number" step="any" /></label></div>
+          </div>
+          <div class="button-row"><button id="volume-use-distance-area">Use distance review area</button><button id="volume-send-distance-area">Use this area for distance review</button></div>
+          <p class="hint small">Includes cells whose centers are inside the rectangle, edges included. Each included cell contributes its full square area; boundary cells are not clipped. Grid and interpolation still use full loaded surfaces. Missing heights are excluded, not zero change. Copying bounds does not run either analysis.</p>
+        </details>
+        <details id="volume-options" class="options">
           <summary>Options</summary>
           <div class="range">
             <label title="Grid cell edge length, in the clouds' units">Cell size <input id="volume-cell" type="number" min="0" step="any" /></label>

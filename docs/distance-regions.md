@@ -30,6 +30,11 @@ rectangle** and enter all four bounds in the clouds' original coordinates.
 Only finite query points inside that closed rectangle contribute to measured,
 unmeasured, exceeding and region counts. Both directions use the same physical
 rectangle, with each cloud's own coordinate shift. All heights are included.
+The volume panel's Review area can copy this rectangle explicitly in either
+direction without running either analysis. Volume selects full grid cells by
+their centers; distance review selects query points. The settings remain
+independent after copying. See [surface volume](surface-volume.md).
+
 The rectangle is supplied by the user; it does not establish that both surveys
 actually covered the area.
 

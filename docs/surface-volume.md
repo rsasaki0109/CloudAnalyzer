@@ -33,15 +33,33 @@ vegetation, roofs and multiple height layers can change the representative
 height. A different cell size or height mode can change the estimated volume.
 Meshes and a constant reference height remain available in the standalone panel.
 
-The volume uses the **full selected loaded surfaces**. To constrain it to a site,
-crop the inputs first. The expected-overlap rectangle in distance review does
-not clip volume cells. Loading previews/thinning can also affect results; loaded
-and file point counts, sampling and preview scope are recorded in JSON. The UI
-rejects grids above 1,000,000 cells before asking the engine to allocate them.
+Under **Review area**, enable **Limit volume to a world XY rectangle** and enter
+original-coordinate min/max X/Y. Only grid cells whose centers lie inside the
+closed rectangle contribute to totals, compared/uncompared counts and the
+derived difference cloud. Outside cells are counted separately. Missing heights
+inside remain uncompared, not zero change. An area containing no grid-cell
+centers has zero selected cells and no new difference cloud.
+Counts cover the original union grid only. Extending the rectangle beyond the
+loaded surfaces does not create extra missing cells outside that grid; its
+compared-cell ratio is not a surveyed-coverage percentage of the whole rectangle.
+
+**Use distance review area** copies the distance rectangle into volume;
+**Use this area for distance review** copies it back. Copying does not run either
+analysis. Settings remain independent afterward; changing one does not silently
+change the other. Each report preserves its own run's rectangle.
+
+The grid origin, cell heights and optional interpolation still use the **full
+selected loaded surfaces**. Included cells contribute their full square areas;
+boundary squares are not clipped and may use points outside the rectangle.
+Interpolation may use neighbors outside it. This is cell-center selection, not
+exact polygon/footprint integration. Choose a suitable cell size and inspect
+boundaries. Area selection does not reduce the full-grid allocation budget;
+crop inputs first to reduce processing. Preview/thinning scope and loaded/file
+counts remain in JSON. Grids above 1,000,000 cells are rejected before allocation.
 
 **Save volume summary JSON** records the exact runtime input identities,
 Before/After roles, settings, unit, added/removed/net volume, areas and compared/
-uncompared counts. **Save compared cells CSV** exports every compared grid-cell
+uncompared counts, selected bounds and outside-cell count. **Save compared cells CSV** exports every compared grid-cell
 center at its After height and its signed height difference, up to 100,000 cells.
 Larger CSV requests fail without a partial download; increase cell size or crop.
 CSV uses the displayed f32 cell records shifted to original coordinates; totals

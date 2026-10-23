@@ -3,6 +3,7 @@
 import { computeVolume, removeCloud, workerBusy } from "../api";
 import type { VolumeOutput } from "../protocol";
 import { validateVolumeGrid, volumeCellsCsv } from "../surface-volume";
+import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regions";
 import { projectChanged } from "../project-change";
 import { finiteStats, showSigned } from "./distance";
 import { $, download, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
@@ -19,7 +20,20 @@ const volumeRun = $<HTMLButtonElement>("volume-run");
 const coordinateUnit = $<HTMLSelectElement>("volume-unit");
 const CONSTANT = "constant";
 type Input = { side: { id: number } | { z: number }; name: string; entry?: Entry; cloud?: Entry["cloud"] };
-type Settings = { cell: number; height: "mean" | "min" | "max"; fillEmpty: boolean; coordinateUnit: string };
+type Settings = { cell: number; height: "mean" | "min" | "max"; fillEmpty: boolean; coordinateUnit: string; region?: ExpectedOverlap };
+const areaEnabled = $<HTMLInputElement>("volume-area-enabled");
+const areaNames = ["min-x", "min-y", "max-x", "max-y"];
+const areaInputs = areaNames.map(id => $<HTMLInputElement>(`volume-area-${id}`));
+function readRegion(): ExpectedOverlap | undefined {
+  if (!areaEnabled.checked) return undefined;
+  if (areaInputs.some(input => !input.value.trim())) throw new Error("Enter all four volume review bounds in world coordinates");
+  return validateExpectedOverlap(areaInputs.map(input => Number(input.value)) as unknown as ExpectedOverlap)!;
+}
+function scope(settings: Settings): string {
+  return settings.region
+    ? `World XY rectangle [${settings.region.join(", ")}], cell centers and edges included; whole cell areas, no boundary clipping. Grid and interpolation use full loaded surfaces.`
+    : "Full loaded surfaces on the union XY grid; distance-review bounds are independent unless copied into the volume review area.";
+}
 let last: { out: VolumeOutput; before: string; after: string; inputs: Input[]; settings: Settings; output: Entry | null } | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
 function validInput(input: Input): boolean {
@@ -48,14 +62,15 @@ addReportSection("volume", () =>
           fill_area: { label: "Fill area", value: last.out.addedArea, unit: `${last.settings.coordinateUnit}²` },
           cut_area: { label: "Cut area", value: last.out.removedArea, unit: `${last.settings.coordinateUnit}²` },
           uncompared: { label: "Grid cells without both surface heights", value: last.out.totalCells - last.out.matchedCells },
-          coverage: {
+          outside_region: { label: "Cells outside review area", value: last.out.outsideRegionCells },
+          ...(last.out.totalCells ? { coverage: {
             label: "Cells compared",
-            value: last.out.totalCells ? (100 * last.out.matchedCells) / last.out.totalCells : 0,
+            value: (100 * last.out.matchedCells) / last.out.totalCells,
             unit: "%",
-          },
+          } } : {}),
         },
         notes: [`Cell size ${last.out.cell}; height ${last.settings.height}; interpolation ${last.settings.fillEmpty ? "enabled" : "disabled"}; coordinate unit ${last.settings.coordinateUnit} (no conversion).`,
-          "Full loaded surfaces on the union XY grid; expected overlap bounds in distance review do not clip this volume. Only cells with both heights contribute; undefined cells are not zero change.",
+          `${scope(last.settings)} Only cells with both heights contribute; undefined cells are not zero change. ${last.out.outsideRegionCells} grid cells outside the volume review area. ${last.out.totalCells ? "" : "No grid-cell centers in this review area; coverage is unavailable."} ${last.out.matchedCells ? "" : "No compared cells: zero totals do not establish zero surface change."}`,
           "2.5D surface difference, not closed-solid volume. Use aligned, comparable ground surfaces for earthwork."],
       }
     : null,
@@ -94,7 +109,10 @@ function updateForm(): void {
   const both = volumeBefore.value === CONSTANT && volumeAfter.value === CONSTANT;
   volumeRun.disabled = running || entries.size === 0 || both || volumeBefore.value === volumeAfter.value;
   for (const input of [volumeBefore, volumeAfter, volumeCell, coordinateUnit,
-    $("volume-height"), $("volume-fill"), $("volume-before-z"), $("volume-after-z")] as (HTMLInputElement | HTMLSelectElement)[]) input.disabled = running;
+    $("volume-height"), $("volume-fill"), $("volume-before-z"), $("volume-after-z"), areaEnabled,
+    ...areaInputs, $("volume-use-distance-area"), $("volume-send-distance-area")] as (HTMLInputElement | HTMLSelectElement | HTMLButtonElement)[]) input.disabled = running;
+  $("volume-area-bounds").hidden = !areaEnabled.checked;
+  for (const input of areaInputs) input.disabled = running || !areaEnabled.checked;
   // Default cell: about 1/200 of the larger horizontal extent.
   const source = [volumeAfter.value, volumeBefore.value]
     .map((v) => entries.get(Number(v)))
@@ -114,6 +132,33 @@ volumeBefore.onchange = volumeAfter.onchange = () => {
 for (const id of ["volume-cell", "volume-before-z", "volume-after-z", "volume-height", "volume-fill", "volume-unit"]) {
   $(id).addEventListener(id === "volume-height" || id === "volume-fill" || id === "volume-unit" ? "change" : "input", clearResult);
 }
+areaEnabled.onchange = () => { clearResult(); updateForm(); };
+for (const input of areaInputs) input.oninput = clearResult;
+$("volume-use-distance-area").onclick = () => {
+  if (running || taskActive()) return;
+  try {
+    if (!$<HTMLInputElement>("regions-overlap-enabled").checked) throw new Error("Enable and define a distance review rectangle first");
+    const values = areaNames.map(id => $<HTMLInputElement>(`regions-overlap-${id}`).value);
+    if (values.some(value => !value.trim())) throw new Error("Enter all four distance review bounds");
+    validateExpectedOverlap(values.map(Number) as unknown as ExpectedOverlap);
+    areaInputs.forEach((input, i) => { input.value = values[i]; });
+    areaEnabled.checked = true; clearResult(); updateForm();
+    setStatus("Distance review bounds copied to volume. Review cell size and compute volume; cells are selected by center with full square areas.");
+  } catch (error) { setStatus(errorText(error), true); }
+};
+$("volume-send-distance-area").onclick = () => {
+  if (running || taskActive()) return;
+  try {
+    const region = readRegion();
+    if (!region) throw new Error("Enable and define a volume review rectangle first");
+    const enabled = $<HTMLInputElement>("regions-overlap-enabled"); enabled.checked = true;
+    enabled.dispatchEvent(new Event("change"));
+    areaNames.forEach((id, i) => {
+      const input = $<HTMLInputElement>(`regions-overlap-${id}`); input.value = String(region[i]); input.dispatchEvent(new Event("input"));
+    });
+    setStatus("Volume review bounds copied to distance review. Recompute distance regions to apply them; reference searches still use the full loaded reference.");
+  } catch (error) { setStatus(errorText(error), true); }
+};
 function snapshot(select: HTMLSelectElement, z: HTMLInputElement): Input {
   if (select.value === CONSTANT) {
     if (!z.value.trim() || !Number.isFinite(Number(z.value))) throw new Error("Enter a finite constant surface height");
@@ -134,6 +179,8 @@ volumeRun.onclick = async () => {
     fillEmpty: $<HTMLInputElement>("volume-fill").checked, coordinateUnit: coordinateUnit.value };
   let inputs: Input[];
   try {
+    const region = readRegion();
+    if (region) settings.region = region;
     inputs = [snapshot(volumeBefore, $<HTMLInputElement>("volume-before-z")), snapshot(volumeAfter, $<HTMLInputElement>("volume-after-z"))];
     if (volumeBefore.value === volumeAfter.value) throw new Error("Choose different before and after surfaces");
     validateVolumeGrid(inputs.filter(input => input.cloud).map(input => input.cloud!.bounds), settings.cell);
@@ -149,6 +196,7 @@ volumeRun.onclick = async () => {
     out = await computeVolume({
       before: inputs[0].side, after: inputs[1].side,
       cell: settings.cell, height: settings.height, fillEmpty: settings.fillEmpty,
+      region: settings.region,
     });
     signal.throwIfAborted();
     if (token !== generation || !inputs.every(validInput)) throw new Error("Volume inputs/settings changed; compute it again");
@@ -172,14 +220,15 @@ volumeRun.onclick = async () => {
       ["Net", unit(out.added - out.removed, 3)],
       ["Fill area", unit(out.addedArea, 2)],
       ["Cut area", unit(out.removedArea, 2)],
-      ["Cells compared", `${out.matchedCells.toLocaleString()} of ${out.totalCells.toLocaleString()} (${coverage.toFixed(1)} %)`],
+      ["Cells compared", `${out.matchedCells.toLocaleString()} of ${out.totalCells.toLocaleString()} (${out.totalCells ? coverage.toFixed(1) + " %" : "unavailable"})`],
       ["Uncompared cells", (out.totalCells - out.matchedCells).toLocaleString()],
+      ["Cells outside review area", out.outsideRegionCells.toLocaleString()],
       ["Cell size", fmt(out.cell)],
     ]);
     $("volume-exports").hidden = false;
     $<HTMLButtonElement>("volume-isolate").disabled = !output;
     $<HTMLButtonElement>("volume-mesh").disabled = !output;
-    $("volume-scope").textContent = `${inputs[0].name} → ${inputs[1].name}; ${settings.height} height per cell; interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. Full loaded surfaces; distance-review overlap bounds do not clip this volume. Blue = cut, red = fill; undefined cells are not zero change.`;
+    $("volume-scope").textContent = `${inputs[0].name} → ${inputs[1].name}; ${settings.height} height per cell; interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. ${scope(settings)} Blue = cut, red = fill; undefined cells are not zero change. ${out.matchedCells ? "" : "No compared cells: zero totals do not establish zero surface change."}`;
     distanceChanged.emit();
     setStatus(
       `Volume: fill ${unit(out.added, 3)}, cut ${unit(out.removed, 3)}, net ${unit(out.added - out.removed, 3)} ` +
@@ -220,7 +269,8 @@ $("volume-json").onclick = () => {
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.surface_volume.v1", before: describe(last.inputs[0]), after: describe(last.inputs[1]),
     settings: last.settings, comparedCellCloud: last.output ? { id: last.output.cloud.id, name: last.output.cloud.name, points: last.output.cloud.count, geometry: "Compared cell centers at After height" } : null,
     method: "2.5D grid height difference: after minus before; no registration or coordinate-unit conversion",
-    scope: "Full loaded surfaces on their union XY grid; only cells with both heights contribute. Distance-review overlap bounds do not clip this volume. Empty cells are undefined unless interpolation is explicitly enabled. Not closed-solid volume.",
+    scope: `${scope(last.settings)} Only cells with both heights contribute. Empty cells are undefined unless interpolation is explicitly enabled. Not closed-solid volume.`,
+    reviewArea: last.settings.region ? { bounds: last.settings.region, selection: "Cell centers inside closed world XY rectangle; full square cell area, no fractional clipping", outsideCells: out.outsideRegionCells } : null,
     result: { added: out.added, removed: out.removed, net: out.added - out.removed, addedArea: out.addedArea, removedArea: out.removedArea,
       matchedCells: out.matchedCells, totalCells: out.totalCells, uncomparedCells: out.totalCells - out.matchedCells, cell: out.cell },
     cellExport: "Compared cell centers at after height; CSV XYZ and signed height differences come from the displayed f32 records. Totals use the existing f64 engine and may differ from a sum of rounded CSV values." }, null, 2)], { type: "application/json" }), "surface-volume.json");

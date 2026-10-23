@@ -19,6 +19,30 @@
       "archived": "benchmarks/source-history/f1a9a61988e0b55518728d2cc60f8f7cad4277b1cdf3513f6e329dbadb84a62c/viewer.ts",
       "originCommit": "b4cf39b73e4b134ae4d02da39c4476c9ee0d4929",
       "originGitBlob": "7c60fb688b6f56f06e5b3b727069d3cc87ee9c22"
+    },
+    "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4": {
+      "original": "rust/crates/ca-core/src/volume.rs",
+      "archived": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "c082dd25a60f356f0d927a6d3fb4c47f44126857"
+    },
+    "6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555": {
+      "original": "rust/crates/ca-wasm/src/lib.rs",
+      "archived": "benchmarks/source-history/6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555/lib.rs",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "1a441905b645c18d1342ab347110ca81e29d3bea"
+    },
+    "4532f4c665daa9b2d85be351820858a414fe3ea713eae6399908e66093951d04": {
+      "original": "web/src/protocol.ts",
+      "archived": "benchmarks/source-history/4532f4c665daa9b2d85be351820858a414fe3ea713eae6399908e66093951d04/protocol.ts",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "b6a8264fb24d67a608e18fe68de8f250608a7fea"
+    },
+    "00194e618c601e8bc86d28a1a3af55d4d3ec937a124b9e987598bbbf73c7b3e5": {
+      "original": "web/src/worker.ts",
+      "archived": "benchmarks/source-history/00194e618c601e8bc86d28a1a3af55d4d3ec937a124b9e987598bbbf73c7b3e5/worker.ts",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "38c72d935c0a6cae8d106c4bdc58ff99c7a256cf"
     }
   }
 }

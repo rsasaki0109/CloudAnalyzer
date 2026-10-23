@@ -146,3 +146,14 @@ distances are unknown in this check. The workflow first computes forward regions
 inspects a cell, then adds reverse comparison with two C2C calls in total.
 Source-file hashes remain unchanged. These ratios describe this partition pair,
 without measuring independent-survey completeness or registration accuracy.
+
+![Raw source/reference heights in a selected cell section](images/web/distance-section.png)
+
+The [section receipt](../benchmarks/map-coverage/distance-section.json) follows
+the reverse comparison into region 1/cell 1 using the default X band of length
+20 and width 2. It plots 315 points from `reference.ply` in orange and 295 from
+`compared.ply` in blue, with no invalid positions. One source outlier lies well
+below the nearby surface; the plot keeps that raw height rather than assigning
+a height match or diagnosing its cause. The whole workflow still uses two C2C
+calls. Input file hashes are unchanged. This is an inspection example from
+partitions of one survey, without measured defect-classification accuracy.

@@ -1,3 +1,4 @@
+import { preservedSourcePath } from './preserved-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -19,6 +20,7 @@ test('GPU box packet preserves disabled diagnostics, cold setup, memory and the 
   Object.assign(aliases, JSON.parse(readFileSync(resolve(root, "benchmarks/wasm-reference-preparation/manifest.json"), "utf8")).sourceAliases);
   const source = (n, h) => {
     if (normalizedHash(n) === h) return;
+    if (preservedSourcePath(n, h)) return;
     const a = aliases[h]; assert.equal(a?.original, n);
     assert.ok((((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-reference-preparation/executed-source/")) || a.archived.startsWith("benchmarks/wasm-gpu-packed-nodes/executed-source/")) || a.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/") || a.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !a.archived.includes('..'));
     assert.equal(normalizedHash(a.archived), h);

@@ -31,4 +31,5 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --locked --no-default-features --features completion --all-targets -- -D warnings
       - run: cargo test --locked --no-default-features --features completion
-      - run: python -m unittest discover -s . -p 'test_*.py' -v
+      - run: cargo build --locked --no-default-features --features completion --bin ca-lidar-complete
+      - run: CA_LIDAR_COMPLETE_BIN="$PWD/target/debug/ca-lidar-complete" python -m unittest discover -s . -p 'test_*.py' -v

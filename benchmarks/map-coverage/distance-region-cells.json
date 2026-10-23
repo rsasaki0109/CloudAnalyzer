@@ -1,0 +1,926 @@
+{
+  "schema": "cloudanalyzer.distance_cells_smoke.v1",
+  "implementation_commit": "2eb2853cc61ac060386e1c18f018df1177476e54",
+  "normalized_source_sha256": {
+    "web/src/distance-regions.ts": "494d53d439a54ff84b94f2d15a22e2b4c15b102ea209fe8926c8c0136c6b59fe",
+    "web/src/distance-regions-worker.ts": "c56bf2707801353ca826bb33f786e64ebb1df2d266c1335e5440dfa8e825692c",
+    "web/src/app/distance-regions.ts": "a8ca50b92c7c36943ea54de3a5c55e47ad8c99a628fb4c5b9662b96671c84aaf",
+    "web/index.html": "5107598bdc10eb61833c6cfc136f9fadce6cdef2c7c497b62817c652e01815da",
+    "web/tests/distance-regions.test.mjs": "5242a65ab060c5116264b7e0bd3e0925fa89b8e62ce9397d4b815d52024aaadd",
+    "web/e2e/distance-regions.spec.ts": "674add2abc6bf8fa7d9102aab25e9a6f894be1653719823da30da44feef210fc"
+  },
+  "build_assets_sha256": {
+    "c2c-worker-WJhdjU5B.js": "f143bfb8e616aad0a8017af2b7d4701c3b96b13cb5639ed2a3ce9c6c7b2f888f",
+    "ca_wasm_bg-CknP-APk.wasm": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+    "distance-regions-worker-BVi9BF1f.js": "ce9700546625db2452c11dea9c06b919f6c7bc443614753dcc3df30ec4b264e8",
+    "index-5fvfRmes.js": "9ac88e9bd15e40c0ce537f8db60a00e5ea46aa6f221bf94e6595ccad9fb454ab",
+    "index-DpTvHSKO.css": "a7178946033cc00692b6b33ebaa973fbe954eb5c613da2ee0d70273557b7233d",
+    "map-coverage-worker-BevUgqE9.js": "3b1c292cce6c3bdb8eb1f1b35db51d4feedd98851308007448827f2b3b4fc6d3",
+    "worker-CGqpRHSq.js": "68e26fbe4575d90e55b1dfb5b6d1140136f5c0daed921e2d69dd92cce2c8fc90"
+  },
+  "input": {
+    "original_survey": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "partition": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "source": {
+      "file": "compared.ply",
+      "points": 878920,
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "reference": {
+      "file": "reference.ply",
+      "points": 878921,
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "new_download_bytes": 0,
+    "independent_surveys_or_registration_truth": false
+  },
+  "browser_receipt": {
+    "source_sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc",
+    "reference_sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948",
+    "result": {
+      "schema": "cloudanalyzer.distance_cells.v1",
+      "source": {
+        "id": 1,
+        "name": "compared.ply",
+        "loadedPoints": 878920,
+        "filePoints": 878920,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "reference": {
+        "id": 2,
+        "name": "reference.ply",
+        "loadedPoints": 878921,
+        "filePoints": 878921,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "method": "unsigned CPU nearest-neighbor source-to-reference",
+      "scope": "Exceeding points in the selected connected component only; XY cells ranked by maximum distance then point count; top 50, no support filter; not confirmed defects",
+      "reusedDistances": true,
+      "parentRegion": {
+        "rank": 1,
+        "points": 20421,
+        "maxDistance": 16.37504005432129,
+        "meanDistance": 0.45049578727246103,
+        "bounds": [
+          3575.572998046875,
+          73441.6953125,
+          3.188999891281128,
+          3942.318359375,
+          73896.28125,
+          37.35900115966797
+        ]
+      },
+      "parentMinPoints": 5,
+      "regionRank": 1,
+      "regionPoints": 20421,
+      "threshold": 0.3,
+      "effectiveThreshold": 0.30000001192092896,
+      "parentCell": 5,
+      "cell": 1,
+      "gridOrigin": [
+        3567.662353515625,
+        73441.3125
+      ],
+      "occupiedCells": 10237,
+      "unlistedPoints": 20358,
+      "cells": [
+        {
+          "rank": 1,
+          "gridX": 242,
+          "gridY": 273,
+          "points": 1,
+          "maxDistance": 16.37504005432129,
+          "meanDistance": 16.37504005432129,
+          "bounds": [
+            3810.45947265625,
+            73714.578125,
+            3.188999891281128,
+            3810.45947265625,
+            73714.578125,
+            3.188999891281128
+          ]
+        },
+        {
+          "rank": 2,
+          "gridX": 310,
+          "gridY": 432,
+          "points": 1,
+          "maxDistance": 15.615503311157227,
+          "meanDistance": 15.615503311157227,
+          "bounds": [
+            3878.40380859375,
+            73873.625,
+            37.35900115966797,
+            3878.40380859375,
+            73873.625,
+            37.35900115966797
+          ]
+        },
+        {
+          "rank": 3,
+          "gridX": 319,
+          "gridY": 343,
+          "points": 4,
+          "maxDistance": 8.902597427368164,
+          "meanDistance": 2.4941601902246475,
+          "bounds": [
+            3887.2509765625,
+            73784.359375,
+            20.7549991607666,
+            3887.63916015625,
+            73784.5390625,
+            30.336000442504883
+          ]
+        },
+        {
+          "rank": 4,
+          "gridX": 71,
+          "gridY": 345,
+          "points": 1,
+          "maxDistance": 6.710275650024414,
+          "meanDistance": 6.710275650024414,
+          "bounds": [
+            3639.333251953125,
+            73786.8203125,
+            19.385000228881836,
+            3639.333251953125,
+            73786.8203125,
+            19.385000228881836
+          ]
+        },
+        {
+          "rank": 5,
+          "gridX": 232,
+          "gridY": 217,
+          "points": 1,
+          "maxDistance": 6.077305793762207,
+          "meanDistance": 6.077305793762207,
+          "bounds": [
+            3799.7734375,
+            73658.8359375,
+            20.408000946044922,
+            3799.7734375,
+            73658.8359375,
+            20.408000946044922
+          ]
+        },
+        {
+          "rank": 6,
+          "gridX": 255,
+          "gridY": 421,
+          "points": 1,
+          "maxDistance": 5.852832317352295,
+          "meanDistance": 5.852832317352295,
+          "bounds": [
+            3823.084228515625,
+            73863,
+            26.047000885009766,
+            3823.084228515625,
+            73863,
+            26.047000885009766
+          ]
+        },
+        {
+          "rank": 7,
+          "gridX": 10,
+          "gridY": 133,
+          "points": 1,
+          "maxDistance": 5.813915729522705,
+          "meanDistance": 5.813915729522705,
+          "bounds": [
+            3578.212890625,
+            73574.6875,
+            24.579999923706055,
+            3578.212890625,
+            73574.6875,
+            24.579999923706055
+          ]
+        },
+        {
+          "rank": 8,
+          "gridX": 299,
+          "gridY": 292,
+          "points": 1,
+          "maxDistance": 5.360795021057129,
+          "meanDistance": 5.360795021057129,
+          "bounds": [
+            3867.427001953125,
+            73733.421875,
+            10.829999923706055,
+            3867.427001953125,
+            73733.421875,
+            10.829999923706055
+          ]
+        },
+        {
+          "rank": 9,
+          "gridX": 53,
+          "gridY": 114,
+          "points": 1,
+          "maxDistance": 4.836315631866455,
+          "meanDistance": 4.836315631866455,
+          "bounds": [
+            3620.689453125,
+            73555.625,
+            18.597000122070312,
+            3620.689453125,
+            73555.625,
+            18.597000122070312
+          ]
+        },
+        {
+          "rank": 10,
+          "gridX": 236,
+          "gridY": 439,
+          "points": 1,
+          "maxDistance": 4.683795928955078,
+          "meanDistance": 4.683795928955078,
+          "bounds": [
+            3804.235107421875,
+            73880.3515625,
+            21.14900016784668,
+            3804.235107421875,
+            73880.3515625,
+            21.14900016784668
+          ]
+        },
+        {
+          "rank": 11,
+          "gridX": 9,
+          "gridY": 109,
+          "points": 1,
+          "maxDistance": 4.460806846618652,
+          "meanDistance": 4.460806846618652,
+          "bounds": [
+            3577.504150390625,
+            73550.90625,
+            21.291000366210938,
+            3577.504150390625,
+            73550.90625,
+            21.291000366210938
+          ]
+        },
+        {
+          "rank": 12,
+          "gridX": 42,
+          "gridY": 209,
+          "points": 1,
+          "maxDistance": 4.454900741577148,
+          "meanDistance": 4.454900741577148,
+          "bounds": [
+            3610.23876953125,
+            73650.6796875,
+            29.753999710083008,
+            3610.23876953125,
+            73650.6796875,
+            29.753999710083008
+          ]
+        },
+        {
+          "rank": 13,
+          "gridX": 50,
+          "gridY": 97,
+          "points": 1,
+          "maxDistance": 4.4240193367004395,
+          "meanDistance": 4.4240193367004395,
+          "bounds": [
+            3617.7314453125,
+            73538.859375,
+            28.516998291015625,
+            3617.7314453125,
+            73538.859375,
+            28.516998291015625
+          ]
+        },
+        {
+          "rank": 14,
+          "gridX": 126,
+          "gridY": 135,
+          "points": 1,
+          "maxDistance": 4.340859889984131,
+          "meanDistance": 4.340859889984131,
+          "bounds": [
+            3693.706787109375,
+            73576.828125,
+            26.91699981689453,
+            3693.706787109375,
+            73576.828125,
+            26.91699981689453
+          ]
+        },
+        {
+          "rank": 15,
+          "gridX": 49,
+          "gridY": 97,
+          "points": 1,
+          "maxDistance": 4.278218746185303,
+          "meanDistance": 4.278218746185303,
+          "bounds": [
+            3617.4912109375,
+            73538.9140625,
+            28.377498626708984,
+            3617.4912109375,
+            73538.9140625,
+            28.377498626708984
+          ]
+        },
+        {
+          "rank": 16,
+          "gridX": 85,
+          "gridY": 359,
+          "points": 2,
+          "maxDistance": 4.257256984710693,
+          "meanDistance": 4.2007832527160645,
+          "bounds": [
+            3653.018798828125,
+            73800.53125,
+            27.714000701904297,
+            3653.0810546875,
+            73800.671875,
+            27.718666076660156
+          ]
+        },
+        {
+          "rank": 17,
+          "gridX": 11,
+          "gridY": 133,
+          "points": 1,
+          "maxDistance": 4.146426200866699,
+          "meanDistance": 4.146426200866699,
+          "bounds": [
+            3578.716796875,
+            73574.5078125,
+            22.03350067138672,
+            3578.716796875,
+            73574.5078125,
+            22.03350067138672
+          ]
+        },
+        {
+          "rank": 18,
+          "gridX": 53,
+          "gridY": 7,
+          "points": 2,
+          "maxDistance": 4.05631160736084,
+          "meanDistance": 2.2004729211330414,
+          "bounds": [
+            3621.234375,
+            73448.3671875,
+            20.836000442504883,
+            3621.2373046875,
+            73448.9375,
+            25.400999069213867
+          ]
+        },
+        {
+          "rank": 19,
+          "gridX": 102,
+          "gridY": 177,
+          "points": 1,
+          "maxDistance": 3.974081039428711,
+          "meanDistance": 3.974081039428711,
+          "bounds": [
+            3669.787841796875,
+            73618.3125,
+            30.099000930786133,
+            3669.787841796875,
+            73618.3125,
+            30.099000930786133
+          ]
+        },
+        {
+          "rank": 20,
+          "gridX": 106,
+          "gridY": 314,
+          "points": 1,
+          "maxDistance": 3.7635765075683594,
+          "meanDistance": 3.7635765075683594,
+          "bounds": [
+            3674.650146484375,
+            73755.5625,
+            28.78700065612793,
+            3674.650146484375,
+            73755.5625,
+            28.78700065612793
+          ]
+        },
+        {
+          "rank": 21,
+          "gridX": 178,
+          "gridY": 196,
+          "points": 1,
+          "maxDistance": 3.7631354331970215,
+          "meanDistance": 3.7631354331970215,
+          "bounds": [
+            3746.27099609375,
+            73637.4296875,
+            21.131999969482422,
+            3746.27099609375,
+            73637.4296875,
+            21.131999969482422
+          ]
+        },
+        {
+          "rank": 22,
+          "gridX": 217,
+          "gridY": 385,
+          "points": 2,
+          "maxDistance": 3.73433780670166,
+          "meanDistance": 3.725421667098999,
+          "bounds": [
+            3785.27197265625,
+            73826.7734375,
+            28.326499938964844,
+            3785.38525390625,
+            73827.09375,
+            28.365999221801758
+          ]
+        },
+        {
+          "rank": 23,
+          "gridX": 267,
+          "gridY": 454,
+          "points": 1,
+          "maxDistance": 3.6908304691314697,
+          "meanDistance": 3.6908304691314697,
+          "bounds": [
+            3835.097412109375,
+            73896.28125,
+            19.632999420166016,
+            3835.097412109375,
+            73896.28125,
+            19.632999420166016
+          ]
+        },
+        {
+          "rank": 24,
+          "gridX": 95,
+          "gridY": 250,
+          "points": 1,
+          "maxDistance": 3.6581530570983887,
+          "meanDistance": 3.6581530570983887,
+          "bounds": [
+            3662.706787109375,
+            73692.0703125,
+            20.75,
+            3662.706787109375,
+            73692.0703125,
+            20.75
+          ]
+        },
+        {
+          "rank": 25,
+          "gridX": 161,
+          "gridY": 387,
+          "points": 1,
+          "maxDistance": 3.582489490509033,
+          "meanDistance": 3.582489490509033,
+          "bounds": [
+            3728.92431640625,
+            73829.078125,
+            19.66699981689453,
+            3728.92431640625,
+            73829.078125,
+            19.66699981689453
+          ]
+        },
+        {
+          "rank": 26,
+          "gridX": 359,
+          "gridY": 377,
+          "points": 1,
+          "maxDistance": 3.5824832916259766,
+          "meanDistance": 3.5824832916259766,
+          "bounds": [
+            3927.433837890625,
+            73818.3125,
+            23.31100082397461,
+            3927.433837890625,
+            73818.3125,
+            23.31100082397461
+          ]
+        },
+        {
+          "rank": 27,
+          "gridX": 95,
+          "gridY": 104,
+          "points": 1,
+          "maxDistance": 3.4267590045928955,
+          "meanDistance": 3.4267590045928955,
+          "bounds": [
+            3663.15283203125,
+            73546.03125,
+            21.02199935913086,
+            3663.15283203125,
+            73546.03125,
+            21.02199935913086
+          ]
+        },
+        {
+          "rank": 28,
+          "gridX": 256,
+          "gridY": 419,
+          "points": 2,
+          "maxDistance": 3.2902817726135254,
+          "meanDistance": 3.246983766555786,
+          "bounds": [
+            3824.32861328125,
+            73861.1875,
+            18.812999725341797,
+            3824.411865234375,
+            73861.25,
+            18.817501068115234
+          ]
+        },
+        {
+          "rank": 29,
+          "gridX": 94,
+          "gridY": 104,
+          "points": 1,
+          "maxDistance": 3.2627973556518555,
+          "meanDistance": 3.2627973556518555,
+          "bounds": [
+            3662.51806640625,
+            73546.2578125,
+            33.47600173950195,
+            3662.51806640625,
+            73546.2578125,
+            33.47600173950195
+          ]
+        },
+        {
+          "rank": 30,
+          "gridX": 94,
+          "gridY": 109,
+          "points": 1,
+          "maxDistance": 3.1075878143310547,
+          "meanDistance": 3.1075878143310547,
+          "bounds": [
+            3662.2841796875,
+            73550.96875,
+            23.785999298095703,
+            3662.2841796875,
+            73550.96875,
+            23.785999298095703
+          ]
+        },
+        {
+          "rank": 31,
+          "gridX": 160,
+          "gridY": 393,
+          "points": 1,
+          "maxDistance": 3.02118182182312,
+          "meanDistance": 3.02118182182312,
+          "bounds": [
+            3728.4921875,
+            73834.6015625,
+            20.364999771118164,
+            3728.4921875,
+            73834.6015625,
+            20.364999771118164
+          ]
+        },
+        {
+          "rank": 32,
+          "gridX": 98,
+          "gridY": 75,
+          "points": 2,
+          "maxDistance": 3.017934560775757,
+          "meanDistance": 1.7456813156604767,
+          "bounds": [
+            3666.581298828125,
+            73516.953125,
+            26.554000854492188,
+            3666.59814453125,
+            73517.046875,
+            34.448997497558594
+          ]
+        },
+        {
+          "rank": 33,
+          "gridX": 21,
+          "gridY": 135,
+          "points": 1,
+          "maxDistance": 3.0044264793395996,
+          "meanDistance": 3.0044264793395996,
+          "bounds": [
+            3589.536865234375,
+            73576.859375,
+            19.476499557495117,
+            3589.536865234375,
+            73576.859375,
+            19.476499557495117
+          ]
+        },
+        {
+          "rank": 34,
+          "gridX": 267,
+          "gridY": 283,
+          "points": 1,
+          "maxDistance": 2.9102120399475098,
+          "meanDistance": 2.9102120399475098,
+          "bounds": [
+            3834.771240234375,
+            73725.140625,
+            33.1870002746582,
+            3834.771240234375,
+            73725.140625,
+            33.1870002746582
+          ]
+        },
+        {
+          "rank": 35,
+          "gridX": 108,
+          "gridY": 80,
+          "points": 1,
+          "maxDistance": 2.9048030376434326,
+          "meanDistance": 2.9048030376434326,
+          "bounds": [
+            3676.177734375,
+            73521.328125,
+            20.208999633789062,
+            3676.177734375,
+            73521.328125,
+            20.208999633789062
+          ]
+        },
+        {
+          "rank": 36,
+          "gridX": 162,
+          "gridY": 387,
+          "points": 1,
+          "maxDistance": 2.845287322998047,
+          "meanDistance": 2.845287322998047,
+          "bounds": [
+            3729.699951171875,
+            73829.265625,
+            19.465999603271484,
+            3729.699951171875,
+            73829.265625,
+            19.465999603271484
+          ]
+        },
+        {
+          "rank": 37,
+          "gridX": 225,
+          "gridY": 385,
+          "points": 1,
+          "maxDistance": 2.814448833465576,
+          "meanDistance": 2.814448833465576,
+          "bounds": [
+            3793.483154296875,
+            73827.1015625,
+            32.76499938964844,
+            3793.483154296875,
+            73827.1015625,
+            32.76499938964844
+          ]
+        },
+        {
+          "rank": 38,
+          "gridX": 263,
+          "gridY": 274,
+          "points": 1,
+          "maxDistance": 2.813422679901123,
+          "meanDistance": 2.813422679901123,
+          "bounds": [
+            3830.67626953125,
+            73716.0859375,
+            34.03499984741211,
+            3830.67626953125,
+            73716.0859375,
+            34.03499984741211
+          ]
+        },
+        {
+          "rank": 39,
+          "gridX": 95,
+          "gridY": 94,
+          "points": 1,
+          "maxDistance": 2.686131715774536,
+          "meanDistance": 2.686131715774536,
+          "bounds": [
+            3662.780517578125,
+            73535.9453125,
+            22.395000457763672,
+            3662.780517578125,
+            73535.9453125,
+            22.395000457763672
+          ]
+        },
+        {
+          "rank": 40,
+          "gridX": 228,
+          "gridY": 224,
+          "points": 1,
+          "maxDistance": 2.6275339126586914,
+          "meanDistance": 2.6275339126586914,
+          "bounds": [
+            3796.619384765625,
+            73665.9453125,
+            20.30699920654297,
+            3796.619384765625,
+            73665.9453125,
+            20.30699920654297
+          ]
+        },
+        {
+          "rank": 41,
+          "gridX": 255,
+          "gridY": 308,
+          "points": 2,
+          "maxDistance": 2.5848639011383057,
+          "meanDistance": 1.5180242210626602,
+          "bounds": [
+            3822.91064453125,
+            73749.78125,
+            17.81100082397461,
+            3823.3154296875,
+            73750.1484375,
+            20.35099983215332
+          ]
+        },
+        {
+          "rank": 42,
+          "gridX": 43,
+          "gridY": 19,
+          "points": 1,
+          "maxDistance": 2.573068857192993,
+          "meanDistance": 2.573068857192993,
+          "bounds": [
+            3611.439697265625,
+            73460.96875,
+            23.540000915527344,
+            3611.439697265625,
+            73460.96875,
+            23.540000915527344
+          ]
+        },
+        {
+          "rank": 43,
+          "gridX": 191,
+          "gridY": 393,
+          "points": 1,
+          "maxDistance": 2.5504846572875977,
+          "meanDistance": 2.5504846572875977,
+          "bounds": [
+            3759.185791015625,
+            73834.515625,
+            19.413000106811523,
+            3759.185791015625,
+            73834.515625,
+            19.413000106811523
+          ]
+        },
+        {
+          "rank": 44,
+          "gridX": 235,
+          "gridY": 392,
+          "points": 1,
+          "maxDistance": 2.4973645210266113,
+          "meanDistance": 2.4973645210266113,
+          "bounds": [
+            3803.173583984375,
+            73833.75,
+            28.83799934387207,
+            3803.173583984375,
+            73833.75,
+            28.83799934387207
+          ]
+        },
+        {
+          "rank": 45,
+          "gridX": 247,
+          "gridY": 415,
+          "points": 1,
+          "maxDistance": 2.484686851501465,
+          "meanDistance": 2.484686851501465,
+          "bounds": [
+            3815.64990234375,
+            73856.328125,
+            18.750999450683594,
+            3815.64990234375,
+            73856.328125,
+            18.750999450683594
+          ]
+        },
+        {
+          "rank": 46,
+          "gridX": 261,
+          "gridY": 422,
+          "points": 1,
+          "maxDistance": 2.4446372985839844,
+          "meanDistance": 2.4446372985839844,
+          "bounds": [
+            3828.876953125,
+            73863.359375,
+            18.783000946044922,
+            3828.876953125,
+            73863.359375,
+            18.783000946044922
+          ]
+        },
+        {
+          "rank": 47,
+          "gridX": 93,
+          "gridY": 105,
+          "points": 1,
+          "maxDistance": 2.4392504692077637,
+          "meanDistance": 2.4392504692077637,
+          "bounds": [
+            3661.059814453125,
+            73546.390625,
+            20.424999237060547,
+            3661.059814453125,
+            73546.390625,
+            20.424999237060547
+          ]
+        },
+        {
+          "rank": 48,
+          "gridX": 259,
+          "gridY": 420,
+          "points": 1,
+          "maxDistance": 2.419616460800171,
+          "meanDistance": 2.419616460800171,
+          "bounds": [
+            3826.739013671875,
+            73862.234375,
+            18.815000534057617,
+            3826.739013671875,
+            73862.234375,
+            18.815000534057617
+          ]
+        },
+        {
+          "rank": 49,
+          "gridX": 274,
+          "gridY": 357,
+          "points": 1,
+          "maxDistance": 2.3872294425964355,
+          "meanDistance": 2.3872294425964355,
+          "bounds": [
+            3841.93896484375,
+            73799.0703125,
+            20.079498291015625,
+            3841.93896484375,
+            73799.0703125,
+            20.079498291015625
+          ]
+        },
+        {
+          "rank": 50,
+          "gridX": 223,
+          "gridY": 385,
+          "points": 5,
+          "maxDistance": 2.3321897983551025,
+          "meanDistance": 1.1774429857730866,
+          "bounds": [
+            3790.939208984375,
+            73826.515625,
+            19.170499801635742,
+            3791.3935546875,
+            73826.9453125,
+            30.645999908447266
+          ]
+        }
+      ]
+    },
+    "source_files_unchanged": true,
+    "browser_errors": [],
+    "registration_defect_accuracy_measured": false
+  },
+  "screenshot_sha256": "328c2a2cb8815858bd092080b387e3cc058518938200cc7b7d97339c12e55f96",
+  "checks": {
+    "web_unit_tests_passed": 116,
+    "region_unit_cases": 10,
+    "targeted_browser_passed": 18,
+    "optional_existing_coverage_actual_case_skipped": 1,
+    "distance_region_browser_cases_passed": 8,
+    "typescript_vite_build": "passed"
+  },
+  "interpretation": "Selected component only, not its bounding box. The 1-unit XY inspection splits 20,421 exceeding points into 10,237 occupied cells; the top 50 contain 63 points, and 20,358 points remain explicitly unlisted. Top-ranked cells can be single outliers. Click focus includes surrounding context. Subsets of one survey, not independent survey or registration-defect ground truth.",
+  "raw_point_files_models_or_distance_tensors_redistributed": false
+}

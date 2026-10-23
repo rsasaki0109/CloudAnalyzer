@@ -1,30 +1,18 @@
 //! CPU-only opt-in experiment over frozen native debug tensors. No model runs.
 use ca_lidar_ai::{
     completion,
+    input::read,
     projection::{self, CLASS_NAMES, CLASSES, MAX_POINTS, PIXELS},
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     env, fs,
-    io::Read,
     path::{Path, PathBuf},
 };
 
 fn sha(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
-}
-fn read(path: &Path, limit: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let file = fs::File::open(path)?;
-    if !file.metadata()?.is_file() || file.metadata()?.len() > limit as u64 {
-        return Err(format!("file exceeds the completion budget: {}", path.display()).into());
-    }
-    let mut bytes = Vec::new();
-    file.take(limit as u64 + 1).read_to_end(&mut bytes)?;
-    if bytes.len() > limit {
-        return Err("file grew beyond completion budget".into());
-    }
-    Ok(bytes)
 }
 fn require(condition: bool, message: &str) -> Result<(), Box<dyn std::error::Error>> {
     if condition {

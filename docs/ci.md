@@ -22,9 +22,11 @@ same scripts for 1M and 10M points and retain their JSON reports as evidence.
 
 ## Self QA (dogfood)
 
-Every pull request also runs `.github/workflows/self-qa.yml`. It builds the gitignored `benchmarks/public/stanford-bunny-mini` pack, then runs the bundled **[cloudanalyzer-action](https://github.com/rsasaki0109/cloudanalyzer-action)** (`@v1`) against `suite-pass.cloudanalyzer.yaml`. The action runs `ca check`, posts (or idempotently updates) a PR comment marked `cloudanalyzer-self-qa`, uploads QA artifacts, and fails the job when the gate fails.
+Every internal pull request also runs `.github/workflows/self-qa.yml`. It builds the gitignored `benchmarks/public/self-qa-synthetic` pack with `--fixture synthetic`, then runs the bundled **[cloudanalyzer-action](https://github.com/rsasaki0109/cloudanalyzer-action)** against `suite-pass.cloudanalyzer.yaml`. The action runs `ca check`, posts (or idempotently updates) a PR comment marked `cloudanalyzer-self-qa`, uploads QA artifacts, and fails the job when the gate fails.
 
-This dogfoods the public three-line Action entry point, gives every PR a living example of what downstream users get, and detects accidental damage to the bundled QA pack — if a PR changes a baseline `.pcd` without updating the expected summary, the gate fails and the PR turns red.
+The deterministic 1,440-point procedural surface requires no geometry download. This smoke test exercises mapping, localization, perception, and integrated QA wiring; it is not evidence of real-world map accuracy. Its manifest and attribution explicitly identify the source as `synthetic-smoke`.
+
+The separate `.github/workflows/public-benchmark-pack.yml` still downloads Stanford Bunny and validates both passing and deliberately degraded outputs. The builder defaults to `--fixture stanford-bunny`; download failures remain failures and never silently substitute synthetic geometry. Dependency installation and the Action container still require network access.
 
 Fork PRs are skipped (the `GITHUB_TOKEN` from a fork PR doesn't have `pull-requests: write`); the underlying `ca check` still runs in the regular `Test` workflow.
 

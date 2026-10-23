@@ -1,0 +1,147 @@
+{
+  "schema": "cloudanalyzer.distance_section_smoke.v1",
+  "implementation_commit": "4a9ad3e948628ae193ea954e26353275d63d0a74",
+  "normalized_source_sha256": {
+    "web/src/distance-regions.ts": "494d53d439a54ff84b94f2d15a22e2b4c15b102ea209fe8926c8c0136c6b59fe",
+    "web/src/distance-regions-worker.ts": "c56bf2707801353ca826bb33f786e64ebb1df2d266c1335e5440dfa8e825692c",
+    "web/src/app/distance-regions.ts": "5addf705a5b7820c801f3863858634a030e419883b8b1ed35861106865406763",
+    "web/index.html": "9c2503033523dd81146b137dbe5a2069119b5d1e8e92c235a24058997b9efa3a",
+    "web/tests/distance-regions.test.mjs": "5242a65ab060c5116264b7e0bd3e0925fa89b8e62ce9397d4b815d52024aaadd",
+    "web/e2e/distance-regions.spec.ts": "d4928c66d9d34c8abcfd53197ac6a8ee659a1467823541dc582d4ee97aa18370",
+    "web/src/distance-section.ts": "dc8d5f441452b0e6018046dbddcda74c6feadad07dc2b76c2c23e1a3fea08fb8",
+    "web/src/distance-section-worker.ts": "f064ce2f99a86341e22dc6e8b23939a46be0c5e00152b1209b0ebd50ce094e52",
+    "web/src/app/distance-section.ts": "4f917b0ec97558033af7b96aa17783f221ab29e886f3afffc0240f175f4ca266",
+    "web/src/app/distance-section.css": "ea5056dcea503e3c8babf1a05ad9429b2de13490c32ae7a16ec5cf944d139ec8",
+    "web/tests/distance-section.test.mjs": "8ca630c078e3a7e08c7a569cb46e5a88e26df596466965cceb8cf4338323dfae"
+  },
+  "build_assets_sha256": {
+    "c2c-worker-WJhdjU5B.js": "f143bfb8e616aad0a8017af2b7d4701c3b96b13cb5639ed2a3ce9c6c7b2f888f",
+    "ca_wasm_bg-CknP-APk.wasm": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+    "distance-regions-worker-BVi9BF1f.js": "ce9700546625db2452c11dea9c06b919f6c7bc443614753dcc3df30ec4b264e8",
+    "distance-section-worker-JjLq7gNP.js": "dd4cae2f4691d530644d0e5b775d25fcd5685bbee1e1385151897ec5f0730bc7",
+    "index-Bi9W3se5.js": "5997ee55ec684977ae2ee2b7acb695e463d9635e2883415d3f65e869e0c3a98a",
+    "index-zN7oubn4.css": "1869bb164c10e8f06742476db34ad21d0c54fe2fbd1e30ba53d9e014bd99fcb9",
+    "map-coverage-worker-BevUgqE9.js": "3b1c292cce6c3bdb8eb1f1b35db51d4feedd98851308007448827f2b3b4fc6d3",
+    "worker-CGqpRHSq.js": "68e26fbe4575d90e55b1dfb5b6d1140136f5c0daed921e2d69dd92cce2c8fc90"
+  },
+  "input": {
+    "original_survey": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "partition": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "source": {
+      "file": "compared.ply",
+      "points": 878920,
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "reference": {
+      "file": "reference.ply",
+      "points": 878921,
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "new_download_bytes": 0,
+    "independent_surveys_or_registration_truth": false
+  },
+  "section_series_inputs": {
+    "source": {
+      "file": "reference.ply",
+      "points": 878921,
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "reference": {
+      "file": "compared.ply",
+      "points": 878920,
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    }
+  },
+  "browser_receipt": {
+    "source_sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc",
+    "reference_sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948",
+    "result": {
+      "schema": "cloudanalyzer.distance_section.v1",
+      "source": {
+        "id": 2,
+        "name": "reference.ply",
+        "loadedPoints": 878921,
+        "filePoints": 878921,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null,
+        "points": 878921,
+        "finitePoints": 878921,
+        "invalidPoints": 0,
+        "selectedPoints": 315,
+        "zMin": -2.3429999351501465,
+        "zMax": 21.658000946044922
+      },
+      "reference": {
+        "id": 1,
+        "name": "compared.ply",
+        "loadedPoints": 878920,
+        "filePoints": 878920,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null,
+        "points": 878920,
+        "finitePoints": 878920,
+        "invalidPoints": 0,
+        "selectedPoints": 295,
+        "zMin": 20.649499893188477,
+        "zMax": 21.671539306640625
+      },
+      "regionRank": 1,
+      "cellRank": 1,
+      "cellBounds": [
+        3803.0322265625,
+        73731.3125,
+        -2.3429999351501465,
+        3803.0322265625,
+        73731.3125,
+        -2.3429999351501465
+      ],
+      "settings": {
+        "axis": "x",
+        "center": [
+          3803.0322265625,
+          73731.3125
+        ],
+        "length": 20,
+        "width": 2
+      },
+      "scope": "All finite loaded points inside a closed straight XY band, including non-exceeding points; only the selected pair, irrespective of visibility. No sampling or nearest-point height correspondence; not a registration or missing-map accuracy score."
+    },
+    "source_files_unchanged": true,
+    "browser_errors": [],
+    "registration_defect_accuracy_measured": false
+  },
+  "screenshot_sha256": "9ad9d27977a65d2d89a5f7d724a9049581a2bd4d923199903be7d5620e4c7d93",
+  "checks": {
+    "web_unit_tests_passed": 121,
+    "section_unit_cases": 5,
+    "targeted_browser_passed": 29,
+    "distance_region_browser_cases": 17,
+    "optional_existing_coverage_actual_skipped": 1,
+    "typescript_vite_build": "passed",
+    "actual_workflow_c2c_calls": 2
+  },
+  "interpretation": "Reverse-direction cell1 of region1, default X band length20 width2: 315 reference.ply and 295 compared.ply original loaded points. All band points, including non-exceedances, not just the candidate cell. Automatic Z scaling; no nearest-point height correspondence or defect accuracy. Top-level source/reference file hashes name the initially selected pair; section_series_inputs explicitly identifies reversed plot roles. Subsets of one survey, not independent ground truth.",
+  "raw_point_clouds_models_or_profile_point_tensors_redistributed": false
+}

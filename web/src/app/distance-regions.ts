@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { cloudToCloud, workerBusy } from "../api";
 import { REGION_INPUT_BYTES, distanceRegionsCsv, distanceCellsCsv, validateRegionSettings, validateExpectedOverlap,
   type ExpectedOverlap, type DistanceRegions, type DistanceCells } from "../distance-regions";
+import { emptyDecision, editDecision, reviewCounts, candidateReviewScope, candidateReviewsCsv, REVIEW_NOTE_LIMIT, type CandidateDecision } from "../candidate-review";
 import { projectChanged } from "../project-change";
 import { refreshColors } from "./colors";
 import { $, download, errorText, fmt, setStatus } from "./dom";
@@ -30,7 +31,7 @@ const overlapNote = (r: { overlap: ExpectedOverlap | null }) => r.overlap ?
   "Full loaded query cloud; no expected overlap restriction.";
 type Snapshot = { entry: Entry; cloud: Entry["cloud"]; name: string };
 type Cache = { source: Snapshot; reference: Snapshot; output: NonNullable<Entry["c2c"]> };
-type Diagnosis = { pair: Cache; result: DistanceRegions; reused: boolean };
+type Diagnosis = { pair: Cache; result: DistanceRegions; reused: boolean; decisions: CandidateDecision[]; analyzedAt: string };
 let cache: Cache | null = null, reverseCache: Cache | null = null, last: Diagnosis | null = null;
 let comparison: { forward: Diagnosis; reverse: Diagnosis } | null = null;
 let running = false, generation = 0;
@@ -63,7 +64,8 @@ function render(): void {
   overlapEnabled.disabled = running;
   $("regions-overlap-bounds").hidden = !overlapEnabled.checked;
   for (const input of overlapInputs) input.disabled = running || !overlapEnabled.checked;
-  for (const b of document.querySelectorAll<HTMLButtonElement>("#regions-list button, #regions-cells-list button")) b.disabled = running;
+  for (const control of document.querySelectorAll<HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement>("#regions-list button, #regions-list select, #regions-list textarea, #regions-cells-list button")) control.disabled = running;
+  for (const id of ["regions-review-json", "regions-review-csv"]) $<HTMLButtonElement>(id).disabled = running;
 }
 listChanged.add(render); distanceChanged.add(render);
 for (const select of [source, reference]) select.addEventListener("change", () => { clear(true); render(); });
@@ -88,7 +90,8 @@ function group<T = DistanceRegions>(pair: Cache, signal: AbortSignal, settings: 
     catch (error) { cleanup(); reject(error); }
   });
 }
-function show(result: DistanceRegions, pair: Cache, reused: boolean): void {
+function show(diagnosis: Diagnosis): void {
+  const { result, pair, reused } = diagnosis;
   $("regions-list").replaceChildren();
   $("regions-summary").textContent = `${pair.source.name} → ${pair.reference.name}: ${result.exceeding.toLocaleString()} of ${result.measured.toLocaleString()} measured points exceed ${fmt(result.threshold)}. ${result.regions.length} of ${result.eligibleRegions.toLocaleString()} eligible regions shown; ${result.smallRegionPoints.toLocaleString()} points in below-minimum regions, ${result.unlistedEligiblePoints.toLocaleString()} in unlisted eligible regions. ${result.unmeasured.toLocaleString()} unmeasured; ${result.invalidPositions.toLocaleString()} invalid positions; ${result.outsideOverlap.toLocaleString()} outside expected overlap. ${overlapNote(result)} ${result.overlap ? "Distance colors still show the full cloud. " : ""}${reused ? "Reused the same distance snapshot." : "Computed unsigned CPU C2C distances."}`;
   for (const region of result.regions) {
@@ -101,8 +104,28 @@ function show(result: DistanceRegions, pair: Cache, reused: boolean): void {
     };
     const inspect = document.createElement("button"); inspect.textContent = "Inspect cells";
     inspect.onclick = () => { if (last?.result === result) void inspectCells(last, region.rank); };
-    row.append(focus, inspect); $("regions-list").append(row);
+    row.append(focus, inspect);
+    const stateLabel = document.createElement("label"), state = document.createElement("select");
+    state.className = "candidate-review-state"; state.setAttribute("aria-label", `Region ${region.rank} review state`);
+    state.replaceChildren(new Option("Unreviewed", "unreviewed"), new Option("Reviewed", "reviewed"), new Option("Deferred", "deferred"));
+    state.value = diagnosis.decisions[region.rank - 1].status; stateLabel.append("Review state ", state);
+    const noteLabel = document.createElement("label"), note = document.createElement("textarea");
+    note.className = "candidate-review-note"; note.rows = 2; note.maxLength = REVIEW_NOTE_LIMIT;
+    note.setAttribute("aria-label", `Region ${region.rank} review comment`); note.placeholder = "Inspection evidence or reason to defer";
+    note.value = diagnosis.decisions[region.rank - 1].note; noteLabel.append("Comment ", note);
+    const stamp = document.createElement("span"); stamp.className = "hint small";
+    const updateStamp = () => { stamp.textContent = diagnosis.decisions[region.rank - 1].updatedAt ? `Updated ${diagnosis.decisions[region.rank - 1].updatedAt}` : "No review recorded"; };
+    const edit = () => {
+      if (last !== diagnosis || !valid(pair) || running || taskActive()) return;
+      try {
+        diagnosis.decisions[region.rank - 1] = editDecision(state.value, note.value);
+        note.removeAttribute("aria-invalid"); updateStamp(); renderReviewSummary(); distanceChanged.emit();
+      } catch (error) { note.setAttribute("aria-invalid", "true"); setStatus(errorText(error), true); }
+    };
+    state.onchange = note.oninput = edit; updateStamp();
+    row.append(stateLabel, noteLabel, stamp); $("regions-list").append(row);
   }
+  renderReviewSummary();
   $("regions-result").hidden = false;
 }
 async function inspectCells(parent: Diagnosis, rank: number): Promise<void> {
@@ -137,10 +160,10 @@ async function inspectCells(parent: Diagnosis, rank: number): Promise<void> {
   finally { running = false; endTask(signal); render(); }
 }
 function publish(diagnosis: Diagnosis): void {
-  const { pair, result, reused } = diagnosis, a = pair.source.entry;
+  const { pair, result } = diagnosis, a = pair.source.entry;
   last = diagnosis;
   a.c2c = pair.output; a.mode = "c2c"; display.activeC2c = a.cloud.id; display.range = { lo: 0, hi: result.threshold || 1 };
-  refreshColors(a); show(result, pair, reused); renderList(); distanceChanged.emit();
+  refreshColors(a); show(diagnosis); renderList(); distanceChanged.emit();
 }
 direction.onchange = () => {
   if (!comparison) return;
@@ -184,7 +207,7 @@ async function run(both: boolean): Promise<void> {
       phase = "group"; setStatus(`Grouping ${from.name} → ${to.name} points above the distance threshold…`);
       const result = await group(pair, signal, settings, overlap); signal.throwIfAborted();
       if (!valid(pair) || token !== generation) throw new Error("Comparison inputs/settings changed; run the diagnosis again");
-      return { pair, result, reused };
+      return { pair, result, reused, decisions: result.regions.map(emptyDecision), analyzedAt: new Date().toISOString() };
     }
     const forward = await diagnose(snapshots[0], snapshots[1], cache);
     const reverse = both ? await diagnose(snapshots[1], snapshots[0], reverseCache) : null;
@@ -208,7 +231,7 @@ const describe = (s: Snapshot) => ({ id: s.cloud.id, name: s.name, loadedPoints:
 $("regions-both-json").onclick = () => {
   if (!comparison || !valid(comparison.forward.pair) || !valid(comparison.reverse.pair)) return;
   const pack = (d: Diagnosis) => ({ source: describe(d.pair.source), reference: describe(d.pair.reference), reusedDistances: d.reused,
-    exceedingFractionOfMeasured: d.result.measured ? d.result.exceeding / d.result.measured : null, ...d.result });
+    exceedingFractionOfMeasured: d.result.measured ? d.result.exceeding / d.result.measured : null, ...d.result, review: reviewSnapshot(d) });
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.bidirectional_regions.v1", method: "two independent unsigned CPU nearest-neighbor directions",
     scope: "Loaded query points in each direction, optionally restricted by the same world-XY overlap rectangle; full loaded reference searched; each direction lists up to 50 regions; not confirmed missing-map classification",
     forward: pack(comparison.forward), reverse: pack(comparison.reverse) }, null, 2)], { type: "application/json" }), "bidirectional-distance-regions.json");
@@ -217,7 +240,7 @@ $("regions-json").onclick = () => {
   if (!last || !valid(last.pair)) return;
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.distance_regions.v1", source: describe(last.pair.source), reference: describe(last.pair.reference),
     method: "unsigned CPU nearest-neighbor source-to-reference", scope: "Loaded query points, optionally restricted by a world-XY overlap rectangle; full loaded reference searched; XY eight-neighbor connected cells, ranked by maximum distance then point count; top 50 eligible regions only; not a registration-defect classifier",
-    reusedDistances: last.reused, ...last.result }, null, 2)], { type: "application/json" }), "distance-regions.json");
+    reusedDistances: last.reused, ...last.result, review: reviewSnapshot(last) }, null, 2)], { type: "application/json" }), "distance-regions.json");
 };
 $("regions-csv").onclick = () => { if (last && valid(last.pair)) download(new Blob([distanceRegionsCsv(last.result)], { type: "text/csv" }), "distance-regions.csv"); };
 $("regions-cells-json").onclick = () => {
@@ -229,6 +252,45 @@ $("regions-cells-json").onclick = () => {
 $("regions-cells-csv").onclick = () => {
   if (inspection && inspection.parent === last && valid(last.pair)) download(new Blob([distanceCellsCsv(inspection.result)], { type: "text/csv" }), "distance-region-cells.csv");
 };
+/** Keep identities and decisions together; ranks alone are never portable keys. */
+function diagnoses(): { direction: "forward" | "reverse"; diagnosis: Diagnosis }[] {
+  if (comparison && valid(comparison.forward.pair) && valid(comparison.reverse.pair))
+    return [{ direction: "forward", diagnosis: comparison.forward }, { direction: "reverse", diagnosis: comparison.reverse }];
+  return last && valid(last.pair) ? [{ direction: "forward", diagnosis: last }] : [];
+}
+function reviewSnapshot(d: Diagnosis) {
+  return { analyzedAt: d.analyzedAt, scope: candidateReviewScope, counts: reviewCounts(d.decisions),
+    candidates: d.result.regions.map((region, i) => ({ ...region, ...d.decisions[i] })) };
+}
+function renderReviewSummary(): void {
+  if (!last) return;
+  const counts = reviewCounts(last.decisions);
+  $("regions-review-summary").textContent = `This direction: ${counts.reviewed} reviewed, ${counts.deferred} deferred, ${counts.unreviewed} unreviewed. ${last.result.eligibleRegions - last.result.regions.length} eligible regions unlisted; ${last.result.smallRegionPoints} points below minimum. Reviewed means inspection completed, not confirmed map change.`;
+}
+$("regions-review-json").onclick = () => {
+  const current = diagnoses(); if (!current.length || running) return;
+  download(new Blob([JSON.stringify({ schema: "cloudanalyzer.distance_candidate_reviews.v1", scope: candidateReviewScope,
+    comparisons: current.map(({ direction, diagnosis: d }) => ({ direction, source: describe(d.pair.source), reference: describe(d.pair.reference),
+      analysis: d.result, reusedDistances: d.reused, review: reviewSnapshot(d) })) }, null, 2)], { type: "application/json" }), "distance-candidate-reviews.json");
+};
+$("regions-review-csv").onclick = () => {
+  const current = diagnoses(); if (!current.length || running) return;
+  const rows = current.flatMap(({ direction, diagnosis: d }) => d.result.regions.map((region, i) => ({ direction,
+    sourceId: d.pair.source.cloud.id, source: d.pair.source.name, referenceId: d.pair.reference.cloud.id, reference: d.pair.reference.name,
+    ...region, ...d.decisions[i] })));
+  download(new Blob([candidateReviewsCsv(rows)], { type: "text/csv" }), "distance-candidate-reviews.csv");
+};
+addReportSection("distance-candidate-reviews", () => {
+  const current = diagnoses(); if (!current.length) return null;
+  return new Map(current.map(({ direction, diagnosis: d }) => {
+    const counts = reviewCounts(d.decisions);
+    return [direction, { title: `Candidate inspection: ${d.pair.source.name} → ${d.pair.reference.name}`,
+      metrics: { reviewed: { label: "Listed candidates reviewed", value: counts.reviewed }, deferred: { label: "Listed candidates deferred", value: counts.deferred },
+        unreviewed: { label: "Listed candidates unreviewed", value: counts.unreviewed }, unlisted: { label: "Eligible regions not listed", value: d.result.eligibleRegions - d.result.regions.length } },
+      notes: [candidateReviewScope, `Analysis ${d.analyzedAt}; threshold ${d.result.threshold}; effective f32 threshold ${d.result.effectiveThreshold}; XY cell ${d.result.cell}; minimum ${d.result.minPoints}; ${overlapNote(d.result)}`,
+        ...d.result.regions.map((region, i) => `Region ${region.rank}; XY/Z bounds [${region.bounds.join(", ")}]; ${region.points} points; max ${region.maxDistance}; mean ${region.meanDistance}; ${d.decisions[i].status}; updated ${d.decisions[i].updatedAt ?? "never"}; comment: ${d.decisions[i].note}`)] }];
+  }));
+});
 addReportSection("distance-regions", () => last && valid(last.pair) ? { title: `Distance regions: ${last.pair.source.name} → ${last.pair.reference.name}`,
   metrics: { exceeding: { label: "Source points above threshold", value: last.result.exceeding }, eligible: { label: "Eligible distance regions", value: last.result.eligibleRegions },
     listed: { label: "Listed distance regions", value: last.result.regions.length }, unmeasured: { label: "Unmeasured source distances", value: last.result.unmeasured },

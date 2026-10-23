@@ -124,3 +124,47 @@ uses six synthetic Before cells and five After cells: fill 2, cut 1, net 1,
 with one uncompared cell. It also verifies signed CSV, input roles, stale-result
 invalidation and cancellation. This is known-cell arithmetic and workflow
 validation, not an independent survey-accuracy result.
+
+## Repeated visits on saved areas
+
+Load one aligned baseline and up to eight visit surfaces. Under **Repeated
+visits by area**, select the visit surfaces (Ctrl / Command for multiple),
+choose **Before** as the fixed baseline, save the named rectangles, and click
+**Compare visits with baseline**. **After** is unused for this operation. A
+constant Before height is supported, but it defines a plane across the full
+grid, including locations beyond an observed baseline's footprint.
+
+All comparisons use one union grid over the baseline and all selected visits,
+the same cell size, height mode, unit label and interpolation option. Grid
+placement follows the existing nearest-center convention, anchored at the
+lowest XY corner of that union. Adding/removing a selected visit can move the
+grid and change results; compare a fixed selection. A remote visit can enlarge
+the grid: the existing 1,000,000-cell budget applies to the entire union, not
+just the saved rectangles. At most 8 × 32 serial summaries are run. Each result
+compares one visit to the baseline; no derived scene clouds are created.
+
+The table and JSON/CSV exports retain each visit/area's fill, cut, net, compared,
+uncompared and outside cell counts. No-support rows show unavailable values
+and blank CSV quantities. JSON retains baseline/visit runtime descriptors,
+loaded/preview/decimation information, settings, shared grid origin/dimensions
+and area bounds. Visit indices follow loaded order, not inferred acquisition
+dates; use dated filenames. Duplicate filenames remain distinguishable by
+visit index and runtime descriptors. Save JSON alongside CSV for full provenance.
+Selections and computed rows are session-only; projects retain area definitions,
+and visits must be selected and computed again after reload.
+
+A common grid does **not** establish a common observed footprint: even equal
+compared-cell counts can represent different cells. Do not subtract these
+totals to infer between-visit earthwork. Missing heights are excluded rather
+than treated as zero change; interpolation can create estimates in unobserved
+cells. Area overlaps remain independent and must not be summed. The selected
+inputs are not registered or checked for matching frames/units. Results apply
+to loaded data, including any preview/decimation, and remain 2.5D estimates.
+
+Cancellation finishes the in-flight computation then discards every staged
+row. Changes to settings, areas or an input invalidate results; removing an
+input does too. An unrelated newly loaded cloud does not enter an existing
+comparison or change its selected visits. Synthetic checks cover shifted visit
+extents, exact known heights, missing/empty support, constant baselines,
+budget rejection, cancellation and stale-result invalidation. These checks do
+not establish accuracy on independent real surveys.

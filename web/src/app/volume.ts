@@ -2,10 +2,11 @@
 
 import { computeVolume, removeCloud, workerBusy } from "../api";
 import type { VolumeOutput } from "../protocol";
-import { validateVolumeGrid, volumeCellsCsv } from "../surface-volume";
+import { validateVolumeGrid, sharedVolumeGrid, type VolumeGrid, volumeCellsCsv } from "../surface-volume";
 import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regions";
 import { captureNamedAreas, replaceNamedAreas, onNamedAreasChanged, parseNamedAreas, parseAreaFile,
   areaVolumesCsv, type AreaVolumeRow } from "../named-areas";
+import { MAX_VOLUME_VISITS, visitVolumeScope, visitVolumesCsv, type VisitVolumeRow } from "../volume-visits";
 import { projectChanged } from "../project-change";
 import { finiteStats, showSigned } from "./distance";
 import { $, download, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
@@ -21,6 +22,7 @@ const volumeCell = $<HTMLInputElement>("volume-cell");
 const volumeRun = $<HTMLButtonElement>("volume-run");
 const coordinateUnit = $<HTMLSelectElement>("volume-unit");
 const CONSTANT = "constant";
+const visitSelect = $<HTMLSelectElement>("volume-visits");
 type Input = { side: { id: number } | { z: number }; name: string; entry?: Entry; cloud?: Entry["cloud"] };
 type Settings = { cell: number; height: "mean" | "min" | "max"; fillEmpty: boolean; coordinateUnit: string; region?: ExpectedOverlap; areaName?: string };
 const areaEnabled = $<HTMLInputElement>("volume-area-enabled");
@@ -39,6 +41,7 @@ function scope(settings: Settings): string {
 }
 let last: { out: VolumeOutput; before: string; after: string; inputs: Input[]; settings: Settings; output: Entry | null } | null = null;
 let batch: { rows: AreaVolumeRow[]; inputs: Input[]; settings: Settings } | null = null;
+let visits: { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid } | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
 function validInput(input: Input): boolean {
   return !input.entry || entries.get(input.cloud!.id) === input.entry && input.entry.cloud === input.cloud;
@@ -47,13 +50,13 @@ function validResult(result: NonNullable<typeof last>): boolean {
   return result.inputs.every(validInput) && (!result.output || entries.get(result.output.cloud.id) === result.output && result.output.cloud === result.out.cells);
 }
 function clearResult(): void {
-  const had = last !== null || batch !== null; generation++; last = null; batch = null;
+  const had = last !== null || batch !== null || visits !== null; generation++; last = null; batch = null; visits = null;
   $("volume-result").hidden = $("volume-exports").hidden = true;
-  $("volume-areas-result").hidden = true;
+  $("volume-areas-result").hidden = $("volume-visits-result").hidden = true;
   if (had) distanceChanged.emit();
 }
 pointsInvalidated.add(id => {
-  if ([...activeInputs, ...(last?.inputs ?? []), ...(batch?.inputs ?? [])].some(input => input.cloud?.id === id) || last?.out.cells?.id === id) clearResult();
+  if ([...activeInputs, ...(last?.inputs ?? []), ...(batch?.inputs ?? []), ...(visits?.inputs ?? [])].some(input => input.cloud?.id === id) || last?.out.cells?.id === id) clearResult();
 });
 
 addReportSection("volume", () =>
@@ -104,9 +107,12 @@ function renderSelects(): void {
     select.replaceChildren(...ids.map(option), new Option("Constant height…", CONSTANT));
     select.value = value;
   }
+  const selected = new Set([...visitSelect.selectedOptions].map(option => option.value));
+  visitSelect.replaceChildren(...ids.map(option));
+  for (const option of visitSelect.options) option.selected = selected.has(option.value);
   updateForm();
 }
-listChanged.add(() => { if (last && !validResult(last) || batch && !batch.inputs.every(validInput)) clearResult(); renderSelects(); });
+listChanged.add(() => { if (last && !validResult(last) || batch && !batch.inputs.every(validInput) || visits && !visits.inputs.every(validInput)) clearResult(); renderSelects(); });
 
 function updateForm(): void {
   $("volume-before-z-row").hidden = volumeBefore.value !== CONSTANT;
@@ -118,6 +124,8 @@ function updateForm(): void {
     ...areaInputs, areaName, savedAreas, $("volume-area-save"), $("volume-area-apply"), $("volume-area-remove"),
     $("volume-areas-import"), $("volume-areas-export"), $("volume-use-distance-area"), $("volume-send-distance-area")] as (HTMLInputElement | HTMLSelectElement | HTMLButtonElement)[]) input.disabled = running;
   $<HTMLButtonElement>("volume-areas-run").disabled = volumeRun.disabled || !captureNamedAreas().length;
+  visitSelect.disabled = running;
+  $<HTMLButtonElement>("volume-visits-run").disabled = running || !captureNamedAreas().length || !visitSelect.selectedOptions.length;
   for (const id of ["volume-area-apply", "volume-area-remove"]) $<HTMLButtonElement>(id).disabled = running || !savedAreas.value;
   $("volume-area-bounds").hidden = !areaEnabled.checked;
   for (const input of areaInputs) input.disabled = running || !areaEnabled.checked;
@@ -177,6 +185,8 @@ function snapshot(select: HTMLSelectElement, z: HTMLInputElement): Input {
   if (!entry) throw new Error("Choose two available surfaces");
   return { side: { id: entry.cloud.id }, name: entry.cloud.name, entry, cloud: entry.cloud };
 }
+
+visitSelect.onchange = () => { clearResult(); updateForm(); };
 
 function unit(value: number, power: 2 | 3): string {
   return `${fmt(value)} ${last?.settings.coordinateUnit ?? coordinateUnit.value}${power === 3 ? "³" : "²"}`;
@@ -412,3 +422,65 @@ addReportSection("volume-areas", () => {
     ])), notes: [batchScope, ...batch.rows.map(row => `${row.name}: XY [${row.bounds.join(", ")}]; ${row.outsideRegionCells} outside cells. ${row.matchedCells ? "" : "No compared cells; quantities unavailable."}`)] };
 });
 renderAreas();
+
+// Stage summary-only rows serially: bounded worker memory and no partial publication.
+$("volume-visits-run").onclick = async () => {
+  if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before comparing visits", true);
+  const areas = captureNamedAreas();
+  const selected = [...visitSelect.selectedOptions];
+  const settings: Settings = { cell: Number(volumeCell.value), height: $<HTMLSelectElement>("volume-height").value as Settings["height"],
+    fillEmpty: $<HTMLInputElement>("volume-fill").checked, coordinateUnit: coordinateUnit.value };
+  let inputs: Input[], grid: VolumeGrid;
+  try {
+    if (!areas.length || !selected.length || selected.length > MAX_VOLUME_VISITS) throw new Error("Choose 1–8 visit surfaces and save at least one area");
+    inputs = [snapshot(volumeBefore, $<HTMLInputElement>("volume-before-z")), ...selected.map(option => {
+      const entry = entries.get(Number(option.value));
+      if (!entry) throw new Error("A selected visit is no longer available");
+      return { side: { id: entry.cloud.id }, name: entry.cloud.name, entry, cloud: entry.cloud };
+    })];
+    if (selected.some(option => option.value === volumeBefore.value)) throw new Error("The baseline cannot also be a visit");
+    grid = sharedVolumeGrid(inputs.filter(input => input.cloud).map(input => input.cloud!.bounds), settings.cell);
+    if (!["mean", "min", "max"].includes(settings.height) || !["m", "ft", "unit"].includes(settings.coordinateUnit)) throw new Error("Choose valid height and coordinate-unit settings");
+  } catch (error) { return setStatus(errorText(error), true); }
+  clearResult(); const token = generation, signal = startTask(); running = true; activeInputs = inputs;
+  volumeBefore.dataset.picked = "1"; updateForm();
+  const cancelled = () => setStatus("Cancel requested; the current comparison finishes before all staged visit rows are discarded.");
+  signal.addEventListener("abort", cancelled);
+  try {
+    const rows: VisitVolumeRow[] = [];
+    for (const [index, input] of inputs.slice(1).entries()) for (const area of areas) {
+      signal.throwIfAborted();
+      showProgress({ note: `${input.name} / ${area.name}`, fraction: rows.length / (selected.length * areas.length) });
+      const out = await computeVolume({ before: inputs[0].side, after: input.side, ...settings, region: area.bounds, sharedGrid: grid, summaryOnly: true });
+      if (out.cells) { await removeCloud(out.cells.id); throw new Error("Visit summary unexpectedly created a point cloud"); }
+      signal.throwIfAborted();
+      if (token !== generation || !inputs.every(validInput)) throw new Error("Visit inputs/settings changed; compare again");
+      if (![out.added, out.removed, out.addedArea, out.removedArea].every(Number.isFinite)) throw new Error("Visit volume cannot be represented at this coordinate scale");
+      const { added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells } = out;
+      rows.push({ ...area, visit: input.name, visitIndex: index + 1, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells });
+    }
+    visits = { rows, inputs, settings, grid };
+    $("volume-visits-rows").replaceChildren(...rows.map(row => {
+      const tr = document.createElement("tr");
+      for (const value of [`${row.visitIndex}. ${row.visit} / ${row.name}`, ...[row.added, row.removed, row.added - row.removed].map(v => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}³` : "Unavailable"), row.matchedCells, row.totalCells - row.matchedCells, row.outsideRegionCells]) {
+        const td = document.createElement("td"); td.textContent = String(value); tr.append(td);
+      }
+      return tr;
+    }));
+    $("volume-visits-scope").textContent = `Baseline: ${inputs[0].name}; ${selected.length} visits × ${areas.length} areas; cell ${settings.cell} ${settings.coordinateUnit}, height ${settings.height}, interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. Shared grid; 2.5D volumes relative to baseline. Missing support varies by visit: do not subtract totals for between-visit quantities. Unavailable means no compared cells. Overlapping areas must not be summed. Scroll for coverage counts.`;
+    $("volume-visits-result").hidden = false;
+    setStatus(`Compared ${selected.length} visits across ${areas.length} areas with a fixed baseline. No between-visit increments inferred.`);
+  } catch (error) { setStatus(`Visit comparison failed: ${signal.aborted ? "Cancelled; no partial summaries published" : errorText(error)}`, true); }
+  finally { signal.removeEventListener("abort", cancelled); activeInputs = []; running = false; endTask(signal); updateForm(); }
+};
+$("volume-visits-json").onclick = () => {
+  if (!visits || !visits.inputs.every(validInput)) return;
+  download(new Blob([JSON.stringify({ schema: "cloudanalyzer.area_volume_visits.v1", baseline: describeInput(visits.inputs[0]),
+    visits: visits.inputs.slice(1).map((input, i) => ({ visitIndex: i + 1, ...describeInput(input) })),
+    settings: visits.settings, sharedGrid: { min: visits.grid.slice(0, 2), nx: visits.grid[2], ny: visits.grid[3], cell: visits.settings.cell, origin: "Lower-left boundary; centers offset by half a cell" },
+    scope: visitVolumeScope, rows: visits.rows.map(row => ({ ...row, net: row.added - row.removed,
+      uncomparedCells: row.totalCells - row.matchedCells, comparisonAvailable: row.matchedCells > 0 })) }, null, 2)], { type: "application/json" }), "area-volume-visits.json");
+};
+$("volume-visits-csv").onclick = () => {
+  if (visits && visits.inputs.every(validInput)) download(new Blob([visitVolumesCsv(visits.rows, visits.settings.coordinateUnit)], { type: "text/csv" }), "area-volume-visits.csv");
+};

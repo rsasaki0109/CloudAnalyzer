@@ -2,7 +2,9 @@
 export const VOLUME_GRID_LIMIT = 1_000_000;
 export const VOLUME_CSV_CELL_LIMIT = 100_000;
 
-export function validateVolumeGrid(bounds: readonly (readonly number[])[], cell: number): void {
+/** Lower-left cell boundary X/Y and dimensions; cell size is supplied separately. */
+export type VolumeGrid = readonly [number, number, number, number];
+export function sharedVolumeGrid(bounds: readonly (readonly number[])[], cell: number): VolumeGrid {
   if (!Number.isFinite(cell) || cell <= 0 || !Number.isFinite(cell * cell) || cell * cell === 0) {
     throw new Error("Enter a finite positive cell size with representable area");
   }
@@ -16,6 +18,12 @@ export function validateVolumeGrid(bounds: readonly (readonly number[])[], cell:
   if (!Number.isSafeInteger(nx) || !Number.isSafeInteger(ny) || nx * ny > VOLUME_GRID_LIMIT) {
     throw new Error("Volume grid exceeds 1,000,000 cells; increase cell size or crop the surfaces");
   }
+  const grid: VolumeGrid = [minX - .5 * cell, minY - .5 * cell, nx, ny];
+  if (!grid.every(Number.isFinite)) throw new Error("Volume grid origin cannot be represented");
+  return grid;
+}
+export function validateVolumeGrid(bounds: readonly (readonly number[])[], cell: number): void {
+  sharedVolumeGrid(bounds, cell);
 }
 
 export function volumeCellsCsv(positions: Float32Array, shift: readonly number[], difference: Float32Array): string {

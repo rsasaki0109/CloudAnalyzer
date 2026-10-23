@@ -2187,7 +2187,7 @@ async function handle(
       const after = surface(req.after);
       let out: ReturnType<typeof computeVolume>;
       try {
-        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false);
+        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false, req.sharedGrid ? new Float64Array(req.sharedGrid) : undefined);
       } finally { before.free(); after.free(); }
       const value: VolumeOutput = {
         added: out.added,

@@ -320,6 +320,13 @@
           <p class="hint small">Up to 32 named rectangles, saved with projects or separately as JSON. Loading definitions replaces the saved list. Check coordinate frame and units before reuse. Area summaries use the same Before/After and options, add no point clouds, and are independent: overlapping areas must not be summed.</p>
           <p class="hint small">Includes cells whose centers are inside the rectangle, edges included. Each included cell contributes its full square area; boundary cells are not clipped. Grid and interpolation still use full loaded surfaces. Missing heights are excluded, not zero change. Copying bounds does not run either analysis.</p>
         </details>
+        <details id="volume-visits-options" class="options">
+          <summary>Repeated visits by area</summary>
+          <label>Visit surfaces <select id="volume-visits" multiple size="5" aria-describedby="volume-visits-help"></select></label>
+          <p id="volume-visits-help" class="hint small">Select up to 8 loaded surfaces (Ctrl / Command to select several). Before is the fixed baseline; After is unused here. All saved areas and volume options apply. Rows follow loaded order; use dated filenames to identify visits. Selections and results are not saved in projects.</p>
+          <button id="volume-visits-run">Compare visits with baseline</button>
+          <p class="hint small">One common grid across the baseline and selected visits. Missing support can differ between visits, even with equal counts. Totals are relative to the baseline; subtracting them does not establish between-visit earthwork.</p>
+        </details>
         <details id="volume-options" class="options">
           <summary>Options</summary>
           <div class="range">
@@ -344,6 +351,11 @@
           <p id="volume-areas-scope" class="hint small"></p>
           <div class="review-table-wrap" tabindex="0" aria-label="Area volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-areas-rows"></tbody></table></div>
           <div class="button-row"><button id="volume-areas-json">Save area summaries JSON</button><button id="volume-areas-csv">Save area summaries CSV</button></div>
+        </div>
+        <div id="volume-visits-result" hidden>
+          <p id="volume-visits-scope" class="hint small"></p>
+          <div class="review-table-wrap" tabindex="0" aria-label="Repeated visit volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Visit / area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-visits-rows"></tbody></table></div>
+          <div class="button-row"><button id="volume-visits-json">Save visit summaries JSON</button><button id="volume-visits-csv">Save visit summaries CSV</button></div>
         </div>
         <div id="volume-exports" hidden>
           <p id="volume-scope" class="hint small"></p>

@@ -179,7 +179,9 @@ impl VolumeOutput {
 /// Cut/fill volume between two surfaces on a grid of `cell`-sized squares.
 /// `height` is `"mean"`, `"min"` or `"max"`; `fill_empty` interpolates cells
 /// a surface does not cover.
+/// `shared_grid`, when supplied, is [lower-left X, lower-left Y, nx, ny].
 #[wasm_bindgen(js_name = computeVolume)]
+#[allow(clippy::too_many_arguments)] // Keep the existing positional JS API compatible.
 pub fn compute_volume(
     before: &VolumeSurface,
     after: &VolumeSurface,
@@ -188,6 +190,7 @@ pub fn compute_volume(
     fill_empty: bool,
     region: Option<Vec<f64>>,
     summary_only: bool,
+    shared_grid: Option<Vec<f64>>,
 ) -> Result<VolumeOutput, JsError> {
     use ca_core::volume::{CellHeight, VolumeParams};
     let height = match height {
@@ -207,8 +210,37 @@ pub fn compute_volume(
                 .map_err(|_| JsError::new("volume region needs four world XY bounds"))
         })
         .transpose()?;
-    let r = ca_core::volume::volume_in_region(before.surface(), after.surface(), params, region)
-        .ok_or_else(|| JsError::new("need a positive cell size and at least one cloud or mesh"))?;
+    let result = if let Some(values) = shared_grid {
+        if values.len() != 4
+            || !values.iter().all(|v| v.is_finite())
+            || values[2] < 1.0
+            || values[3] < 1.0
+            || values[2].fract() != 0.0
+            || values[3].fract() != 0.0
+            || values[2] * values[3] > 1_000_000.0
+        {
+            return Err(JsError::new(
+                "shared volume grid needs finite min X/Y and positive integer dimensions within 1,000,000 cells",
+            ));
+        }
+        ca_core::volume::volume_on_grid(
+            before.surface(),
+            after.surface(),
+            params,
+            region,
+            ca_core::volume::Grid {
+                min: [values[0], values[1]],
+                cell,
+                nx: values[2] as usize,
+                ny: values[3] as usize,
+            },
+        )
+    } else {
+        ca_core::volume::volume_in_region(before.surface(), after.surface(), params, region)
+    };
+    let r = result.ok_or_else(|| {
+        JsError::new("need a valid volume grid, region and at least one cloud or mesh")
+    })?;
     let mut positions = Vec::with_capacity(if summary_only { 0 } else { r.matched_cells });
     let mut difference = Vec::with_capacity(if summary_only { 0 } else { r.matched_cells });
     if !summary_only {

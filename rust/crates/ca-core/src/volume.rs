@@ -114,15 +114,41 @@ pub fn volume_in_region(
     params: VolumeParams,
     region: Option<[f64; 4]>,
 ) -> Option<VolumeResult> {
+    let grid = grid_for(&[before, after], params.cell)?;
+    volume_on_grid(before, after, params, region, grid)
+}
+
+/// Compute on an explicit shared grid, e.g. the union of several survey visits.
+/// Each comparison still excludes cells lacking either height; a shared grid
+/// does not imply a common observed footprint across visits.
+pub fn volume_on_grid(
+    before: Surface,
+    after: Surface,
+    params: VolumeParams,
+    region: Option<[f64; 4]>,
+    grid: Grid,
+) -> Option<VolumeResult> {
     if let Some(b) = region
         && (!b.iter().all(|v| v.is_finite()) || b[0] >= b[2] || b[1] >= b[3])
     {
         return None;
     }
-    if params.cell.is_nan() || params.cell <= 0.0 {
+    if !params.cell.is_finite()
+        || params.cell <= 0.0
+        || grid.cell != params.cell
+        || !grid.min.iter().all(|v| v.is_finite())
+        || grid.nx == 0
+        || grid.ny == 0
+        || grid.nx.checked_mul(grid.ny)? > 200_000_000
+        || !(grid.cell * grid.cell).is_finite()
+        || grid.cell * grid.cell == 0.0
+        || !grid
+            .center(grid.nx - 1, grid.ny - 1)
+            .iter()
+            .all(|v| v.is_finite())
+    {
         return None;
     }
-    let grid = grid_for(&[before, after], params.cell)?;
     let raster = |s: Surface| {
         let mut h = rasterize(s, &grid, params.height);
         if params.fill_empty {
@@ -172,6 +198,9 @@ pub fn volume_in_region(
 }
 
 pub(crate) fn grid_for(surfaces: &[Surface], cell: f64) -> Option<Grid> {
+    if !cell.is_finite() || cell <= 0.0 {
+        return None;
+    }
     let (mut lo, mut hi) = ([f64::INFINITY; 2], [f64::NEG_INFINITY; 2]);
     let mut extend = |p: &[f64; 3]| {
         for a in 0..2 {
@@ -381,6 +410,120 @@ mod tests {
             height: CellHeight::Mean,
             fill_empty: false,
         }
+    }
+
+    #[test]
+    fn shared_grid_keeps_visit_cells_aligned_and_preserves_missing_support() {
+        let baseline = [[0., 0., 10.], [1., 0., 10.], [2., 0., 10.]];
+        let visit = [[0., 0., 12.], [1., 0., 9.]];
+        let params = VolumeParams {
+            cell: 1.,
+            height: CellHeight::Mean,
+            fill_empty: false,
+        };
+        let grid = Grid {
+            min: [-1.1, -0.5],
+            cell: 1.,
+            nx: 4,
+            ny: 1,
+        };
+        let result = volume_on_grid(
+            Surface::Points(&baseline),
+            Surface::Points(&visit),
+            params,
+            None,
+            grid,
+        )
+        .unwrap();
+        assert_eq!(
+            (
+                result.added,
+                result.removed,
+                result.matched_cells,
+                result.total_cells
+            ),
+            (2., 1., 2, 4)
+        );
+        let selected = volume_on_grid(
+            Surface::Points(&baseline),
+            Surface::Points(&visit),
+            params,
+            Some([0.39, -0.1, 0.41, 0.1]),
+            grid,
+        )
+        .unwrap();
+        assert_eq!(
+            (
+                selected.added,
+                selected.removed,
+                selected.matched_cells,
+                selected.total_cells
+            ),
+            (2., 0., 1, 1)
+        );
+        let native = volume_in_region(
+            Surface::Points(&baseline),
+            Surface::Points(&visit),
+            params,
+            Some([0.39, -0.1, 0.41, 0.1]),
+        )
+        .unwrap();
+        assert_eq!(native.total_cells, 0);
+    }
+
+    #[test]
+    fn shared_grid_rejects_invalid_dimensions_origin_cell_and_region_before_allocation() {
+        let points = [[0., 0., 0.]];
+        let params = VolumeParams {
+            cell: 1.,
+            height: CellHeight::Mean,
+            fill_empty: false,
+        };
+        let good = Grid {
+            min: [-0.5, -0.5],
+            cell: 1.,
+            nx: 1,
+            ny: 1,
+        };
+        for grid in [
+            Grid { nx: 0, ..good },
+            Grid { ny: 0, ..good },
+            Grid {
+                nx: usize::MAX,
+                ny: 2,
+                ..good
+            },
+            Grid {
+                nx: 200_000_001,
+                ..good
+            },
+            Grid { cell: 2., ..good },
+            Grid {
+                min: [f64::NAN, 0.],
+                ..good
+            },
+        ] {
+            assert!(
+                volume_on_grid(
+                    Surface::Points(&points),
+                    Surface::Constant(1.),
+                    params,
+                    None,
+                    grid
+                )
+                .is_none()
+            );
+        }
+        assert!(
+            volume_on_grid(
+                Surface::Points(&points),
+                Surface::Constant(1.),
+                params,
+                Some([1., 0., 0., 1.]),
+                good
+            )
+            .is_none()
+        );
     }
 
     #[test]

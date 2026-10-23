@@ -13,6 +13,28 @@ The mean is over exceeding points in that region, not all points in its box.
 Cell size controls grouping; connected chains can form a broad region spanning
 much of a map. This is not object segmentation, and different heights can join.
 
+For a broad region, set **Inspection XY cell** (positive and no larger than the
+grouping cell), then click its **Inspect cells** button. This reuses the same
+distance snapshot and regroups only exceeding points belonging to that exact
+connected component. A different component inside its bounding box is excluded.
+Fine cells are independent bins, so adjacent cells do not merge into another
+broad chain. The XY origin is the minimum finite source XY, shared with coarse
+grouping; grid indices are zero-based, with half-open cells.
+
+The inspection ranks up to 50 occupied cells by maximum distance, then point
+count, then grid X/Y. It has no minimum-support filter within a region: a lone
+outlier can rank first. Click a cell row to frame its exceeding-point bounds
+with surrounding context (padding at least two inspection cells or 1.1 times
+its maximum distance) so an isolated source point does not fill the view alone.
+The summary explicitly counts points in unlisted cells. Separate cell JSON/CSV
+exports retain the parent region and settings (JSON), grid indices, counts,
+maximum/mean distances and original-coordinate point bounds. Cell CSV contains
+only listed rows; JSON records the grid origin and omitted-point count. These
+are point envelopes, not the full grid-cell footprint. QA reports include the
+current cell inspection. Editing the inspection size clears that inspection;
+changing the comparison/grouping settings or either cloud clears both levels.
+Cancellation stops the inspection worker and preserves the parent diagnosis.
+
 JSON includes the pair's runtime identities, loaded/file counts and sampling
 scope, settings, measured/unknown counts, total exceedances and listed regions.
 CSV contains only the listed ranked regions and their original-coordinate
@@ -32,6 +54,8 @@ is performed. The effective threshold is rounded to the precision of the stored
 f32 distances and recorded in JSON. Input coordinates plus distances are limited
 to 64 MiB, reference XYZ to 64 MiB, and exceeding occupied cells to 50,000. Limit
 failures request a crop/coarser cell rather than silently truncating inputs.
+Fine inspection has the same 50,000 occupied-cell limit and rejects an
+unrepresentable or over-budget grid rather than truncating it.
 
 **Large distances are inspection candidates, not confirmed registration defects.**
 Scene changes, occlusion, sparse sampling and missing reference coverage can all

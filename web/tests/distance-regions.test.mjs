@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { locateDistanceRegions, distanceRegionsCsv, REGION_INPUT_BYTES } from '../src/distance-regions.ts';
+import { locateDistanceRegions, inspectDistanceCells, distanceCellsCsv, distanceRegionsCsv, REGION_INPUT_BYTES } from '../src/distance-regions.ts';
 const xyz=points=>Float32Array.from(points.flatMap(p=>[p[0],p[1],p[2]??0]));
 test('regions rank actual exceedances, preserve world bounds and count unknown rows separately',()=>{
   const p=xyz([[0,0],[.25,0],[2,2,1],[2.5,2,1],[10,0,2],[NaN,0],[0,0,NaN],[5,5]]);
@@ -49,4 +49,36 @@ test('CSV contains exactly the ranked, listed world-coordinate regions and a val
   const r=locateDistanceRegions(xyz([[1,2,3]]),Float32Array.of(2),[10,20,30],0,1,1);
   const csv=distanceRegionsCsv(r).trim().split('\n');assert.equal(csv.length,2);assert.equal(csv[1],'1,1,2,2,11,22,33,11,22,33');
   r.regions=[];assert.equal(distanceRegionsCsv(r).trim().split('\n').length,1);
+});
+
+test('inspection selects exact component membership even with another component inside its bounding box',()=>{
+  // A perimeter surrounds a separate center cell without connecting to it.
+  const ring=[];for(let x=0;x<=6;x++)for(let y=0;y<=6;y++)if(x===0||x===6||y===0||y===6)ring.push([x,y]);
+  const p=xyz([...ring,[3,3],[0,0,1],[0,0,2]]),d=Float32Array.from([...ring.map(()=>2),9,.1,NaN]);
+  const before=p.slice(),dist=d.slice();const r=inspectDistanceCells(p,d,[100,200,300],.3,1,1,2,.5);
+  assert.equal(r.regionPoints,24);assert.equal(r.occupiedCells,24);assert.equal(r.unlistedPoints,0);
+  assert.equal(r.cells.reduce((n,c)=>n+c.points,0),24);assert.ok(r.cells.every(c=>c.maxDistance===2));
+  assert.deepEqual(r.gridOrigin,[100,200]);assert.deepEqual(r.cells[0].bounds,[100,200,300,100,200,300]);
+  assert.deepEqual(p,before);assert.deepEqual(d,dist);
+});
+
+test('inspection preserves all region points, lists top 50 cells and does not filter low support cells',()=>{
+  const p=xyz(Array.from({length:61},(_,i)=>[i,0])),d=Float32Array.from({length:61},(_,i)=>i+1);
+  const r=inspectDistanceCells(p,d,[0,0,0],0,100,60,1,.5);
+  assert.equal(r.regionPoints,61);assert.equal(r.occupiedCells,61);assert.equal(r.cells.length,50);assert.equal(r.unlistedPoints,11);
+  assert.equal(r.cells[0].maxDistance,61);assert.equal(r.cells[49].maxDistance,12);
+  assert.equal(r.cells.reduce((n,c)=>n+c.points,0)+r.unlistedPoints,r.regionPoints);
+  const reverse=inspectDistanceCells(xyz(Array.from({length:61},(_,i)=>[60-i,0])),d.toReversed(),[0,0,0],0,100,60,1,.5);
+  assert.deepEqual(reverse,r);assert.equal(distanceCellsCsv(r).trim().split('\n').length,51);
+  assert.equal(distanceCellsCsv(r).split('\n')[1],'1,1,120,0,1,61,61,60,0,0,60,0,0');
+});
+
+test('inspection rejects absent selections, unsafe grids and over-budget fine cells without truncation',()=>{
+  const p=xyz([[0,0],[1,0]]),d=Float32Array.of(1,1);
+  for(const [rank,size] of [[0,1],[51,1],[1.5,1],[1,0],[1,2],[1,NaN]])assert.throws(()=>inspectDistanceCells(p,d,[0,0,0],0,1,1,rank,size));
+  assert.throws(()=>inspectDistanceCells(p,d,[0,0,0],0,1,1,2,.5),/no longer/);
+  assert.throws(()=>inspectDistanceCells(p,d,[0,0,0],0,1,1,1,1e-30),/extent/);
+  assert.throws(()=>inspectDistanceCells(p,d,[1e16,0,0],0,10,1,1,.1),/extent/);
+  const n=50001;
+  assert.throws(()=>inspectDistanceCells(xyz(Array.from({length:n},(_,i)=>[i,0])),new Float32Array(n).fill(1),[0,0,0],0,100000,1,1,.5),/50,000/);
 });

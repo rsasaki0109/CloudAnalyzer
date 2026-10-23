@@ -225,6 +225,13 @@
             <p id="regions-summary" class="small" role="status"></p>
             <ol id="regions-list" class="loop-list"></ol>
             <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
+            <label>Inspection XY cell <input id="regions-fine-cell" type="number" min="0" step="any" value="1" /></label>
+            <p class="hint small">Inspect a region's cells to narrow down connected chains. Uses the same distances; ranks up to 50 cells by maximum distance, then point count. No minimum support filter within a region.</p>
+            <div id="regions-cells" hidden>
+              <p id="regions-cells-summary" class="small" role="status"></p>
+              <ol id="regions-cells-list" class="loop-list"></ol>
+              <div class="button-row"><button id="regions-cells-json">Save cell inspection JSON</button><button id="regions-cells-csv">Save listed cells CSV</button></div>
+            </div>
           </div>
           <p class="hint small">Source → reference unsigned nearest distances only. Changes, occlusion and missing reference coverage can also produce large distances. Groups are XY inspection candidates, not confirmed registration defects. Threshold/cell edits reuse distances only while both loaded clouds remain unchanged. Cancellation discards diagnostics; an active C2C call may finish first.</p>
         </details>

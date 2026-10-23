@@ -14,6 +14,11 @@ export interface DistanceRegions {
   regions: DistanceRegion[];
 }
 interface Bucket { x: number; y: number; points: number; sum: number; max: number; bounds: number[] }
+export interface DistanceCells {
+  regionRank: number; regionPoints: number; threshold: number; effectiveThreshold: number;
+  parentCell: number; cell: number; gridOrigin: [number, number]; occupiedCells: number; unlistedPoints: number;
+  cells: (DistanceRegion & { gridX: number; gridY: number })[];
+}
 export function validateRegionSettings(threshold: number, cell: number, minPoints: number): number {
   const cutoff = Math.fround(threshold);
   if (!Number.isFinite(threshold) || threshold < 0 || !Number.isFinite(cutoff) || !Number.isFinite(cell) || cell <= 0 ||
@@ -24,6 +29,19 @@ export function validateRegionSettings(threshold: number, cell: number, minPoint
 }
 export function locateDistanceRegions(positions: Float32Array, distances: Float32Array, shift: readonly number[],
   threshold: number, cell: number, minPoints: number): DistanceRegions {
+  return analyze(positions, distances, shift, threshold, cell, minPoints).summary;
+}
+export function inspectDistanceCells(positions: Float32Array, distances: Float32Array, shift: readonly number[],
+  threshold: number, cell: number, minPoints: number, regionRank: number, fineCell: number): DistanceCells {
+  if (!Number.isSafeInteger(regionRank) || regionRank < 1 || regionRank > REGION_LIST_LIMIT ||
+      !Number.isFinite(fineCell) || fineCell <= 0 || fineCell > cell) {
+    throw new Error("Choose a listed region and a positive inspection cell no larger than the grouping cell");
+  }
+  return analyze(positions, distances, shift, threshold, cell, minPoints, { regionRank, fineCell }).inspection!;
+}
+function analyze(positions: Float32Array, distances: Float32Array, shift: readonly number[],
+  threshold: number, cell: number, minPoints: number, inspect?: { regionRank: number; fineCell: number }):
+  { summary: DistanceRegions; inspection?: DistanceCells } {
   if (!distances.length || positions.length !== distances.length * 3 || positions.byteLength + distances.byteLength > REGION_INPUT_BYTES) {
     throw new Error("Discrepancy input must have matching XYZ/distances up to 64 MiB; crop a smaller area");
   }
@@ -60,7 +78,7 @@ export function locateDistanceRegions(positions: Float32Array, distances: Float3
     bucket.points++; bucket.sum += distance; bucket.max = Math.max(bucket.max, distance);
     for (let axis = 0; axis < 3; axis++) { bucket.bounds[axis] = Math.min(bucket.bounds[axis], world[axis]); bucket.bounds[axis + 3] = Math.max(bucket.bounds[axis + 3], world[axis]); }
   }
-  const occupiedCells = buckets.size, groups: Bucket[] = [], queue: Bucket[] = [];
+  const occupiedCells = buckets.size, groups: (Bucket & { members: Bucket[] })[] = [], queue: Bucket[] = [];
   while (buckets.size) {
     const seed = buckets.values().next().value!; buckets.delete(key(seed.x, seed.y));
     const group: Bucket = { ...seed, points: 0, sum: 0, max: 0, bounds: [...seed.bounds] };
@@ -74,15 +92,46 @@ export function locateDistanceRegions(positions: Float32Array, distances: Float3
         if (neighbor) { buckets.delete(id); queue.push(neighbor); }
       }
     }
-    groups.push(group);
+    groups.push({ ...group, members: inspect ? queue.slice() : [] });
   }
   const eligible = groups.filter(g => g.points >= minPoints).sort((a, b) => b.max - a.max || b.points - a.points || a.x - b.x || a.y - b.y);
-  return { threshold, effectiveThreshold: cutoff, cell, minPoints, points: distances.length, measured, invalidPositions, unmeasured,
+  const summary: DistanceRegions = { threshold, effectiveThreshold: cutoff, cell, minPoints, points: distances.length, measured, invalidPositions, unmeasured,
     exceeding, occupiedCells, components: groups.length, eligibleRegions: eligible.length,
     smallRegionPoints: groups.filter(g => g.points < minPoints).reduce((n, g) => n + g.points, 0),
     unlistedEligiblePoints: eligible.slice(REGION_LIST_LIMIT).reduce((n, g) => n + g.points, 0),
     regions: eligible.slice(0, REGION_LIST_LIMIT).map((g, i) => ({ rank: i + 1, points: g.points, maxDistance: g.max,
       meanDistance: g.sum / g.points, bounds: g.bounds as DistanceRegion["bounds"] })) };
+  if (!inspect) return { summary };
+  const selected = eligible[inspect.regionRank - 1];
+  if (!selected) throw new Error("Selected region is no longer available");
+  const members = new Set(selected.members.map(b => key(b.x, b.y))), fine = new Map<string, Bucket>();
+  for (let i = 0; i < distances.length; i++) {
+    const d = distances[i], px = positions[i * 3], py = positions[i * 3 + 1], pz = positions[i * 3 + 2];
+    if (!Number.isFinite(d) || d <= cutoff || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(pz) ||
+        !members.has(key(Math.floor((px - minX) / cell), Math.floor((py - minY) / cell)))) continue;
+    const x = Math.floor((px - minX) / inspect.fineCell), y = Math.floor((py - minY) / inspect.fineCell);
+    const world = [px + shift[0], py + shift[1], pz + shift[2]];
+    if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y) || world[0] + inspect.fineCell === world[0] || world[1] + inspect.fineCell === world[1]) {
+      throw new Error("Inspection cell cannot represent this extent; increase cell size or crop");
+    }
+    let b = fine.get(key(x, y));
+    if (!b) {
+      if (fine.size === REGION_CELL_LIMIT) throw new Error("Inspection exceeds 50,000 occupied cells; increase inspection cell size or crop");
+      b = { x, y, points: 0, sum: 0, max: 0, bounds: [...world, ...world] }; fine.set(key(x, y), b);
+    }
+    b.points++; b.sum += d; b.max = Math.max(b.max, d);
+    for (let axis = 0; axis < 3; axis++) { b.bounds[axis] = Math.min(b.bounds[axis], world[axis]); b.bounds[axis + 3] = Math.max(b.bounds[axis + 3], world[axis]); }
+  }
+  const ranked = [...fine.values()].sort((a, b) => b.max - a.max || b.points - a.points || a.x - b.x || a.y - b.y);
+  return { summary, inspection: { regionRank: inspect.regionRank, regionPoints: selected.points, threshold, effectiveThreshold: cutoff,
+    parentCell: cell, cell: inspect.fineCell, gridOrigin: [minX + shift[0], minY + shift[1]], occupiedCells: fine.size,
+    unlistedPoints: ranked.slice(REGION_LIST_LIMIT).reduce((n, b) => n + b.points, 0),
+    cells: ranked.slice(0, REGION_LIST_LIMIT).map((b, i) => ({ rank: i + 1, gridX: b.x, gridY: b.y, points: b.points,
+      maxDistance: b.max, meanDistance: b.sum / b.points, bounds: b.bounds as DistanceRegion["bounds"] })) } };
+}
+export function distanceCellsCsv(result: DistanceCells): string {
+  return ["region_rank,cell_rank,grid_x,grid_y,exceeding_points,max_distance,mean_distance,min_x,min_y,min_z,max_x,max_y,max_z",
+    ...result.cells.map(c => [result.regionRank, c.rank, c.gridX, c.gridY, c.points, c.maxDistance, c.meanDistance, ...c.bounds].join(","))].join("\n") + "\n";
 }
 export function distanceRegionsCsv(result: DistanceRegions): string {
   return ["rank,exceeding_points,max_distance,mean_distance,min_x,min_y,min_z,max_x,max_y,max_z",

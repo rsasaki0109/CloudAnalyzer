@@ -40,8 +40,10 @@ distances, with reuse while the same input pair remains unchanged.
 [Cut/fill surface volume](surface-volume.md) uses the selected reference as
 Before and source as After, with interpolation initially off. It reports added,
 removed and net volume, displays signed cell-height differences, and exports
-input/settings-aware JSON and compared-cell CSV. Crop surfaces to limit volume
-to a site; distance-review overlap bounds apply only to distance analysis.
+input/settings-aware JSON and compared-cell CSV. The volume Review area selects
+grid cells by their centers; copy bounds explicitly between volume and distance
+review to use the same rectangle. Distance review selects query points, while
+volume counts full cell areas. Crop inputs to reduce full-grid processing.
 
 Processing uses a cancellable worker, up to 64 MiB of loaded XYZ coordinates,
 262,144 cells and 2,048 cells per axis. Oversized requests fail with a crop/cell-size

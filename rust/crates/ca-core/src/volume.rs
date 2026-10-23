@@ -76,7 +76,8 @@ pub struct VolumeResult {
     pub removed: f64,
     pub added_area: f64,
     pub removed_area: f64,
-    /// Cells where both surfaces are defined, and all cells.
+    /// Cells where both surfaces are defined, and cells in the review region
+    /// (the full grid when no region is supplied).
     pub matched_cells: usize,
     pub total_cells: usize,
 }
@@ -100,6 +101,24 @@ impl VolumeResult {
 /// extent of the non-constant surfaces. Returns `None` if both surfaces are
 /// constant or empty, or the cell size is not positive.
 pub fn volume(before: Surface, after: Surface, params: VolumeParams) -> Option<VolumeResult> {
+    volume_in_region(before, after, params, None)
+}
+
+/// Keep cells whose centers are inside a closed world-XY rectangle.
+/// Rasterization, interpolation and grid origin still use the full surfaces.
+/// Included cells contribute their full area; boundary squares are not clipped.
+/// Outside cells are undefined in the returned rasters and excluded from counts.
+pub fn volume_in_region(
+    before: Surface,
+    after: Surface,
+    params: VolumeParams,
+    region: Option<[f64; 4]>,
+) -> Option<VolumeResult> {
+    if let Some(b) = region
+        && (!b.iter().all(|v| v.is_finite()) || b[0] >= b[2] || b[1] >= b[3])
+    {
+        return None;
+    }
     if params.cell.is_nan() || params.cell <= 0.0 {
         return None;
     }
@@ -111,12 +130,22 @@ pub fn volume(before: Surface, after: Surface, params: VolumeParams) -> Option<V
         }
         h
     };
-    let (b, a) = (raster(before), raster(after));
+    let (mut b, mut a) = (raster(before), raster(after));
     let area = grid.cell * grid.cell;
     let (mut added, mut removed, mut added_area, mut removed_area, mut matched) =
         (0.0, 0.0, 0.0, 0.0, 0);
-    for (hb, ha) in b.iter().zip(&a) {
-        let d = ha - hb;
+    let mut total_cells = 0;
+    for (k, (hb, ha)) in b.iter_mut().zip(&mut a).enumerate() {
+        if let Some(bounds) = region {
+            let [x, y] = grid.center(k % grid.nx, k / grid.nx);
+            if x < bounds[0] || x > bounds[2] || y < bounds[1] || y > bounds[3] {
+                *hb = f64::NAN;
+                *ha = f64::NAN;
+                continue;
+            }
+        }
+        total_cells += 1;
+        let d = *ha - *hb;
         if d.is_nan() {
             continue;
         }
@@ -131,7 +160,7 @@ pub fn volume(before: Surface, after: Surface, params: VolumeParams) -> Option<V
     }
     Some(VolumeResult {
         grid,
-        total_cells: b.len(),
+        total_cells,
         before: b,
         after: a,
         added,
@@ -355,6 +384,112 @@ mod tests {
     }
 
     #[test]
+    fn review_region_keeps_grid_origin_closed_edges_and_missing_cell_accounting() {
+        let before: Vec<_> = (0..6)
+            .map(|i| [1000.0 + (i % 3) as f64, 2000.0 + (i / 3) as f64, 10.0])
+            .collect();
+        let after: Vec<_> = before[..5]
+            .iter()
+            .enumerate()
+            .map(|(i, p)| [p[0], p[1], p[2] + [2.0, -1.0, 0.0, 0.0, 0.0][i]])
+            .collect();
+        let full = volume(
+            Surface::Points(&before),
+            Surface::Points(&after),
+            params(1.0),
+        )
+        .unwrap();
+        let selected = volume_in_region(
+            Surface::Points(&before),
+            Surface::Points(&after),
+            params(1.0),
+            Some([1001.0, 1999.5, 1002.0, 2001.5]),
+        )
+        .unwrap();
+        assert_eq!(selected.grid, full.grid);
+        assert_eq!((selected.total_cells, selected.matched_cells), (4, 3));
+        assert_eq!(
+            (selected.added, selected.removed, selected.removed_area),
+            (0.0, 1.0, 1.0)
+        );
+        assert!(selected.before[0].is_nan() && selected.after[0].is_nan());
+        assert!(selected.before[3].is_nan() && selected.after[3].is_nan());
+        assert!(selected.after[5].is_nan()); // Missing inside, distinct from outside.
+        assert_eq!((full.added, full.removed, full.total_cells), (2.0, 1.0, 6));
+        // A narrow region keeps a full square cell, not its intersected fraction.
+        let narrow = volume_in_region(
+            Surface::Points(&before),
+            Surface::Points(&after),
+            params(1.0),
+            Some([1000.9, 1999.9, 1001.1, 2000.1]),
+        )
+        .unwrap();
+        assert_eq!(
+            (narrow.total_cells, narrow.removed_area, narrow.removed),
+            (1, 1.0, 1.0)
+        );
+    }
+
+    #[test]
+    fn review_region_handles_empty_selection_invalid_bounds_and_full_grid_interpolation() {
+        let points = [[0.0, 0.0, 2.0], [2.0, 0.0, 2.0]];
+        let area = Some([0.9, -0.1, 1.1, 0.1]);
+        let raw = volume_in_region(
+            Surface::Constant(0.0),
+            Surface::Points(&points),
+            params(1.0),
+            area,
+        )
+        .unwrap();
+        assert_eq!((raw.total_cells, raw.matched_cells, raw.added), (1, 0, 0.0));
+        let mut interpolated = params(1.0);
+        interpolated.fill_empty = true;
+        let filled = volume_in_region(
+            Surface::Constant(0.0),
+            Surface::Points(&points),
+            interpolated,
+            area,
+        )
+        .unwrap();
+        assert_eq!(
+            (filled.total_cells, filled.matched_cells, filled.added),
+            (1, 1, 2.0)
+        );
+        let empty = volume_in_region(
+            Surface::Constant(0.0),
+            Surface::Points(&points),
+            params(1.0),
+            Some([10.0, 10.0, 11.0, 11.0]),
+        )
+        .unwrap();
+        assert_eq!(
+            (
+                empty.total_cells,
+                empty.matched_cells,
+                empty.added,
+                empty.removed
+            ),
+            (0, 0, 0.0, 0.0)
+        );
+        assert!(empty.before.iter().all(|v| v.is_nan()));
+        for bounds in [
+            [0.0, 0.0, 0.0, 1.0],
+            [2.0, 0.0, 1.0, 1.0],
+            [0.0, f64::NAN, 1.0, 1.0],
+        ] {
+            assert!(
+                volume_in_region(
+                    Surface::Constant(0.0),
+                    Surface::Points(&points),
+                    params(1.0),
+                    Some(bounds)
+                )
+                .is_none()
+            );
+        }
+    }
+
+    #[test]
     fn mound_over_a_flat_constant() {
         // A 10 x 10 m block 2 m high on a 40 x 40 m site: 200 m3 of fill.
         let after = surface(40.0, 1.0, |x, y| {
@@ -418,6 +553,15 @@ mod tests {
         // 1 m above the plane everywhere: 20 x 20 m -> 400 m3.
         assert!((r.added - 400.0).abs() < 1e-6, "{}", r.added);
         assert!(r.removed < 1e-9);
+        let scoped = volume_in_region(
+            Surface::Mesh(&mesh),
+            Surface::Points(&points),
+            params(0.5),
+            Some([0.25, 0.25, 9.75, 9.75]),
+        )
+        .unwrap();
+        assert!((scoped.added - 100.0).abs() < 1e-6);
+        assert_eq!((scoped.total_cells, scoped.matched_cells), (400, 400));
     }
 
     #[test]

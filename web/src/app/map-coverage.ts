@@ -122,7 +122,7 @@ prepareVolume.onclick = () => {
   }
   const fill = $<HTMLInputElement>("volume-fill"); fill.checked = false; fill.dispatchEvent(new Event("change"));
   $("volume-panel").scrollIntoView({ block: "start" });
-  setStatus("Surface volume prepared: reference is Before, source is After; interpolation off. Check cell size, height mode and coordinate unit, then Compute volume. Full loaded surfaces are used; crop inputs to limit the site.");
+  setStatus("Surface volume prepared: reference is Before, source is After; interpolation off. Review the volume area, cell size, height mode and coordinate unit, then Compute volume. Use distance review area to copy its rectangle explicitly.");
 };
 prepareMesh.onclick = () => {
   if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before preparing terrain meshing", true);

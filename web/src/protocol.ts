@@ -272,6 +272,7 @@ export interface IcpOutput {
 export type VolumeSide = { id: number } | { z: number };
 
 export interface VolumeOutput {
+  outsideRegionCells: number;
   added: number;
   removed: number;
   addedArea: number;
@@ -924,6 +925,7 @@ export type Request =
   | { kind: "transform"; id: number; matrix: number[] }
   | {
       kind: "volume";
+      region?: readonly [number, number, number, number];
       before: VolumeSide;
       after: VolumeSide;
       cell: number;

@@ -130,7 +130,7 @@ test('compared After cells become a mesh and feed the existing cut/fill calculat
   const before = Array.from({ length: 6 }, (_, i) => [1000 + i % 3, 2000 + Math.floor(i / 3), 10]);
   await load(page, before, 'before.ply'); await load(page, before.slice(0, 5).map((p, i) => [p[0], p[1], p[2] + [2, -1, 0, 0, 0][i]]), 'after.ply');
   await page.locator('#coverage-source').selectOption({ label: 'after.ply' }); await page.locator('#coverage-reference').selectOption({ label: 'before.ply' });
-  await page.locator('#coverage-volume').click(); await page.locator('#volume-panel summary').click(); await page.locator('#volume-cell').fill('1');
+  await page.locator('#coverage-volume').click(); await page.locator('#volume-options > summary').click(); await page.locator('#volume-cell').fill('1');
   await page.locator('#volume-run').click(); await expect(page.locator('#status')).toContainText('fill 2 m³, cut 1 m³, net 1 m³');
   const volume = await json(page, '#volume-json'); await page.locator('#volume-mesh').click();
   await expect(page.locator('#mesh-cloud')).toHaveValue(String(volume.comparedCellCloud.id));

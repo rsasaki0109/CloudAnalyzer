@@ -77,6 +77,35 @@ failures request a crop/coarser cell rather than silently truncating inputs.
 Fine inspection has the same 50,000 occupied-cell limit and rejects an
 unrepresentable or over-budget grid rather than truncating it.
 
+After inspecting cells, use **Compare section** on a cell to plot source and
+reference heights in a straight XY band centered on that cell's exceeding-point
+bounds. **Cell section settings** chooses X/Y direction, length and band width
+in cloud units (defaults X, 20 and 2). The section includes **all finite loaded
+points inside the band**, even below the distance threshold. It uses exactly
+the selected pair, including a hidden member of that pair; other visible clouds
+are excluded. It does not change point positions or rerun C2C.
+
+Orange is the current direction's source, blue its reference. The plot uses
+distance along the line and original-coordinate height Z; height is automatically
+scaled unless **1:1** is checked. The 3D view frames the section and shows its
+band rectangle and centerline at the selected cell's center height. The existing
+manual profile remains separate. Empty series have count zero and no height
+range; they are not filled, matched or interpreted as confirmed missing data.
+Points include the band edges and line endpoints. There is no nearest-point
+height correspondence, signed height-error estimate or registration-accuracy
+score. Different surfaces or sampling can appear in the same band.
+
+**Save section summary JSON** records both runtime identities, loaded/sampled
+scope, cell bounds, section settings, selected/invalid counts and height ranges.
+**Save section points CSV** saves every plotted original XYZ with distance along
+the line and numeric cloud ID/role; names remain in JSON. Current section counts
+also appear in QA reports. Closing it, editing section settings, switching
+direction, invalidating the cell diagnosis or changing either cloud clears its
+plot, overlay and QA data. Computation uses a separate cancellable worker;
+cancellation publishes no partial result. Combined pair XYZ must fit within
+64 MiB and each series within 50,000 selected points, otherwise shorten/narrow
+the section or crop the pair. No silent sampling or output truncation is used.
+
 **Large distances are inspection candidates, not confirmed registration defects.**
 Scene changes, occlusion, sparse sampling and missing reference coverage can all
 produce them. This direction does not locate points missing from the source;

@@ -9,6 +9,7 @@ import { renderList } from "./entries";
 import { addReportSection } from "./report";
 import { display, distanceChanged, entries, listChanged, pointsInvalidated, toRender, viewer, type Entry } from "./state";
 import { endTask, startTask, taskActive } from "./tasks";
+import { clearDistanceSection, inspectDistanceSection } from "./distance-section";
 
 const source = $<HTMLSelectElement>("coverage-source"), reference = $<HTMLSelectElement>("coverage-reference");
 const threshold = $<HTMLInputElement>("regions-threshold"), cell = $<HTMLInputElement>("regions-cell"), minimum = $<HTMLInputElement>("regions-min");
@@ -23,6 +24,7 @@ let comparison: { forward: Diagnosis; reverse: Diagnosis } | null = null;
 let running = false, generation = 0;
 let inspection: { parent: Diagnosis; result: DistanceCells } | null = null;
 function clearInspection(): void {
+  clearDistanceSection();
   const hadResult = inspection !== null;
   inspection = null; $("regions-cells").hidden = true; $("regions-cells-list").replaceChildren();
   if (hadResult) distanceChanged.emit();
@@ -106,7 +108,11 @@ async function inspectCells(parent: Diagnosis, rank: number): Promise<void> {
         if (inspection?.result !== result || last !== parent || !valid(parent.pair) || running || taskActive()) return;
         viewer.frameBox(new THREE.Box3(toRender(c.bounds.slice(0, 3)), toRender(c.bounds.slice(3, 6))).expandByScalar(Math.max(size * 2, c.maxDistance * 1.1))); projectChanged();
       };
-      row.append(focus); $("regions-cells-list").append(row);
+      const section = document.createElement("button"); section.textContent = "Compare section";
+      section.onclick = () => void inspectDistanceSection({ source: parent.pair.source, reference: parent.pair.reference,
+        regionRank: result.regionRank, cellRank: c.rank, bounds: c.bounds,
+        isCurrent: () => !running && last === parent && inspection?.result === result && valid(parent.pair) && parent.pair.source.entry.c2c === parent.pair.output });
+      row.append(focus, section); $("regions-cells-list").append(row);
     }
     $("regions-cells").hidden = false; distanceChanged.emit(); setStatus("Region cell inspection ready; distances were reused.");
   } catch (error) { setStatus("Could not inspect region cells: " + (signal.aborted ? "Cancelled" : errorText(error)), true); }

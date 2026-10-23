@@ -13,6 +13,9 @@ async function text(d:Download){const chunks:Buffer[]=[];for await(const c of aw
 async function json(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-json').click();return JSON.parse(await text(await d));}
 async function cellsJson(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-cells-json').click();return JSON.parse(await text(await d));}
 async function bothJson(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-both-json').click();return JSON.parse(await text(await d));}
+async function sectionJson(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-section-json').click();return JSON.parse(await text(await d));}
+async function prepareSection(page:Page){await setup(page);await run(page);await page.getByRole('button',{name:'Inspect cells',exact:true}).first().click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  await page.getByText('Cell section settings',{exact:true}).click();await page.locator('#regions-section-length').fill('2');await page.locator('#regions-section-width').fill('1');}
 async function trackDistances(page:Page){await page.evaluate(()=>{
   const original=Worker.prototype.postMessage;(window as any).distanceCalls=0;
   Worker.prototype.postMessage=function(message:any,...rest:any[]){if(message?.req?.kind==='c2c')(window as any).distanceCalls++;return (original as any).call(this,message,...rest);};
@@ -181,6 +184,64 @@ for(const action of ['cancel','settings'] as const)test(`bidirectional ${action}
   const report=page.waitForEvent('download');await page.locator('#report-json').click();const qa=JSON.parse(await text(await report));
   expect(qa.sections['bidirectional-regions']).toBeUndefined();expect(qa.sections['distance-regions']).toBeUndefined();
 });
+
+test('cell section compares only the selected pair, includes hidden reference, exports exact original heights and clears on settings edits',async({page},info)=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await prepareSection(page);
+  await page.locator('#file-input').setInputFiles(input('unrelated.ply',ply(patches(false).map(p=>[p[0],p[1],100]))));await expect(page.locator('#cloud-list > li')).toHaveCount(3);
+  await page.locator('#cloud-list > li').first().locator('input[type=checkbox]').uncheck();
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#status')).toContainText('Section comparison ready');
+  const r=await sectionJson(page);expect(r.source.name).toBe('map.ply');expect(r.reference.name).toBe('truth.ply');
+  expect(r.source.selectedPoints).toBe(9);expect(r.reference.selectedPoints).toBe(9);expect(r.source.zMin).toBe(1);expect(r.reference.zMax).toBe(0);
+  await expect(page.locator('#regions-section-summary')).not.toContainText('unrelated');await expect(page.locator('#profile-plot')).toBeHidden();
+  const csv=page.waitForEvent('download');await page.locator('#regions-section-csv').click();const rows=(await text(await csv)).trim().split('\n').slice(1).map(s=>s.split(','));
+  expect(rows).toHaveLength(18);expect(rows.filter(r=>r[0]==='source').every(r=>Number(r[5])===1)).toBe(true);expect(rows.filter(r=>r[0]==='reference').every(r=>Number(r[5])===0)).toBe(true);
+  await page.locator('#regions-section-equal').check();await page.screenshot({path:info.outputPath('controlled-section.png')});
+  const qa=page.waitForEvent('download');await page.locator('#report-json').click();expect(JSON.parse(await text(await qa)).sections['distance-section'].metrics.sourcePoints.value).toBe(9);
+  await page.locator('#regions-section-axis').selectOption('y');await expect(page.locator('#regions-section-plot')).toBeHidden();
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#status')).toContainText('Section comparison ready');expect((await sectionJson(page)).settings.axis).toBe('y');
+  await page.locator('#regions-section-close').click();const cleared=page.waitForEvent('download');await page.locator('#report-json').click();expect(JSON.parse(await text(await cleared)).sections['distance-section']).toBeUndefined();
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(1);expect(errors).toEqual([]);
+});
+
+test('section follows bidirectional source identity and disappears on direction or reference replacement',async({page})=>{
+  await prepareSection(page);await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).first().click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#status')).toContainText('Section comparison ready');
+  await page.locator('#regions-direction').selectOption('reverse');await expect(page.locator('#regions-section-plot')).toBeHidden();
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).first().click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#status')).toContainText('Section comparison ready');
+  const r=await sectionJson(page);expect(r.source.name).toBe('truth.ply');expect(r.reference.name).toBe('map.ply');expect(r.source.zMax).toBe(0);expect(r.reference.zMin).toBe(1);
+  await page.locator('#file-input').setInputFiles(input('truth.ply',ply(patches(false))));await expect(page.locator('#cloud-list > li')).toHaveCount(3);
+  await page.locator('#cloud-list > li').first().locator('button[title="Remove"]').click();await expect(page.locator('#regions-section-plot')).toBeHidden();
+});
+
+for(const action of ['cancel','settings'] as const)test(`section worker ${action} publishes no stale plot or QA data`,async({page})=>{
+  await prepareSection(page);await page.evaluate(action=>{
+    const original=Worker.prototype.postMessage;
+    Worker.prototype.postMessage=function(message:any,...rest:any[]){
+      if(message?.source?.positions&&message?.reference?.positions){
+        if(action==='cancel')document.getElementById('task-cancel')!.click();
+        else {const el=document.getElementById('regions-section-width') as HTMLInputElement;el.value='2';el.dispatchEvent(new Event('input'));}
+      }
+      return (original as any).call(this,message,...rest);
+    };
+  },action);
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#task')).toBeHidden();
+  if(action==='cancel')await expect(page.locator('#status')).toContainText('Cancelled');
+  await expect(page.locator('#regions-section-plot')).toBeHidden();await expect(page.locator('#regions-cells')).toBeVisible();
+  const qa=page.waitForEvent('download');await page.locator('#report-json').click();expect(JSON.parse(await text(await qa)).sections['distance-section']).toBeUndefined();
+});
+
+test('section shows an empty reference band explicitly without inventing matches',async({page})=>{
+  await page.goto('/');await page.locator('#file-input').setInputFiles([input('remote.ply',ply(patches(false).slice(0,9).map(p=>[p[0],p[1]+100,0]))),input('near.ply',ply(patches(false).slice(0,9)))]);
+  await expect(page.locator('#cloud-list > li')).toHaveCount(2);await expect(page.locator('#task')).toBeHidden();
+  await page.locator('#coverage-source').selectOption({label:'near.ply'});await page.locator('#coverage-reference').selectOption({label:'remote.ply'});
+  await page.getByText('Locate distance discrepancies',{exact:true}).click();await run(page);
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  await page.getByRole('button',{name:'Compare section',exact:true}).click();await expect(page.locator('#status')).toContainText('Section comparison ready');
+  const r=await sectionJson(page);expect(r.source.selectedPoints).toBe(9);expect(r.reference.selectedPoints).toBe(0);expect(r.reference.zMin).toBeNull();
+  await expect(page.locator('#regions-section-summary')).toContainText('remote.ply (0)');
+});
 test('actual existing survey subsets produce bounded directed regions without modifying sources',async({page},info)=>{
   const a=process.env.REGIONS_SOURCE,b=process.env.REGIONS_REFERENCE;test.skip(!a||!b,'Optional existing local surveys; no download in CI');test.setTimeout(180000);
   const rawA=await readFile(a!),rawB=await readFile(b!),sha=(v:Buffer)=>createHash('sha256').update(v).digest('hex');
@@ -220,5 +281,14 @@ test('actual existing survey subsets produce bounded directed regions without mo
   await page.locator('#regions-both-summary').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({path:info.outputPath('actual-bidirectional-regions.png')});
   expect(sha(await readFile(a!))).toBe(sha(rawA));expect(sha(await readFile(b!))).toBe(sha(rawB));expect(errors).toEqual([]);
   await writeFile(info.outputPath('both-receipt.json'),JSON.stringify({source_sha256:sha(rawA),reference_sha256:sha(rawB),result:both,
+    source_files_unchanged:true,browser_errors:errors,registration_defect_accuracy_measured:false},null,2));
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).first().click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#status')).toContainText('Section comparison ready');const section=await sectionJson(page);
+  expect(section.source.name).toBe('reference.ply');expect(section.reference.name).toBe('compared.ply');expect(section.source.selectedPoints).toBeGreaterThan(0);
+  expect(section.source.selectedPoints).toBeLessThanOrEqual(50000);expect(section.reference.selectedPoints).toBeLessThanOrEqual(50000);
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);
+  await page.screenshot({path:info.outputPath('actual-distance-section.png')});
+  expect(sha(await readFile(a!))).toBe(sha(rawA));expect(sha(await readFile(b!))).toBe(sha(rawB));expect(errors).toEqual([]);
+  await writeFile(info.outputPath('section-receipt.json'),JSON.stringify({source_sha256:sha(rawA),reference_sha256:sha(rawB),result:section,
     source_files_unchanged:true,browser_errors:errors,registration_defect_accuracy_measured:false},null,2));
 });

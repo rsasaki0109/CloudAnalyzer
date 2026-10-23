@@ -232,6 +232,11 @@
             <ol id="regions-list" class="loop-list"></ol>
             <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
             <label>Inspection XY cell <input id="regions-fine-cell" type="number" min="0" step="any" value="1" /></label>
+            <details class="options"><summary>Cell section settings</summary>
+              <label>Section direction <select id="regions-section-axis"><option value="x">X</option><option value="y">Y</option></select></label>
+              <div class="range"><label>Length <input id="regions-section-length" type="number" min="0" step="any" value="20" /></label><label>Band width <input id="regions-section-width" type="number" min="0" step="any" value="2" /></label></div>
+              <p class="hint small">Compare section on a cell plots all loaded points of the selected pair within this band, centered on its exceeding-point bounds. Other clouds are excluded. Units follow the clouds.</p>
+            </details>
             <p class="hint small">Inspect a region's cells to narrow down connected chains. Uses the same distances; ranks up to 50 cells by maximum distance, then point count. No minimum support filter within a region.</p>
             <div id="regions-cells" hidden>
               <p id="regions-cells-summary" class="small" role="status"></p>
@@ -1242,6 +1247,10 @@
         <button data-keep="outside" title="Remove the points inside the lasso (Delete)">Remove inside</button>
         <button data-keep="both" title="Split into the points inside and the rest">Split</button>
         <button id="segment-cancel" title="Stop segmenting (Esc)">Cancel</button>
+      </div>
+      <div id="regions-section-plot" class="profile-plot" hidden>
+        <div class="profile-head"><span id="regions-section-title"></span><label><input id="regions-section-equal" type="checkbox" /> 1:1</label><button id="regions-section-json">Save section summary JSON</button><button id="regions-section-csv">Save section points CSV</button><button id="regions-section-close" title="Close cell section">✕</button></div>
+        <p id="regions-section-summary" role="status"></p><canvas id="regions-section-canvas" aria-label="Selected source and reference section heights"></canvas>
       </div>
       <div id="profile-plot" class="profile-plot" hidden>
         <div class="profile-head">

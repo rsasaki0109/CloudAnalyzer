@@ -33,6 +33,10 @@ To inspect overlap shifts, choose an aligned reference or another pass and use
 **Prepare quality / overlap comparison**. This selects the existing map-quality
 tool; review the threshold/voxel settings before computing, or select C2C/M3C2.
 
+[Distance discrepancy regions](distance-regions.md) adds ranked candidate areas,
+click-to-focus inspection and CSV/JSON exports for unsigned source-to-reference
+distances, with reuse while the same input pair remains unchanged.
+
 Processing uses a cancellable worker, up to 64 MiB of loaded XYZ coordinates,
 262,144 cells and 2,048 cells per axis. Oversized requests fail with a crop/cell-size
 suggestion rather than silently sampling. Cancellation or source changes never

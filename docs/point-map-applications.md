@@ -31,7 +31,7 @@ estimate, not a closed-solid measurement.
 | Use | Available workflow | Next application work |
 | --- | --- | --- |
 | Construction / earthwork | Before/After heights, named rectangles, independent per-area cut/fill/net and missing-cell summaries, project/JSON definition reuse, JSON/CSV results, fixed-baseline repeated-visit comparisons on one union grid | Common observed-support comparisons and field validation |
-| Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence; independent human reviewed/deferred records with comments and JSON/CSV/QA exports | Archived-review comparison and independent real-map validation |
+| Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence; independent human reviewed/deferred records with comments and JSON/CSV/QA exports; read-only JSON archive viewing and HTML reports without clouds | Comparing archived reviews and independent real-map validation |
 | Terrain monitoring | Height changes, sections, M3C2 with detection limits, terrain meshes, repeated-visit summaries retaining grid/input/coverage limits | Common-support monitoring and independent field validation |
 
 The next-work column is planned. Named area summaries reuse the current input

@@ -414,3 +414,6 @@ label.inline input[type="color"] { width: 28px; height: 22px; padding: 0 2px; }
 .vm-legend .source-intensity { background: #ffe066; border-radius: 50%; }
 .vm-legend .source-coverage { background: #8b98a5; border-radius: 50%; }
 .vm-legend .no-evidence { background: repeating-linear-gradient(90deg,#5d899c 0 3px,transparent 3px 5px); }
+
+#review-archive-list { max-height: 420px; overflow-y: auto; overflow-wrap: anywhere; }
+#review-archive-list .archive-comment { white-space: pre-wrap; }

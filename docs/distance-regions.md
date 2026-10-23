@@ -5,6 +5,26 @@ then expand **Locate distance discrepancies**. Choose a distance threshold,
 grouping XY cell size and minimum exceeding points per region, and click
 **Compute & locate regions**.
 
+Use **Compare both directions** to compute source → reference and reference →
+source sequentially with the same settings. The summary shows exceeding and
+measured counts, their ratio, and unmeasured/invalid counts separately for each
+direction. Ratios exclude unmeasured/invalid rows; without measured points the
+ratio is unavailable. **Show direction** switches the heatmap, region list and
+cell inspection to the corresponding source cloud without rerunning distances.
+Switching direction clears the previous cell inspection. **Save both directions
+JSON** retains both source identities, full counts, settings and listed regions;
+the existing region JSON/CSV exports apply to the currently shown direction.
+QA reports retain both-direction counts as well as the shown direction's detail.
+
+Each direction caches its own distances for the exact input snapshots. Starting
+with a one-direction diagnosis reuses that direction and computes only the
+missing reverse distances. Threshold/grouping edits can reuse both snapshots.
+The both-direction result is published only after both directions finish and
+remain valid; cancellation or input/settings changes publish neither partial
+diagnosis. Running **Compute & locate regions** returns to one-direction output.
+Both-direction mode requires XYZ plus distances to fit within 64 MiB for each
+cloud, rather than the reference-XYZ-only limit of one-direction mode.
+
 The tool computes existing unsigned CPU C2C nearest-neighbor distances from the
 loaded source to the loaded reference. Points strictly above the threshold are
 grouped into eight-neighbor-connected XY cells, ranked by maximum distance,
@@ -60,7 +80,10 @@ unrepresentable or over-budget grid rather than truncating it.
 **Large distances are inspection candidates, not confirmed registration defects.**
 Scene changes, occlusion, sparse sampling and missing reference coverage can all
 produce them. This direction does not locate points missing from the source;
-swap the pair to inspect the reverse direction. It does not use signed M3C2
+use **Compare both directions** or swap the pair to inspect the reverse direction.
+Reference → source can expose reference areas absent from the source, but this
+is not proof of missing map data without an expected common survey footprint.
+It does not use signed M3C2
 distances or their significance tests. Use an expected overlap/survey footprint
 and source inspection before attributing a cause.
 

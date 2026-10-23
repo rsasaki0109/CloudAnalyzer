@@ -12,11 +12,13 @@ const input=(name:string,buffer:Buffer)=>({name,mimeType:'application/octet-stre
 async function text(d:Download){const chunks:Buffer[]=[];for await(const c of await d.createReadStream())chunks.push(c);return Buffer.concat(chunks).toString();}
 async function json(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-json').click();return JSON.parse(await text(await d));}
 async function cellsJson(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-cells-json').click();return JSON.parse(await text(await d));}
+async function bothJson(page:Page){const d=page.waitForEvent('download');await page.locator('#regions-both-json').click();return JSON.parse(await text(await d));}
+async function trackDistances(page:Page){await page.evaluate(()=>{
+  const original=Worker.prototype.postMessage;(window as any).distanceCalls=0;
+  Worker.prototype.postMessage=function(message:any,...rest:any[]){if(message?.req?.kind==='c2c')(window as any).distanceCalls++;return (original as any).call(this,message,...rest);};
+});}
 async function setup(page:Page){
-  await page.goto('/');await page.evaluate(()=>{
-    const original=Worker.prototype.postMessage;(window as any).distanceCalls=0;
-    Worker.prototype.postMessage=function(message:any,...rest:any[]){if(message?.req?.kind==='c2c')(window as any).distanceCalls++;return (original as any).call(this,message,...rest);};
-  });
+  await page.goto('/');await trackDistances(page);
   await page.locator('#file-input').setInputFiles([input('truth.ply',ply(patches(false))),input('map.ply',ply(patches(true)))]);
   await expect(page.locator('#cloud-list > li')).toHaveCount(2);await expect(page.locator('#task')).toBeHidden();
   await page.locator('#coverage-source').selectOption({label:'map.ply'});await page.locator('#coverage-reference').selectOption({label:'truth.ply'});
@@ -121,10 +123,68 @@ test('cell inspection validates size and discards cancelled or stale worker resu
   await page.getByRole('button',{name:'Inspect cells',exact:true}).first().click();await expect(page.locator('#status')).toContainText('inputs/settings changed');
   await expect(page.locator('#regions-cells')).toBeHidden();expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(1);
 });
+
+test('bidirectional regions expose asymmetric missing coverage, switch inspection direction and reuse both snapshots',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await trackDistances(page);
+  await page.locator('#file-input').setInputFiles([input('partial.ply',ply(patches(false).slice(0,18))),input('full.ply',ply(patches(false)))]);
+  await expect(page.locator('#cloud-list > li')).toHaveCount(2);await expect(page.locator('#task')).toBeHidden();
+  await page.locator('#coverage-source').selectOption({label:'full.ply'});await page.locator('#coverage-reference').selectOption({label:'partial.ply'});
+  await page.getByText('Locate distance discrepancies',{exact:true}).click();await page.locator('#regions-cell').fill('2');await page.locator('#regions-min').fill('1');
+  await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  const r=await bothJson(page);expect(r.forward.points).toBe(27);expect(r.reverse.points).toBe(18);
+  expect(r.forward.exceeding).toBe(9);expect(r.reverse.exceeding).toBe(0);expect(r.forward.exceedingFractionOfMeasured).toBe(1/3);expect(r.reverse.exceedingFractionOfMeasured).toBe(0);
+  expect(r.forward.reusedDistances).toBe(false);expect(r.reverse.reusedDistances).toBe(false);
+  await expect(page.locator('#regions-both-summary')).toContainText('33.33%');
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  expect((await cellsJson(page)).source.name).toBe('full.ply');
+  await page.locator('#regions-direction').selectOption('reverse');await expect(page.locator('#regions-cells')).toBeHidden();await expect(page.locator('#regions-list > li')).toHaveCount(0);
+  const reverse=await json(page);expect(reverse.source.name).toBe('partial.ply');expect(reverse.reference.name).toBe('full.ply');expect(reverse.exceeding).toBe(0);
+  const report=page.waitForEvent('download');await page.locator('#report-json').click();const qa=JSON.parse(await text(await report));
+  expect(qa.sections['bidirectional-regions'].metrics.forwardExceeding.value).toBe(9);expect(qa.sections['bidirectional-regions'].metrics.reverseExceeding.value).toBe(0);
+  expect(qa.sections['distance-region-cells']).toBeUndefined();
+  await page.locator('#regions-threshold').fill('.4');await expect(page.locator('#regions-result')).toBeHidden();
+  await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');const reused=await bothJson(page);
+  expect(reused.forward.reusedDistances).toBe(true);expect(reused.reverse.reusedDistances).toBe(true);
+  await run(page);await expect(page.locator('#regions-directions')).toBeHidden();
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);expect(errors).toEqual([]);
+});
+
+test('bidirectional comparison reuses an existing forward diagnosis and inspects reverse cells with correct source identity',async({page})=>{
+  await setup(page);await run(page);await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  const r=await bothJson(page);expect(r.forward.reusedDistances).toBe(true);expect(r.reverse.reusedDistances).toBe(false);
+  await page.locator('#regions-direction').selectOption('reverse');await page.getByRole('button',{name:'Inspect cells',exact:true}).first().click();
+  await expect(page.locator('#status')).toContainText('cell inspection ready');const cells=await cellsJson(page);
+  expect(cells.source.name).toBe('truth.ply');expect(cells.reference.name).toBe('map.ply');
+  await page.locator('#regions-direction').selectOption('forward');await expect(page.locator('#regions-cells')).toBeHidden();
+  expect((await json(page)).source.name).toBe('map.ply');expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);
+  await page.locator('#file-input').setInputFiles(input('truth.ply',ply(patches(false))));await expect(page.locator('#cloud-list > li')).toHaveCount(3);
+  await page.locator('#cloud-list > li').first().locator('button[title="Remove"]').click();await expect(page.locator('#regions-result')).toBeHidden();
+  const report=page.waitForEvent('download');await page.locator('#report-json').click();expect(JSON.parse(await text(await report)).sections['bidirectional-regions']).toBeUndefined();
+  await page.locator('#coverage-reference').selectOption({label:'truth.ply'});await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  const replaced=await bothJson(page);expect(replaced.forward.reference.id).not.toBe(r.forward.reference.id);
+  expect(replaced.forward.reusedDistances).toBe(false);expect(replaced.reverse.reusedDistances).toBe(false);expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(4);
+});
+
+for(const action of ['cancel','settings'] as const)test(`bidirectional ${action} during reverse computation publishes neither partial result`,async({page})=>{
+  await setup(page);await page.evaluate(action=>{
+    const original=Worker.prototype.postMessage;let calls=0;
+    Worker.prototype.postMessage=function(message:any,...rest:any[]){
+      if(message?.req?.kind==='c2c'&&++calls===2){
+        if(action==='cancel')document.getElementById('task-cancel')!.click();
+        else {const el=document.getElementById('regions-threshold') as HTMLInputElement;el.value='.4';el.dispatchEvent(new Event('input'));}
+      }
+      return (original as any).call(this,message,...rest);
+    };
+  },action);
+  await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText(action==='cancel'?'Cancelled':'inputs changed');
+  await expect(page.locator('#regions-result')).toBeHidden();await expect(page.locator('#regions-directions')).toBeHidden();
+  const report=page.waitForEvent('download');await page.locator('#report-json').click();const qa=JSON.parse(await text(await report));
+  expect(qa.sections['bidirectional-regions']).toBeUndefined();expect(qa.sections['distance-regions']).toBeUndefined();
+});
 test('actual existing survey subsets produce bounded directed regions without modifying sources',async({page},info)=>{
   const a=process.env.REGIONS_SOURCE,b=process.env.REGIONS_REFERENCE;test.skip(!a||!b,'Optional existing local surveys; no download in CI');test.setTimeout(180000);
   const rawA=await readFile(a!),rawB=await readFile(b!),sha=(v:Buffer)=>createHash('sha256').update(v).digest('hex');
-  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:1600,height:1000});await page.goto('/');
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:1600,height:1000});await page.goto('/');await trackDistances(page);
   await page.locator('#file-input').setInputFiles([a!,b!]);await expect(page.locator('#cloud-list > li')).toHaveCount(2,{timeout:120000});await expect(page.locator('#task')).toBeHidden();
   await page.locator('#coverage-source').selectOption({label:'compared.ply'});await page.locator('#coverage-reference').selectOption({label:'reference.ply'});
   await page.getByText('Locate distance discrepancies',{exact:true}).click();await page.locator('#regions-run').click();
@@ -146,5 +206,19 @@ test('actual existing survey subsets produce bounded directed regions without mo
   await page.screenshot({path:info.outputPath('actual-region-cells.png')});
   expect(sha(await readFile(a!))).toBe(sha(rawA));expect(sha(await readFile(b!))).toBe(sha(rawB));expect(errors).toEqual([]);
   await writeFile(info.outputPath('cells-receipt.json'),JSON.stringify({source_sha256:sha(rawA),reference_sha256:sha(rawB),result:cells,
+    source_files_unchanged:true,browser_errors:errors,registration_defect_accuracy_measured:false},null,2));
+  await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions',{timeout:120000});const both=await bothJson(page);
+  expect(both.forward.reusedDistances).toBe(true);expect(both.reverse.reusedDistances).toBe(false);expect(both.forward.exceeding).toBe(result.exceeding);
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);
+  for(const r of [both.forward,both.reverse]){
+    expect(r.measured+r.unmeasured+r.invalidPositions).toBe(r.points);
+    expect(r.regions.reduce((n:number,c:any)=>n+c.points,0)+r.smallRegionPoints+r.unlistedEligiblePoints).toBe(r.exceeding);
+    expect(r.exceedingFractionOfMeasured).toBe(r.exceeding/r.measured);
+  }
+  await page.locator('#regions-direction').selectOption('reverse');expect((await json(page)).source.name).toBe('reference.ply');
+  await page.getByRole('button',{name:'Fit',exact:true}).click();await page.getByRole('button',{name:'Top',exact:true}).click();
+  await page.locator('#regions-both-summary').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({path:info.outputPath('actual-bidirectional-regions.png')});
+  expect(sha(await readFile(a!))).toBe(sha(rawA));expect(sha(await readFile(b!))).toBe(sha(rawB));expect(errors).toEqual([]);
+  await writeFile(info.outputPath('both-receipt.json'),JSON.stringify({source_sha256:sha(rawA),reference_sha256:sha(rawB),result:both,
     source_files_unchanged:true,browser_errors:errors,registration_defect_accuracy_measured:false},null,2));
 });

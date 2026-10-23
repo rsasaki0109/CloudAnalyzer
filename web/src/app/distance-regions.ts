@@ -13,11 +13,13 @@ import { endTask, startTask, taskActive } from "./tasks";
 const source = $<HTMLSelectElement>("coverage-source"), reference = $<HTMLSelectElement>("coverage-reference");
 const threshold = $<HTMLInputElement>("regions-threshold"), cell = $<HTMLInputElement>("regions-cell"), minimum = $<HTMLInputElement>("regions-min");
 const button = $<HTMLButtonElement>("regions-run");
+const bothButton = $<HTMLButtonElement>("regions-both"), direction = $<HTMLSelectElement>("regions-direction");
 const fineCell = $<HTMLInputElement>("regions-fine-cell");
 type Snapshot = { entry: Entry; cloud: Entry["cloud"]; name: string };
 type Cache = { source: Snapshot; reference: Snapshot; output: NonNullable<Entry["c2c"]> };
 type Diagnosis = { pair: Cache; result: DistanceRegions; reused: boolean };
-let cache: Cache | null = null, last: Diagnosis | null = null;
+let cache: Cache | null = null, reverseCache: Cache | null = null, last: Diagnosis | null = null;
+let comparison: { forward: Diagnosis; reverse: Diagnosis } | null = null;
 let running = false, generation = 0;
 let inspection: { parent: Diagnosis; result: DistanceCells } | null = null;
 function clearInspection(): void {
@@ -26,20 +28,23 @@ function clearInspection(): void {
   if (hadResult) distanceChanged.emit();
 }
 function valid(pair: Cache): boolean {
+  const selected = [Number(source.value), Number(reference.value)];
   return [pair.source, pair.reference].every(s => entries.get(s.cloud.id) === s.entry && s.entry.cloud === s.cloud) &&
-    source.value === String(pair.source.cloud.id) && reference.value === String(pair.reference.cloud.id);
+    selected.includes(pair.source.cloud.id) && selected.includes(pair.reference.cloud.id) && selected[0] !== selected[1];
 }
 function clear(drop = false): void {
-  const hadResult = last !== null; generation++; last = null; if (drop) cache = null;
+  const hadResult = last !== null; generation++; last = null; comparison = null; if (drop) { cache = null; reverseCache = null; }
   clearInspection();
+  $("regions-directions").hidden = true;
   $("regions-result").hidden = true; $("regions-list").replaceChildren();
   if (hadResult) distanceChanged.emit();
 }
 function render(): void {
-  if (cache && !valid(cache)) clear(true);
+  if (cache && !valid(cache) || reverseCache && !valid(reverseCache)) clear(true);
   if (last && last.pair.source.entry.c2c !== last.pair.output) clear();
   const a = entries.get(Number(source.value)), b = entries.get(Number(reference.value));
-  button.disabled = running || !a || !b || a === b || a.cloud.kind !== "cloud" || b.cloud.kind !== "cloud";
+  button.disabled = bothButton.disabled = running || !a || !b || a === b || a.cloud.kind !== "cloud" || b.cloud.kind !== "cloud";
+  direction.disabled = running;
   threshold.disabled = cell.disabled = minimum.disabled = fineCell.disabled = running;
   for (const b of document.querySelectorAll<HTMLButtonElement>("#regions-list button, #regions-cells-list button")) b.disabled = running;
 }
@@ -64,6 +69,7 @@ function group<T = DistanceRegions>(pair: Cache, signal: AbortSignal, settings: 
   });
 }
 function show(result: DistanceRegions, pair: Cache, reused: boolean): void {
+  $("regions-list").replaceChildren();
   $("regions-summary").textContent = `${pair.source.name} → ${pair.reference.name}: ${result.exceeding.toLocaleString()} of ${result.measured.toLocaleString()} measured points exceed ${fmt(result.threshold)}. ${result.regions.length} of ${result.eligibleRegions.toLocaleString()} eligible regions shown; ${result.smallRegionPoints.toLocaleString()} points in below-minimum regions, ${result.unlistedEligiblePoints.toLocaleString()} in unlisted eligible regions. ${result.unmeasured.toLocaleString()} unmeasured; ${result.invalidPositions.toLocaleString()} invalid positions. ${reused ? "Reused the same distance snapshot." : "Computed unsigned CPU C2C distances."}`;
   for (const region of result.regions) {
     const row = document.createElement("li"), focus = document.createElement("button");
@@ -106,14 +112,28 @@ async function inspectCells(parent: Diagnosis, rank: number): Promise<void> {
   } catch (error) { setStatus("Could not inspect region cells: " + (signal.aborted ? "Cancelled" : errorText(error)), true); }
   finally { running = false; endTask(signal); render(); }
 }
-button.onclick = async () => {
+function publish(diagnosis: Diagnosis): void {
+  const { pair, result, reused } = diagnosis, a = pair.source.entry;
+  last = diagnosis;
+  a.c2c = pair.output; a.mode = "c2c"; display.activeC2c = a.cloud.id; display.range = { lo: 0, hi: result.threshold || 1 };
+  refreshColors(a); show(result, pair, reused); renderList(); distanceChanged.emit();
+}
+direction.onchange = () => {
+  if (!comparison) return;
+  if (running || taskActive() || workerBusy() || !valid(comparison.forward.pair) || !valid(comparison.reverse.pair)) {
+    direction.value = last === comparison.reverse ? "reverse" : "forward"; return;
+  }
+  generation++; clearInspection(); publish(direction.value === "reverse" ? comparison.reverse : comparison.forward);
+};
+const ratio = (r: DistanceRegions) => r.measured ? `${(r.exceeding / r.measured * 100).toFixed(2)}%` : "n/a (no measured points)";
+async function run(both: boolean): Promise<void> {
   if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before locating discrepancies", true);
   const a = entries.get(Number(source.value)), b = entries.get(Number(reference.value));
   if (!a || !b || a === b || a.cloud.kind !== "cloud" || b.cloud.kind !== "cloud") return;
   const settings = [Number(threshold.value), Number(cell.value), Number(minimum.value)];
   try {
     validateRegionSettings(...settings as [number, number, number]);
-    if (a.cloud.positions.byteLength / 3 * 4 > REGION_INPUT_BYTES || b.cloud.positions.byteLength > REGION_INPUT_BYTES) {
+    if (a.cloud.positions.byteLength / 3 * 4 > REGION_INPUT_BYTES || b.cloud.positions.byteLength * (both ? 4 / 3 : 1) > REGION_INPUT_BYTES) {
       throw new Error("Discrepancy input exceeds 64 MiB; crop a smaller source/reference area");
     }
   } catch (error) { return setStatus(errorText(error), true); }
@@ -122,27 +142,51 @@ button.onclick = async () => {
   const cancelled = () => { if (phase === "distance") setStatus("Cancel requested; the current C2C computation finishes before diagnostics stop."); };
   signal.addEventListener("abort", cancelled);
   try {
-    let pair = cache && valid(cache) ? cache : null; const reused = pair !== null;
-    if (!pair) {
-      const sourceSnapshot: Snapshot = { entry: a, cloud: a.cloud, name: a.cloud.name };
-      const referenceSnapshot: Snapshot = { entry: b, cloud: b.cloud, name: b.cloud.name };
-      setStatus("Computing unsigned source → reference distances…");
-      const output = await cloudToCloud(a.cloud.id, b.cloud.id, false, "cpu"); signal.throwIfAborted();
-      pair = { source: sourceSnapshot, reference: referenceSnapshot, output: { ...output, referenceName: referenceSnapshot.name } };
+    // Snapshot both inputs before either asynchronous direction starts.
+    const snapshots = [a, b].map(entry => ({ entry, cloud: entry.cloud, name: entry.cloud.name }));
+    async function diagnose(from: Snapshot, to: Snapshot, cached: Cache | null): Promise<Diagnosis> {
+      signal.throwIfAborted();
+      if (!snapshots.every(s => entries.get(s.cloud.id) === s.entry && s.entry.cloud === s.cloud) || token !== generation) throw new Error("Comparison inputs/settings changed; run the diagnosis again");
+      let pair = cached && valid(cached) && cached.source.cloud === from.cloud && cached.reference.cloud === to.cloud ? cached : null;
+      const reused = pair !== null;
+      if (!pair) {
+        phase = "distance"; setStatus(`Computing unsigned ${from.name} → ${to.name} distances…`);
+        const output = await cloudToCloud(from.cloud.id, to.cloud.id, false, "cpu"); signal.throwIfAborted();
+        pair = { source: from, reference: to, output: { ...output, referenceName: to.name } };
+      }
+      if (!valid(pair) || token !== generation) throw new Error("Comparison inputs changed; run the diagnosis again");
+      phase = "group"; setStatus(`Grouping ${from.name} → ${to.name} points above the distance threshold…`);
+      const result = await group(pair, signal, settings); signal.throwIfAborted();
+      if (!valid(pair) || token !== generation) throw new Error("Comparison inputs/settings changed; run the diagnosis again");
+      return { pair, result, reused };
     }
-    if (!valid(pair) || token !== generation) throw new Error("Comparison inputs changed; run the diagnosis again");
-    phase = "group"; setStatus("Grouping points above the distance threshold…");
-    const result = await group(pair, signal, settings); signal.throwIfAborted();
-    if (!valid(pair) || token !== generation) throw new Error("Comparison inputs/settings changed; run the diagnosis again");
-    cache = pair; last = { pair, result, reused };
-    a.c2c = pair.output; a.mode = "c2c"; display.activeC2c = a.cloud.id; display.range = { lo: 0, hi: settings[0] || 1 };
-    refreshColors(a); show(result, pair, reused); renderList(); distanceChanged.emit();
-    setStatus("Distance regions ready. Inspect candidates for alignment, scene changes or missing reference coverage; these are not confirmed registration defects.");
+    const forward = await diagnose(snapshots[0], snapshots[1], cache);
+    const reverse = both ? await diagnose(snapshots[1], snapshots[0], reverseCache) : null;
+    signal.throwIfAborted();
+    if (token !== generation || !valid(forward.pair) || reverse && !valid(reverse.pair)) throw new Error("Comparison inputs/settings changed; run the diagnosis again");
+    cache = forward.pair;
+    if (reverse) {
+      reverseCache = reverse.pair; comparison = { forward, reverse }; direction.value = "forward";
+      $("regions-both-summary").textContent = `${a.cloud.name} → ${b.cloud.name}: ${forward.result.exceeding.toLocaleString()} / ${forward.result.measured.toLocaleString()} measured (${ratio(forward.result)}) above threshold. ${b.cloud.name} → ${a.cloud.name}: ${reverse.result.exceeding.toLocaleString()} / ${reverse.result.measured.toLocaleString()} measured (${ratio(reverse.result)}) above threshold. Unmeasured/invalid: ${forward.result.unmeasured}/${forward.result.invalidPositions} forward; ${reverse.result.unmeasured}/${reverse.result.invalidPositions} reverse.`;
+      $("regions-directions").hidden = false;
+    }
+    publish(forward);
+    setStatus(`Distance regions ready${both ? " in both directions" : ""}. Inspect candidates for alignment, scene changes or missing reference coverage; these are not confirmed registration defects.`);
   } catch (error) { setStatus("Could not locate distance regions: " + (signal.aborted ? "Cancelled" : errorText(error)), true); }
   finally { signal.removeEventListener("abort", cancelled); running = false; endTask(signal); render(); }
-};
+}
+button.onclick = () => void run(false);
+bothButton.onclick = () => void run(true);
 const describe = (s: Snapshot) => ({ id: s.cloud.id, name: s.name, loadedPoints: s.cloud.count, filePoints: s.cloud.filePoints,
   keepEvery: s.cloud.keepEvery, preview: s.entry.origin.displayPreview === true, copcLevels: s.cloud.copcLevels });
+$("regions-both-json").onclick = () => {
+  if (!comparison || !valid(comparison.forward.pair) || !valid(comparison.reverse.pair)) return;
+  const pack = (d: Diagnosis) => ({ source: describe(d.pair.source), reference: describe(d.pair.reference), reusedDistances: d.reused,
+    exceedingFractionOfMeasured: d.result.measured ? d.result.exceeding / d.result.measured : null, ...d.result });
+  download(new Blob([JSON.stringify({ schema: "cloudanalyzer.bidirectional_regions.v1", method: "two independent unsigned CPU nearest-neighbor directions",
+    scope: "Loaded points in each direction separately; no overlap-footprint restriction or confirmed missing-map classification; each direction lists up to 50 regions",
+    forward: pack(comparison.forward), reverse: pack(comparison.reverse) }, null, 2)], { type: "application/json" }), "bidirectional-distance-regions.json");
+};
 $("regions-json").onclick = () => {
   if (!last || !valid(last.pair)) return;
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.distance_regions.v1", source: describe(last.pair.source), reference: describe(last.pair.reference),
@@ -163,7 +207,15 @@ addReportSection("distance-regions", () => last && valid(last.pair) ? { title: `
   metrics: { exceeding: { label: "Source points above threshold", value: last.result.exceeding }, eligible: { label: "Eligible distance regions", value: last.result.eligibleRegions },
     listed: { label: "Listed distance regions", value: last.result.regions.length }, unmeasured: { label: "Unmeasured source distances", value: last.result.unmeasured } },
   notes: [`Loaded source → reference points only; threshold ${last.result.threshold}, grouping cell ${last.result.cell}, minimum ${last.result.minPoints} exceeding points.`,
-    "Possible scene/alignment/coverage differences, not confirmed defects; reverse comparison requires swapping source and reference."] } : null);
+    "Possible scene/alignment/coverage differences, not confirmed defects; use Compare both directions to inspect the reverse comparison."] } : null);
+addReportSection("bidirectional-regions", () => comparison && valid(comparison.forward.pair) && valid(comparison.reverse.pair) ? {
+  title: `Both distance directions: ${comparison.forward.pair.source.name} ↔ ${comparison.forward.pair.reference.name}`,
+  metrics: { forwardExceeding: { label: "Source → reference exceeding points", value: comparison.forward.result.exceeding },
+    forwardMeasured: { label: "Source → reference measured points", value: comparison.forward.result.measured },
+    reverseExceeding: { label: "Reference → source exceeding points", value: comparison.reverse.result.exceeding },
+    reverseMeasured: { label: "Reference → source measured points", value: comparison.reverse.result.measured } },
+  notes: [`Threshold ${comparison.forward.result.threshold}; forward ${ratio(comparison.forward.result)}, reverse ${ratio(comparison.reverse.result)} above threshold among measured points.`,
+    "Loaded survey footprints may differ; sampling, occlusion and scene changes can produce discrepancies. Not a missing-map or registration-defect classifier."] } : null);
 addReportSection("distance-region-cells", () => inspection && inspection.parent === last && valid(last.pair) ? {
   title: `Region ${inspection.result.regionRank} cell inspection: ${last.pair.source.name} → ${last.pair.reference.name}`,
   metrics: { points: { label: "Region exceeding points", value: inspection.result.regionPoints },

@@ -220,8 +220,14 @@
             <label>Grouping XY cell <input id="regions-cell" type="number" min="0" step="any" value="5" /></label>
             <label>Min. exceeding points/region <input id="regions-min" type="number" min="1" max="1000000" step="1" value="5" /></label>
           </div>
-          <button id="regions-run" disabled>Compute &amp; locate regions</button>
+          <div class="button-row"><button id="regions-run" disabled>Compute &amp; locate regions</button><button id="regions-both" disabled>Compare both directions</button></div>
           <div id="regions-result" hidden>
+            <div id="regions-directions" hidden>
+              <p id="regions-both-summary" class="small" role="status"></p>
+              <label>Show direction <select id="regions-direction"><option value="forward">Selected source → reference</option><option value="reverse">Reference → selected source</option></select></label>
+              <button id="regions-both-json">Save both directions JSON</button>
+              <p class="hint small">Ratios use measured points in each direction separately. Reference → source can reveal areas absent from the source, but sampling, occlusion and different survey footprints also cause discrepancies. This is not a confirmed missing-map or registration-defect classifier.</p>
+            </div>
             <p id="regions-summary" class="small" role="status"></p>
             <ol id="regions-list" class="loop-list"></ol>
             <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>

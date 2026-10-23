@@ -36,8 +36,13 @@ test('saved areas produce independent exact f64 summaries without derived clouds
   const csv=(await download(page,'#volume-areas-csv')).toString();expect(csv.trim().split('\n')).toHaveLength(5);
   expect(csv).toContain('"No survey",10,10,11,11,"m",false,,,,,,0,0,6');
   const qa=JSON.parse((await download(page,'#report-json')).toString());
-  expect(qa.sections['volume-areas'].metrics.area_1_fill.value).toBe(2);
-  expect(qa.sections['volume-areas'].metrics.area_3_fill).toBeUndefined();
+  expect(qa.sections['volume-areas'].metrics['area_Fill%20area_fill'].value).toBe(2);
+  expect(qa.sections['volume-areas'].metrics['area_No%20survey_fill']).toBeUndefined();
+  const definitions=JSON.parse((await download(page,'#volume-areas-export')).toString());definitions.areas.reverse();
+  await page.locator('#volume-areas-file').setInputFiles(input('reordered.json',Buffer.from(JSON.stringify(definitions))));
+  await page.locator('#volume-areas-run').click();await expect(page.locator('#status')).toContainText('Computed 4 named area summaries');
+  const reordered=JSON.parse((await download(page,'#report-json')).toString());
+  expect(reordered.sections['volume-areas'].metrics['area_Fill%20area_fill'].value).toBe(2);
   const selectedBefore=await page.locator('#volume-before').inputValue(),selectedAfter=await page.locator('#volume-after').inputValue();
   await page.locator('#file-input').setInputFiles(input('unrelated.ply',ply([[0,0,0],[1,0,0],[0,1,0]])));
   await expect(page.locator('#cloud-list > li')).toHaveCount(3);

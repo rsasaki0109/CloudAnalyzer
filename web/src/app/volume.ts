@@ -401,13 +401,13 @@ addReportSection("volume-areas", () => {
   if (!batch || !batch.inputs.every(validInput)) return null;
   const unit = `${batch.settings.coordinateUnit}³`;
   return { title: `Named area volumes: ${batch.inputs[0].name} → ${batch.inputs[1].name}`,
-    metrics: Object.fromEntries(batch.rows.flatMap((row, i) => [
-      [`area_${i + 1}_compared`, { label: `${row.name}: compared cells`, value: row.matchedCells }],
-      [`area_${i + 1}_missing`, { label: `${row.name}: uncompared cells`, value: row.totalCells - row.matchedCells }],
+    metrics: Object.fromEntries(batch.rows.flatMap(row => [
+      [`area_${encodeURIComponent(row.name)}_compared`, { label: `${row.name}: compared cells`, value: row.matchedCells }],
+      [`area_${encodeURIComponent(row.name)}_missing`, { label: `${row.name}: uncompared cells`, value: row.totalCells - row.matchedCells }],
       ...(row.matchedCells ? [
-        [`area_${i + 1}_fill`, { label: `${row.name}: fill`, value: row.added, unit }],
-        [`area_${i + 1}_cut`, { label: `${row.name}: cut`, value: row.removed, unit }],
-        [`area_${i + 1}_net`, { label: `${row.name}: net`, value: row.added - row.removed, unit }],
+        [`area_${encodeURIComponent(row.name)}_fill`, { label: `${row.name}: fill`, value: row.added, unit }],
+        [`area_${encodeURIComponent(row.name)}_cut`, { label: `${row.name}: cut`, value: row.removed, unit }],
+        [`area_${encodeURIComponent(row.name)}_net`, { label: `${row.name}: net`, value: row.added - row.removed, unit }],
       ] : []),
     ])), notes: [batchScope, ...batch.rows.map(row => `${row.name}: XY [${row.bounds.join(", ")}]; ${row.outsideRegionCells} outside cells. ${row.matchedCells ? "" : "No compared cells; quantities unavailable."}`)] };
 });

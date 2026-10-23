@@ -1,7 +1,7 @@
 name: Self QA
 
 # Dogfoods the bundled `cloudanalyzer-action` on every internal PR.
-# Builds the gitignored public benchmark pack, runs `ca check` via the
+# Builds gitignored offline synthetic fixtures, runs `ca check` via the
 # action, posts an idempotent PR comment, and fails when the gate fails.
 
 on:
@@ -33,10 +33,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e cloudanalyzer
 
-      - name: Build public benchmark pack fixtures
+      - name: Build offline synthetic QA fixtures
         run: |
           xvfb-run python scripts/build_public_benchmark_pack.py \
-            --output benchmarks/public/stanford-bunny-mini
+            --fixture synthetic --output benchmarks/public/self-qa-synthetic
 
       - name: Run CloudAnalyzer self-QA
         uses: ./cloudanalyzer-action
@@ -44,6 +44,6 @@ jobs:
           # GHCR avoids the repeated anonymous Docker Hub HTTP 429. This image
           # contains Python 3.10 / Debian bookworm plus uv (unused by this action).
           python_base_image: ghcr.io/astral-sh/uv:python3.10-bookworm-slim@sha256:a041b350d5d9483b538d5af07e9553ee8cbc7fc7fa90c2f7d20d93f18ce9bbd1
-          config: benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
+          config: benchmarks/public/self-qa-synthetic/configs/suite-pass.cloudanalyzer.yaml
           project: cloudanalyzer-self-qa
           marker: cloudanalyzer-self-qa

@@ -194,6 +194,61 @@
         </div>
       </section>
 
+      <section id="coverage-panel">
+        <h2>Map coverage &amp; quality</h2>
+        <label>Map <select id="coverage-source"></select></label>
+        <p id="coverage-scope" class="hint small" role="status"></p>
+        <div class="range">
+          <label>XY cell size (cloud units) <input id="coverage-cell" type="number" min="0" step="any" value="1" /></label>
+          <label>Sparse below points/cell <input id="coverage-min" type="number" min="1" max="1000000" step="1" value="10" /></label>
+        </div>
+        <button id="coverage-run" disabled>Analyze coverage</button>
+        <div id="coverage-result" hidden>
+          <p id="coverage-summary" class="small" role="status"></p>
+          <canvas id="coverage-grid" aria-label="XY coverage grid; click a cell to focus it" style="display:block;image-rendering:pixelated;cursor:crosshair"></canvas>
+          <p class="hint small">Blue: occupied. Orange: sparse. Pink: enclosed empty. Gray: exterior-connected empty. Click a cell to inspect its area.</p>
+          <p id="coverage-cell-info" class="small" role="status"></p>
+          <button id="coverage-download">Save coverage JSON</button>
+        </div>
+        <p class="hint small">XY projection combines heights. Enclosed empty cells are potential gaps, not confirmed missing survey data: buildings, occlusion and unmeasured areas can also be empty. This does not measure surface roughness or registration accuracy.</p>
+        <label>Reference / another pass <select id="coverage-reference"></select></label>
+        <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
+        <details class="options">
+          <summary>Locate distance discrepancies</summary>
+          <div class="range">
+            <label>Distance above (cloud units) <input id="regions-threshold" type="number" min="0" step="any" value="0.3" /></label>
+            <label>Grouping XY cell <input id="regions-cell" type="number" min="0" step="any" value="5" /></label>
+            <label>Min. exceeding points/region <input id="regions-min" type="number" min="1" max="1000000" step="1" value="5" /></label>
+          </div>
+          <div class="button-row"><button id="regions-run" disabled>Compute &amp; locate regions</button><button id="regions-both" disabled>Compare both directions</button></div>
+          <div id="regions-result" hidden>
+            <div id="regions-directions" hidden>
+              <p id="regions-both-summary" class="small" role="status"></p>
+              <label>Show direction <select id="regions-direction"><option value="forward">Selected source → reference</option><option value="reverse">Reference → selected source</option></select></label>
+              <button id="regions-both-json">Save both directions JSON</button>
+              <p class="hint small">Ratios use measured points in each direction separately. Reference → source can reveal areas absent from the source, but sampling, occlusion and different survey footprints also cause discrepancies. This is not a confirmed missing-map or registration-defect classifier.</p>
+            </div>
+            <p id="regions-summary" class="small" role="status"></p>
+            <ol id="regions-list" class="loop-list"></ol>
+            <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
+            <label>Inspection XY cell <input id="regions-fine-cell" type="number" min="0" step="any" value="1" /></label>
+            <details class="options"><summary>Cell section settings</summary>
+              <label>Section direction <select id="regions-section-axis"><option value="x">X</option><option value="y">Y</option></select></label>
+              <div class="range"><label>Length <input id="regions-section-length" type="number" min="0" step="any" value="20" /></label><label>Band width <input id="regions-section-width" type="number" min="0" step="any" value="2" /></label></div>
+              <p class="hint small">Compare section on a cell plots all loaded points of the selected pair within this band, centered on its exceeding-point bounds. Other clouds are excluded. Units follow the clouds.</p>
+            </details>
+            <p class="hint small">Inspect a region's cells to narrow down connected chains. Uses the same distances; ranks up to 50 cells by maximum distance, then point count. No minimum support filter within a region.</p>
+            <div id="regions-cells" hidden>
+              <p id="regions-cells-summary" class="small" role="status"></p>
+              <ol id="regions-cells-list" class="loop-list"></ol>
+              <div class="button-row"><button id="regions-cells-json">Save cell inspection JSON</button><button id="regions-cells-csv">Save listed cells CSV</button></div>
+            </div>
+          </div>
+          <p class="hint small">Source → reference unsigned nearest distances only. Changes, occlusion and missing reference coverage can also produce large distances. Groups are XY inspection candidates, not confirmed registration defects. Threshold/cell edits reuse distances only while both loaded clouds remain unchanged. Cancellation discards diagnostics; an active C2C call may finish first.</p>
+        </details>
+        <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>
+      </section>
+
       <section id="views-panel">
         <h2>Views</h2>
         <ol id="view-list" class="note-list"></ol>
@@ -734,6 +789,7 @@
           <div class="range">
             <label title="Thin the map to one point per voxel of this size (metres); 0 keeps every scan point">Map voxel <input id="pg-map-voxel" type="number" min="0" step="any" value="0" /></label>
             <button id="pg-map" title="Every scan at its optimised pose, as a new cloud in the list (to measure, export…)">Build map cloud</button>
+            <button id="pg-map-coverage" disabled>Analyze latest cloud…</button>
           </div>
           <div class="button-row">
             <button id="pg-compare" title="The map as it is now, colored by how far each point moved from its place as loaded: where the corrections moved the map">Compare with the start</button>
@@ -1192,6 +1248,10 @@
         <button data-keep="both" title="Split into the points inside and the rest">Split</button>
         <button id="segment-cancel" title="Stop segmenting (Esc)">Cancel</button>
       </div>
+      <div id="regions-section-plot" class="profile-plot" hidden>
+        <div class="profile-head"><span id="regions-section-title"></span><label><input id="regions-section-equal" type="checkbox" /> 1:1</label><button id="regions-section-json">Save section summary JSON</button><button id="regions-section-csv">Save section points CSV</button><button id="regions-section-close" title="Close cell section">✕</button></div>
+        <p id="regions-section-summary" role="status"></p><canvas id="regions-section-canvas" aria-label="Selected source and reference section heights"></canvas>
+      </div>
       <div id="profile-plot" class="profile-plot" hidden>
         <div class="profile-head">
           <span id="profile-legend" class="profile-legend"></span>
@@ -1225,5 +1285,7 @@
     </footer>
 
     <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/app/map-coverage.ts"></script>
+    <script type="module" src="/src/app/distance-regions.ts"></script>
   </body>
 </html>

@@ -34,6 +34,13 @@ estimate, not a closed-solid measurement.
 | Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence; independent human reviewed/deferred records with comments and JSON/CSV/QA exports; read-only JSON archive viewing and HTML reports without clouds | Comparing archived reviews and independent real-map validation |
 | Terrain monitoring | Height changes, sections, M3C2 with detection limits, terrain meshes, repeated-visit and direct interval summaries with common-observed-cell support | Independent field validation and uncertainty-aware monitoring |
 
+Construction and monitoring comparisons can export a standalone **volume report
+HTML** with baseline and optional direct interval tables, loaded-data scope,
+settings, bounds, support/mask metadata and an expandable comparison JSON
+snapshot. It opens offline without point clouds. Keep the separate mask and
+JSON for exact common-cell provenance; the report supplies no combined total,
+source authentication or field-accuracy certification.
+
 The next-work column is planned. Named area summaries reuse the current input
 pair and full-grid settings; repeated visits use one fixed baseline and a shared
 union grid. Independent-pair mode can have different observed support; the optional raw

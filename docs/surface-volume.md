@@ -171,6 +171,38 @@ extents, exact known heights, missing/empty support, constant baselines,
 budget rejection, cancellation and stale-result invalidation. These checks do
 not establish accuracy on independent real surveys.
 
+## Save a standalone survey-volume report
+
+After a completed repeated-visit comparison, **Save volume report HTML** exports
+a standalone, read-only document that opens without CloudAnalyzer, network
+access or the source clouds. It includes the fixed-baseline table, optional
+direct adjacent-visit table, named bounds, fill/cut/net and affected areas,
+compared/uncompared/outside counts, input runtime descriptors and
+loaded/file/preview/thinning information, explicit visit order, settings and
+shared-grid metadata. Export time is UTC and is not an acquisition date.
+No combined area or interval total is calculated. No-support quantities display
+**Unavailable**. Independent support and interpolated estimates are labeled;
+a constant baseline is identified as a plane rather than an observed survey.
+
+The expandable **Complete comparison JSON snapshot** contains the same fields
+as **Save visit summaries JSON**, with full numeric values. Names and bounds
+are rendered as text, including filenames or area labels containing HTML.
+The report has no scripts or external resources; browser print/PDF is available.
+The printed summary omits the expandable JSON; retain the HTML/JSON for it.
+
+In common-observed mode, the report records the mask filename, encoding, byte
+length and SHA-256, but does not embed the binary. Save **common cells mask**
+separately and retain it with the JSON to identify the exact full-grid cells;
+apply each row's bounds separately. The mask hash identifies a cell mask, not
+the source point contents. Runtime IDs and names are not content fingerprints.
+The report contains no point coordinates and does not register surveys,
+calibrate uncertainty, certify field accuracy or approve quantities for payment.
+
+The download is available only for the current valid completed comparison.
+Editing settings/order/areas or changing/removing inputs invalidates it with the
+other visit exports. A saved HTML remains an independent historical snapshot;
+it does not update when the live analysis changes or apply results to clouds.
+
 ## Restrict repeated visits to common observed cells
 
 Under **Repeated visits by area**, set **Comparison cells** to **Observed in

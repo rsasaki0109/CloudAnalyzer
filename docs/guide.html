@@ -554,11 +554,15 @@
       <b>Mesh</b> triangulates a cloud as seen from above (like CloudCompare's <i>Delaunay 2.5D (XY plane)</i>):
       the points' XY positions are joined by a Delaunay triangulation and keep their heights, which suits terrain
       and other surfaces with one height per position. Triangles with a horizontal edge longer than the
-      <i>max edge length</i> are dropped, so gaps and concave outlines are not bridged; left empty, it is four times
+      <i>max edge length</i> are dropped; short bridges over gaps can remain. Left empty, it is four times
       the median edge, and 0 keeps every triangle up to the convex hull. Clouds of more than 5 million points are
       first thinned with a voxel filter, and the status says so. The mesh, named <code>&lt;cloud&gt;_mesh</code>, can
       be the reference of a C2M distance or a surface of a volume, and its <b>⤓</b> button saves it as binary PLY
-      or OBJ.
+      or OBJ. The mesh panel also offers wireframe inspection, OBJ/PLY export and a source/settings summary
+      JSON. <b>Prepare terrain mesh</b> in Map coverage selects a ground cloud; <b>Mesh compared After cells</b>
+      in Volume selects compared cell centers at After height. <b>Use mesh as After surface</b> prepares
+      volume calculation with interpolation off. Review Before and grid settings before computing.
+      See <a href="terrain-mesh.md">the terrain mesh workflow</a> for scope and limitations.
     </p>
 
     <h2 id="normals">Normals</h2>

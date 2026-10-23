@@ -48,6 +48,11 @@ CSV uses the displayed f32 cell records shifted to original coordinates; totals
 use the existing f64 engine, so summing rounded CSV values can differ slightly.
 Keep JSON with CSV for input identities, settings, units and scope.
 
+**Mesh compared After cells** prepares [terrain meshing](terrain-mesh.md) from
+the compared cell centers at After height. The summary JSON includes this
+derived cloud's identity for provenance. This meshes the later surface in
+compared cells, not signed height differences or the complete later survey.
+
 Changing settings, editing/removing/replacing an input, or changing the derived
 cell geometry invalidates the current result and its QA report. Each run holds
 the chosen input snapshots and settings, so changes during computation cannot

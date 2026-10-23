@@ -48,6 +48,10 @@ Processing uses a cancellable worker, up to 64 MiB of loaded XYZ coordinates,
 suggestion rather than silently sampling. Cancellation or source changes never
 publish a partial result.
 
+For a selected ground surface, **Prepare terrain mesh** opens
+[2.5D terrain meshing](terrain-mesh.md). Review the edge limit, inspect faces or
+wireframe, export OBJ/PLY with a summary, or use the mesh in surface volume.
+
 The [recorded smoke check](../benchmarks/map-coverage/smoke.json) uses an existing
 878,921-point alternating-index subset of the Autoware planning sample. At cell
 size 5 and sparse threshold 10 it has 2,786 occupied cells, 343 sparse cells and

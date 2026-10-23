@@ -261,6 +261,17 @@
           </div>
           <p class="hint small">Source → reference unsigned nearest distances only. Changes, occlusion and missing reference coverage can also produce large distances. Groups are XY inspection candidates, not confirmed registration defects. Threshold/cell edits reuse distances only while both loaded clouds remain unchanged. Cancellation discards diagnostics; an active C2C call may finish first.</p>
         </details>
+        <details id="review-archive-panel" class="options">
+          <summary>Archived candidate reviews</summary>
+          <button id="review-archive-open">Open saved review JSON…</button>
+          <input id="review-archive-file" type="file" accept=".json" hidden />
+          <p class="hint small">Read past records without loading point clouds. No decisions are applied to current analysis. Keep the original JSON; this viewer is not saved in projects.</p>
+          <div id="review-archive-result" hidden>
+            <p id="review-archive-name"></p><p id="review-archive-scope" class="hint small"></p>
+            <div id="review-archive-list"></div>
+            <div class="button-row"><button id="review-archive-json">Save original JSON</button><button id="review-archive-csv">Save archive CSV</button><button id="review-archive-html">Save archive HTML</button><button id="review-archive-close">Close archive</button></div>
+          </div>
+        </details>
         <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>
       </section>
 
@@ -1350,5 +1361,6 @@
     <script type="module" src="/src/main.ts"></script>
     <script type="module" src="/src/app/map-coverage.ts"></script>
     <script type="module" src="/src/app/distance-regions.ts"></script>
+    <script type="module" src="/src/app/candidate-review-archive.ts"></script>
   </body>
 </html>

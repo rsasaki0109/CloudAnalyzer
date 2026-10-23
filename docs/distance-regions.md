@@ -239,3 +239,35 @@ must not be summed as unique changes. Thresholds, sampling, survey alignment,
 occlusion and reference coverage still limit what the candidates mean. Synthetic
 checks exercise record binding/export/invalidation, not real-map classification
 accuracy.
+
+## Read archived review records
+
+Under **Archived candidate reviews**, open a previously exported **Save candidate
+reviews JSON** file. No point clouds are required. The viewer shows each
+historical direction's input descriptors, analysis time and conditions,
+measured/missing/invalid/outside support, listed/unlisted accounting, candidate
+world bounds, decisions, comments and update times. Expand **Inputs and analysis
+conditions** or a candidate summary to see the detailed fields. It is read-only and separate
+from live diagnoses and QA: opening or closing it never applies decisions,
+changes current clouds/camera, or recomputes distances. Recomputing live analysis
+does not remove the archive currently being viewed.
+
+**Save original JSON** downloads the original uploaded bytes. **Save archive
+CSV** uses the existing quoted/formula-safe review format; keep JSON alongside
+CSV for full context. **Save archive HTML** creates a standalone report, with
+literal escaped comments and no external resources. These exports describe a
+past file, not a current comparison. The viewer itself is session-only and is
+not stored in projects or browser recovery; retain the JSON file for reopening.
+
+Only `cloudanalyzer.distance_candidate_reviews.v1` is accepted, up to 2 MiB,
+one forward direction or a matching forward/reverse pair, and up to 50 listed
+candidates per direction. Validation checks enums, finite settings/geometry,
+canonical timestamps, loaded-point/count accounting, listed candidate metrics
+against their analysis records, direction pairing and review totals. Invalid or
+oversized files leave the previous archive intact. Closing while a new file is
+being read prevents the delayed file from reopening the viewer.
+
+These checks establish format/internal consistency only. They do not verify
+source-file contents, reviewer identity, timestamps against an external clock,
+coordinate frames or field accuracy. No decisions are imported into live
+analysis, matched by rank or filename, or included as current QA evidence.

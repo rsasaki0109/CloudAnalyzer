@@ -270,6 +270,15 @@
             <p id="review-archive-name"></p><p id="review-archive-scope" class="hint small"></p>
             <div id="review-archive-list"></div>
             <div class="button-row"><button id="review-archive-json">Save original JSON</button><button id="review-archive-csv">Save archive CSV</button><button id="review-archive-html">Save archive HTML</button><button id="review-archive-close">Close archive</button></div>
+            <h3>Compare review records</h3>
+            <p class="hint small">The open archive is A. Load B to compare decisions from identical archived analysis metadata. Different analyses are not matched by rank or filename. A/B order does not imply chronology. No live decisions are changed.</p>
+            <div class="button-row"><button id="review-compare-open">Load archive B for comparison…</button><button id="review-compare-clear">Clear comparison</button></div>
+            <input id="review-compare-file" type="file" accept=".json" hidden />
+            <div id="review-compare-result" hidden>
+              <p id="review-compare-names"></p><p id="review-compare-scope" class="hint small"></p>
+              <div id="review-compare-list"></div>
+              <div class="button-row"><button id="review-compare-original">Save original B JSON</button><button id="review-compare-json">Save comparison JSON</button><button id="review-compare-csv">Save comparison CSV</button><button id="review-compare-html">Save comparison HTML</button></div>
+            </div>
           </div>
         </details>
         <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>

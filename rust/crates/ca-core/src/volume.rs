@@ -100,7 +100,75 @@ pub struct VolumeResult {
     pub total_cells: usize,
 }
 
+/// User-defined height screening, independent of measurement uncertainty.
+#[derive(Debug, Clone, PartialEq)]
+pub struct HeightReview {
+    pub threshold: f64,
+    pub rise_cells: usize,
+    pub fall_cells: usize,
+    pub within_cells: usize,
+    pub rise_area: f64,
+    pub fall_area: f64,
+    pub rise_volume: f64,
+    pub fall_volume: f64,
+}
+
 impl VolumeResult {
+    /// Strict `d > threshold` / `d < -threshold` on the original f64 heights.
+    /// Equality is within the band. Volumes use the full difference, not the
+    /// excess over the threshold. Undefined/outside/masked cells stay excluded.
+    pub fn height_review(&self, threshold: f64) -> Option<HeightReview> {
+        if !threshold.is_finite()
+            || threshold < 0.0
+            || !self.grid.valid()
+            || self.before.len() != self.grid.nx * self.grid.ny
+            || self.after.len() != self.before.len()
+        {
+            return None;
+        }
+        let mut result = HeightReview {
+            threshold,
+            rise_cells: 0,
+            fall_cells: 0,
+            within_cells: 0,
+            rise_area: 0.0,
+            fall_area: 0.0,
+            rise_volume: 0.0,
+            fall_volume: 0.0,
+        };
+        let area = self.grid.cell * self.grid.cell;
+        for (&b, &a) in self.before.iter().zip(&self.after) {
+            if b.is_nan() || a.is_nan() {
+                continue;
+            }
+            let d = a - b;
+            if !b.is_finite() || !a.is_finite() || !d.is_finite() {
+                return None;
+            }
+            if d > threshold {
+                result.rise_cells += 1;
+                result.rise_volume += d * area;
+            } else if d < -threshold {
+                result.fall_cells += 1;
+                result.fall_volume -= d * area;
+            } else {
+                result.within_cells += 1;
+            }
+        }
+        result.rise_area = result.rise_cells as f64 * area;
+        result.fall_area = result.fall_cells as f64 * area;
+        (result.rise_cells + result.fall_cells + result.within_cells == self.matched_cells
+            && [
+                result.rise_area,
+                result.fall_area,
+                result.rise_volume,
+                result.fall_volume,
+            ]
+            .iter()
+            .all(|v| v.is_finite()))
+        .then_some(result)
+    }
+
     pub fn net(&self) -> f64 {
         self.added - self.removed
     }
@@ -459,6 +527,139 @@ pub(crate) fn fill_empty(h: &mut [f64], grid: &Grid) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn height_screening_strict_edges_full_volumes_and_reversal() {
+        let before: Vec<_> = (0..6).map(|i| [i as f64 * 2.0, 0.0, 0.0]).collect();
+        let after: Vec<_> = [2.0, -3.0, 0.5, -0.5, 0.0]
+            .into_iter()
+            .enumerate()
+            .map(|(i, z)| [i as f64 * 2.0, 0.0, z])
+            .collect();
+        for height in [CellHeight::Mean, CellHeight::Min, CellHeight::Max] {
+            let p = VolumeParams {
+                cell: 2.0,
+                height,
+                fill_empty: false,
+            };
+            let r = volume(Surface::Points(&before), Surface::Points(&after), p).unwrap();
+            let original = (
+                r.added,
+                r.removed,
+                r.difference()
+                    .iter()
+                    .map(|v| v.to_bits())
+                    .collect::<Vec<_>>(),
+            );
+            let h = r.height_review(0.5).unwrap();
+            assert_eq!((h.rise_cells, h.fall_cells, h.within_cells), (1, 1, 3));
+            assert_eq!(
+                (h.rise_area, h.fall_area, h.rise_volume, h.fall_volume),
+                (4.0, 4.0, 8.0, 12.0)
+            );
+            let zero = r.height_review(0.0).unwrap();
+            assert_eq!(
+                (zero.rise_cells, zero.fall_cells, zero.within_cells),
+                (2, 2, 1)
+            );
+            assert_eq!((zero.rise_volume, zero.fall_volume), (10.0, 14.0));
+            assert_eq!(
+                (
+                    r.added,
+                    r.removed,
+                    r.difference()
+                        .iter()
+                        .map(|v| v.to_bits())
+                        .collect::<Vec<_>>()
+                ),
+                original
+            );
+            let reverse = volume(Surface::Points(&after), Surface::Points(&before), p)
+                .unwrap()
+                .height_review(0.5)
+                .unwrap();
+            assert_eq!((reverse.rise_volume, reverse.fall_volume), (12.0, 8.0));
+        }
+    }
+
+    #[test]
+    fn height_screening_uses_f64_not_rounded_display_and_rejects_unrepresentable_values() {
+        let before = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0]];
+        let above = 1.0 + f64::EPSILON;
+        let after = [[0.0, 0.0, above], [1.0, 0.0, -above], [2.0, 0.0, 1.0]];
+        assert_eq!(above as f32, 1.0);
+        let r = volume(
+            Surface::Points(&before),
+            Surface::Points(&after),
+            params(1.0),
+        )
+        .unwrap();
+        let h = r.height_review(1.0).unwrap();
+        assert_eq!((h.rise_cells, h.fall_cells, h.within_cells), (1, 1, 1));
+        for invalid in [-1.0, f64::NAN, f64::INFINITY] {
+            assert!(r.height_review(invalid).is_none());
+        }
+        let huge = [[0.0, 0.0, f64::MAX], [1.0, 0.0, f64::MAX]];
+        let overflow = volume(Surface::Constant(0.0), Surface::Points(&huge), params(1.0)).unwrap();
+        assert!(overflow.height_review(1.0).is_none());
+        let overflow = volume(
+            Surface::Constant(-f64::MAX),
+            Surface::Points(&huge),
+            params(1.0),
+        )
+        .unwrap();
+        assert!(overflow.height_review(1.0).is_none());
+    }
+
+    #[test]
+    fn height_screening_respects_region_missing_and_common_mask_and_reports_empty_support() {
+        let before = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0]];
+        let after = [[0.0, 0.0, 2.0], [1.0, 0.0, -100.0], [2.0, 0.0, 10.0]];
+        let grid = grid_for(&[Surface::Points(&before), Surface::Points(&after)], 1.0).unwrap();
+        let r = volume_on_grid_with_support(
+            Surface::Points(&before),
+            Surface::Points(&after),
+            params(1.0),
+            Some([-0.1, -0.1, 1.1, 0.1]),
+            grid,
+            Some(&[1, 0, 1]),
+        )
+        .unwrap();
+        let h = r.height_review(0.5).unwrap();
+        assert_eq!(
+            (
+                r.total_cells,
+                r.matched_cells,
+                h.rise_cells,
+                h.fall_cells,
+                h.within_cells
+            ),
+            (2, 1, 1, 0, 0)
+        );
+        assert_eq!(h.rise_volume, 2.0);
+        let empty = volume_in_region(
+            Surface::Points(&before),
+            Surface::Points(&after),
+            params(1.0),
+            Some([10.0, 10.0, 11.0, 11.0]),
+        )
+        .unwrap()
+        .height_review(0.0)
+        .unwrap();
+        assert_eq!(
+            (empty.rise_cells, empty.fall_cells, empty.within_cells),
+            (0, 0, 0)
+        );
+        assert_eq!((empty.rise_volume, empty.fall_volume), (0.0, 0.0));
+        let missing = volume(
+            Surface::Points(&before[..1]),
+            Surface::Points(&after[1..]),
+            params(1.0),
+        )
+        .unwrap();
+        assert_eq!(missing.matched_cells, 0);
+        assert_eq!(missing.height_review(0.0).unwrap().within_cells, 0);
+    }
 
     /// Points on a regular grid with spacing `step` over `[0, size)^2`,
     /// lifted by `height(x, y)`. With `step` equal to the cell size there is

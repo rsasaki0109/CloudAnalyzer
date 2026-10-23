@@ -271,7 +271,12 @@ export interface IcpOutput {
 /** A volume surface: a loaded cloud or mesh, or a horizontal plane. */
 export type VolumeSide = { id: number } | { z: number };
 
+export interface HeightReview {
+  threshold: number; riseCells: number; fallCells: number; withinCells: number;
+  riseArea: number; fallArea: number; riseVolume: number; fallVolume: number;
+}
 export interface VolumeOutput {
+  heightReview?: HeightReview;
   outsideRegionCells: number;
   added: number;
   removed: number;
@@ -929,6 +934,8 @@ export type Request =
       summaryOnly?: boolean;
       /** Raw-observation intersection, row-major 0/1 bytes on sharedGrid. */
       supportMask?: Uint8Array;
+      /** Optional strict user-defined height screening; does not change totals. */
+      heightThreshold?: number;
       /** Fixed lower-left cell boundary X/Y and integer dimensions. */
       sharedGrid?: readonly [number, number, number, number];
       region?: readonly [number, number, number, number];

@@ -141,6 +141,27 @@ impl VolumeSurface {
     }
 }
 
+/// Strict user-defined height screening; quantities are full differences.
+#[wasm_bindgen]
+pub struct HeightReview {
+    #[wasm_bindgen(readonly)]
+    pub threshold: f64,
+    #[wasm_bindgen(readonly, js_name = riseCells)]
+    pub rise_cells: usize,
+    #[wasm_bindgen(readonly, js_name = fallCells)]
+    pub fall_cells: usize,
+    #[wasm_bindgen(readonly, js_name = withinCells)]
+    pub within_cells: usize,
+    #[wasm_bindgen(readonly, js_name = riseArea)]
+    pub rise_area: f64,
+    #[wasm_bindgen(readonly, js_name = fallArea)]
+    pub fall_area: f64,
+    #[wasm_bindgen(readonly, js_name = riseVolume)]
+    pub rise_volume: f64,
+    #[wasm_bindgen(readonly, js_name = fallVolume)]
+    pub fall_volume: f64,
+}
+
 /// Result of [`compute_volume`].
 #[wasm_bindgen]
 pub struct VolumeOutput {
@@ -161,10 +182,16 @@ pub struct VolumeOutput {
     #[wasm_bindgen(readonly)]
     pub cell: f64,
     cells: Option<Cloud>,
+    height_review: Option<HeightReview>,
 }
 
 #[wasm_bindgen]
 impl VolumeOutput {
+    #[wasm_bindgen(js_name = takeHeightReview)]
+    pub fn take_height_review(&mut self) -> Option<HeightReview> {
+        self.height_review.take()
+    }
+
     /// The compared cells as an indexed cloud: one point per cell with both
     /// heights, at the `after` height (or `before` where `after` is missing),
     /// with the height difference in the `height_difference` attribute.
@@ -263,8 +290,14 @@ pub fn compute_volume(
     summary_only: bool,
     shared_grid: Option<Vec<f64>>,
     support_mask: Option<Vec<u8>>,
+    height_threshold: Option<f64>,
 ) -> Result<VolumeOutput, JsError> {
     use ca_core::volume::{CellHeight, VolumeParams};
+    if height_threshold.is_some_and(|v| !v.is_finite() || v < 0.0) {
+        return Err(JsError::new(
+            "height screening threshold must be finite and nonnegative",
+        ));
+    }
     let height = match height {
         "mean" => CellHeight::Mean,
         "min" => CellHeight::Min,
@@ -301,6 +334,23 @@ pub fn compute_volume(
     let r = result.ok_or_else(|| {
         JsError::new("need a valid volume grid, region and at least one cloud or mesh")
     })?;
+    let height_review = height_threshold
+        .map(|threshold| {
+            let h = r.height_review(threshold).ok_or_else(|| {
+                JsError::new("height screening cannot be represented on these surfaces")
+            })?;
+            Ok::<_, JsError>(HeightReview {
+                threshold: h.threshold,
+                rise_cells: h.rise_cells,
+                fall_cells: h.fall_cells,
+                within_cells: h.within_cells,
+                rise_area: h.rise_area,
+                fall_area: h.fall_area,
+                rise_volume: h.rise_volume,
+                fall_volume: h.fall_volume,
+            })
+        })
+        .transpose()?;
     let mut positions = Vec::with_capacity(if summary_only { 0 } else { r.matched_cells });
     let mut difference = Vec::with_capacity(if summary_only { 0 } else { r.matched_cells });
     if !summary_only {
@@ -345,6 +395,7 @@ pub fn compute_volume(
         outside_region_cells: r.grid.nx * r.grid.ny - r.total_cells,
         cell: r.grid.cell,
         cells,
+        height_review,
     })
 }
 

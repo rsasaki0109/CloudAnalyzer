@@ -57,6 +57,56 @@ boundaries. Area selection does not reduce the full-grid allocation budget;
 crop inputs first to reduce processing. Preview/thinning scope and loaded/file
 counts remain in JSON. Grids above 1,000,000 cells are rejected before allocation.
 
+## Height-change screening for a single pair
+
+Under **Height-change screening (single Before / After)**, enable **Also screen
+height differences**, enter a finite nonnegative **Absolute height threshold**
+in the existing coordinate unit, and choose **Compute volume**. The comparison
+uses the usual Before/After, cell size, height mode, optional interpolation and
+single world-XY review rectangle. It does not register surveys or convert units.
+The option is initially off and is not applied to **Compute all saved areas** or
+**Compare visits with baseline**.
+
+The original `f64` raster heights determine `d = after − before`:
+
+- **Rise**: `d > threshold`.
+- **Fall**: `d < −threshold`.
+- **Within band**: both heights exist and `−threshold ≤ d ≤ threshold`.
+
+Equality remains within the band. With threshold zero, unchanged compared cells
+stay within-band; every nonzero height difference is rise or fall. Missing,
+outside-region and otherwise excluded cells do not enter these three counts.
+Rise/fall area is the number of selected cells times the full square cell area.
+Screened rise/fall volumes sum the **full** height difference times cell area,
+not the excess above the threshold. For example, a 2-unit rise in a 4-square-unit
+cell with threshold 0.5 contributes 8 cubic units, not 6. Total cut/fill remains
+unchanged and still includes all compared cells. The displayed compared-cell
+cloud also retains all cells; it is not filtered by this screen.
+
+The extra summary reports rise/fall/within-band counts, affected areas and
+screened volumes/net. No compared cells means **Unavailable** quantities, not
+zero change. All-within-band support is a valid zero **screened** quantity and
+does not prove unchanged terrain. Interpolation, when enabled, includes estimated
+heights. Threshold classification and quantities use original `f64` heights;
+displayed `f32` differences and cell CSV rounding may differ at a threshold edge.
+
+**Save volume summary JSON** retains `settings.heightThreshold` and
+`result.heightReview`, including the strict rule, comparison-available state and
+all screened quantities. **Save height screening CSV** exports the supplementary
+summary with blank quantities for no-support results; retain the JSON for input
+descriptors, settings, grid scope and selected bounds. The QA report includes a
+separate screening section; no-support volume metrics are omitted. Editing the
+threshold/toggle, settings, area or inputs invalidates the result and exports;
+cancellation and stale-result checks cover the same computation. Screening
+selections/results are session-only, like the single-pair volume calculation.
+
+This is a **user review criterion**, not calibrated measurement uncertainty,
+statistical significance or an M3C2 detection limit. Within-band cells may still
+have real change, and exceeding the threshold does not establish a physical
+cause. Use the existing M3C2 tool for its separately defined local uncertainty
+and detection-limit analysis. These remain loaded/possibly decimated 2.5D
+surface estimates, not closed-solid volumes or independent survey accuracy.
+
 ## Named areas and independent area summaries
 
 In **Review area**, enter an **Area name** and save the current enabled rectangle

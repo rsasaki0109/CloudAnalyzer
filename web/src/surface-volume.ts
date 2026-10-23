@@ -1,4 +1,18 @@
 /** Bounded volume UI/export helpers; the existing WASM engine computes totals. */
+import type { HeightReview } from "./protocol.ts";
+export const heightReviewScope = "User-defined strict height screening on the original f64 raster heights: after-minus-before > threshold is rise; < -threshold is fall; equality is within the band. Screened volumes use full height differences, not only excess above the threshold. Missing/outside cells remain excluded. Within-band does not mean unchanged or statistically insignificant. This is not calibrated survey uncertainty or an M3C2 detection limit. Full-cell 2.5D loaded-data estimates; interpolation, when enabled, includes estimated heights. Total cut/fill and the displayed compared-cell cloud remain unchanged. Single Before/After comparison only; not applied to named-area batches or repeated visits.";
+export function readHeightThreshold(enabled: boolean, text: string): number | undefined {
+  if (!enabled) return undefined;
+  const value = Number(text);
+  if (!text.trim() || !Number.isFinite(value) || value < 0) throw new Error("Enter a finite nonnegative height screening threshold");
+  return value;
+}
+export function heightReviewCsv(review: HeightReview, comparedCells: number, unit: string): string {
+  const quoted = '"' + (/^\s*[=+\-@]/.test(unit) ? "'" + unit : unit).replaceAll('"', '""') + '"';
+  return "height_threshold,coordinate_unit,comparison_available,rise_cells,fall_cells,within_cells,rise_area,fall_area,rise_volume,fall_volume,screened_net\n" +
+    [review.threshold, quoted, comparedCells > 0, review.riseCells, review.fallCells, review.withinCells,
+      ...(comparedCells ? [review.riseArea, review.fallArea, review.riseVolume, review.fallVolume, review.riseVolume - review.fallVolume] : ["", "", "", "", ""])].join(",") + "\n";
+}
 export const VOLUME_GRID_LIMIT = 1_000_000;
 export const VOLUME_CSV_CELL_LIMIT = 100_000;
 

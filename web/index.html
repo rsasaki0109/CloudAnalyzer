@@ -194,6 +194,28 @@
         </div>
       </section>
 
+      <section id="coverage-panel">
+        <h2>Map coverage &amp; quality</h2>
+        <label>Map <select id="coverage-source"></select></label>
+        <p id="coverage-scope" class="hint small" role="status"></p>
+        <div class="range">
+          <label>XY cell size (cloud units) <input id="coverage-cell" type="number" min="0" step="any" value="1" /></label>
+          <label>Sparse below points/cell <input id="coverage-min" type="number" min="1" max="1000000" step="1" value="10" /></label>
+        </div>
+        <button id="coverage-run" disabled>Analyze coverage</button>
+        <div id="coverage-result" hidden>
+          <p id="coverage-summary" class="small" role="status"></p>
+          <canvas id="coverage-grid" aria-label="XY coverage grid; click a cell to focus it" style="display:block;image-rendering:pixelated;cursor:crosshair"></canvas>
+          <p class="hint small">Blue: occupied. Orange: sparse. Pink: enclosed empty. Gray: exterior-connected empty. Click a cell to inspect its area.</p>
+          <p id="coverage-cell-info" class="small" role="status"></p>
+          <button id="coverage-download">Save coverage JSON</button>
+        </div>
+        <p class="hint small">XY projection combines heights. Enclosed empty cells are potential gaps, not confirmed missing survey data: buildings, occlusion and unmeasured areas can also be empty. This does not measure surface roughness or registration accuracy.</p>
+        <label>Reference / another pass <select id="coverage-reference"></select></label>
+        <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
+        <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>
+      </section>
+
       <section id="views-panel">
         <h2>Views</h2>
         <ol id="view-list" class="note-list"></ol>
@@ -734,6 +756,7 @@
           <div class="range">
             <label title="Thin the map to one point per voxel of this size (metres); 0 keeps every scan point">Map voxel <input id="pg-map-voxel" type="number" min="0" step="any" value="0" /></label>
             <button id="pg-map" title="Every scan at its optimised pose, as a new cloud in the list (to measure, export…)">Build map cloud</button>
+            <button id="pg-map-coverage" disabled>Analyze latest cloud…</button>
           </div>
           <div class="button-row">
             <button id="pg-compare" title="The map as it is now, colored by how far each point moved from its place as loaded: where the corrections moved the map">Compare with the start</button>
@@ -1225,5 +1248,6 @@
     </footer>
 
     <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/app/map-coverage.ts"></script>
   </body>
 </html>

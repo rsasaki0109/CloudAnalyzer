@@ -5,8 +5,8 @@ import type { VolumeOutput } from "../protocol";
 import { validateVolumeGrid, sharedVolumeGrid, type VolumeGrid, volumeCellsCsv } from "../surface-volume";
 import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regions";
 import { captureNamedAreas, replaceNamedAreas, onNamedAreasChanged, parseNamedAreas, parseAreaFile,
-  areaVolumesCsv, type AreaVolumeRow } from "../named-areas";
-import { MAX_VOLUME_VISITS, visitVolumeScope, commonVolumeScope, visitVolumesCsv, type VisitVolumeRow, type VisitSupport, type VisitSupportMode } from "../volume-visits";
+  areaVolumesCsv, type NamedArea, type AreaVolumeRow } from "../named-areas";
+import { MAX_VOLUME_VISITS, reconcileVisitOrder, intervalVolumeScope, intervalVolumesCsv, type IntervalVolumeRow, visitVolumeScope, commonVolumeScope, visitVolumesCsv, type VisitVolumeRow, type VisitSupport, type VisitSupportMode } from "../volume-visits";
 import { projectChanged } from "../project-change";
 import { finiteStats, showSigned } from "./distance";
 import { $, download, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
@@ -24,6 +24,34 @@ const coordinateUnit = $<HTMLSelectElement>("volume-unit");
 const CONSTANT = "constant";
 const visitSelect = $<HTMLSelectElement>("volume-visits");
 const visitSupport = $<HTMLSelectElement>("volume-visits-support");
+const intervalEnabled = $<HTMLInputElement>("volume-visits-intervals");
+let visitOrder: number[] = [];
+function syncVisitOrder(): void {
+  visitOrder = reconcileVisitOrder(visitOrder, [...visitSelect.selectedOptions].map(option => Number(option.value)));
+}
+function renderVisitOrder(): void {
+  const list = $("volume-visit-order"); list.replaceChildren();
+  if (visitOrder.length > MAX_VOLUME_VISITS) { list.textContent = "Choose at most 8 visits before ordering them."; return; }
+  visitOrder.forEach((id, index) => {
+    const li = document.createElement("li"), name = document.createElement("span");
+    name.textContent = `${index + 1}. ${entries.get(id)?.cloud.name ?? "Unavailable"}`;
+    li.append(name);
+    for (const [offset, label] of [[-1, "Earlier"], [1, "Later"]] as const) {
+      const button = document.createElement("button"); button.textContent = label;
+      button.setAttribute("aria-label", `Move visit ${index + 1} ${label.toLowerCase()}`);
+      button.disabled = running || index + offset < 0 || index + offset >= visitOrder.length;
+      button.onclick = () => {
+        if (running || taskActive()) return;
+        const target = index + offset;
+        [visitOrder[index], visitOrder[target]] = [visitOrder[target], visitOrder[index]];
+        clearResult(); updateForm();
+        list.children[target]?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
+      };
+      li.append(button);
+    }
+    list.append(li);
+  });
+}
 type Input = { side: { id: number } | { z: number }; name: string; entry?: Entry; cloud?: Entry["cloud"] };
 type Settings = { cell: number; height: "mean" | "min" | "max"; fillEmpty: boolean; coordinateUnit: string; region?: ExpectedOverlap; areaName?: string };
 const areaEnabled = $<HTMLInputElement>("volume-area-enabled");
@@ -42,7 +70,7 @@ function scope(settings: Settings): string {
 }
 let last: { out: VolumeOutput; before: string; after: string; inputs: Input[]; settings: Settings; output: Entry | null } | null = null;
 let batch: { rows: AreaVolumeRow[]; inputs: Input[]; settings: Settings } | null = null;
-let visits: { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid; support: VisitSupport } | null = null;
+let visits: { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid; support: VisitSupport; intervals: IntervalVolumeRow[] | null } | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
 function validInput(input: Input): boolean {
   return !input.entry || entries.get(input.cloud!.id) === input.entry && input.entry.cloud === input.cloud;
@@ -53,7 +81,7 @@ function validResult(result: NonNullable<typeof last>): boolean {
 function clearResult(): void {
   const had = last !== null || batch !== null || visits !== null; generation++; last = null; batch = null; visits = null;
   $("volume-result").hidden = $("volume-exports").hidden = true;
-  $("volume-areas-result").hidden = $("volume-visits-result").hidden = true;
+  $("volume-areas-result").hidden = $("volume-visits-result").hidden = $("volume-intervals-result").hidden = true;
   if (had) distanceChanged.emit();
 }
 pointsInvalidated.add(id => {
@@ -111,7 +139,7 @@ function renderSelects(): void {
   const selected = new Set([...visitSelect.selectedOptions].map(option => option.value));
   visitSelect.replaceChildren(...ids.map(option));
   for (const option of visitSelect.options) option.selected = selected.has(option.value);
-  updateForm();
+  syncVisitOrder(); updateForm();
 }
 listChanged.add(() => { if (last && !validResult(last) || batch && !batch.inputs.every(validInput) || visits && !visits.inputs.every(validInput)) clearResult(); renderSelects(); });
 
@@ -126,6 +154,9 @@ function updateForm(): void {
     $("volume-areas-import"), $("volume-areas-export"), $("volume-use-distance-area"), $("volume-send-distance-area")] as (HTMLInputElement | HTMLSelectElement | HTMLButtonElement)[]) input.disabled = running;
   $<HTMLButtonElement>("volume-areas-run").disabled = volumeRun.disabled || !captureNamedAreas().length;
   visitSelect.disabled = visitSupport.disabled = running;
+  if (visitSupport.value !== "common_observed" || visitOrder.length < 2) intervalEnabled.checked = false;
+  intervalEnabled.disabled = running || visitSupport.value !== "common_observed" || visitOrder.length < 2;
+  renderVisitOrder();
   $<HTMLButtonElement>("volume-visits-mask").disabled = running || !visits?.support.mask;
   $<HTMLButtonElement>("volume-visits-run").disabled = running || !captureNamedAreas().length || !visitSelect.selectedOptions.length;
   for (const id of ["volume-area-apply", "volume-area-remove"]) $<HTMLButtonElement>(id).disabled = running || !savedAreas.value;
@@ -188,8 +219,9 @@ function snapshot(select: HTMLSelectElement, z: HTMLInputElement): Input {
   return { side: { id: entry.cloud.id }, name: entry.cloud.name, entry, cloud: entry.cloud };
 }
 
-visitSupport.onchange = () => { clearResult(); updateForm(); };
-visitSelect.onchange = () => { clearResult(); updateForm(); };
+visitSupport.onchange = () => { if (visitSupport.value !== "common_observed") intervalEnabled.checked = false; clearResult(); updateForm(); };
+intervalEnabled.onchange = () => { clearResult(); updateForm(); };
+visitSelect.onchange = () => { syncVisitOrder(); if (visitOrder.length < 2) intervalEnabled.checked = false; clearResult(); updateForm(); };
 
 function unit(value: number, power: 2 | 3): string {
   return `${fmt(value)} ${last?.settings.coordinateUnit ?? coordinateUnit.value}${power === 3 ? "³" : "²"}`;
@@ -430,7 +462,10 @@ renderAreas();
 $("volume-visits-run").onclick = async () => {
   if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before comparing visits", true);
   const areas = captureNamedAreas();
-  const selected = [...visitSelect.selectedOptions];
+  syncVisitOrder();
+  const options = new Map([...visitSelect.selectedOptions].map(option => [Number(option.value), option]));
+  const selected = visitOrder.map(id => options.get(id)!);
+  const includeIntervals = intervalEnabled.checked;
   const support: VisitSupport = { mode: visitSupport.value as VisitSupportMode };
   const settings: Settings = { cell: Number(volumeCell.value), height: $<HTMLSelectElement>("volume-height").value as Settings["height"],
     fillEmpty: $<HTMLInputElement>("volume-fill").checked, coordinateUnit: coordinateUnit.value };
@@ -442,6 +477,7 @@ $("volume-visits-run").onclick = async () => {
       if (!entry) throw new Error("A selected visit is no longer available");
       return { side: { id: entry.cloud.id }, name: entry.cloud.name, entry, cloud: entry.cloud };
     })];
+    if (includeIntervals && (selected.length < 2 || support.mode !== "common_observed")) throw new Error("Direct intervals require at least two visits and common observed cells");
     if (!["independent", "common_observed"].includes(support.mode)) throw new Error("Choose a valid visit support mode");
     if (support.mode === "common_observed" && (settings.fillEmpty || inputs.some(input => !input.cloud || input.cloud.kind !== "cloud"))) throw new Error("Common observed cells require point clouds for the baseline and visits, with interpolation disabled");
     if (selected.some(option => option.value === volumeBefore.value)) throw new Error("The baseline cannot also be a visit");
@@ -453,7 +489,9 @@ $("volume-visits-run").onclick = async () => {
   const cancelled = () => setStatus("Cancel requested; the current support preparation or comparison finishes before all staged visit rows are discarded.");
   signal.addEventListener("abort", cancelled);
   try {
-    const rows: VisitVolumeRow[] = [];
+    const rows: VisitVolumeRow[] = [], intervals: IntervalVolumeRow[] | null = includeIntervals ? [] : null;
+    const jobs = (selected.length + (includeIntervals ? selected.length - 1 : 0)) * areas.length;
+    let completed = 0;
     if (support.mode === "common_observed") {
       showProgress({ note: "Intersecting raw observed cells across baseline and all visits", fraction: 0 });
       const mask = await prepareVolumeSupport({ ids: inputs.map(input => input.cloud!.id), cell: settings.cell, height: settings.height, sharedGrid: grid });
@@ -467,31 +505,46 @@ $("volume-visits-run").onclick = async () => {
       if (token !== generation || !inputs.every(validInput)) throw new Error("Visit inputs/settings changed; compare again");
       support.sha256 = Array.from(new Uint8Array(digest), v => v.toString(16).padStart(2, "0")).join("");
     }
-    for (const [index, input] of inputs.slice(1).entries()) for (const area of areas) {
+    async function summarize(before: Input, after: Input, area: NamedArea, label: string): Promise<AreaVolumeRow> {
       signal.throwIfAborted();
-      showProgress({ note: `${input.name} / ${area.name}`, fraction: rows.length / (selected.length * areas.length) });
-      const out = await computeVolume({ before: inputs[0].side, after: input.side, ...settings, region: area.bounds, sharedGrid: grid, supportMask: support.mask, summaryOnly: true });
+      showProgress({ note: `${label} / ${area.name}`, fraction: completed / jobs });
+      const out = await computeVolume({ before: before.side, after: after.side, ...settings, region: area.bounds, sharedGrid: grid, supportMask: support.mask, summaryOnly: true });
       if (out.cells) { await removeCloud(out.cells.id); throw new Error("Visit summary unexpectedly created a point cloud"); }
       signal.throwIfAborted();
       if (token !== generation || !inputs.every(validInput)) throw new Error("Visit inputs/settings changed; compare again");
       if (![out.added, out.removed, out.addedArea, out.removedArea].every(Number.isFinite)) throw new Error("Visit volume cannot be represented at this coordinate scale");
       const { added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells } = out;
-      rows.push({ ...area, visit: input.name, visitIndex: index + 1, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells });
+      completed++;
+      return { ...area, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells };
     }
-    visits = { rows, inputs, settings, grid, support };
-    $("volume-visits-rows").replaceChildren(...rows.map(row => {
+    for (const [index, input] of inputs.slice(1).entries()) for (const area of areas) {
+      rows.push({ ...await summarize(inputs[0], input, area, `Baseline → ${input.name}`), visit: input.name, visitIndex: index + 1 });
+    }
+    if (intervals) for (let index = 1; index < inputs.length - 1; index++) for (const area of areas) {
+      const from = inputs[index], to = inputs[index + 1];
+      intervals.push({ ...await summarize(from, to, area, `Interval ${index}: ${from.name} → ${to.name}`), intervalIndex: index,
+        fromVisitIndex: index, toVisitIndex: index + 1, fromId: from.cloud!.id, toId: to.cloud!.id, fromVisit: from.name, toVisit: to.name });
+    }
+    visits = { rows, inputs, settings, grid, support, intervals };
+    const renderRows = (id: string, data: readonly { label: string; row: AreaVolumeRow }[]) => $(id).replaceChildren(...data.map(({ label, row }) => {
       const tr = document.createElement("tr");
-      for (const value of [`${row.visitIndex}. ${row.visit} / ${row.name}`, ...[row.added, row.removed, row.added - row.removed].map(v => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}³` : "Unavailable"), row.matchedCells, row.totalCells - row.matchedCells, row.outsideRegionCells]) {
+      for (const value of [label, ...[row.added, row.removed, row.added - row.removed].map(v => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}³` : "Unavailable"), row.matchedCells, row.totalCells - row.matchedCells, row.outsideRegionCells]) {
         const td = document.createElement("td"); td.textContent = String(value); tr.append(td);
       }
       return tr;
     }));
+    renderRows("volume-visits-rows", rows.map(row => ({ label: `${row.visitIndex}. ${row.visit} / ${row.name}`, row })));
+    $("volume-intervals-result").hidden = intervals === null;
+    if (intervals) {
+      renderRows("volume-intervals-rows", intervals.map(row => ({ label: `${row.fromVisitIndex}. ${row.fromVisit} → ${row.toVisitIndex}. ${row.toVisit} / ${row.name}`, row })));
+      $("volume-intervals-scope").textContent = "Direct comparisons in the displayed visit order on the same common observed cells, including the baseline's footprint. Dates are not inferred. 2.5D cut/fill; overlapping areas and gross interval volumes must not be summed as unique earthwork. No compared cells means unavailable.";
+    }
     const common = support.mode === "common_observed";
     $("volume-visits-scope").textContent = `Baseline: ${inputs[0].name}; ${selected.length} visits × ${areas.length} areas; cell ${settings.cell} ${settings.coordinateUnit}, height ${settings.height}, interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. ` +
       (common ? `Same raw observed cells in all inputs: ${support.commonGridCells} of ${grid[2] * grid[3]} union-grid cells; each row uses the part inside its area. Uncompared includes cells missing in any input.` : "Shared grid; missing support varies by visit: do not subtract totals for between-visit quantities.") +
       " 2.5D volumes relative to baseline. Unavailable means no compared cells. Overlapping areas must not be summed. Scroll for coverage counts.";
     $("volume-visits-result").hidden = false;
-    setStatus(`Compared ${selected.length} visits across ${areas.length} areas with a fixed baseline. ${common ? "Same raw observed support in every row of an area." : "No between-visit increments inferred."}`);
+    setStatus(`Compared ${selected.length} visits across ${areas.length} areas with a fixed baseline. ${common ? "Same raw observed support in every row of an area." : "No between-visit increments inferred."}${intervals ? ` Computed ${selected.length - 1} direct intervals.` : ""}`);
   } catch (error) { setStatus(`Visit comparison failed: ${signal.aborted ? "Cancelled; no partial summaries published" : errorText(error)}`, true); }
   finally { signal.removeEventListener("abort", cancelled); activeInputs = []; running = false; endTask(signal); updateForm(); }
 };
@@ -499,6 +552,9 @@ $("volume-visits-json").onclick = () => {
   if (!visits || !visits.inputs.every(validInput)) return;
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.area_volume_visits.v1", baseline: describeInput(visits.inputs[0]),
     visits: visits.inputs.slice(1).map((input, i) => ({ visitIndex: i + 1, ...describeInput(input) })),
+    ordering: { policy: "User-controlled visit list, initially loaded order; no acquisition dates inferred", cloudIds: visits.inputs.slice(1).map(input => input.cloud!.id) },
+    ...(visits.intervals ? { intervals: { scope: intervalVolumeScope, rows: visits.intervals.map(row => ({ ...row, net: row.added - row.removed,
+      uncomparedCells: row.totalCells - row.matchedCells, comparisonAvailable: row.matchedCells > 0 })) } } : {}),
     settings: visits.settings, sharedGrid: { min: visits.grid.slice(0, 2), nx: visits.grid[2], ny: visits.grid[3], cell: visits.settings.cell, origin: "Lower-left boundary; centers offset by half a cell" },
     support: { mode: visits.support.mode, ...(visits.support.mask ? { commonGridCells: visits.support.commonGridCells,
       commonGridArea: visits.support.commonGridCells! * visits.settings.cell ** 2, mask: { file: "common-observed-cells.bin", sha256: visits.support.sha256,
@@ -512,4 +568,8 @@ $("volume-visits-csv").onclick = () => {
 
 $("volume-visits-mask").onclick = () => {
   if (visits?.support.mask && visits.inputs.every(validInput)) download(new Blob([visits.support.mask.slice().buffer], { type: "application/octet-stream" }), "common-observed-cells.bin");
+};
+
+$("volume-intervals-csv").onclick = () => {
+  if (visits?.intervals && visits.inputs.every(validInput)) download(new Blob([intervalVolumesCsv(visits.intervals, visits.settings.coordinateUnit, visits.support)], { type: "text/csv" }), "direct-visit-intervals.csv");
 };

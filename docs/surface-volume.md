@@ -140,15 +140,16 @@ placement follows the existing nearest-center convention, anchored at the
 lowest XY corner of that union. Adding/removing a selected visit can move the
 grid and change results; compare a fixed selection. A remote visit can enlarge
 the grid: the existing 1,000,000-cell budget applies to the entire union, not
-just the saved rectangles. At most 8 × 32 serial summaries are run. Each result
+just the saved rectangles. A baseline-only run makes at most 8 × 32 serial
+summaries; enabling direct intervals adds up to 7 × 32 requests. Each baseline row
 compares one visit to the baseline; no derived scene clouds are created.
 
 The table and JSON/CSV exports retain each visit/area's fill, cut, net, compared,
 uncompared and outside cell counts. No-support rows show unavailable values
 and blank CSV quantities. JSON retains baseline/visit runtime descriptors,
 loaded/preview/decimation information, settings, shared grid origin/dimensions
-and area bounds. Visit indices follow loaded order, not inferred acquisition
-dates; use dated filenames. Duplicate filenames remain distinguishable by
+and area bounds. Visit indices follow the explicit numbered list (initially loaded order), not
+inferred acquisition dates; review the order and use dated filenames. Duplicate filenames remain distinguishable by
 visit index and runtime descriptors. Save JSON alongside CSV for full provenance.
 Selections and computed rows are session-only; projects retain area definitions,
 and visits must be selected and computed again after reload.
@@ -217,3 +218,55 @@ sampling, correct registration or acquisition order. Results remain 2.5D, with
 whole boundary cells and no fractional clipping, unit conversion or field
 accuracy guarantee. Synthetic equal-count/different-footprint tests validate
 the mask and arithmetic, not actual map accuracy.
+
+## Direct intervals between ordered visits
+
+Select at least two visits, choose **Observed in baseline and all visits**, and
+check **Also compute adjacent visit intervals**. Review the numbered visit list;
+use **Earlier / Later** to set the desired acquisition order. Initial order is
+loaded order, not a date inferred from filenames. Deselecting visits removes
+them from the order, new selections append, and unrelated newly loaded clouds
+do not change it. Order, selections, option and results remain session-only.
+Switching to independent-pair support or fewer than two visits clears/disables
+the interval option.
+
+The operation still computes baseline-relative rows, then directly compares
+each consecutive pair in the explicit list using after minus before heights.
+An interval is visit 1 → visit 2, then visit 2 → visit 3, etc.; the baseline is
+not inserted into that interval sequence. Every comparison uses the same mask
+intersecting the **baseline and all selected visits**, even if two interval
+inputs alone cover more cells. Grid, height mode, units and named area bounds
+are identical across baseline and interval rows. Interpolation remains off and
+inputs must be point clouds. No additional scene clouds are created.
+
+For example, a zero baseline with two cells and visits A = [5, 1], B = [3, 4]
+has baseline fill 6 and 7. Subtracting those fill totals gives 1, but directly
+comparing A → B gives fill **3**, cut **2**, net **1**. Reversing the order swaps
+fill/cut and negates net. Changing order alone retains the common mask; changing
+the input set may change both grid and observed support.
+
+The **Direct intervals (visit to visit)** table is separate from baseline rows.
+**Save visit summaries JSON** includes `ordering` runtime cloud IDs and optional
+`intervals` with a direct-comparison scope and per-row from/to indices, IDs,
+names, bounds, quantities and counts. **Save direct intervals CSV** saves only
+interval rows, including support mode and common-mask SHA-256. Retain the JSON
+and binary mask for full provenance. A row with no compared cells is unavailable,
+with blank CSV quantities. Counts outside the area remain distinct from cells
+uncompared because they are missing in any selected input.
+
+Baseline and interval rows publish together only when every request succeeds.
+Cancellation or changed settings/order/inputs during an interval discards the
+staged baseline rows, interval rows and mask together. Reordering or removing an
+input after completion invalidates both tables and their exports. At most
+(8 baseline comparisons + 7 intervals) × 32 areas = 480 serial summary requests
+are performed on the existing bounded grid. Existing loaded inputs and the
+development environment are reused.
+
+These remain loaded-data **2.5D** height-surface differences, with no automatic
+registration, acquisition-date inference, physical-ground correspondence or
+field-accuracy guarantee. Whole boundary cells are counted without fractional
+clipping. Overlapping areas and gross volumes across intervals must not be
+summed as unique earthwork: the same location may rise and fall repeatedly.
+Synthetic checks validate arithmetic, order, persistence within the session,
+export identity and invalidation; independent surveys are still needed for
+accuracy and construction-quantity validation.

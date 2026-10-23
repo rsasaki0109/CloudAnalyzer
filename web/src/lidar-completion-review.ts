@@ -98,5 +98,6 @@ export async function readCompletionScanReview(files: File[], signal: AbortSigna
     throw new Error("Completion record order or output SHA256 differs");
   }
   return { ...review, retained: new File([keptBytes], "retained.bin"), candidates: new File([candidateBytes], "candidates.bin"),
-    completion: { baselineCandidates: review.candidates, added: new File([addedBytes], "added.bin"), addedCount, removed, retained } };
+    completion: { baselineRetained: review.retained, baselineCandidates: review.candidates,
+      added: new File([addedBytes], "added.bin"), addedCount, removed, retained } };
 }

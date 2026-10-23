@@ -125,6 +125,7 @@ export interface AiScanReview {
   candidates: File;
   report: AiScanReport;
   completion?: {
+    baselineRetained: File;
     baselineCandidates: File;
     added: File;
     addedCount: number;

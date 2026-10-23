@@ -122,6 +122,7 @@
               <option value="retained">Retained scan</option>
               <option value="candidates">Candidates only</option>
               <option value="baseline-candidates" data-completion disabled>Baseline candidates only</option>
+              <option value="baseline-retained" data-completion disabled>Nearest-only retained scan</option>
               <option value="added" data-completion disabled>Added points only</option>
             </select></label>
             <button id="lidar-ai-focus" title="Frame candidate bounds without hiding surrounding retained points">Focus candidates</button>
@@ -130,6 +131,10 @@
               <button id="lidar-ai-download-retained">Download exact retained .bin</button>
               <button id="lidar-ai-download-candidates">Download exact candidates .bin</button>
               <button id="lidar-ai-download-added" hidden>Download exact added .bin</button>
+            </div>
+            <div id="lidar-ai-baseline-downloads" class="button-row" hidden>
+              <button id="lidar-ai-download-baseline-retained">Download nearest-only retained .bin</button>
+              <button id="lidar-ai-download-baseline-candidates">Download nearest-only candidates .bin</button>
             </div>
           </div>
           <p class="hint small">Sensor-frame scans only; accumulated maps are unsupported. Parked and moving cars share the car class. Native inference retains unclassified returns; optional completion selects some nearby collision returns. Undo removes the added comparison clouds. Downloads preserve the verified result, including after later edits.</p>

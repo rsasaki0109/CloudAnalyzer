@@ -709,6 +709,14 @@ export class Viewer {
     this.requestRender();
   }
 
+  /** Inspect terrain triangle edges without changing or duplicating geometry. */
+  setMeshWireframe(id: number, wireframe: boolean): void {
+    const mesh = this.meshes.get(id);
+    if (!mesh) return;
+    (mesh.material as THREE.MeshStandardMaterial).wireframe = wireframe;
+    this.requestRender();
+  }
+
   remove(id: number): void {
     if (this.gizmo?.id === id) this.endGizmo();
     const mesh = this.meshes.get(id);

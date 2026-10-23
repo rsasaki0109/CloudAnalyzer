@@ -220,6 +220,73 @@
         </div>
       </section>
 
+      <section id="coverage-panel">
+        <h2>Map coverage &amp; quality</h2>
+        <label>Map <select id="coverage-source"></select></label>
+        <p id="coverage-scope" class="hint small" role="status"></p>
+        <div class="range">
+          <label>XY cell size (cloud units) <input id="coverage-cell" type="number" min="0" step="any" value="1" /></label>
+          <label>Sparse below points/cell <input id="coverage-min" type="number" min="1" max="1000000" step="1" value="10" /></label>
+        </div>
+        <button id="coverage-run" disabled>Analyze coverage</button>
+        <div id="coverage-result" hidden>
+          <p id="coverage-summary" class="small" role="status"></p>
+          <canvas id="coverage-grid" aria-label="XY coverage grid; click a cell to focus it" style="display:block;image-rendering:pixelated;cursor:crosshair"></canvas>
+          <p class="hint small">Blue: occupied. Orange: sparse. Pink: enclosed empty. Gray: exterior-connected empty. Click a cell to inspect its area.</p>
+          <p id="coverage-cell-info" class="small" role="status"></p>
+          <button id="coverage-download">Save coverage JSON</button>
+        </div>
+        <p class="hint small">XY projection combines heights. Enclosed empty cells are potential gaps, not confirmed missing survey data: buildings, occlusion and unmeasured areas can also be empty. This does not measure surface roughness or registration accuracy.</p>
+        <label>Reference / another pass <select id="coverage-reference"></select></label>
+        <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
+        <button id="coverage-volume" disabled>Prepare cut/fill volume comparison</button>
+        <button id="coverage-mesh" disabled>Prepare terrain mesh</button>
+        <p class="hint small">Volume uses reference as Before and source as After, across the full loaded surfaces. Crop the inputs to limit volume to a site; the expected-overlap rectangle below applies to distance review.</p>
+        <details class="options">
+          <summary>Locate distance discrepancies</summary>
+          <div class="range">
+            <label>Distance above (cloud units) <input id="regions-threshold" type="number" min="0" step="any" value="0.3" /></label>
+            <label>Grouping XY cell <input id="regions-cell" type="number" min="0" step="any" value="5" /></label>
+            <label>Min. exceeding points/region <input id="regions-min" type="number" min="1" max="1000000" step="1" value="5" /></label>
+          </div>
+          <details class="options">
+            <summary>Expected overlap area</summary>
+            <label><input id="regions-overlap-enabled" type="checkbox" /> Limit comparison to a world XY rectangle</label>
+            <div id="regions-overlap-bounds" hidden>
+              <div class="range"><label>Min X <input id="regions-overlap-min-x" type="number" step="any" /></label><label>Max X <input id="regions-overlap-max-x" type="number" step="any" /></label></div>
+              <div class="range"><label>Min Y <input id="regions-overlap-min-y" type="number" step="any" /></label><label>Max Y <input id="regions-overlap-max-y" type="number" step="any" /></label></div>
+              <p class="hint small">Enter a shared area you expect both surveys to cover, in original cloud coordinates. Includes rectangle edges and all heights. Outside points are counted separately; nearest neighbors still use the full reference. This limits the review area without proving common coverage.</p>
+            </div>
+          </details>
+          <div class="button-row"><button id="regions-run" disabled>Compute &amp; locate regions</button><button id="regions-both" disabled>Compare both directions</button></div>
+          <div id="regions-result" hidden>
+            <div id="regions-directions" hidden>
+              <p id="regions-both-summary" class="small" role="status"></p>
+              <label>Show direction <select id="regions-direction"><option value="forward">Selected source → reference</option><option value="reverse">Reference → selected source</option></select></label>
+              <button id="regions-both-json">Save both directions JSON</button>
+              <p class="hint small">Ratios use measured points in each direction separately. Reference → source can reveal areas absent from the source, but sampling, occlusion and different survey footprints also cause discrepancies. This is not a confirmed missing-map or registration-defect classifier.</p>
+            </div>
+            <p id="regions-summary" class="small" role="status"></p>
+            <ol id="regions-list" class="loop-list"></ol>
+            <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
+            <label>Inspection XY cell <input id="regions-fine-cell" type="number" min="0" step="any" value="1" /></label>
+            <details class="options"><summary>Cell section settings</summary>
+              <label>Section direction <select id="regions-section-axis"><option value="x">X</option><option value="y">Y</option></select></label>
+              <div class="range"><label>Length <input id="regions-section-length" type="number" min="0" step="any" value="20" /></label><label>Band width <input id="regions-section-width" type="number" min="0" step="any" value="2" /></label></div>
+              <p class="hint small">Compare section on a cell plots all loaded points of the selected pair within this band, centered on its exceeding-point bounds. Other clouds are excluded. Units follow the clouds.</p>
+            </details>
+            <p class="hint small">Inspect a region's cells to narrow down connected chains. Uses the same distances; ranks up to 50 cells by maximum distance, then point count. No minimum support filter within a region.</p>
+            <div id="regions-cells" hidden>
+              <p id="regions-cells-summary" class="small" role="status"></p>
+              <ol id="regions-cells-list" class="loop-list"></ol>
+              <div class="button-row"><button id="regions-cells-json">Save cell inspection JSON</button><button id="regions-cells-csv">Save listed cells CSV</button></div>
+            </div>
+          </div>
+          <p class="hint small">Source → reference unsigned nearest distances only. Changes, occlusion and missing reference coverage can also produce large distances. Groups are XY inspection candidates, not confirmed registration defects. Threshold/cell edits reuse distances only while both loaded clouds remain unchanged. Cancellation discards diagnostics; an active C2C call may finish first.</p>
+        </details>
+        <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>
+      </section>
+
       <section id="views-panel">
         <h2>Views</h2>
         <ol id="view-list" class="note-list"></ol>
@@ -276,9 +343,15 @@
           <label class="check" title="Interpolate cells a surface does not cover from their neighbours">
             <input id="volume-fill" type="checkbox" /> Fill empty cells
           </label>
+          <label>Coordinate unit <select id="volume-unit"><option value="m">Metres (m)</option><option value="ft">Feet (ft)</option><option value="unit">Unspecified cloud units</option></select></label>
+          <p class="hint small">Units label the coordinates; no conversion. Use aligned ground surfaces for earthwork. This is a 2.5D height difference, not closed-solid volume. Undefined cells are excluded; interpolation is optional. Increase cell size or crop if the grid exceeds 1,000,000 cells.</p>
         </details>
         <button id="volume-run" class="primary" disabled>Compute volume</button>
         <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
+        <div id="volume-exports" hidden>
+          <p id="volume-scope" class="hint small"></p>
+          <div class="button-row"><button id="volume-isolate" disabled>Hide input surfaces</button><button id="volume-mesh" disabled>Mesh compared After cells</button><button id="volume-json">Save volume summary JSON</button><button id="volume-csv">Save compared cells CSV</button></div>
+        </div>
       </section>
 
       <section id="raster-panel">
@@ -318,10 +391,17 @@
       <section id="mesh-panel">
         <h2>Mesh (Delaunay 2.5D)</h2>
         <label>Cloud <select id="mesh-cloud"></select></label>
-        <label title="Triangles with a longer horizontal edge are dropped, so gaps and concave outlines are not bridged. Empty: 4 × the median edge; 0: keep all">Max edge length
+        <label title="Drop triangles with a longer horizontal edge; short bridges over gaps can remain. Empty: 4 × the median edge; 0: keep all">Max edge length
           <input id="mesh-max-edge" type="number" min="0" step="any" placeholder="auto" />
         </label>
         <button id="mesh-run" class="primary" disabled title="Triangulate the points seen from above, keeping their heights">Mesh</button>
+        <p class="hint small">Ground surfaces with one height per XY position. Max edge limits long horizontal triangle edges; it does not prove every gap is preserved. For multiple height layers or vertical walls, crop/select the intended surface first.</p>
+        <div id="mesh-result" hidden>
+          <p id="mesh-summary" class="small" role="status"></p>
+          <label class="check"><input id="mesh-wireframe" type="checkbox" /> Wireframe</label>
+          <div class="button-row"><button id="mesh-json">Save mesh summary JSON</button><button id="mesh-ply">Save mesh PLY</button><button id="mesh-obj">Save mesh OBJ</button></div>
+          <button id="mesh-volume-after">Use mesh as After surface</button>
+        </div>
       </section>
 
       <section id="filter-panel">
@@ -760,6 +840,7 @@
           <div class="range">
             <label title="Thin the map to one point per voxel of this size (metres); 0 keeps every scan point">Map voxel <input id="pg-map-voxel" type="number" min="0" step="any" value="0" /></label>
             <button id="pg-map" title="Every scan at its optimised pose, as a new cloud in the list (to measure, export…)">Build map cloud</button>
+            <button id="pg-map-coverage" disabled>Analyze latest cloud…</button>
           </div>
           <div class="button-row">
             <button id="pg-compare" title="The map as it is now, colored by how far each point moved from its place as loaded: where the corrections moved the map">Compare with the start</button>
@@ -1218,6 +1299,10 @@
         <button data-keep="both" title="Split into the points inside and the rest">Split</button>
         <button id="segment-cancel" title="Stop segmenting (Esc)">Cancel</button>
       </div>
+      <div id="regions-section-plot" class="profile-plot" hidden>
+        <div class="profile-head"><span id="regions-section-title"></span><label><input id="regions-section-equal" type="checkbox" /> 1:1</label><button id="regions-section-json">Save section summary JSON</button><button id="regions-section-csv">Save section points CSV</button><button id="regions-section-close" title="Close cell section">✕</button></div>
+        <p id="regions-section-summary" role="status"></p><canvas id="regions-section-canvas" aria-label="Selected source and reference section heights"></canvas>
+      </div>
       <div id="profile-plot" class="profile-plot" hidden>
         <div class="profile-head">
           <span id="profile-legend" class="profile-legend"></span>
@@ -1252,5 +1337,7 @@
 
     <script type="module" src="/src/main.ts"></script>
     <script type="module" src="/src/app/lidar-ai.ts"></script>
+    <script type="module" src="/src/app/map-coverage.ts"></script>
+    <script type="module" src="/src/app/distance-regions.ts"></script>
   </body>
 </html>

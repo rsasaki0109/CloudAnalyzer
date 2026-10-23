@@ -1,0 +1,309 @@
+{
+  "schema": "cloudanalyzer.distance_regions_smoke.v1",
+  "implementation_commit": "871d55a951c2b4572c4161385f458d01947d4b7c",
+  "normalized_source_sha256": {
+    "web/src/distance-regions.ts": "a43a15cb474d1520d48612a9a7aa4f4ab48b3299d6636ac61d71cb10897b571f",
+    "web/src/distance-regions-worker.ts": "b4c3356b854a20f670a17eab3561e17aeaafc77cb2f248bf2369f4bba32609dc",
+    "web/src/app/distance-regions.ts": "c905fc7b2244c578511880295660761f44f65f73d2199e49f1976c693f033367",
+    "web/index.html": "b49b31d26491ee777b7e4552d1240b4b041c69996458be2ce506429b2d471545",
+    "web/tests/distance-regions.test.mjs": "9c55bb1b0f658e3988ab64fc7c53dc17c3b0a10187c926e031d0504021bc1e52",
+    "web/e2e/distance-regions.spec.ts": "4e96c6f838b033693020741c833a4885cf40953c7754b0c9d778847bc2ef6ed1"
+  },
+  "build_assets_sha256": {
+    "c2c-worker-WJhdjU5B.js": "f143bfb8e616aad0a8017af2b7d4701c3b96b13cb5639ed2a3ce9c6c7b2f888f",
+    "ca_wasm_bg-CknP-APk.wasm": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+    "distance-regions-worker-D6vwmSPn.js": "bcedc3796ec30f097ac9ae36d8968bdd956d91549d4be35dbbf6429bedaae625",
+    "index-36S-JsIZ.js": "7dba10a47fe5ab6f9fb319a1a5935e57727df33961a6e25d4424ca4142ab4e48",
+    "index-DpTvHSKO.css": "a7178946033cc00692b6b33ebaa973fbe954eb5c613da2ee0d70273557b7233d",
+    "map-coverage-worker-BevUgqE9.js": "3b1c292cce6c3bdb8eb1f1b35db51d4feedd98851308007448827f2b3b4fc6d3",
+    "worker-CGqpRHSq.js": "68e26fbe4575d90e55b1dfb5b6d1140136f5c0daed921e2d69dd92cce2c8fc90"
+  },
+  "input": {
+    "original_survey": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "partition": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "source": {
+      "file": "compared.ply",
+      "points": 878920,
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "reference": {
+      "file": "reference.ply",
+      "points": 878921,
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "new_download_bytes": 0,
+    "independent_surveys_or_registration_truth": false
+  },
+  "browser_receipt": {
+    "source_sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc",
+    "reference_sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948",
+    "result": {
+      "schema": "cloudanalyzer.distance_regions.v1",
+      "source": {
+        "id": 1,
+        "name": "compared.ply",
+        "loadedPoints": 878920,
+        "filePoints": 878920,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "reference": {
+        "id": 2,
+        "name": "reference.ply",
+        "loadedPoints": 878921,
+        "filePoints": 878921,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "method": "unsigned CPU nearest-neighbor source-to-reference",
+      "scope": "Loaded points; XY eight-neighbor connected cells, ranked by maximum distance then point count; top 50 eligible regions only; not a registration-defect classifier",
+      "reusedDistances": false,
+      "threshold": 0.3,
+      "effectiveThreshold": 0.30000001192092896,
+      "cell": 5,
+      "minPoints": 5,
+      "points": 878920,
+      "measured": 878920,
+      "invalidPositions": 0,
+      "unmeasured": 0,
+      "exceeding": 20785,
+      "occupiedCells": 1982,
+      "components": 40,
+      "eligibleRegions": 14,
+      "smallRegionPoints": 53,
+      "unlistedEligiblePoints": 0,
+      "regions": [
+        {
+          "rank": 1,
+          "points": 20421,
+          "maxDistance": 16.37504005432129,
+          "meanDistance": 0.45049578727246103,
+          "bounds": [
+            3575.572998046875,
+            73441.6953125,
+            3.188999891281128,
+            3942.318359375,
+            73896.28125,
+            37.35900115966797
+          ]
+        },
+        {
+          "rank": 2,
+          "points": 114,
+          "maxDistance": 6.211087703704834,
+          "meanDistance": 0.5772818951753148,
+          "bounds": [
+            3577.14990234375,
+            73681.09375,
+            18.409000396728516,
+            3611.953857421875,
+            73715.7890625,
+            26.433000564575195
+          ]
+        },
+        {
+          "rank": 3,
+          "points": 17,
+          "maxDistance": 3.1374351978302,
+          "meanDistance": 0.9907227368915782,
+          "bounds": [
+            3825.964599609375,
+            73683.4375,
+            20.60849952697754,
+            3846.392822265625,
+            73694.140625,
+            28.805999755859375
+          ]
+        },
+        {
+          "rank": 4,
+          "points": 5,
+          "maxDistance": 2.818030834197998,
+          "meanDistance": 1.389994776248932,
+          "bounds": [
+            3762.271484375,
+            73861.546875,
+            18.9689998626709,
+            3771.096923828125,
+            73870.828125,
+            22.42850112915039
+          ]
+        },
+        {
+          "rank": 5,
+          "points": 14,
+          "maxDistance": 2.360166311264038,
+          "meanDistance": 0.7691544422081539,
+          "bounds": [
+            3603.248046875,
+            73723.8515625,
+            18.702499389648438,
+            3610.64794921875,
+            73737.46875,
+            21.31100082397461
+          ]
+        },
+        {
+          "rank": 6,
+          "points": 13,
+          "maxDistance": 1.7044941186904907,
+          "meanDistance": 0.5683393272069784,
+          "bounds": [
+            3618.01611328125,
+            73752.15625,
+            19.18600082397461,
+            3628.913330078125,
+            73758.1796875,
+            21.847000122070312
+          ]
+        },
+        {
+          "rank": 7,
+          "points": 13,
+          "maxDistance": 1.6317812204360962,
+          "meanDistance": 0.4813732848717616,
+          "bounds": [
+            3575.402099609375,
+            73719.390625,
+            18.81100082397461,
+            3593.46875,
+            73730.125,
+            20.41699981689453
+          ]
+        },
+        {
+          "rank": 8,
+          "points": 15,
+          "maxDistance": 1.0805206298828125,
+          "meanDistance": 0.4486233731110891,
+          "bounds": [
+            3946.673828125,
+            73780.53125,
+            21.558141708374023,
+            3956.4296875,
+            73794.4296875,
+            24.790143966674805
+          ]
+        },
+        {
+          "rank": 9,
+          "points": 71,
+          "maxDistance": 1.0196603536605835,
+          "meanDistance": 0.47854866696075654,
+          "bounds": [
+            3574.95751953125,
+            73653.59375,
+            18.702499389648438,
+            3596.99365234375,
+            73668.8984375,
+            25.090999603271484
+          ]
+        },
+        {
+          "rank": 10,
+          "points": 14,
+          "maxDistance": 0.7635555863380432,
+          "meanDistance": 0.36276247245924814,
+          "bounds": [
+            3581.18603515625,
+            73519.8515625,
+            21.642000198364258,
+            3581.531982421875,
+            73524.28125,
+            24.305665969848633
+          ]
+        },
+        {
+          "rank": 11,
+          "points": 13,
+          "maxDistance": 0.7484997510910034,
+          "meanDistance": 0.4451475005883437,
+          "bounds": [
+            3683.938720703125,
+            73587.703125,
+            19.940000534057617,
+            3686.6943359375,
+            73590.2265625,
+            26.1200008392334
+          ]
+        },
+        {
+          "rank": 12,
+          "points": 7,
+          "maxDistance": 0.6256778240203857,
+          "meanDistance": 0.4863447759832655,
+          "bounds": [
+            3786.5380859375,
+            73640.875,
+            22.856000900268555,
+            3787.77392578125,
+            73641.2734375,
+            24.27199935913086
+          ]
+        },
+        {
+          "rank": 13,
+          "points": 6,
+          "maxDistance": 0.5110405683517456,
+          "meanDistance": 0.39744458099206287,
+          "bounds": [
+            3743.7490234375,
+            73837.421875,
+            19.28900146484375,
+            3750.66015625,
+            73842.09375,
+            20.670501708984375
+          ]
+        },
+        {
+          "rank": 14,
+          "points": 9,
+          "maxDistance": 0.4930689036846161,
+          "meanDistance": 0.39782757891549003,
+          "bounds": [
+            3584.9228515625,
+            73596.890625,
+            21.49650001525879,
+            3585.37548828125,
+            73598.3125,
+            24.931499481201172
+          ]
+        }
+      ]
+    },
+    "source_files_unchanged": true,
+    "browser_errors": [],
+    "registration_defect_accuracy_measured": false
+  },
+  "screenshot_sha256": "b0e4cd9ed9995f0225d5dfaf323aa826fd1834e7c36d73af2dea8a20ba8463ae",
+  "checks": {
+    "web_unit_tests_passed": 113,
+    "new_region_unit_tests": 7,
+    "targeted_browser_passed": 16,
+    "optional_existing_coverage_actual_case_skipped": 1,
+    "distance_region_browser_cases_passed": 6,
+    "typescript_vite_build": "passed"
+  },
+  "interpretation": "Fixed defaults before actual pair outcomes; geometric discrepancies of one survey partition, not 14 confirmed registration errors. Largest component spans much of the map through connected cells.",
+  "raw_point_files_models_or_distance_tensors_redistributed": false
+}

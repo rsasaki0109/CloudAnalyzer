@@ -219,3 +219,9 @@ benchmarks/wasm-gpu-mapped-reference/** text eol=lf
 benchmarks/wasm-kdtree-collection/** text eol=lf
 benchmarks/lidar-ai/** text eol=lf
 benchmarks/lidar-ai/**/*.png binary
+benchmarks/map-coverage/** text eol=lf
+docs/images/web/map-coverage.png binary
+docs/images/web/distance-regions.png binary
+docs/images/web/distance-region-cells.png binary
+docs/images/web/bidirectional-regions.png binary
+docs/images/web/distance-section.png binary

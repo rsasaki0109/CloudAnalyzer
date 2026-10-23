@@ -1,0 +1,248 @@
+{
+  "schema": "cloudanalyzer.surface_analysis_smoke.v1",
+  "volume_implementation_commit": "92fbf014b101a8d2611e69574fe83eb13fffe1c1",
+  "overlap_browser_commit": "813ed0a343ea84edb5054e9d69b9b40c791ddb10",
+  "source_sha256_lf_normalized": {
+    "web/index.html": "c2ceb299a8893ef3ec2b839f4920c7d09133750a06977b302b30891a248681f4",
+    "web/src/app/volume.ts": "653d547d78389a383e896cf0b703d8d1fe81c3163b5b91d4e9431ef1f119a775",
+    "web/src/app/map-coverage.ts": "279be364c479c55d6154b725bf542a11f27f6f1866dd0822793ab7ed7014b653",
+    "web/src/app/distance-regions.ts": "0c651f5a8abd1fb03fb7aaaecc6b07b119e2c4028dbfe04ba8e582c600081079",
+    "web/src/app/distance-section.ts": "c1dcc097828b017bc8b36ad255892f6a1f6333725faeebb5a11799ee33f84309",
+    "web/src/distance-regions.ts": "9f8cf643eeb1dc93d62841f1a5c665a919b0dbb9652805179d9f76fe7b6a6420",
+    "web/src/distance-regions-worker.ts": "c5c99e9268e63f97aef2b41b69af5ff12c591e822037ea8e63d2dfb3822bc412",
+    "web/src/surface-volume.ts": "ad5693f3df308ab2c6f69b186683d93ade1ed5a317569522ec64554559ab0796"
+  },
+  "browser_wasm_sha256": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+  "rust_tree": "8041ab4d8001b164f53b4983055fe5879a489b7f",
+  "volume_known_cells": {
+    "scope": "Synthetic aligned ground cells; known fill 2, cut 1; not a survey accuracy benchmark",
+    "summary": {
+      "schema": "cloudanalyzer.surface_volume.v1",
+      "before": {
+        "id": 1,
+        "name": "before-ground.ply",
+        "kind": "cloud",
+        "loadedPoints": 6,
+        "filePoints": 6,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "after": {
+        "id": 2,
+        "name": "after-ground.ply",
+        "kind": "cloud",
+        "loadedPoints": 5,
+        "filePoints": 5,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "settings": {
+        "cell": 1,
+        "height": "mean",
+        "fillEmpty": false,
+        "coordinateUnit": "m"
+      },
+      "method": "2.5D grid height difference: after minus before; no registration or coordinate-unit conversion",
+      "scope": "Full loaded surfaces on their union XY grid; only cells with both heights contribute. Distance-review overlap bounds do not clip this volume. Empty cells are undefined unless interpolation is explicitly enabled. Not closed-solid volume.",
+      "result": {
+        "added": 2,
+        "removed": 1,
+        "net": 1,
+        "addedArea": 1,
+        "removedArea": 1,
+        "matchedCells": 5,
+        "totalCells": 6,
+        "uncomparedCells": 1,
+        "cell": 1
+      },
+      "cellExport": "Compared cell centers at after height; CSV XYZ and signed height differences come from the displayed f32 records. Totals use the existing f64 engine and may differ from a sum of rounded CSV values."
+    },
+    "csv_rows": 5,
+    "signed_csv_difference_sum": 1,
+    "cancel_and_settings_change_release_unpublished_clouds": true,
+    "visibility_action_preserves_volume_report": true
+  },
+  "real_overlap_review": {
+    "scope": "User-style rectangle around a selected existing cell; alternating subsets of one survey, not independent change truth",
+    "source_sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc",
+    "reference_sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948",
+    "source_files_unchanged": true,
+    "forward": {
+      "source": {
+        "id": 1,
+        "name": "compared.ply",
+        "loadedPoints": 878920,
+        "filePoints": 878920,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "reference": {
+        "id": 2,
+        "name": "reference.ply",
+        "loadedPoints": 878921,
+        "filePoints": 878921,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "reusedDistances": true,
+      "exceedingFractionOfMeasured": 0.010127232270211674,
+      "threshold": 0.3,
+      "effectiveThreshold": 0.30000001192092896,
+      "cell": 5,
+      "minPoints": 5,
+      "points": 878920,
+      "measured": 35054,
+      "invalidPositions": 0,
+      "unmeasured": 0,
+      "overlap": [
+        3785.45947265625,
+        73689.578125,
+        3835.45947265625,
+        73739.578125
+      ],
+      "outsideOverlap": 843866,
+      "exceeding": 355,
+      "occupiedCells": 65,
+      "components": 3,
+      "eligibleRegions": 3,
+      "smallRegionPoints": 0,
+      "unlistedEligiblePoints": 0,
+      "regions": [
+        {
+          "rank": 1,
+          "points": 106,
+          "maxDistance": 16.37504005432129,
+          "meanDistance": 0.6341877191696527,
+          "bounds": [
+            3790.523193359375,
+            73689.921875,
+            3.188999891281128,
+            3834.771240234375,
+            73725.140625,
+            34.29999923706055
+          ]
+        },
+        {
+          "rank": 2,
+          "points": 244,
+          "maxDistance": 1.3456729650497437,
+          "meanDistance": 0.4065963054289583,
+          "bounds": [
+            3785.58349609375,
+            73716.3046875,
+            19.913000106811523,
+            3833.4404296875,
+            73739.5546875,
+            21.695999145507812
+          ]
+        },
+        {
+          "rank": 3,
+          "points": 5,
+          "maxDistance": 1.2515686750411987,
+          "meanDistance": 0.7543043553829193,
+          "bounds": [
+            3827.339111328125,
+            73690.234375,
+            20.60849952697754,
+            3831.349853515625,
+            73693.4140625,
+            23.5310001373291
+          ]
+        }
+      ]
+    },
+    "reverse": {
+      "source": {
+        "id": 2,
+        "name": "reference.ply",
+        "loadedPoints": 878921,
+        "filePoints": 878921,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "reference": {
+        "id": 1,
+        "name": "compared.ply",
+        "loadedPoints": 878920,
+        "filePoints": 878920,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "reusedDistances": true,
+      "exceedingFractionOfMeasured": 0.010585180746954264,
+      "threshold": 0.3,
+      "effectiveThreshold": 0.30000001192092896,
+      "cell": 5,
+      "minPoints": 5,
+      "points": 878921,
+      "measured": 35049,
+      "invalidPositions": 0,
+      "unmeasured": 0,
+      "overlap": [
+        3785.45947265625,
+        73689.578125,
+        3835.45947265625,
+        73739.578125
+      ],
+      "outsideOverlap": 843872,
+      "exceeding": 371,
+      "occupiedCells": 66,
+      "components": 3,
+      "eligibleRegions": 2,
+      "smallRegionPoints": 4,
+      "unlistedEligiblePoints": 0,
+      "regions": [
+        {
+          "rank": 1,
+          "points": 256,
+          "maxDistance": 19.12606430053711,
+          "meanDistance": 0.4691457300214097,
+          "bounds": [
+            3785.628662109375,
+            73716.21875,
+            -2.3429999351501465,
+            3833.285888671875,
+            73739.5390625,
+            22.5939998626709
+          ]
+        },
+        {
+          "rank": 2,
+          "points": 111,
+          "maxDistance": 3.0324461460113525,
+          "meanDistance": 0.4525746990431536,
+          "bounds": [
+            3790.102294921875,
+            73690.1484375,
+            19.76974868774414,
+            3833.928466796875,
+            73721.5,
+            34.40999984741211
+          ]
+        }
+      ]
+    },
+    "unchanged_total_distance_calls_asserted_by_browser": 2
+  },
+  "local_validation": {
+    "web_unit_passed": 130,
+    "related_browser_passed": 38,
+    "final_volume_browser_passed": 3,
+    "type_check": "passed",
+    "production_build": "passed",
+    "browser_errors": []
+  },
+  "limitations": [
+    "Volume is 2.5D full-loaded-surface height change; distance-review overlap bounds do not clip it.",
+    "Synthetic volume verifies known arithmetic and workflow, not independent survey accuracy.",
+    "The real inputs are alternating subsets of one Autoware survey, not independent change truth.",
+    "Original benchmark packets, README images/GIFs and the Rust engine were not modified."
+  ]
+}

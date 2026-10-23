@@ -1,0 +1,109 @@
+{
+  "schema": "cloudanalyzer.map_coverage_smoke.v1",
+  "implementation_commit": "d8e225cdd55e1f7f1cf9944af5782f7b8b96944b",
+  "normalized_source_sha256": {
+    "web/src/map-coverage.ts": "3d3cf91e76f75f160fe4e13deda4ea591153cab84fd687d486bc13160a10a192",
+    "web/src/map-coverage-worker.ts": "774750e1e357e0b68425308aa47347bcb6ccb662ef6e85f151e48e802c623921",
+    "web/src/app/map-coverage.ts": "f2438b82922bac38c9806cbc92af156e9b9a67b98dbf95dd1f3c0e66c777d7bc",
+    "web/index.html": "ec61048185e7a06fe34b28c360fbf7c7d068ea7b2f42e129067d4f4412ae70cd",
+    "web/tests/map-coverage.test.mjs": "764614847057a316f87574282ef254db9a6f5d78be8aab016a013eb0093c20fb",
+    "web/e2e/map-coverage.spec.ts": "ab99db8ef3ead44103e55551d4b49bb5990a4396748c3412dac5e781310b2559"
+  },
+  "build_assets_sha256": {
+    "c2c-worker-WJhdjU5B.js": "f143bfb8e616aad0a8017af2b7d4701c3b96b13cb5639ed2a3ce9c6c7b2f888f",
+    "ca_wasm_bg-CknP-APk.wasm": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+    "index-c951EahS.js": "c99da9d4363bbc06fb18ab74f18ae2a6746770c5106de37497a62b99000f6b6f",
+    "index-DpTvHSKO.css": "a7178946033cc00692b6b33ebaa973fbe954eb5c613da2ee0d70273557b7233d",
+    "map-coverage-worker-BevUgqE9.js": "3b1c292cce6c3bdb8eb1f1b35db51d4feedd98851308007448827f2b3b4fc6d3",
+    "worker-CGqpRHSq.js": "68e26fbe4575d90e55b1dfb5b6d1140136f5c0daed921e2d69dd92cce2c8fc90"
+  },
+  "input": {
+    "kind": "existing alternating-index subset of the Autoware planning-map survey",
+    "original_source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "subset": {
+      "file": "reference.ply",
+      "points": 878921,
+      "bytes": 21094227,
+      "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+    },
+    "partition": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "new_download_bytes": 0,
+    "independent_survey_or_ground_truth": false
+  },
+  "browser_receipt": {
+    "input_sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948",
+    "input_bytes": 21094227,
+    "report": {
+      "schema": "cloudanalyzer.map_coverage.v1",
+      "source": "reference.ply",
+      "loadedPoints": 878921,
+      "sourceFilePoints": 878921,
+      "keepEvery": 1,
+      "sourcePreview": false,
+      "copcLevels": null,
+      "cell": 5,
+      "minPoints": 10,
+      "nx": 79,
+      "ny": 94,
+      "minX": 3567.701904296875,
+      "minY": 73441.4140625,
+      "minZ": -2.3429999351501465,
+      "maxZ": 37.89099884033203,
+      "points": 878921,
+      "finitePoints": 878921,
+      "invalidPoints": 0,
+      "occupied": 2786,
+      "sparse": 343,
+      "empty": 4640,
+      "enclosedEmpty": 33,
+      "density": {
+        "min": 0.04,
+        "median": 9.72,
+        "max": 194.96,
+        "mean": 12.619109834888729
+      },
+      "scope": "XY projection of loaded points; sparse threshold is user-defined; enclosed empty uses eight-neighbor exterior connectivity, not proof of missing survey data"
+    },
+    "source_unchanged": true,
+    "no_derived_cloud_added": true,
+    "browser_errors": [],
+    "semantic_missing_data_accuracy_measured": false
+  },
+  "screenshot": {
+    "path": "../../docs/images/web/map-coverage.png",
+    "sha256": "16c791d6bce2df76309f575aec1025745793b0c9943629db21f44bab53bec3e2"
+  },
+  "checks": {
+    "web_unit_tests_passed": 106,
+    "coverage_unit_tests": 6,
+    "targeted_browser_checks_passed": 10,
+    "coverage_browser_cases": 6,
+    "existing_regression_cases": 4,
+    "typescript_vite_build": "passed"
+  },
+  "limits": {
+    "input_xyz_bytes": 67108864,
+    "grid_cells": 262144,
+    "grid_axis": 2048,
+    "expected_survey_footprint_provided": false,
+    "semantic_missing_data_accuracy_measured": false,
+    "density_is_xy_projection_of_loaded_records": true,
+    "model_weights_raw_clouds_annotations_or_generated_point_files_redistributed": false
+  }
+}

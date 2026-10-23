@@ -179,6 +179,40 @@ These are generated raster-cell records, not raw input point coordinates.
 Changing settings/inputs, rerunning, cancelling or invalidating the result clears
 the inspector and its exports; old focus controls cannot act on a newer result.
 
+### Compare the loaded Before/After points around a screened cell
+
+**Compare point section** opens a straight XY band centered on the selected
+cell. Under **Point section settings**, choose X/Y direction, length and band
+width in the input coordinate units. Saved-area and baseline-visit rows use
+their own Before/After pair; a direct interval uses its two adjacent visits,
+not the fixed baseline. Constant planes and meshes cannot supply two original
+point sets, so their section buttons are disabled. Cell focusing remains usable.
+
+Orange shows After and blue shows Before, including hidden inputs. The section
+includes every finite loaded point inside the closed band, even points outside
+the parent review rectangle, common observed mask or screened cells. No extra
+sampling occurs. This context is independent of the raster comparison support;
+it must not be interpreted as an exact outline of screened quantities. The
+worker rejects more than 64 MiB combined XYZ input or 50,000 selected points per
+side rather than silently sampling. Crop smaller inputs for larger datasets.
+
+Coordinates come from the viewer's loaded `f32` positions plus original shifts,
+so they may round differently from the original `f64` raster heights shown in
+the cell evidence. Loaded preview/thinning still applies; this is not a
+full-density claim. It supplies no nearest-point correspondence, registration,
+physical-cause attribution or independent field accuracy.
+
+The shared section plot offers automatic/1:1 scales, **Save JSON** and **Save
+CSV**. JSON uses `cloudanalyzer.height_cell_section.v1`, retaining Before/After
+loaded/file counts, preview/thinning descriptors, cell evidence, parent bounds,
+support mode/mask hash and section settings/scope. CSV exports all selected band
+points with `before`/`after` roles, cloud IDs, along-band distance and world XYZ;
+retain JSON alongside it for provenance. QA uses its own `height-cell-section`
+entry, separate from distance discrepancy sections. Only one section plot is
+active at a time. Editing section settings, closing the inspector, changing its
+selection or invalidating its parent cancels/discards stale section results;
+section setting edits retain the parent volume results and cell list.
+
 ## Named areas and independent area summaries
 
 In **Review area**, enter an **Area name** and save the current enabled rectangle

@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { prepareVolumeSupport, computeVolume, removeCloud, workerBusy } from "../api";
 import type { VolumeOutput, HeightReview } from "../protocol";
 import { screenedCellBounds, screenedCellsCsv } from "../height-review-cells";
+import { clearHeightSection, inspectHeightSection } from "./distance-section";
 import { validateVolumeGrid, sharedVolumeGrid, type VolumeGrid, volumeCellsCsv, heightReviewScope, readHeightThreshold, heightReviewCsv } from "../surface-volume";
 import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regions";
 import { captureNamedAreas, replaceNamedAreas, onNamedAreasChanged, parseNamedAreas, parseAreaFile,
@@ -78,11 +79,13 @@ let visits: CompletedVisits | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
 let cellInspection: { review: HeightReview; settings: Settings; label: string; token: number } | null = null;
 function clearCellInspection(): void {
+  clearHeightSection();
   cellInspection = null; $("height-cell-inspection").hidden = true; $("height-cell-list").replaceChildren();
 }
 $("height-cell-close").onclick = clearCellInspection;
-function inspectCells(review: HeightReview, settings: Settings, label: string): void {
+function inspectCells(review: HeightReview, settings: Settings, label: string, pair: Input[], support?: VisitSupport): void {
   if (running || taskActive()) return;
+  clearHeightSection();
   const token = generation;
   const selection = { review, settings, label, token }; cellInspection = selection;
   $("height-cell-context").textContent = `${label}; strict ±${review.threshold} ${settings.coordinateUnit}; cell ${settings.cell}, ${settings.height}, interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. ${review.cells?.length ?? 0} listed of ${review.riseCells + review.fallCells} exceedance cells; ${review.unlistedCells ?? "unknown"} unlisted. Largest absolute original height differences first, ties by row-major grid index; maximum ${review.cellLimit ?? 50}. Grid centers, not source-point matches. Full aggregates include unlisted cells. Camera focus does not isolate or identify physical changes.`;
@@ -99,7 +102,22 @@ function inspectCells(review: HeightReview, settings: Settings, label: string): 
         setStatus(`Focused screened grid cell ${c.index}: ${label}. Full square footprint and Before/After height span; other points remain visible.`);
       } catch (error) { setStatus(errorText(error), true); }
     };
-    li.append(text, button); return li;
+    const section = document.createElement("button"); section.textContent = "Compare point section";
+    section.setAttribute("aria-label", `Compare point section for screened cell ${index + 1}`);
+    section.disabled = pair.length !== 2 || pair.some(input => !input.cloud || input.cloud.kind !== "cloud");
+    section.onclick = () => {
+      const isCurrent = () => cellInspection === selection && token === generation && pair.every(validInput);
+      if (!isCurrent() || running || taskActive() || section.disabled) return;
+      const snapshot = (input: Input) => ({ entry: input.entry!, cloud: input.cloud!, name: input.name });
+      void inspectHeightSection({ source: snapshot(pair[1]), reference: snapshot(pair[0]), bounds: screenedCellBounds(c, settings.cell),
+        overlap: settings.region ?? null, isCurrent, height: { cell: c, label, threshold: review.threshold,
+          coordinateUnit: settings.coordinateUnit, cellSize: settings.cell, heightMode: settings.height, fillEmpty: settings.fillEmpty,
+          supportMode: support?.mode ?? "independent", ...(support?.sha256 ? { maskSha256: support.sha256 } : {}) } }, {
+        axis: $<HTMLSelectElement>("height-section-axis").value as "x" | "y", center: [c.x, c.y],
+        length: Number($<HTMLInputElement>("height-section-length").value), width: Number($<HTMLInputElement>("height-section-width").value),
+      });
+    };
+    li.append(text, button, section); return li;
   }));
   $("height-cell-inspection").hidden = false;
   $("height-cell-inspection").scrollIntoView({ block: "nearest" });
@@ -109,6 +127,7 @@ $("height-cell-csv").onclick = () => {
   const { review, settings, label } = cellInspection;
   download(new Blob([screenedCellsCsv(review, settings.cell, settings.coordinateUnit, label)], { type: "text/csv" }), "listed-height-screening-cells.csv");
 };
+for (const id of ["height-section-axis", "height-section-length", "height-section-width"]) $(id).addEventListener(id.endsWith("axis") ? "change" : "input", clearHeightSection);
 function validInput(input: Input): boolean {
   return !input.entry || entries.get(input.cloud!.id) === input.entry && input.entry.cloud === input.cloud;
 }
@@ -406,7 +425,7 @@ $("height-review-csv").onclick = () => {
   if (last?.out.heightReview && validResult(last)) download(new Blob([heightReviewCsv(last.out.heightReview, last.out.matchedCells, last.settings.coordinateUnit)], { type: "text/csv" }), "height-change-screening.csv");
 };
 $("height-review-inspect").onclick = () => {
-  if (last?.out.heightReview && validResult(last)) inspectCells(last.out.heightReview, last.settings, `${last.before} → ${last.after}${last.settings.areaName ? " / " + last.settings.areaName : ""}`);
+  if (last?.out.heightReview && validResult(last)) inspectCells(last.out.heightReview, last.settings, `${last.before} → ${last.after}${last.settings.areaName ? " / " + last.settings.areaName : ""}`, last.inputs);
 };
 addReportSection("height-change-screening", () => {
   if (!last?.out.heightReview || !validResult(last)) return null;
@@ -478,7 +497,7 @@ function describeInput(input: Input) {
     : { constantHeight: "z" in input.side ? input.side.z : null };
 }
 const batchScope = "Independent named rectangles on the same loaded union grid. Closed cell-center selection with full square cell areas; no fractional clipping. Full loaded surfaces determine grid, heights and interpolation. Outside and undefined-inside cells are distinct. Overlapping areas may count the same cells; do not sum rows. Counts do not establish coverage beyond the loaded grid. 2.5D height volume, not closed-solid volume or survey accuracy.";
-function renderScreening(id: string, data: readonly { label: string; row: AreaVolumeRow }[], settings: Settings): void {
+function renderScreening(id: string, data: readonly { label: string; row: AreaVolumeRow }[], settings: Settings, inputs: Input[], support?: VisitSupport): void {
   const root = $(id); root.replaceChildren(); root.hidden = settings.heightThreshold === undefined;
   if (root.hidden) return;
   const title = document.createElement("h3"), note = document.createElement("p");
@@ -499,7 +518,9 @@ function renderScreening(id: string, data: readonly { label: string; row: AreaVo
       ...[h.riseArea, h.fallArea, h.riseVolume, h.fallVolume, h.riseVolume - h.fallVolume].map((v, i) => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}${i < 2 ? "²" : "³"}` : "Unavailable")]) tr.insertCell().textContent = String(value);
     const token = generation, button = document.createElement("button");
     button.textContent = "Inspect cells"; button.setAttribute("aria-label", `Inspect screened cells: ${label}`); button.disabled = !h.cells?.length;
-    button.onclick = () => { if (token === generation) inspectCells(h, settings, label); };
+    const pair = "intervalIndex" in row ? [inputs[(row as IntervalVolumeRow).fromVisitIndex], inputs[(row as IntervalVolumeRow).toVisitIndex]]
+      : "visitIndex" in row ? [inputs[0], inputs[(row as VisitVolumeRow).visitIndex]] : inputs.slice(0, 2);
+    button.onclick = () => { if (token === generation) inspectCells(h, { ...settings, region: row.bounds, areaName: row.name }, label, pair, support); };
     tr.insertCell().append(button);
   }
   wrap.append(table); root.append(title, note, wrap);
@@ -535,7 +556,7 @@ $("volume-areas-run").onclick = async () => {
       rows.push({ ...area, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells, ...(out.heightReview ? { heightReview: out.heightReview } : {}) });
     }
     batch = { rows, inputs, settings };
-    renderScreening("volume-areas-screening", rows.map(row => ({ label: row.name, row })), settings);
+    renderScreening("volume-areas-screening", rows.map(row => ({ label: row.name, row })), settings, inputs);
     $("volume-areas-rows").replaceChildren(...rows.map(row => {
       const tr = document.createElement("tr");
       for (const value of [row.name, ...[row.added, row.removed, row.added - row.removed].map(v => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}³` : "Unavailable"), row.matchedCells, row.totalCells - row.matchedCells, row.outsideRegionCells]) {
@@ -667,10 +688,10 @@ $("volume-visits-run").onclick = async () => {
       return tr;
     }));
     renderRows("volume-visits-rows", rows.map(row => ({ label: `${row.visitIndex}. ${row.visit} / ${row.name}`, row })));
-    renderScreening("volume-visits-screening", rows.map(row => ({ label: `${row.visitIndex}. ${row.visit} / ${row.name}`, row })), settings);
+    renderScreening("volume-visits-screening", rows.map(row => ({ label: `${row.visitIndex}. ${row.visit} / ${row.name}`, row })), settings, inputs, support);
     $("volume-intervals-result").hidden = intervals === null;
     if (intervals) {
-      renderScreening("volume-intervals-screening", intervals.map(row => ({ label: `${row.fromVisitIndex}. ${row.fromVisit} → ${row.toVisitIndex}. ${row.toVisit} / ${row.name}`, row })), settings);
+      renderScreening("volume-intervals-screening", intervals.map(row => ({ label: `${row.fromVisitIndex}. ${row.fromVisit} → ${row.toVisitIndex}. ${row.toVisit} / ${row.name}`, row })), settings, inputs, support);
       renderRows("volume-intervals-rows", intervals.map(row => ({ label: `${row.fromVisitIndex}. ${row.fromVisit} → ${row.toVisitIndex}. ${row.toVisit} / ${row.name}`, row })));
       $("volume-intervals-scope").textContent = "Direct comparisons in the displayed visit order on the same common observed cells, including the baseline's footprint. Dates are not inferred. 2.5D cut/fill; overlapping areas and gross interval volumes must not be summed as unique earthwork. No compared cells means unavailable.";
     }

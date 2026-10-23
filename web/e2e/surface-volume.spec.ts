@@ -53,6 +53,11 @@ test('ground surveys export known cut/fill, signed cell differences, missing cov
   const qa=await report(page);expect(qa.sections.volume.metrics.fill.value).toBe(2);expect(qa.sections.volume.metrics.uncompared.value).toBe(1);
   expect(qa.sections.volume.notes.join(' ')).toContain('interpolation disabled');
   await expect(page.locator('#volume-before')).toHaveValue(String(result.before.id));await expect(page.locator('#volume-after')).toHaveValue(String(result.after.id));
+  await page.locator('#volume-isolate').click();
+  await expect(page.locator('#cloud-list > li').nth(0).locator('input[title="Show / hide"]')).not.toBeChecked();
+  await expect(page.locator('#cloud-list > li').nth(1).locator('input[title="Show / hide"]')).not.toBeChecked();
+  await expect(page.locator('#cloud-list > li').nth(2).locator('input[title="Show / hide"]')).toBeChecked();
+  await expect(page.locator('#volume-exports')).toBeVisible();expect((await report(page)).sections.volume.metrics.net.value).toBe(1);
   await page.locator('#volume-result').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('surface-volume.png')});
   await writeFile(info.outputPath('volume-receipt.json'),JSON.stringify({fixture:'Synthetic aligned ground cells; known fill 2, cut 1; not a survey accuracy benchmark',result,csv,errors},null,2));
   expect(errors).toEqual([]);

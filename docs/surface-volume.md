@@ -18,6 +18,10 @@ cell with both surface heights, `difference = after − before`:
   mean zero change. The total grid also includes space in the union bounding box
   where neither survey has data.
 
+Use **Hide input surfaces** to see the colored difference cells without the
+overlapping input points. It preserves the input data and volume result; show
+inputs again with their cloud-list visibility checkboxes.
+
 **Fill empty cells** explicitly enables interpolation; results then include
 estimated heights. The summary, export and QA report record this setting.
 Choose the coordinate unit for area and volume labels (default metres); changing

@@ -3,12 +3,13 @@
 import { computeVolume, removeCloud, workerBusy } from "../api";
 import type { VolumeOutput } from "../protocol";
 import { validateVolumeGrid, volumeCellsCsv } from "../surface-volume";
+import { projectChanged } from "../project-change";
 import { finiteStats, showSigned } from "./distance";
 import { $, download, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
-import { addEntry } from "./entries";
+import { addEntry, renderList } from "./entries";
 import { record } from "./history";
 import { addReportSection } from "./report";
-import { distanceChanged, entries, isMesh, listChanged, pointsInvalidated, type Entry } from "./state";
+import { distanceChanged, entries, isMesh, listChanged, pointsInvalidated, viewer, type Entry } from "./state";
 import { endTask, startTask, taskActive } from "./tasks";
 
 const volumeBefore = $<HTMLSelectElement>("volume-before");
@@ -176,6 +177,7 @@ volumeRun.onclick = async () => {
       ["Cell size", fmt(out.cell)],
     ]);
     $("volume-exports").hidden = false;
+    $<HTMLButtonElement>("volume-isolate").disabled = !output;
     $("volume-scope").textContent = `${inputs[0].name} → ${inputs[1].name}; ${settings.height} height per cell; interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. Full loaded surfaces; distance-review overlap bounds do not clip this volume. Blue = cut, red = fill; undefined cells are not zero change.`;
     distanceChanged.emit();
     setStatus(
@@ -189,6 +191,16 @@ volumeRun.onclick = async () => {
     signal.removeEventListener("abort", cancelled); activeInputs = []; running = false; endTask(signal);
     updateForm();
   }
+};
+
+$("volume-isolate").onclick = () => {
+  if (!last?.output || !validResult(last) || running || taskActive()) return;
+  for (const input of last.inputs) if (input.entry) {
+    input.entry.visible = false; viewer.setVisible(input.entry.cloud.id, false);
+  }
+  last.output.visible = true; viewer.setVisible(last.output.cloud.id, true);
+  renderList(); projectChanged();
+  setStatus("Height-difference cells shown; input surfaces hidden. Use their cloud-list checkboxes to show them again.");
 };
 
 $("volume-json").onclick = () => {

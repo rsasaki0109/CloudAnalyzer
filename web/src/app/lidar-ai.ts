@@ -20,7 +20,7 @@ let running = false, revision = 0;
 onProjectChanged(() => revision++);
 let current: { review: AiScanReview; parts: { role: string; entry: Entry; cloud: LoadedCloud }[]; stale: boolean; present: boolean } | null = null;
 const focusRole = (role: string) => view.value === "added" ? role === "added"
-  : view.value === "baseline-candidates" ? role === "candidates" : role === "candidates" || role === "added";
+  : view.value === "baseline-candidates" || view.value === "baseline-retained" ? role === "candidates" : role === "candidates" || role === "added";
 function ready(): boolean {
   return !running && !taskActive() && cloudHistoryReady() && mapProjectReady() && graphProjectReady();
 }
@@ -43,7 +43,10 @@ function update(): void {
     ? "Comparison clouds changed. Reopen the result files to review the original result. Downloads below remain the original verified records."
     : !present ? "Comparison closed or undone. Redo restores an undone comparison; reopen the files after removal."
     : current.review.completion
-    ? "Gray: retained. Red: baseline candidates. Orange: added points, which can include non-targets. Files and direct-owner geometry checked. Full score/seed/veto verification requires the native/Python verifier."
+    ? (view.value === "baseline-retained"
+      ? "Nearest-only retained: gray plus orange. Orange points are kept by the baseline and removed by experimental completion. "
+      : "Gray: completed retained. Red: baseline candidates. Orange: added points, which can include non-targets. ")
+      + "Files and direct-owner geometry checked. Full score/seed/veto verification requires the native/Python verifier."
     : "Gray: retained points. Red: AI candidates. Compare views before using the retained scan; class prediction alone does not establish motion.";
 }
 function showView(): void {
@@ -53,6 +56,7 @@ function showView(): void {
   for (const part of current.parts) {
     part.entry.visible = mode === "highlight" ? part.role !== "original"
       : mode === "candidates" ? part.role === "candidates" || part.role === "added"
+      : mode === "baseline-retained" ? part.role === "retained" || part.role === "added"
       : mode === "baseline-candidates" ? part.role === "candidates" : part.role === mode;
     viewer.setVisible(part.cloud.id, part.entry.visible);
   }
@@ -75,6 +79,12 @@ pointsInvalidated.add(update);
 $("lidar-ai-download-retained").onclick = () => { if (current) download(current.review.retained, "retained.bin"); };
 $("lidar-ai-download-candidates").onclick = () => { if (current) download(current.review.candidates, "candidates.bin"); };
 $("lidar-ai-download-added").onclick = () => { if (current?.review.completion) download(current.review.completion.added, "added.bin"); };
+$("lidar-ai-download-baseline-retained").onclick = () => {
+  if (current?.review.completion) download(current.review.completion.baselineRetained, "baseline-retained.bin");
+};
+$("lidar-ai-download-baseline-candidates").onclick = () => {
+  if (current?.review.completion) download(current.review.completion.baselineCandidates, "baseline-candidates.bin");
+};
 open.onclick = () => {
   if (!ready()) return setStatus("Finish the current operation before opening AI results", true);
   input.click();
@@ -138,10 +148,15 @@ input.onchange = async () => {
     $("lidar-ai-result").hidden = false;
     for (const option of view.querySelectorAll<HTMLOptionElement>("option[data-completion]")) option.disabled = !review.completion;
     $("lidar-ai-download-added").hidden = !review.completion;
+    $("lidar-ai-baseline-downloads").hidden = !review.completion;
+    $("lidar-ai-download-retained").textContent = review.completion ? "Download completed retained .bin" : "Download exact retained .bin";
+    $("lidar-ai-download-candidates").textContent = review.completion ? "Download completed candidates .bin" : "Download exact candidates .bin";
+    view.querySelector<HTMLOptionElement>('option[value="retained"]')!.textContent = review.completion ? "Completed retained scan" : "Retained scan";
+    view.querySelector<HTMLOptionElement>('option[value="candidates"]')!.textContent = review.completion ? "Completed candidates only" : "Candidates only";
     const r = review.report;
     const completion = review.completion;
     $("lidar-ai-summary").textContent = completion
-      ? `${r.points.toLocaleString()} source points · ${r.removed.toLocaleString()} baseline candidates + ${completion.addedCount.toLocaleString()} added · ${completion.retained.toLocaleString()} completed retained. Target: ${r.targets.join(", ")}; baseline score ≥ ${r.threshold.toFixed(3)}. Review orange points before use: completion can increase false removals. Downloads use completed results.`
+      ? `${r.points.toLocaleString()} source points · ${r.removed.toLocaleString()} baseline candidates + ${completion.addedCount.toLocaleString()} added · ${r.retained.toLocaleString()} nearest-only retained / ${completion.retained.toLocaleString()} completed retained. Target: ${r.targets.join(", ")}; baseline score ≥ ${r.threshold.toFixed(3)}. Review orange points before use: completion can increase false removals. Nearest-only downloads keep orange points; completed downloads remove them.`
       : `${r.points.toLocaleString()} source points · ${r.removed.toLocaleString()} candidates · ${r.retained.toLocaleString()} retained. Target: ${r.targets.join(", ")}; score ≥ ${r.threshold.toFixed(3)}. ${r.unclassified.toLocaleString()} unclassified returns retained. File hashes and record order verified; detection accuracy is unmeasured.`;
     renderList(); viewer.fit(); projectChanged();
     setStatus("Opened AI scan comparison. Red marks candidates; Undo removes the comparison. Exact downloads preserve source records.");

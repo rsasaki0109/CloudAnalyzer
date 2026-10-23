@@ -11,6 +11,7 @@ test('completion keeps exact completed, added and original baseline source recor
   assert.deepEqual(Buffer.from(await r.candidates.arrayBuffer()),f.candidates);
   assert.deepEqual(Buffer.from(await r.completion.added.arrayBuffer()),f.addedRecords);
   assert.deepEqual(Buffer.from(await r.completion.baselineCandidates.arrayBuffer()),f.baseline.candidates);
+  assert.deepEqual(Buffer.from(await r.completion.baselineRetained.arrayBuffer()),f.baseline.retained);
   assert.equal(r.completion.addedCount,1);assert.equal(r.completion.removed,3);
   assert.equal(sha(Buffer.from(await r.source.arrayBuffer())),sha(f.baseline.raw));
   await assert.rejects(readAiScanReview(f.files(),new AbortController().signal),/exactly/);

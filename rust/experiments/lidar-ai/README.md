@@ -234,6 +234,15 @@ retained scan. Compare all candidates, baseline only or added only; focus the
 selected candidates, Undo/Redo the complete comparison, or download exact
 completed retained/candidate records and a separate `added.bin`.
 
+**Nearest-only retained scan** shows the baseline retained set using the existing
+gray completed-retained cloud plus orange additions. Orange points are kept by
+the baseline; completion removes them. This view adds no extra cloud or point
+load. Its two **Download nearest-only** buttons save `baseline-retained.bin` and
+`baseline-candidates.bin` in exact original source order, separately from the
+completed downloads. They preserve the verified baseline after view changes,
+Undo/Redo or later edits, just like the completed downloads. No completion or
+inference is rerun when switching views.
+
 The three-file nearest-only reader remains strict. Completion review checks
 the baseline, source/report/mask hashes, additive mask consistency, original
 ownership and direct-owner distance, plus exact completed output records. It

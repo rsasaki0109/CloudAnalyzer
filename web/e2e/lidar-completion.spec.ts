@@ -2,6 +2,7 @@ import { expect, test, type Page, type Download } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { completionFixture } from '../tests/lidar-completion-fixture.mjs';
+import { aiFixture } from '../tests/lidar-ai-fixture.mjs';
 const input = (name: string, buffer: Buffer) => ({name,mimeType:'application/octet-stream',buffer});
 const files = async (f: ReturnType<typeof completionFixture>) => Promise.all(f.files().map(async (file: File)=>input(file.name,Buffer.from(await file.arrayBuffer()))));
 async function bytes(d: Download) {const parts: Buffer[]=[];for await(const part of await d.createReadStream())parts.push(part);return Buffer.concat(parts);}
@@ -12,12 +13,12 @@ async function open(page: Page, f=completionFixture()) {
   await page.locator('#lidar-ai-files').setInputFiles(await files(f));
   await expect(page.locator('#status')).toContainText('Opened AI scan comparison');return f;
 }
-test('completion separates baseline/added candidates, switches all six views and restores added-only after Undo',async({page})=>{
+test('completion separates baseline/added candidates, switches views and restores added-only after Undo',async({page})=>{
   await page.goto('/');await page.locator('#lidar-ai-panel > summary').click();const f=await open(page);
   await expect(page.locator('#cloud-list > li')).toHaveCount(4);
   await expect(page.locator('#lidar-ai-summary')).toContainText('2 baseline candidates + 1 added');
   await expect(page.locator('#lidar-ai-state')).toContainText('Full score/seed/veto verification requires');
-  for(const [mode,count] of [['highlight',3],['original',1],['retained',1],['candidates',2],['baseline-candidates',1],['added',1]] as const) {
+  for(const [mode,count] of [['highlight',3],['original',1],['retained',1],['candidates',2],['baseline-candidates',1],['baseline-retained',2],['added',1]] as const) {
     await page.locator('#lidar-ai-view').selectOption(mode);
     await expect(page.locator('#cloud-list input[title="Show / hide"]:checked')).toHaveCount(count);
   }
@@ -31,6 +32,53 @@ test('completion separates baseline/added candidates, switches all six views and
   await expect(page.locator('#cloud-list input[title="Show / hide"]:checked')).toHaveCount(1);
   await expect(page.locator('#cloud-list > li').filter({has:page.locator('input:checked')})).toContainText('scan_AI_added');
 });
+test('nearest-only retained reuses existing clouds and exact baseline downloads survive view switches and Undo',async({page})=>{
+  await page.goto('/');await page.locator('#lidar-ai-panel > summary').click();const f=await open(page);
+  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+  await expect(page.locator('#lidar-ai-summary')).toContainText('2 nearest-only retained / 1 completed retained');
+  await expect(page.locator('#lidar-ai-download-retained')).toHaveText('Download completed retained .bin');
+  await page.locator('#lidar-ai-view').selectOption('baseline-retained');
+  await expect(page.locator('#lidar-ai-state')).toContainText('Orange points are kept by the baseline');
+  const visible=page.locator('#cloud-list > li').filter({has:page.locator('input[title="Show / hide"]:checked')});
+  await expect(visible).toHaveCount(2);
+  await expect(visible).toContainText(['scan_AI_retained','scan_AI_added']);
+  await expect(page.locator('#cloud-list > li')).toHaveCount(4);
+  await page.locator('#lidar-ai-focus').click();
+  for(const [button,expected,name] of [
+    ['#lidar-ai-download-baseline-retained',f.baseline.retained,'baseline-retained.bin'],
+    ['#lidar-ai-download-baseline-candidates',f.baseline.candidates,'baseline-candidates.bin'],
+  ] as const) {
+    const pending=page.waitForEvent('download');await page.locator(button).click();const downloaded=await pending;
+    expect(downloaded.suggestedFilename()).toBe(name);expect(await bytes(downloaded)).toEqual(expected);
+  }
+  // Baseline source order interleaves an addition and a completed-retained point.
+  // Concatenating the two displayed clouds would produce the wrong record order.
+  expect(Buffer.concat([f.retained,f.addedRecords])).not.toEqual(f.baseline.retained);
+  await page.locator('#lidar-ai-view').selectOption('retained');
+  expect(await download(page,'#lidar-ai-download-retained')).toEqual(f.retained);
+  await page.locator('#lidar-ai-view').selectOption('baseline-retained');
+  await page.locator('#undo').click();await expect(page.locator('#cloud-list > li')).toHaveCount(0);
+  await page.locator('#redo').click();await expect(visible).toHaveCount(2);
+  await expect(page.locator('#lidar-ai-view')).toHaveValue('baseline-retained');
+  expect(await download(page,'#lidar-ai-download-baseline-retained')).toEqual(f.baseline.retained);
+  await page.locator('#cloud-list > li').last().locator('button[title="Remove"]').click();
+  await expect(page.locator('#lidar-ai-view')).toBeDisabled();
+  expect(await download(page,'#lidar-ai-download-baseline-retained')).toEqual(f.baseline.retained);
+  expect(errors).toEqual([]);
+});
+test('nearest-only retained works when completion removes every point without loading an empty cloud',async({page})=>{
+  await page.goto('/');await page.locator('#lidar-ai-panel > summary').click();
+  const baseline=aiFixture({points:[[10,0,0,.5],[10.02,0,0,.5],[10,.05,0,.5]],mask:[1,0,1],
+    carCount:2,projection:{projected:2,occluded:1,invalid:0,outside_view:0,outside_range:0}});
+  const f=await open(page,completionFixture({baseline,added:[0,1,0]}));
+  await expect(page.locator('#cloud-list > li')).toHaveCount(3);
+  await page.locator('#lidar-ai-view').selectOption('retained');
+  await expect(page.locator('#cloud-list input[title="Show / hide"]:checked')).toHaveCount(0);
+  await page.locator('#lidar-ai-view').selectOption('baseline-retained');
+  await expect(page.locator('#cloud-list input[title="Show / hide"]:checked')).toHaveCount(1);
+  expect(await download(page,'#lidar-ai-download-baseline-retained')).toEqual(f.baseline.retained);
+  expect(await download(page,'#lidar-ai-download-retained')).toEqual(Buffer.alloc(0));
+});
 test('bad completion and cancellation preserve prior comparison, downloads and Undo',async({page})=>{
   await page.goto('/');await page.locator('#lidar-ai-panel > summary').click();const original=await open(page);
   const bad=completionFixture();bad.report.completed_mask_sha256='0'.repeat(64);
@@ -38,6 +86,7 @@ test('bad completion and cancellation preserve prior comparison, downloads and U
   await expect(page.locator('#status')).toContainText('Could not open AI result');
   await expect(page.locator('#cloud-list > li')).toHaveCount(4);
   expect(await download(page,'#lidar-ai-download-added')).toEqual(original.addedRecords);
+  expect(await download(page,'#lidar-ai-download-baseline-retained')).toEqual(original.baseline.retained);
   await page.evaluate(()=>{
     const digest=crypto.subtle.digest.bind(crypto.subtle);
     crypto.subtle.digest=async(...args:Parameters<SubtleCrypto['digest']>)=>{document.getElementById('task-cancel')!.click();return digest(...args);};
@@ -51,6 +100,8 @@ test('zero additions support an empty added-only view/download with no focus tar
   await page.goto('/');await page.locator('#lidar-ai-panel > summary').click();
   await open(page,completionFixture({added:[0,0,0,0]}));
   await expect(page.locator('#cloud-list > li')).toHaveCount(3);
+  await page.locator('#lidar-ai-view').selectOption('baseline-retained');
+  await expect(page.locator('#cloud-list input[title="Show / hide"]:checked')).toHaveCount(1);
   await page.locator('#lidar-ai-view').selectOption('added');
   await expect(page.locator('#cloud-list input[title="Show / hide"]:checked')).toHaveCount(0);
   await expect(page.locator('#lidar-ai-focus')).toBeDisabled();
@@ -60,6 +111,9 @@ test('zero additions support an empty added-only view/download with no focus tar
   await page.locator('#lidar-ai-files').setInputFiles(nativeFiles);
   await expect(page.locator('#lidar-ai-summary')).toContainText('4 source points · 2 candidates · 2 retained');
   await expect(page.locator('#lidar-ai-download-added')).toBeHidden();
+  await expect(page.locator('#lidar-ai-baseline-downloads')).toBeHidden();
+  await expect(page.locator('#lidar-ai-download-retained')).toHaveText('Download exact retained .bin');
+  await expect(page.locator('#lidar-ai-view option[value="baseline-retained"]')).toHaveJSProperty('disabled',true);
   await expect(page.locator('#lidar-ai-view option[value="added"]')).toHaveJSProperty('disabled',true);
   await expect(page.locator('#lidar-ai-view')).toHaveValue('highlight');
 });

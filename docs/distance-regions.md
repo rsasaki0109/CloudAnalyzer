@@ -106,3 +106,14 @@ exceeding points in 10,237 occupied cells. The top 50 cells contain 63 points;
 point with distance 16.375; its focused view includes nearby context. This shows
 why maximum-distance ranking requires source inspection and is not a defect
 classifier. The earlier region receipt remains bound to its original commit.
+
+![Both directions on unchanged survey subsets](images/web/bidirectional-regions.png)
+
+The [both-direction receipt](../benchmarks/map-coverage/bidirectional-regions.json)
+records the same pair and defaults: forward has 20,785/878,920 measured points
+above threshold (2.3648%), 40 components and 14 eligible regions; reverse has
+20,686/878,921 (2.3536%), 42 components and 15 eligible regions. No positions or
+distances are unknown in this check. The workflow first computes forward regions,
+inspects a cell, then adds reverse comparison with two C2C calls in total.
+Source-file hashes remain unchanged. These ratios describe this partition pair,
+without measuring independent-survey completeness or registration accuracy.

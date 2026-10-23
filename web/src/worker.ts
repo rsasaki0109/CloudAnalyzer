@@ -15,6 +15,7 @@ import init, {
   cloudToMesh,
   computeM3c2,
   computeVolume,
+  ObservedVolumeSupport,
   e57ScanNames,
   evaluateTrajectory,
   LasReader,
@@ -2174,6 +2175,18 @@ async function handle(
       dropDetail(req.id);
       return describe(req.id);
     }
+    case "volume-support": {
+      if (req.ids.length < 2 || req.ids.length > 9 || new Set(req.ids).size !== req.ids.length) throw new Error("Observed support requires a baseline and 1–8 different point clouds");
+      const support = new ObservedVolumeSupport(req.cell, req.height, new Float64Array(req.sharedGrid));
+      try {
+        for (const id of req.ids) {
+          const surface = VolumeSurface.fromCloud(getCloud(id));
+          try { support.intersect(surface); } finally { surface.free(); }
+        }
+        const mask = support.takeMask();
+        return { value: mask, transfer: [mask.buffer] };
+      } finally { support.free(); }
+    }
     case "volume": {
       const start = performance.now();
       const surface = (side: VolumeSide) => {
@@ -2187,7 +2200,7 @@ async function handle(
       const after = surface(req.after);
       let out: ReturnType<typeof computeVolume>;
       try {
-        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false, req.sharedGrid ? new Float64Array(req.sharedGrid) : undefined);
+        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false, req.sharedGrid ? new Float64Array(req.sharedGrid) : undefined, req.supportMask);
       } finally { before.free(); after.free(); }
       const value: VolumeOutput = {
         added: out.added,

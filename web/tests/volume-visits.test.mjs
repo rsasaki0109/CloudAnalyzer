@@ -9,3 +9,10 @@ test('visit CSV retains separate baseline-relative rows, missing support and saf
   assert.equal(csv.trim().split('\n').length,3);
   assert.equal(visitVolumesCsv([],'m').trim().split('\n').length,1);
 });
+
+test('visit CSV records support mode and mask identity without treating empty support as zero change',()=>{
+  const row={name:'A',bounds:[0,0,1,1],added:0,removed:0,addedArea:0,removedArea:0,matchedCells:0,totalCells:4,outsideRegionCells:3,visit:'later',visitIndex:1};
+  const csv=visitVolumesCsv([row],'m',{mode:'common_observed',sha256:'a'.repeat(64)});
+  assert.ok(csv.includes('support_mode,common_mask_sha256'));
+  assert.ok(csv.includes('false,,,,,,0,4,3,common_observed,'+'a'.repeat(64)));
+});

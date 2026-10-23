@@ -43,6 +43,24 @@ pub struct Grid {
 }
 
 impl Grid {
+    pub fn valid(&self) -> bool {
+        self.cell.is_finite()
+            && self.cell > 0.0
+            && self.min.iter().all(|v| v.is_finite())
+            && self.nx > 0
+            && self.ny > 0
+            && self
+                .nx
+                .checked_mul(self.ny)
+                .is_some_and(|n| n <= 200_000_000)
+            && (self.cell * self.cell).is_finite()
+            && self.cell * self.cell > 0.0
+            && self
+                .center(self.nx - 1, self.ny - 1)
+                .iter()
+                .all(|v| v.is_finite())
+    }
+
     pub fn center(&self, i: usize, j: usize) -> [f64; 2] {
         [
             self.min[0] + (i as f64 + 0.5) * self.cell,
@@ -128,29 +146,43 @@ pub fn volume_on_grid(
     region: Option<[f64; 4]>,
     grid: Grid,
 ) -> Option<VolumeResult> {
+    volume_on_grid_with_support(before, after, params, region, grid, None)
+}
+
+/// A row-major 0/1 mask intersects raw observed support across loaded surveys.
+/// Excluded cells remain uncompared, including cells observed by only this pair.
+pub fn volume_on_grid_with_support(
+    before: Surface,
+    after: Surface,
+    params: VolumeParams,
+    region: Option<[f64; 4]>,
+    grid: Grid,
+    support: Option<&[u8]>,
+) -> Option<VolumeResult> {
     if let Some(b) = region
         && (!b.iter().all(|v| v.is_finite()) || b[0] >= b[2] || b[1] >= b[3])
     {
         return None;
     }
-    if !params.cell.is_finite()
-        || params.cell <= 0.0
-        || grid.cell != params.cell
-        || !grid.min.iter().all(|v| v.is_finite())
-        || grid.nx == 0
-        || grid.ny == 0
-        || grid.nx.checked_mul(grid.ny)? > 200_000_000
-        || !(grid.cell * grid.cell).is_finite()
-        || grid.cell * grid.cell == 0.0
-        || !grid
-            .center(grid.nx - 1, grid.ny - 1)
-            .iter()
-            .all(|v| v.is_finite())
+    if !grid.valid() || grid.cell != params.cell {
+        return None;
+    }
+    if let Some(mask) = support
+        && (params.fill_empty
+            || !matches!(before, Surface::Points(_))
+            || !matches!(after, Surface::Points(_))
+            || mask.len() != grid.nx * grid.ny
+            || mask.iter().any(|&v| v > 1))
     {
         return None;
     }
     let raster = |s: Surface| {
-        let mut h = rasterize(s, &grid, params.height);
+        let mut h = match (s, support) {
+            (Surface::Points(points), Some(_)) => {
+                observed_point_heights(points, &grid, params.height)
+            }
+            _ => rasterize(s, &grid, params.height),
+        };
         if params.fill_empty {
             fill_empty(&mut h, &grid);
         }
@@ -171,6 +203,11 @@ pub fn volume_on_grid(
             }
         }
         total_cells += 1;
+        if support.is_some_and(|mask| mask[k] == 0) {
+            *hb = f64::NAN;
+            *ha = f64::NAN;
+            continue;
+        }
         let d = *ha - *hb;
         if d.is_nan() {
             continue;
@@ -195,6 +232,41 @@ pub fn volume_on_grid(
         removed_area,
         matched_cells: matched,
     })
+}
+
+/// Intersect a mask with cells having a finite raw (unfilled) point height.
+/// Constant planes and triangle interpolation are not point observations.
+pub fn intersect_observed_support(
+    surface: Surface,
+    grid: &Grid,
+    height: CellHeight,
+    mask: &mut [u8],
+) -> Option<usize> {
+    let Surface::Points(points) = surface else {
+        return None;
+    };
+    if !grid.valid() || mask.len() != grid.nx * grid.ny || mask.iter().any(|&v| v > 1) {
+        return None;
+    }
+    let heights = observed_point_heights(points, grid, height);
+    let mut count = 0;
+    for (bit, h) in mask.iter_mut().zip(heights) {
+        *bit &= u8::from(h.is_finite());
+        count += *bit as usize;
+    }
+    Some(count)
+}
+
+fn observed_point_heights(points: &[[f64; 3]], grid: &Grid, height: CellHeight) -> Vec<f64> {
+    let mut acc = Accumulator::new(grid.nx * grid.ny, height);
+    for p in points {
+        if p.iter().all(|v| v.is_finite())
+            && let Some(k) = grid.index(p[0], p[1])
+        {
+            acc.add(k, p[2]);
+        }
+    }
+    acc.finish()
 }
 
 pub(crate) fn grid_for(surfaces: &[Surface], cell: f64) -> Option<Grid> {
@@ -410,6 +482,186 @@ mod tests {
             height: CellHeight::Mean,
             fill_empty: false,
         }
+    }
+
+    #[test]
+    fn common_heights_ignore_nonfinite_xyz_in_both_support_and_volume() {
+        let baseline = [[0., 0., 10.], [f64::NAN, 0., 999.]];
+        let visit = [[0., 0., 12.], [0., f64::INFINITY, -999.]];
+        let grid = Grid {
+            min: [-0.5, -0.5],
+            cell: 1.,
+            nx: 1,
+            ny: 1,
+        };
+        let mut mask = vec![1];
+        for points in [&baseline[..], &visit[..]] {
+            assert_eq!(
+                intersect_observed_support(
+                    Surface::Points(points),
+                    &grid,
+                    CellHeight::Mean,
+                    &mut mask
+                ),
+                Some(1)
+            );
+        }
+        let result = volume_on_grid_with_support(
+            Surface::Points(&baseline),
+            Surface::Points(&visit),
+            params(1.),
+            None,
+            grid,
+            Some(&mask),
+        )
+        .unwrap();
+        assert_eq!(
+            (result.added, result.removed, result.matched_cells),
+            (2., 0., 1)
+        );
+    }
+
+    #[test]
+    fn observed_intersection_corrects_equal_counts_with_different_footprints() {
+        let baseline = [[0., 0., 10.], [1., 0., 10.], [2., 0., 10.]];
+        let first = [[0., 0., 12.], [1., 0., 9.]];
+        let second = [[1., 0., 14.], [2., 0., 13.]];
+        let grid = Grid {
+            min: [-0.5, -0.5],
+            cell: 1.,
+            nx: 3,
+            ny: 1,
+        };
+        for height in [CellHeight::Mean, CellHeight::Min, CellHeight::Max] {
+            let params = VolumeParams {
+                cell: 1.,
+                height,
+                fill_empty: false,
+            };
+            let mut mask = vec![1; 3];
+            for points in [&baseline[..], &first[..], &second[..]] {
+                intersect_observed_support(Surface::Points(points), &grid, height, &mut mask)
+                    .unwrap();
+            }
+            assert_eq!(mask, vec![0, 1, 0]);
+            let run = |points, support| {
+                volume_on_grid_with_support(
+                    Surface::Points(&baseline),
+                    Surface::Points(points),
+                    params,
+                    None,
+                    grid,
+                    support,
+                )
+                .unwrap()
+            };
+            let a = run(&first, None);
+            let b = run(&second, None);
+            assert_eq!((a.matched_cells, b.matched_cells), (2, 2));
+            assert_eq!(b.net() - a.net(), 6.);
+            let a = run(&first, Some(mask.as_slice()));
+            let b = run(&second, Some(mask.as_slice()));
+            assert_eq!(
+                (
+                    a.added,
+                    a.removed,
+                    b.added,
+                    b.removed,
+                    a.matched_cells,
+                    b.matched_cells
+                ),
+                (0., 1., 4., 0., 1, 1)
+            );
+            assert_eq!(b.net() - a.net(), 5.);
+            let outside = volume_on_grid_with_support(
+                Surface::Points(&baseline),
+                Surface::Points(&first),
+                params,
+                Some([-0.1, -0.1, 0.1, 0.1]),
+                grid,
+                Some(&mask),
+            )
+            .unwrap();
+            assert_eq!((outside.matched_cells, outside.total_cells), (0, 1));
+        }
+    }
+
+    #[test]
+    fn observed_support_rejects_unsafe_masks_and_interpolation_and_preserves_empty_support() {
+        let grid = Grid {
+            min: [-0.5, -0.5],
+            cell: 1.,
+            nx: 3,
+            ny: 1,
+        };
+        let points = [[0., 0., f64::NAN], [1., 0., f64::INFINITY], [2., 0., 10.]];
+        let mut mask = vec![1; 3];
+        assert_eq!(
+            intersect_observed_support(
+                Surface::Points(&points),
+                &grid,
+                CellHeight::Mean,
+                &mut mask
+            ),
+            Some(1)
+        );
+        assert_eq!(mask, vec![0, 0, 1]);
+        assert!(
+            intersect_observed_support(Surface::Constant(0.), &grid, CellHeight::Mean, &mut mask)
+                .is_none()
+        );
+        assert_eq!(mask, vec![0, 0, 1]);
+        for invalid in [vec![1, 1], vec![1, 2, 1]] {
+            let mut copy = invalid.clone();
+            assert!(
+                intersect_observed_support(
+                    Surface::Points(&points),
+                    &grid,
+                    CellHeight::Mean,
+                    &mut copy
+                )
+                .is_none()
+            );
+            assert_eq!(copy, invalid);
+            assert!(
+                volume_on_grid_with_support(
+                    Surface::Points(&points),
+                    Surface::Points(&points),
+                    params(1.),
+                    None,
+                    grid,
+                    Some(&invalid)
+                )
+                .is_none()
+            );
+        }
+        let mut filled = params(1.);
+        filled.fill_empty = true;
+        assert!(
+            volume_on_grid_with_support(
+                Surface::Points(&points),
+                Surface::Points(&points),
+                filled,
+                None,
+                grid,
+                Some(&mask)
+            )
+            .is_none()
+        );
+        let empty = [0, 0, 0];
+        let r = volume_on_grid_with_support(
+            Surface::Points(&points),
+            Surface::Points(&points),
+            params(1.),
+            None,
+            grid,
+            Some(&empty),
+        )
+        .unwrap();
+        assert_eq!(
+            (r.matched_cells, r.total_cells, r.added, r.removed),
+            (0, 3, 0., 0.)
+        );
     }
 
     #[test]

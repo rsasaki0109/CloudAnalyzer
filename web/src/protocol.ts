@@ -927,6 +927,8 @@ export type Request =
       kind: "volume";
       /** Return totals only, without staging a compared-cell cloud. */
       summaryOnly?: boolean;
+      /** Raw-observation intersection, row-major 0/1 bytes on sharedGrid. */
+      supportMask?: Uint8Array;
       /** Fixed lower-left cell boundary X/Y and integer dimensions. */
       sharedGrid?: readonly [number, number, number, number];
       region?: readonly [number, number, number, number];
@@ -936,6 +938,8 @@ export type Request =
       height: "mean" | "min" | "max";
       fillEmpty: boolean;
     }
+  | { kind: "volume-support"; ids: number[]; cell: number; height: "mean" | "min" | "max";
+      sharedGrid: readonly [number, number, number, number] }
   | {
       kind: "rasterize";
       id: number;

@@ -257,6 +257,10 @@ export function filterBatch(sources: {id:number;name:string}[], recipe: FilterRe
 export function discardCloud(id:number):Promise<void>{return call({kind:"discard-cloud",id});}
 
 /** Cut/fill volume between two surfaces (clouds, meshes or constant heights). */
+export function prepareVolumeSupport(params: Omit<Extract<Request, { kind: "volume-support" }>, "kind">): Promise<Uint8Array> {
+  return call({ kind: "volume-support", ...params });
+}
+
 export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>, "kind">): Promise<VolumeOutput> {
   return call({ kind: "volume", ...params });
 }

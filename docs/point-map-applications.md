@@ -30,14 +30,15 @@ estimate, not a closed-solid measurement.
 
 | Use | Available workflow | Next application work |
 | --- | --- | --- |
-| Construction / earthwork | Before/After heights, named rectangles, independent per-area cut/fill/net and missing-cell summaries, project/JSON definition reuse, JSON/CSV results, fixed-baseline repeated-visit comparisons on one union grid | Common observed-support comparisons and field validation |
+| Construction / earthwork | Before/After heights, named rectangles, independent per-area cut/fill/net and missing-cell summaries, project/JSON definition reuse, JSON/CSV results, fixed-baseline repeated-visit comparisons on one union grid, optional intersection of raw observed cells with exportable mask | Direct between-visit cut/fill on common support and field validation |
 | Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence; independent human reviewed/deferred records with comments and JSON/CSV/QA exports; read-only JSON archive viewing and HTML reports without clouds | Comparing archived reviews and independent real-map validation |
-| Terrain monitoring | Height changes, sections, M3C2 with detection limits, terrain meshes, repeated-visit summaries retaining grid/input/coverage limits | Common-support monitoring and independent field validation |
+| Terrain monitoring | Height changes, sections, M3C2 with detection limits, terrain meshes, repeated-visit summaries with optional common-observed-cell intersection | Direct interval monitoring and independent field validation |
 
 The next-work column is planned. Named area summaries reuse the current input
 pair and full-grid settings; repeated visits use one fixed baseline and a shared
-union grid. Different visits can have different observed support, so no
-between-visit increment is inferred. Overlapping rows are not combined into a total.
+union grid. Independent-pair mode can have different observed support; the optional raw
+common-cell mode intersects every selected input without interpolation. Gross
+fill/cut increments still require a direct interval comparison. Overlapping rows are not combined into a total.
 Candidate distances and height changes do not establish causes such as erosion,
 landslides, missing map objects or construction quantities accepted for payment.
 User-defined thresholds are not automatically calibrated survey uncertainty.

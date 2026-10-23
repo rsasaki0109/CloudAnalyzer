@@ -1,0 +1,90 @@
+{
+  "schema": "cloudanalyzer.terrain_mesh_browser.v1",
+  "recordedAt": "2026-10-23T08:32:30.799Z",
+  "baseCommit": "b4cf39b73e4b134ae4d02da39c4476c9ee0d4929",
+  "sourceSha256LF": {
+    "web/index.html": "e01c9740bbf71d07f6ac748512f16936815eabe622fe458381950c3f715dd5ad",
+    "web/src/app/mesh.ts": "051ed756f33bef5929ced77a338a0864870315795e2796327123268f6b568919",
+    "web/src/app/map-coverage.ts": "b75c73cef219aa8c0110924e1fc9ce7f5224145ce5bc539377279d97d7bf798e",
+    "web/src/app/volume.ts": "feec6c0cc8b1c7d758c14fa7284935a4b2c850c1a178d1f519a13e6c2399c237",
+    "web/src/viewer.ts": "d6cbfae65c487057baaecb022a8887a5dea6eef3d62f049d1374296a8e93ab94",
+    "web/e2e/terrain-mesh.spec.ts": "f7190cc9e520eca6be11f3450a5c246ebc0aea8ef0d2d89ef1c4b502f9b648a7"
+  },
+  "wasmSha256": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+  "checks": {
+    "typeScript": "passed",
+    "productionBuild": "passed",
+    "webUnitTests": {
+      "passed": 130,
+      "failed": 0
+    },
+    "productionBrowser": {
+      "passed": 19,
+      "failed": 0,
+      "details": "18 related synthetic browser cases passed; optional local-map coverage case skipped in that run and passed separately with an existing 878,921-point map subset. No new dataset download."
+    }
+  },
+  "separatedPatchFixture": {
+    "description": "Synthetic separated sloped ground patches; workflow and geometry assertions, not survey accuracy",
+    "summary": {
+      "schema": "cloudanalyzer.terrain_mesh.v1",
+      "method": "2.5D XY Delaunay; source heights retained; no ground classification",
+      "source": {
+        "id": 1,
+        "name": "terrain.ply",
+        "loadedPoints": 18,
+        "filePoints": 18,
+        "keepEvery": 1,
+        "preview": false,
+        "copcLevels": null
+      },
+      "output": {
+        "id": 2,
+        "name": "terrain_mesh",
+        "vertices": 18,
+        "triangles": 16
+      },
+      "settings": {
+        "maxEdgeMode": "length",
+        "requestedMaxEdge": 1.5,
+        "effectiveMaxEdge": 1.5
+      },
+      "processing": {
+        "triangulationPoints": 18,
+        "voxel": 0,
+        "removedTriangles": 4
+      },
+      "scope": "Loaded source points, optionally voxel-thinned by the existing engine. One terrain height per XY; not a closed-solid or multi-layer reconstruction. Max edge limits horizontal lengths and does not guarantee gap preservation. Wireframe is display-only; OBJ/PLY retain faces."
+    },
+    "facesPerPatch": [
+      8,
+      8
+    ],
+    "horizontalEdgesAndHeightsAsserted": true,
+    "wireframeGL_LINESAsserted": true,
+    "filledGL_TRIANGLESAsserted": true,
+    "exports": [
+      "OBJ triangle faces and vertices",
+      "PLY vertex and face headers"
+    ],
+    "undoRedoAsserted": true,
+    "browserErrors": []
+  },
+  "otherAssertions": [
+    "Explicit unlimited mode bridges the convex hull; negative edge rejected",
+    "Cancelled and changed requests release unpublished worker meshes",
+    "Removed source clears summary and QA; same-name reload gets fresh identity",
+    "Zero Undo capacity rejects publication without hiding source",
+    "Known fill 2 / cut 1 / net 1 survives compared After cells → mesh → volume when cell size is explicitly reset to 1"
+  ],
+  "illustration": {
+    "fixture": "Synthetic single-valued smooth terrain; visual workflow demonstration, not observed survey",
+    "vertices": 1681,
+    "triangles": 3200,
+    "maxEdge": 0.8,
+    "browserErrors": [],
+    "path": "docs/images/web/terrain-mesh-wireframe.png",
+    "sha256": "0cb6786785b9b4d2e3cfc99bf4c58b042f0d6f2a0e83f8ba98f5b2d5b916ae02"
+  },
+  "limitations": "2.5D terrain only; no automatic ground classification, closed-solid reconstruction or out-of-core mesh. Loaded sampling and optional engine voxel thinning affect the result. Edge length does not guarantee gap preservation. Synthetic fixtures validate workflow and geometry, not independent survey accuracy."
+}

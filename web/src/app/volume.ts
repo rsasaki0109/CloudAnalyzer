@@ -178,6 +178,7 @@ volumeRun.onclick = async () => {
     ]);
     $("volume-exports").hidden = false;
     $<HTMLButtonElement>("volume-isolate").disabled = !output;
+    $<HTMLButtonElement>("volume-mesh").disabled = !output;
     $("volume-scope").textContent = `${inputs[0].name} → ${inputs[1].name}; ${settings.height} height per cell; interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. Full loaded surfaces; distance-review overlap bounds do not clip this volume. Blue = cut, red = fill; undefined cells are not zero change.`;
     distanceChanged.emit();
     setStatus(
@@ -203,6 +204,13 @@ $("volume-isolate").onclick = () => {
   setStatus("Height-difference cells shown; input surfaces hidden. Use their cloud-list checkboxes to show them again.");
 };
 
+$("volume-mesh").onclick = () => {
+  if (!last?.output || !validResult(last) || running || taskActive() || workerBusy()) return;
+  const select = $<HTMLSelectElement>("mesh-cloud"); select.value = String(last.output.cloud.id); select.dispatchEvent(new Event("change"));
+  $("mesh-panel").scrollIntoView({ block: "start" });
+  setStatus("Meshing prepared from compared-cell centers at After height. Review max edge length, then Mesh. This is an After surface; signed change colors are not transferred to mesh vertices.");
+};
+
 $("volume-json").onclick = () => {
   if (!last || !validResult(last)) return;
   const describe = (input: Input) => input.cloud ? { id: input.cloud.id, name: input.name, kind: input.cloud.kind,
@@ -210,7 +218,8 @@ $("volume-json").onclick = () => {
     preview: input.entry!.origin.displayPreview === true, copcLevels: input.cloud.copcLevels } : { constantHeight: "z" in input.side ? input.side.z : null };
   const out = last.out;
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.surface_volume.v1", before: describe(last.inputs[0]), after: describe(last.inputs[1]),
-    settings: last.settings, method: "2.5D grid height difference: after minus before; no registration or coordinate-unit conversion",
+    settings: last.settings, comparedCellCloud: last.output ? { id: last.output.cloud.id, name: last.output.cloud.name, points: last.output.cloud.count, geometry: "Compared cell centers at After height" } : null,
+    method: "2.5D grid height difference: after minus before; no registration or coordinate-unit conversion",
     scope: "Full loaded surfaces on their union XY grid; only cells with both heights contribute. Distance-review overlap bounds do not clip this volume. Empty cells are undefined unless interpolation is explicitly enabled. Not closed-solid volume.",
     result: { added: out.added, removed: out.removed, net: out.added - out.removed, addedArea: out.addedArea, removedArea: out.removedArea,
       matchedCells: out.matchedCells, totalCells: out.totalCells, uncomparedCells: out.totalCells - out.matchedCells, cell: out.cell },

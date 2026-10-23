@@ -12,6 +12,7 @@ const source = $<HTMLSelectElement>("coverage-source"), reference = $<HTMLSelect
 const cell = $<HTMLInputElement>("coverage-cell"), minimum = $<HTMLInputElement>("coverage-min");
 const run = $<HTMLButtonElement>("coverage-run"), compare = $<HTMLButtonElement>("coverage-compare");
 const prepareVolume = $<HTMLButtonElement>("coverage-volume");
+const prepareMesh = $<HTMLButtonElement>("coverage-mesh");
 const canvas = $<HTMLCanvasElement>("coverage-grid");
 let running = false, generation = 0;
 let last: { entry: Entry; cloud: Entry["cloud"]; grid: CoverageGrid } | null = null;
@@ -38,7 +39,7 @@ function render(): void {
       (entry.cloud.keepEvery > 1 || entry.cloud.count < entry.cloud.filePoints || entry.cloud.copcLevels !== null || entry.origin.displayPreview
         ? "Sampled/partial data: this measures only loaded points, not the full source map."
         : "Analysis uses the loaded cloud, not an expected survey footprint.");
-  run.disabled = !entry || running; compare.disabled = prepareVolume.disabled = !entry || !reference.value || running;
+  run.disabled = prepareMesh.disabled = !entry || running; compare.disabled = prepareVolume.disabled = !entry || !reference.value || running;
   source.disabled = running || !entry; reference.disabled = running || !others.length;
   cell.disabled = minimum.disabled = running || !entry;
   $<HTMLButtonElement>("pg-map-coverage").disabled = running || !all.length;
@@ -122,6 +123,13 @@ prepareVolume.onclick = () => {
   const fill = $<HTMLInputElement>("volume-fill"); fill.checked = false; fill.dispatchEvent(new Event("change"));
   $("volume-panel").scrollIntoView({ block: "start" });
   setStatus("Surface volume prepared: reference is Before, source is After; interpolation off. Check cell size, height mode and coordinate unit, then Compute volume. Full loaded surfaces are used; crop inputs to limit the site.");
+};
+prepareMesh.onclick = () => {
+  if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before preparing terrain meshing", true);
+  const entry = entries.get(Number(source.value)); if (!entry || entry.cloud.kind !== "cloud") return;
+  const select = $<HTMLSelectElement>("mesh-cloud"); select.value = source.value; select.dispatchEvent(new Event("change"));
+  $("mesh-panel").scrollIntoView({ block: "start" });
+  setStatus("Terrain mesh prepared from the selected loaded cloud. Review the max edge length, then Mesh. This triangulates XY and preserves source heights.");
 };
 function summary() {
   if (!last) return null;

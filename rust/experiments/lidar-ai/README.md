@@ -221,8 +221,21 @@ Before completing, the command checks the native model/profile, source identity,
 exact input tensor, normalized probabilities, original mask and exact output
 records. It publishes a new directory with `retained.bin`, `candidates.bin`,
 `added-mask.u8`, `completed-mask.u8` and `completion-report.json`. The source and
-base results remain unchanged. Open the point files separately for review; the
-browser's nearest-only AI-result importer does not accept a completion report.
+base results remain unchanged. In **Clouds → LiDAR AI scan review**, select six
+files together: the original `.bin`, baseline `report.json` / `candidate-mask.u8`,
+and `completion-report.json` / `completed-mask.u8` / `added-mask.u8`. Red marks
+baseline candidates, orange marks additions, and gray marks the completed
+retained scan. Compare all candidates, baseline only or added only; focus the
+selected candidates, Undo/Redo the complete comparison, or download exact
+completed retained/candidate records and a separate `added.bin`.
+
+The three-file nearest-only reader remains strict. Completion review checks
+the baseline, source/report/mask hashes, additive mask consistency, original
+ownership and direct-owner distance, plus exact completed output records. It
+does **not** load probability tensors or rerun the full score/two-seed/class-veto
+policy. Use the native command or independent Python oracle for those checks.
+The browser runs no inference and receives no annotations. Completion can
+increase false removals; the nearest-only default remains unchanged.
 
 An independent standard-library Python projector/grid oracle checks the complete
 mask, rejection counts, hashes and exact source-record split:

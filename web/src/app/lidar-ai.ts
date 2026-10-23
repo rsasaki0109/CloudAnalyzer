@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { discardCloud, loadCloud, workerBusy } from "../api";
 import { readAiScanReview, type AiScanReview } from "../lidar-ai-review";
+import { readCompletionScanReview } from "../lidar-completion-review";
 import { onProjectChanged, projectChanged } from "../project-change";
 import type { LoadedCloud } from "../protocol";
 import { refreshColors } from "./colors";
@@ -18,6 +19,8 @@ const view = $<HTMLSelectElement>("lidar-ai-view");
 let running = false, revision = 0;
 onProjectChanged(() => revision++);
 let current: { review: AiScanReview; parts: { role: string; entry: Entry; cloud: LoadedCloud }[]; stale: boolean; present: boolean } | null = null;
+const focusRole = (role: string) => view.value === "added" ? role === "added"
+  : view.value === "baseline-candidates" ? role === "candidates" : role === "candidates" || role === "added";
 function ready(): boolean {
   return !running && !taskActive() && cloudHistoryReady() && mapProjectReady() && graphProjectReady();
 }
@@ -33,10 +36,14 @@ function update(): void {
   }
   current.present = present;
   view.disabled = current.stale || !present || running;
-  $<HTMLButtonElement>("lidar-ai-focus").disabled = view.disabled || !current.parts.some(p => p.role === "candidates");
+  const focusParts = current.parts.filter(p => focusRole(p.role));
+  $<HTMLButtonElement>("lidar-ai-focus").disabled = view.disabled || !focusParts.length;
+  $("lidar-ai-focus").textContent = view.value === "added" ? "Focus added points" : "Focus candidates";
   $("lidar-ai-state").textContent = current.stale
-    ? "Comparison clouds changed. Reopen the three files to review the original result. Downloads below remain the original verified records."
+    ? "Comparison clouds changed. Reopen the result files to review the original result. Downloads below remain the original verified records."
     : !present ? "Comparison closed or undone. Redo restores an undone comparison; reopen the files after removal."
+    : current.review.completion
+    ? "Gray: retained. Red: baseline candidates. Orange: added points, which can include non-targets. Files and direct-owner geometry checked. Full score/seed/veto verification requires the native/Python verifier."
     : "Gray: retained points. Red: AI candidates. Compare views before using the retained scan; class prediction alone does not establish motion.";
 }
 function showView(): void {
@@ -44,7 +51,9 @@ function showView(): void {
   if (!current || view.disabled || !ready()) return;
   const mode = view.value;
   for (const part of current.parts) {
-    part.entry.visible = mode === "highlight" ? part.role !== "original" : part.role === mode;
+    part.entry.visible = mode === "highlight" ? part.role !== "original"
+      : mode === "candidates" ? part.role === "candidates" || part.role === "added"
+      : mode === "baseline-candidates" ? part.role === "candidates" : part.role === mode;
     viewer.setVisible(part.cloud.id, part.entry.visible);
   }
   renderList();
@@ -54,15 +63,18 @@ view.onchange = showView;
 $("lidar-ai-focus").onclick = () => {
   update();
   if (!current || view.disabled || !ready()) return;
-  const cloud = current.parts.find(p => p.role === "candidates")?.cloud;
-  if (!cloud) return;
-  viewer.frameBox(new THREE.Box3(toRender(cloud.bounds.slice(0, 3)), toRender(cloud.bounds.slice(3, 6))).expandByScalar(2));
+  const clouds = current.parts.filter(p => focusRole(p.role));
+  if (!clouds.length) return;
+  const box = new THREE.Box3();
+  for (const { cloud } of clouds) box.union(new THREE.Box3(toRender(cloud.bounds.slice(0, 3)), toRender(cloud.bounds.slice(3, 6))));
+  viewer.frameBox(box.expandByScalar(2));
   projectChanged();
 };
 listChanged.add(update);
 pointsInvalidated.add(update);
 $("lidar-ai-download-retained").onclick = () => { if (current) download(current.review.retained, "retained.bin"); };
 $("lidar-ai-download-candidates").onclick = () => { if (current) download(current.review.candidates, "candidates.bin"); };
+$("lidar-ai-download-added").onclick = () => { if (current?.review.completion) download(current.review.completion.added, "added.bin"); };
 open.onclick = () => {
   if (!ready()) return setStatus("Finish the current operation before opening AI results", true);
   input.click();
@@ -84,7 +96,7 @@ input.onchange = async () => {
       await new Promise(resolve => setTimeout(resolve, 25));
     }
     setStatus("Verifying AI source, mask order and exact output records…");
-    const review = await readAiScanReview(files, signal);
+    const review = await (files.some(f => f.name === "completion-report.json") ? readCompletionScanReview : readAiScanReview)(files, signal);
     // Keep invalid records in exact downloads; never pass NaNs to the octree renderer.
     if (review.report.projection.invalid) throw new Error("This browser comparison requires finite XYZI records; verify scans with invalid returns using the native verifier");
     const name = review.source.name.replace(/\.bin$/i, "");
@@ -92,11 +104,13 @@ input.onchange = async () => {
     const plan = [
       { role: "original", file: review.source },
       { role: "retained", file: review.retained },
-      { role: "candidates", file: review.candidates },
+      { role: "candidates", file: review.completion?.baselineCandidates ?? review.candidates },
+      ...(review.completion ? [{ role: "added", file: review.completion.added }] : []),
     ].filter(p => p.file.size > 0);
     for (const part of plan) {
-      let displayName = `${name}_AI_${part.role}`, i = 2;
-      while (names.has(displayName)) displayName = `${name}_AI_${part.role}_${i++}`;
+      const roleName = review.completion && part.role === "candidates" ? "baseline_candidates" : part.role;
+      let displayName = `${name}_AI_${roleName}`, i = 2;
+      while (names.has(displayName)) displayName = `${name}_AI_${roleName}_${i++}`;
       names.add(displayName);
       if (revision !== expectedRevision) throw new Error("Current work changed while opening AI results; choose the files again");
       // loadCloud synchronously emits its own project-change notification.
@@ -113,7 +127,7 @@ input.onchange = async () => {
       const role = plan[i].role;
       const entry = addEntry(cloud, role === "original" ? { kind: "file", file: review.source } : { kind: "derived" });
       entry.mode = "solid";
-      entry.solid = role === "candidates" ? [255, 83, 83] : [185, 198, 212];
+      entry.solid = role === "candidates" ? [255, 83, 83] : role === "added" ? [255, 180, 50] : [185, 198, 212];
       refreshColors(entry);
       return { role, entry, cloud };
     });
@@ -122,8 +136,13 @@ input.onchange = async () => {
     current = { review, parts, stale: false, present: true };
     view.value = "highlight";
     $("lidar-ai-result").hidden = false;
+    for (const option of view.querySelectorAll<HTMLOptionElement>("option[data-completion]")) option.disabled = !review.completion;
+    $("lidar-ai-download-added").hidden = !review.completion;
     const r = review.report;
-    $("lidar-ai-summary").textContent = `${r.points.toLocaleString()} source points · ${r.removed.toLocaleString()} candidates · ${r.retained.toLocaleString()} retained. Target: ${r.targets.join(", ")}; score ≥ ${r.threshold.toFixed(3)}. ${r.unclassified.toLocaleString()} unclassified returns retained. File hashes and record order verified; detection accuracy is unmeasured.`;
+    const completion = review.completion;
+    $("lidar-ai-summary").textContent = completion
+      ? `${r.points.toLocaleString()} source points · ${r.removed.toLocaleString()} baseline candidates + ${completion.addedCount.toLocaleString()} added · ${completion.retained.toLocaleString()} completed retained. Target: ${r.targets.join(", ")}; baseline score ≥ ${r.threshold.toFixed(3)}. Review orange points before use: completion can increase false removals. Downloads use completed results.`
+      : `${r.points.toLocaleString()} source points · ${r.removed.toLocaleString()} candidates · ${r.retained.toLocaleString()} retained. Target: ${r.targets.join(", ")}; score ≥ ${r.threshold.toFixed(3)}. ${r.unclassified.toLocaleString()} unclassified returns retained. File hashes and record order verified; detection accuracy is unmeasured.`;
     renderList(); viewer.fit(); projectChanged();
     setStatus("Opened AI scan comparison. Red marks candidates; Undo removes the comparison. Exact downloads preserve source records.");
   } catch (error) {

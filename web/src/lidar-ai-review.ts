@@ -83,8 +83,9 @@ async function sha256(bytes: Uint8Array): Promise<string> {
 }
 
 /** Recompute nearest-only ownership independently from the raw sensor records. */
-function verifyOwnership(raw: Uint8Array, mask: Uint8Array, report: AiScanReport): void {
+export function verifyOwnership(raw: Uint8Array, mask: Uint8Array, report: AiScanReport) {
   const owners = new Int32Array(PIXELS).fill(-1), ranges = new Float64Array(PIXELS).fill(Infinity);
+  const pixels = new Int32Array(mask.length).fill(-1);
   const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
   const actual = { projected: 0, occluded: 0, invalid: 0, outside_view: 0, outside_range: 0 };
   const upper = 3 * Math.PI / 180, lower = -25 * Math.PI / 180;
@@ -101,6 +102,7 @@ function verifyOwnership(raw: Uint8Array, mask: Uint8Array, report: AiScanReport
     const col = Math.min(2047, Math.floor(0.5 * (-Math.atan2(y, x) / Math.PI + 1) * 2048));
     const row = Math.min(63, Math.floor((upper - pitch) / (upper - lower) * 64));
     const pixel = row * 2048 + col;
+    pixels[i] = pixel;
     eligible++;
     if (range < ranges[pixel]) { ranges[pixel] = range; owners[pixel] = i; }
   }
@@ -113,6 +115,7 @@ function verifyOwnership(raw: Uint8Array, mask: Uint8Array, report: AiScanReport
   for (let i = 0; i < mask.length; i++) {
     if (mask[i] && !classified[i]) throw new Error("AI mask selects an unclassified or occluded return");
   }
+  return { owners, classified, pixels };
 }
 export interface AiScanReview {
   source: File;
@@ -121,6 +124,13 @@ export interface AiScanReview {
   retained: File;
   candidates: File;
   report: AiScanReport;
+  completion?: {
+    baselineCandidates: File;
+    added: File;
+    addedCount: number;
+    removed: number;
+    retained: number;
+  };
 }
 
 /** All reads are bounded; no inference, download, scene edits or source writes. */

@@ -198,3 +198,44 @@ below the nearby surface; the plot keeps that raw height rather than assigning
 a height match or diagnosing its cause. The whole workflow still uses two C2C
 calls. Input file hashes are unchanged. This is an inspection example from
 partitions of one survey, without measured defect-classification accuracy.
+
+## Human review records for difference candidates
+
+Each listed region has **Unreviewed**, **Reviewed** or **Deferred** state and a
+comment (up to 2,000 characters). Edits immediately update that diagnosis's
+record and UTC update time; the list summarizes all three states. **Reviewed**
+means inspection completed. It does not classify the candidate as a confirmed
+map change, defect or missing object. A comment can describe observed evidence,
+uncertainty or the next inspection needed. State and comment are independent:
+notes alone leave an unreviewed candidate unreviewed.
+
+In a bidirectional comparison, each direction keeps its own decisions when
+switching the display. Fine-cell inspection and section viewing do not relabel
+regions or reset their review. **Save candidate reviews JSON** saves all active
+directions with source/reference runtime descriptors, loaded/preview/decimation
+scope, exact grouping/overlap settings, candidate metrics/bounds, analysis time
+and each decision/comment/update time. Existing region JSON also includes its
+review record. **Save candidate reviews CSV** lists direction, input IDs/names,
+rank, state, comment, time and geometry/metrics; keep the JSON beside it for
+settings and complete coverage context. Quoted CSV comments retain line breaks;
+formula-like text fields are prefixed with an apostrophe for spreadsheet use.
+JSON keeps the original text. QA JSON/HTML includes separate direction counts
+and each region's comments and bounds; HTML escapes comment markup.
+
+Decisions belong to the current analysis snapshots. Rerunning, even with
+identical settings and cached distances, starts unreviewed. Editing the
+threshold/grouping/minimum/overlap, changing the pair, replacing/translating or
+removing an input invalidates the associated records and QA sections. Region
+rank is never used to transfer a decision to new evidence. **Save review JSON
+before rerunning or leaving: project/workspace/browser recovery saves do not
+retain these session-only records.** Exported records are evidence archives;
+they are not imported or automatically applied to newly computed candidates.
+
+Only the listed eligible regions (up to 50 per direction) can be reviewed here.
+Unlisted eligible regions and below-minimum component points remain explicitly
+accounted for and outside the review. An empty list is not proof that all scene
+changes were inspected. Directions can describe the same physical feature and
+must not be summed as unique changes. Thresholds, sampling, survey alignment,
+occlusion and reference coverage still limit what the candidates mean. Synthetic
+checks exercise record binding/export/invalidation, not real-map classification
+accuracy.

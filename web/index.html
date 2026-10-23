@@ -241,7 +241,10 @@
               <p class="hint small">Ratios use measured points in each direction separately. Reference → source can reveal areas absent from the source, but sampling, occlusion and different survey footprints also cause discrepancies. This is not a confirmed missing-map or registration-defect classifier.</p>
             </div>
             <p id="regions-summary" class="small" role="status"></p>
+            <p id="regions-review-summary" class="hint small"></p>
+            <p class="hint small">State and comments update immediately, independently for each direction. Save review JSON before rerunning or leaving: project/workspace saves do not retain these records.</p>
             <ol id="regions-list" class="loop-list"></ol>
+            <div class="button-row"><button id="regions-review-json">Save candidate reviews JSON</button><button id="regions-review-csv">Save candidate reviews CSV</button></div>
             <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
             <label>Inspection XY cell <input id="regions-fine-cell" type="number" min="0" step="any" value="1" /></label>
             <details class="options"><summary>Cell section settings</summary>

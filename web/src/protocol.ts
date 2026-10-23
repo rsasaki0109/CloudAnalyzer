@@ -927,6 +927,8 @@ export type Request =
       kind: "volume";
       /** Return totals only, without staging a compared-cell cloud. */
       summaryOnly?: boolean;
+      /** Fixed lower-left cell boundary X/Y and integer dimensions. */
+      sharedGrid?: readonly [number, number, number, number];
       region?: readonly [number, number, number, number];
       before: VolumeSide;
       after: VolumeSide;

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateVolumeGrid, volumeCellsCsv, VOLUME_CSV_CELL_LIMIT } from '../src/surface-volume.ts';
+import { validateVolumeGrid, sharedVolumeGrid, volumeCellsCsv, VOLUME_CSV_CELL_LIMIT } from '../src/surface-volume.ts';
 
 test('volume grid budget follows the existing union grid and nearest-center edge rule',()=>{
   assert.doesNotThrow(()=>validateVolumeGrid([[0,0,0,999,999,1]],1));
@@ -25,4 +25,8 @@ test('volume CSV fails closed on oversized or undefined cells and still exports 
   assert.throws(()=>volumeCellsCsv(Float32Array.of(0,0,0),[0,0,0],Float32Array.of(Infinity)),/undefined/);
   const n=VOLUME_CSV_CELL_LIMIT+1;
   assert.throws(()=>volumeCellsCsv(new Float32Array(n*3),[0,0,0],new Float32Array(n)),/100,000/);
+});
+
+test('shared visit grid uses all selected extents and exports boundary origin and dimensions',()=>{
+  assert.deepEqual(sharedVolumeGrid([[0,0,10,2,1,10],[-.6,0,10,1,1,10]],1),[-1.1,-.5,4,2]);
 });

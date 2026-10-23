@@ -77,6 +77,8 @@ test('area definitions round-trip as JSON and projects, apply with their name, a
   await expect(page.locator('#volume-areas option')).toHaveCount(1);
 });
 test('cancellation and changed definitions discard all staged rows without adding scene clouds',async({page})=>{
+  // Keep background project captures from taking the worker between the two runs.
+  await page.addInitScript(()=>localStorage.setItem('cloudanalyzer-autosave-enabled','off'));
   await setup(page);await saveArea(page,'Fill',fill);await saveArea(page,'Cut',cut);
   await page.evaluate(()=>{
     const original=Worker.prototype.postMessage;(window as any).areaAction='cancel';(window as any).areaCalls=0;

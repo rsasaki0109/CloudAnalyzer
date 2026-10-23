@@ -1,7 +1,9 @@
 /** 2.5D cut / fill volume panel. */
+import * as THREE from "three";
 
 import { prepareVolumeSupport, computeVolume, removeCloud, workerBusy } from "../api";
-import type { VolumeOutput } from "../protocol";
+import type { VolumeOutput, HeightReview } from "../protocol";
+import { screenedCellBounds, screenedCellsCsv } from "../height-review-cells";
 import { validateVolumeGrid, sharedVolumeGrid, type VolumeGrid, volumeCellsCsv, heightReviewScope, readHeightThreshold, heightReviewCsv } from "../surface-volume";
 import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regions";
 import { captureNamedAreas, replaceNamedAreas, onNamedAreasChanged, parseNamedAreas, parseAreaFile,
@@ -14,7 +16,7 @@ import { $, download, errorText, fillTable, fmt, roundUp, setStatus } from "./do
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
 import { addReportSection } from "./report";
-import { distanceChanged, entries, isMesh, listChanged, pointsInvalidated, viewer, type Entry } from "./state";
+import { distanceChanged, entries, isMesh, listChanged, pointsInvalidated, toRender, viewer, type Entry } from "./state";
 import { endTask, startTask, showProgress, taskActive } from "./tasks";
 
 const volumeBefore = $<HTMLSelectElement>("volume-before");
@@ -74,6 +76,39 @@ let batch: { rows: AreaVolumeRow[]; inputs: Input[]; settings: Settings } | null
 type CompletedVisits = { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid; support: VisitSupport; intervals: IntervalVolumeRow[] | null };
 let visits: CompletedVisits | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
+let cellInspection: { review: HeightReview; settings: Settings; label: string; token: number } | null = null;
+function clearCellInspection(): void {
+  cellInspection = null; $("height-cell-inspection").hidden = true; $("height-cell-list").replaceChildren();
+}
+$("height-cell-close").onclick = clearCellInspection;
+function inspectCells(review: HeightReview, settings: Settings, label: string): void {
+  if (running || taskActive()) return;
+  const token = generation;
+  const selection = { review, settings, label, token }; cellInspection = selection;
+  $("height-cell-context").textContent = `${label}; strict ±${review.threshold} ${settings.coordinateUnit}; cell ${settings.cell}, ${settings.height}, interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. ${review.cells?.length ?? 0} listed of ${review.riseCells + review.fallCells} exceedance cells; ${review.unlistedCells ?? "unknown"} unlisted. Largest absolute original height differences first, ties by row-major grid index; maximum ${review.cellLimit ?? 50}. Grid centers, not source-point matches. Full aggregates include unlisted cells. Camera focus does not isolate or identify physical changes.`;
+  $("height-cell-list").replaceChildren(...(review.cells ?? []).map((c, index) => {
+    const li = document.createElement("li"), text = document.createElement("p"), button = document.createElement("button");
+    li.style.display = "block"; text.style.margin = "4px 0"; text.style.overflowWrap = "anywhere";
+    text.textContent = `${index + 1}. ${c.difference > 0 ? "Rise" : "Fall"}; grid index ${c.index}; world XY [${c.x}, ${c.y}]; Before ${c.before}; After ${c.after}; difference ${c.difference} ${settings.coordinateUnit}.`;
+    button.textContent = "Focus cell"; button.setAttribute("aria-label", `Focus screened cell ${index + 1}`);
+    button.onclick = () => {
+      if (cellInspection !== selection || token !== generation || running || taskActive()) return;
+      try {
+        const b = screenedCellBounds(c, settings.cell);
+        viewer.frameBox(new THREE.Box3(toRender(b.slice(0, 3)), toRender(b.slice(3, 6)))); projectChanged();
+        setStatus(`Focused screened grid cell ${c.index}: ${label}. Full square footprint and Before/After height span; other points remain visible.`);
+      } catch (error) { setStatus(errorText(error), true); }
+    };
+    li.append(text, button); return li;
+  }));
+  $("height-cell-inspection").hidden = false;
+  $("height-cell-inspection").scrollIntoView({ block: "nearest" });
+}
+$("height-cell-csv").onclick = () => {
+  if (!cellInspection || cellInspection.token !== generation || running || taskActive()) return;
+  const { review, settings, label } = cellInspection;
+  download(new Blob([screenedCellsCsv(review, settings.cell, settings.coordinateUnit, label)], { type: "text/csv" }), "listed-height-screening-cells.csv");
+};
 function validInput(input: Input): boolean {
   return !input.entry || entries.get(input.cloud!.id) === input.entry && input.entry.cloud === input.cloud;
 }
@@ -81,6 +116,10 @@ function validResult(result: NonNullable<typeof last>): boolean {
   return result.inputs.every(validInput) && (!result.output || entries.get(result.output.cloud.id) === result.output && result.output.cloud === result.out.cells);
 }
 function clearResult(): void {
+  clearCellInspection();
+  for (const id of ["volume-areas-screening", "volume-visits-screening", "volume-intervals-screening"]) {
+    $(id).replaceChildren(); $(id).hidden = true;
+  }
   const had = last !== null || batch !== null || visits !== null; generation++; last = null; batch = null; visits = null;
   $("volume-result").hidden = $("volume-exports").hidden = true;
   $("height-review-result").hidden = true;
@@ -292,6 +331,7 @@ volumeRun.onclick = async () => {
     $("volume-exports").hidden = false;
     $("height-review-result").hidden = !out.heightReview;
     if (out.heightReview) {
+      $<HTMLButtonElement>("height-review-inspect").disabled = !out.heightReview.cells?.length;
       const h = out.heightReview, available = out.matchedCells > 0;
       fillTable($("height-review-stats"), [
         ["Strict height threshold", `${fmt(h.threshold)} ${settings.coordinateUnit}`],
@@ -364,6 +404,9 @@ $("volume-csv").onclick = () => {
 };
 $("height-review-csv").onclick = () => {
   if (last?.out.heightReview && validResult(last)) download(new Blob([heightReviewCsv(last.out.heightReview, last.out.matchedCells, last.settings.coordinateUnit)], { type: "text/csv" }), "height-change-screening.csv");
+};
+$("height-review-inspect").onclick = () => {
+  if (last?.out.heightReview && validResult(last)) inspectCells(last.out.heightReview, last.settings, `${last.before} → ${last.after}${last.settings.areaName ? " / " + last.settings.areaName : ""}`);
 };
 addReportSection("height-change-screening", () => {
   if (!last?.out.heightReview || !validResult(last)) return null;
@@ -445,7 +488,7 @@ function renderScreening(id: string, data: readonly { label: string; row: AreaVo
   wrap.setAttribute("aria-label", "Height screening summaries; scroll horizontally for quantities");
   const table = document.createElement("table"); table.className = "stats review-table area-volume-table";
   const head = table.createTHead().insertRow();
-  for (const text of ["Comparison / area", "Rise cells", "Fall cells", "Within cells", "Rise area", "Fall area", "Rise volume", "Fall volume", "Screened net"]) {
+  for (const text of ["Comparison / area", "Rise cells", "Fall cells", "Within cells", "Rise area", "Fall area", "Rise volume", "Fall volume", "Screened net", "Cells"]) {
     const th = document.createElement("th"); th.textContent = text; th.scope = "col"; head.append(th);
   }
   const body = table.createTBody();
@@ -454,6 +497,10 @@ function renderScreening(id: string, data: readonly { label: string; row: AreaVo
     const tr = body.insertRow();
     for (const value of [label, h.riseCells, h.fallCells, h.withinCells,
       ...[h.riseArea, h.fallArea, h.riseVolume, h.fallVolume, h.riseVolume - h.fallVolume].map((v, i) => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}${i < 2 ? "²" : "³"}` : "Unavailable")]) tr.insertCell().textContent = String(value);
+    const token = generation, button = document.createElement("button");
+    button.textContent = "Inspect cells"; button.setAttribute("aria-label", `Inspect screened cells: ${label}`); button.disabled = !h.cells?.length;
+    button.onclick = () => { if (token === generation) inspectCells(h, settings, label); };
+    tr.insertCell().append(button);
   }
   wrap.append(table); root.append(title, note, wrap);
 }

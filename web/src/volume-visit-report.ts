@@ -75,6 +75,6 @@ ${screening(snapshot.rows, "baseline-screening")}
     ? `<p>${escape(snapshot.intervals.scope)}</p>${table(["From → to", ...headers], snapshot.intervals.rows.map(r => [`${r.fromVisitIndex}. ${r.fromVisit} → ${r.toVisitIndex}. ${r.toVisit}`, ...quantities(r)]), "interval-volumes")}${screening(snapshot.intervals.rows, "interval-screening")}`
     : "<p>Not computed. Baseline-relative gross fill/cut differences are not direct interval fill/cut.</p>"}
 <p>Unavailable means no compared cells, not zero change. Fill and cut are nonnegative height-difference magnitudes; net = fill − cut. Visit indices express the user's chosen order and do not infer dates or elapsed time.</p>
-<details><summary>Complete comparison JSON snapshot</summary><p>Same comparison fields as Save visit summaries JSON; no point coordinates or binary mask included.</p><pre id="comparison-json">${escape(JSON.stringify(snapshot, null, 2))}</pre></details>
+<details><summary>Complete comparison JSON snapshot</summary><p>Same comparison fields as Save visit summaries JSON; no raw input point coordinates or binary mask included. Screened grid-cell coordinates may be included.</p><pre id="comparison-json">${escape(JSON.stringify(snapshot, null, 2))}</pre></details>
 </body></html>`;
 }

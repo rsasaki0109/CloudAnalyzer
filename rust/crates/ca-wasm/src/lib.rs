@@ -144,6 +144,9 @@ impl VolumeSurface {
 /// Strict user-defined height screening; quantities are full differences.
 #[wasm_bindgen]
 pub struct HeightReview {
+    cells: Vec<f64>,
+    #[wasm_bindgen(readonly, js_name = cellLimit)]
+    pub cell_limit: usize,
     #[wasm_bindgen(readonly)]
     pub threshold: f64,
     #[wasm_bindgen(readonly, js_name = riseCells)]
@@ -160,6 +163,15 @@ pub struct HeightReview {
     pub rise_volume: f64,
     #[wasm_bindgen(readonly, js_name = fallVolume)]
     pub fall_volume: f64,
+}
+
+#[wasm_bindgen]
+impl HeightReview {
+    /// Packed [row-major index, world x, world y, before, after, difference].
+    #[wasm_bindgen(js_name = takeCells)]
+    pub fn take_cells(&mut self) -> Vec<f64> {
+        std::mem::take(&mut self.cells)
+    }
 }
 
 /// Result of [`compute_volume`].
@@ -340,6 +352,12 @@ pub fn compute_volume(
                 JsError::new("height screening cannot be represented on these surfaces")
             })?;
             Ok::<_, JsError>(HeightReview {
+                cells: h
+                    .cells
+                    .iter()
+                    .flat_map(|c| [c.index as f64, c.x, c.y, c.before, c.after, c.difference])
+                    .collect(),
+                cell_limit: ca_core::volume::HEIGHT_REVIEW_CELL_LIMIT,
                 threshold: h.threshold,
                 rise_cells: h.rise_cells,
                 fall_cells: h.fall_cells,

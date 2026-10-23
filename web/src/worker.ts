@@ -2220,7 +2220,12 @@ async function handle(
       if (review) {
         try { value.heightReview = { threshold: review.threshold, riseCells: review.riseCells, fallCells: review.fallCells,
           withinCells: review.withinCells, riseArea: review.riseArea, fallArea: review.fallArea,
-          riseVolume: review.riseVolume, fallVolume: review.fallVolume }; }
+          riseVolume: review.riseVolume, fallVolume: review.fallVolume };
+          const packed = review.takeCells(), cells = [];
+          for (let i = 0; i < packed.length; i += 6) cells.push({ index: packed[i], x: packed[i + 1], y: packed[i + 2], before: packed[i + 3], after: packed[i + 4], difference: packed[i + 5] });
+          value.heightReview.cells = cells; value.heightReview.cellLimit = review.cellLimit;
+          value.heightReview.unlistedCells = review.riseCells + review.fallCells - cells.length;
+        }
         finally { review.free(); }
       }
       if (out.matchedCells > 0 && !req.summaryOnly) {

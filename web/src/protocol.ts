@@ -271,7 +271,9 @@ export interface IcpOutput {
 /** A volume surface: a loaded cloud or mesh, or a horizontal plane. */
 export type VolumeSide = { id: number } | { z: number };
 
+export interface HeightReviewCell { index: number; x: number; y: number; before: number; after: number; difference: number }
 export interface HeightReview {
+  cells?: HeightReviewCell[]; cellLimit?: number; unlistedCells?: number;
   threshold: number; riseCells: number; fallCells: number; withinCells: number;
   riseArea: number; fallArea: number; riseVolume: number; fallVolume: number;
 }

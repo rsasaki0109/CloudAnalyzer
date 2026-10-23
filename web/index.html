@@ -382,7 +382,8 @@
           <p class="hint small">Set before computing. Strictly above / below ±threshold; equality stays within-band. Reports full differences in selected cells, not only excess. This is a user review criterion, not calibrated uncertainty or an M3C2 detection limit. Single-pair and saved-area/visit screening are separate opt-ins; the threshold is shared.</p>
         </details>
         <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
-        <div id="height-review-result" hidden><h3>Height-change screening</h3><table class="stats"><tbody id="height-review-stats"></tbody></table><p id="height-review-scope" class="hint small"></p><button id="height-review-csv">Save height screening CSV</button></div>
+        <div id="height-review-result" hidden><h3>Height-change screening</h3><table class="stats"><tbody id="height-review-stats"></tbody></table><p id="height-review-scope" class="hint small"></p><button id="height-review-csv">Save height screening CSV</button><button id="height-review-inspect">Inspect screened cells</button></div>
+        <div id="height-cell-inspection" hidden><h3>Listed screened grid cells</h3><button id="height-cell-close">Close cell inspection</button><p id="height-cell-context" class="hint small"></p><ol id="height-cell-list" class="loop-list" tabindex="0" aria-label="Listed screened grid cells; scroll for more"></ol><button id="height-cell-csv">Save listed screened cells CSV</button><p class="hint small">Only the largest 50 absolute exceedances per comparison/area are listed. Full aggregates include the unlisted cells. Save summary JSON for input, bounds, settings and support provenance. Focus changes the camera; it does not filter the point cloud or confirm a physical cause.</p></div>
         <div id="volume-areas-result" hidden>
           <div id="volume-areas-screening" hidden></div>
           <p id="volume-areas-scope" class="hint small"></p>

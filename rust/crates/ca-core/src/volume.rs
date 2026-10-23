@@ -6,6 +6,44 @@
 //! removed (after below before).
 
 use crate::mesh::TriangleMesh;
+use std::cmp::{Ordering, Reverse};
+use std::collections::BinaryHeap;
+
+pub const HEIGHT_REVIEW_CELL_LIMIT: usize = 50;
+
+/// Original f64 grid center and heights, not a source-point correspondence.
+#[derive(Debug, Clone, PartialEq)]
+pub struct HeightReviewCell {
+    pub index: usize,
+    pub x: f64,
+    pub y: f64,
+    pub before: f64,
+    pub after: f64,
+    pub difference: f64,
+}
+
+#[derive(Debug)]
+struct RankedHeightCell(HeightReviewCell);
+impl PartialEq for RankedHeightCell {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
+impl Eq for RankedHeightCell {}
+impl PartialOrd for RankedHeightCell {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for RankedHeightCell {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0
+            .difference
+            .abs()
+            .total_cmp(&other.0.difference.abs())
+            .then_with(|| other.0.index.cmp(&self.0.index))
+    }
+}
 
 /// One side of a volume comparison.
 #[derive(Debug, Clone, Copy)]
@@ -103,6 +141,8 @@ pub struct VolumeResult {
 /// User-defined height screening, independent of measurement uncertainty.
 #[derive(Debug, Clone, PartialEq)]
 pub struct HeightReview {
+    /// Largest absolute exceedances; ties ordered by ascending row-major index.
+    pub cells: Vec<HeightReviewCell>,
     pub threshold: f64,
     pub rise_cells: usize,
     pub fall_cells: usize,
@@ -127,6 +167,7 @@ impl VolumeResult {
             return None;
         }
         let mut result = HeightReview {
+            cells: Vec::new(),
             threshold,
             rise_cells: 0,
             fall_cells: 0,
@@ -137,7 +178,9 @@ impl VolumeResult {
             fall_volume: 0.0,
         };
         let area = self.grid.cell * self.grid.cell;
-        for (&b, &a) in self.before.iter().zip(&self.after) {
+        let mut top =
+            BinaryHeap::<Reverse<RankedHeightCell>>::with_capacity(HEIGHT_REVIEW_CELL_LIMIT);
+        for (index, (&b, &a)) in self.before.iter().zip(&self.after).enumerate() {
             if b.is_nan() || a.is_nan() {
                 continue;
             }
@@ -154,7 +197,27 @@ impl VolumeResult {
             } else {
                 result.within_cells += 1;
             }
+            if d.abs() > threshold {
+                let [x, y] = self.grid.center(index % self.grid.nx, index / self.grid.nx);
+                let candidate = RankedHeightCell(HeightReviewCell {
+                    index,
+                    x,
+                    y,
+                    before: b,
+                    after: a,
+                    difference: d,
+                });
+                if top.len() < HEIGHT_REVIEW_CELL_LIMIT {
+                    top.push(Reverse(candidate));
+                } else if top.peek().is_some_and(|smallest| candidate > smallest.0) {
+                    top.pop();
+                    top.push(Reverse(candidate));
+                }
+            }
         }
+        let mut listed: Vec<_> = top.into_iter().map(|v| v.0).collect();
+        listed.sort_unstable_by(|a, b| b.cmp(a));
+        result.cells = listed.into_iter().map(|v| v.0).collect();
         result.rise_area = result.rise_cells as f64 * area;
         result.fall_area = result.fall_cells as f64 * area;
         (result.rise_cells + result.fall_cells + result.within_cells == self.matched_cells
@@ -529,6 +592,55 @@ mod tests {
     use super::*;
 
     #[test]
+    fn height_screening_lists_largest_f64_cells_with_stable_ties_and_bounded_storage() {
+        let points: Vec<_> = (0..70)
+            .map(|i| {
+                [
+                    1000.0 + i as f64,
+                    2000.0,
+                    if i % 2 == 0 { 2.0 } else { -2.0 },
+                ]
+            })
+            .collect();
+        let r = volume(
+            Surface::Constant(0.0),
+            Surface::Points(&points),
+            params(1.0),
+        )
+        .unwrap();
+        let h = r.height_review(1.0).unwrap();
+        assert_eq!((h.rise_cells, h.fall_cells), (35, 35));
+        assert_eq!(h.cells.len(), HEIGHT_REVIEW_CELL_LIMIT);
+        assert_eq!(
+            h.cells.iter().map(|c| c.index).collect::<Vec<_>>(),
+            (0..50).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            (
+                h.cells[0].x,
+                h.cells[0].y,
+                h.cells[0].before,
+                h.cells[0].after
+            ),
+            (1000.0, 2000.0, 0.0, 2.0)
+        );
+        assert!(r.height_review(2.0).unwrap().cells.is_empty());
+        let mut points = points;
+        points[69][2] = 10.0;
+        let h = volume(
+            Surface::Constant(0.0),
+            Surface::Points(&points),
+            params(1.0),
+        )
+        .unwrap()
+        .height_review(1.0)
+        .unwrap();
+        assert_eq!(h.cells[0].index, 69);
+        assert_eq!(h.cells[1].index, 0);
+        assert_eq!(h.cells.last().unwrap().index, 48);
+    }
+
+    #[test]
     fn height_screening_strict_edges_full_volumes_and_reversal() {
         let before: Vec<_> = (0..6).map(|i| [i as f64 * 2.0, 0.0, 0.0]).collect();
         let after: Vec<_> = [2.0, -3.0, 0.5, -0.5, 0.0]
@@ -596,6 +708,11 @@ mod tests {
         .unwrap();
         let h = r.height_review(1.0).unwrap();
         assert_eq!((h.rise_cells, h.fall_cells, h.within_cells), (1, 1, 1));
+        assert_eq!(
+            h.cells.iter().map(|c| c.index).collect::<Vec<_>>(),
+            vec![0, 1]
+        );
+        assert_eq!(h.cells[0].difference, above);
         for invalid in [-1.0, f64::NAN, f64::INFINITY] {
             assert!(r.height_review(invalid).is_none());
         }
@@ -637,6 +754,7 @@ mod tests {
             (2, 1, 1, 0, 0)
         );
         assert_eq!(h.rise_volume, 2.0);
+        assert_eq!(h.cells.iter().map(|c| c.index).collect::<Vec<_>>(), vec![0]);
         let empty = volume_in_region(
             Surface::Points(&before),
             Surface::Points(&after),

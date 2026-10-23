@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { preservedSourcePath } from './preserved-source.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -14,7 +15,7 @@ test('mapped reference packet retains exact production outputs, cache isolation,
  assert.equal(m.timingBudget.allowed,4);assert.equal(m.timingBudget.used,4);assert.equal(m.timingBudget.remaining,0);assert.equal(m.timingBudget.closed,true);assert.equal(m.timingBudget.allPassed,true);assert.equal(m.timingBudget.gpuTimestampQueries,0);
  assert.equal(hash(JSON.stringify(p,null,2)+'\n'),m.protocolSha256);assert.equal(p.timingReportBudget,4);assert.equal(p.warmups,6);assert.equal(p.repeats,12);assert.equal(p.coldPairs,4);assert.equal(p.nodes,'flat');
  assert.equal(hash(Object.entries(m.normalizedSourceFootprint).sort(([a],[b])=>a<b?-1:1).map(([n,h])=>n+'\0'+h+'\n').join('')),m.normalizedSourceFingerprintSha256);
- const source=(n,h)=>{if(normal(n)===h)return;const a=m.sourceAliases[h];assert.equal(a?.original,n);assert.ok(a.archived.startsWith(`${directory}/executed-source/`)&&!a.archived.includes('..'));assert.equal(normal(a.archived),h);};
+ const source=(n,h)=>{if(normal(n)===h)return;if(preservedSourcePath(n,h))return;const a=m.sourceAliases[h];assert.equal(a?.original,n);assert.ok(a.archived.startsWith(`${directory}/executed-source/`)&&!a.archived.includes('..'));assert.equal(normal(a.archived),h);};
  for(const[n,h]of Object.entries(m.normalizedSourceFootprint))source(n,h);
  for(const[h,a]of Object.entries(m.sourceAliases))assert.equal(normal(a.archived),h);
  for(const[n,h]of Object.entries(m.priorPacketFilesUnchanged))assert.equal(hash(bytes(n)),h);assert.equal(Object.keys(m.priorPacketFilesUnchanged).length,154);

@@ -1,0 +1,12 @@
+{
+  "schema": "cloudanalyzer.preserved_source.v1",
+  "purpose": "Retain exact source for historical benchmark verification while current application code evolves. Existing measured packets and hashes are unchanged.",
+  "sources": {
+    "2bc3965fd21017329ea035f8038cc4440d8eba97b49160da38868520f00f258f": {
+      "original": "web/src/app/volume.ts",
+      "archived": "benchmarks/source-history/2bc3965fd21017329ea035f8038cc4440d8eba97b49160da38868520f00f258f/volume.ts",
+      "originCommit": "7bb750061dc68e28defcb16db6b8b439a2a07a8f",
+      "originGitBlob": "a3ab18313cdcb23d0523dad64ecc1c7ea067dcc8"
+    }
+  }
+}

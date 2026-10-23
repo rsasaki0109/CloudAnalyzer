@@ -1,7 +1,8 @@
 /** Bound each diagnosis to both cloud snapshots; never infer reference identity from names. */
 import * as THREE from "three";
 import { cloudToCloud, workerBusy } from "../api";
-import { REGION_INPUT_BYTES, distanceRegionsCsv, distanceCellsCsv, validateRegionSettings, type DistanceRegions, type DistanceCells } from "../distance-regions";
+import { REGION_INPUT_BYTES, distanceRegionsCsv, distanceCellsCsv, validateRegionSettings, validateExpectedOverlap,
+  type ExpectedOverlap, type DistanceRegions, type DistanceCells } from "../distance-regions";
 import { projectChanged } from "../project-change";
 import { refreshColors } from "./colors";
 import { $, download, errorText, fmt, setStatus } from "./dom";
@@ -16,6 +17,17 @@ const threshold = $<HTMLInputElement>("regions-threshold"), cell = $<HTMLInputEl
 const button = $<HTMLButtonElement>("regions-run");
 const bothButton = $<HTMLButtonElement>("regions-both"), direction = $<HTMLSelectElement>("regions-direction");
 const fineCell = $<HTMLInputElement>("regions-fine-cell");
+const overlapEnabled = $<HTMLInputElement>("regions-overlap-enabled");
+const overlapInputs = ["min-x", "min-y", "max-x", "max-y"].map(id => $<HTMLInputElement>(`regions-overlap-${id}`));
+function readOverlap(): ExpectedOverlap | null {
+  if (!overlapEnabled.checked) return null;
+  if (overlapInputs.some(input => !input.value.trim())) throw new Error("Enter all four expected overlap bounds in world coordinates");
+  const [minX, minY, maxX, maxY] = overlapInputs.map(input => Number(input.value));
+  return validateExpectedOverlap([minX, minY, maxX, maxY]);
+}
+const overlapNote = (r: { overlap: ExpectedOverlap | null }) => r.overlap ?
+  `Expected overlap XY [${r.overlap[0]}, ${r.overlap[1]}] to [${r.overlap[2]}, ${r.overlap[3]}], edges included; nearest neighbors use the full loaded reference.` :
+  "Full loaded query cloud; no expected overlap restriction.";
 type Snapshot = { entry: Entry; cloud: Entry["cloud"]; name: string };
 type Cache = { source: Snapshot; reference: Snapshot; output: NonNullable<Entry["c2c"]> };
 type Diagnosis = { pair: Cache; result: DistanceRegions; reused: boolean };
@@ -48,6 +60,9 @@ function render(): void {
   button.disabled = bothButton.disabled = running || !a || !b || a === b || a.cloud.kind !== "cloud" || b.cloud.kind !== "cloud";
   direction.disabled = running;
   threshold.disabled = cell.disabled = minimum.disabled = fineCell.disabled = running;
+  overlapEnabled.disabled = running;
+  $("regions-overlap-bounds").hidden = !overlapEnabled.checked;
+  for (const input of overlapInputs) input.disabled = running || !overlapEnabled.checked;
   for (const b of document.querySelectorAll<HTMLButtonElement>("#regions-list button, #regions-cells-list button")) b.disabled = running;
 }
 listChanged.add(render); distanceChanged.add(render);
@@ -56,8 +71,11 @@ pointsInvalidated.add(id => {
   if ([Number(source.value), Number(reference.value), cache?.source.cloud.id, cache?.reference.cloud.id].includes(id)) clear(true);
 });
 for (const input of [threshold, cell, minimum]) input.oninput = () => clear();
+overlapEnabled.onchange = () => { clear(); render(); };
+for (const input of overlapInputs) input.oninput = () => clear();
 fineCell.oninput = () => { generation++; clearInspection(); };
-function group<T = DistanceRegions>(pair: Cache, signal: AbortSignal, settings: number[], inspection?: { rank: number; cell: number }): Promise<T> {
+function group<T = DistanceRegions>(pair: Cache, signal: AbortSignal, settings: number[], overlap: ExpectedOverlap | null,
+  inspection?: { rank: number; cell: number }): Promise<T> {
   const positions = pair.source.cloud.positions.slice(), distances = pair.output.distances.slice();
   const worker = new Worker(new URL("../distance-regions-worker.ts", import.meta.url), { type: "module" });
   return new Promise((resolve, reject) => {
@@ -66,13 +84,13 @@ function group<T = DistanceRegions>(pair: Cache, signal: AbortSignal, settings: 
     worker.onmessage = event => { cleanup(); event.data.error ? reject(new Error(event.data.error)) : resolve(event.data.result); };
     worker.onerror = () => { cleanup(); reject(new Error("Discrepancy grouping worker failed")); };
     signal.addEventListener("abort", abort, { once: true }); if (signal.aborted) { abort(); return; }
-    try { worker.postMessage({ positions, distances, shift: pair.source.cloud.shift, threshold: settings[0], cell: settings[1], minPoints: settings[2], inspection }, [positions.buffer, distances.buffer]); }
+    try { worker.postMessage({ positions, distances, shift: pair.source.cloud.shift, threshold: settings[0], cell: settings[1], minPoints: settings[2], overlap, inspection }, [positions.buffer, distances.buffer]); }
     catch (error) { cleanup(); reject(error); }
   });
 }
 function show(result: DistanceRegions, pair: Cache, reused: boolean): void {
   $("regions-list").replaceChildren();
-  $("regions-summary").textContent = `${pair.source.name} → ${pair.reference.name}: ${result.exceeding.toLocaleString()} of ${result.measured.toLocaleString()} measured points exceed ${fmt(result.threshold)}. ${result.regions.length} of ${result.eligibleRegions.toLocaleString()} eligible regions shown; ${result.smallRegionPoints.toLocaleString()} points in below-minimum regions, ${result.unlistedEligiblePoints.toLocaleString()} in unlisted eligible regions. ${result.unmeasured.toLocaleString()} unmeasured; ${result.invalidPositions.toLocaleString()} invalid positions. ${reused ? "Reused the same distance snapshot." : "Computed unsigned CPU C2C distances."}`;
+  $("regions-summary").textContent = `${pair.source.name} → ${pair.reference.name}: ${result.exceeding.toLocaleString()} of ${result.measured.toLocaleString()} measured points exceed ${fmt(result.threshold)}. ${result.regions.length} of ${result.eligibleRegions.toLocaleString()} eligible regions shown; ${result.smallRegionPoints.toLocaleString()} points in below-minimum regions, ${result.unlistedEligiblePoints.toLocaleString()} in unlisted eligible regions. ${result.unmeasured.toLocaleString()} unmeasured; ${result.invalidPositions.toLocaleString()} invalid positions; ${result.outsideOverlap.toLocaleString()} outside expected overlap. ${overlapNote(result)} ${result.overlap ? "Distance colors still show the full cloud. " : ""}${reused ? "Reused the same distance snapshot." : "Computed unsigned CPU C2C distances."}`;
   for (const region of result.regions) {
     const row = document.createElement("li"), focus = document.createElement("button");
     focus.textContent = `Region ${region.rank}: ${region.points.toLocaleString()} points · max ${fmt(region.maxDistance)} · mean ${fmt(region.meanDistance)}`;
@@ -95,7 +113,7 @@ async function inspectCells(parent: Diagnosis, rank: number): Promise<void> {
   try {
     setStatus("Inspecting selected region cells using the same distance snapshot…");
     const r = parent.result;
-    const result = await group<DistanceCells>(parent.pair, signal, [r.threshold, r.cell, r.minPoints], { rank, cell: size });
+    const result = await group<DistanceCells>(parent.pair, signal, [r.threshold, r.cell, r.minPoints], r.overlap, { rank, cell: size });
     signal.throwIfAborted();
     if (token !== generation || last !== parent || !valid(parent.pair) || parent.pair.source.entry.c2c !== parent.pair.output) throw new Error("Comparison inputs/settings changed; inspect the region again");
     inspection = { parent, result };
@@ -110,7 +128,7 @@ async function inspectCells(parent: Diagnosis, rank: number): Promise<void> {
       };
       const section = document.createElement("button"); section.textContent = "Compare section";
       section.onclick = () => void inspectDistanceSection({ source: parent.pair.source, reference: parent.pair.reference,
-        regionRank: result.regionRank, cellRank: c.rank, bounds: c.bounds,
+        regionRank: result.regionRank, cellRank: c.rank, bounds: c.bounds, overlap: parent.result.overlap,
         isCurrent: () => !running && last === parent && inspection?.result === result && valid(parent.pair) && parent.pair.source.entry.c2c === parent.pair.output });
       row.append(focus, section); $("regions-cells-list").append(row);
     }
@@ -137,8 +155,10 @@ async function run(both: boolean): Promise<void> {
   const a = entries.get(Number(source.value)), b = entries.get(Number(reference.value));
   if (!a || !b || a === b || a.cloud.kind !== "cloud" || b.cloud.kind !== "cloud") return;
   const settings = [Number(threshold.value), Number(cell.value), Number(minimum.value)];
+  let overlap: ExpectedOverlap | null;
   try {
     validateRegionSettings(...settings as [number, number, number]);
+    overlap = readOverlap();
     if (a.cloud.positions.byteLength / 3 * 4 > REGION_INPUT_BYTES || b.cloud.positions.byteLength * (both ? 4 / 3 : 1) > REGION_INPUT_BYTES) {
       throw new Error("Discrepancy input exceeds 64 MiB; crop a smaller source/reference area");
     }
@@ -162,7 +182,7 @@ async function run(both: boolean): Promise<void> {
       }
       if (!valid(pair) || token !== generation) throw new Error("Comparison inputs changed; run the diagnosis again");
       phase = "group"; setStatus(`Grouping ${from.name} → ${to.name} points above the distance threshold…`);
-      const result = await group(pair, signal, settings); signal.throwIfAborted();
+      const result = await group(pair, signal, settings, overlap); signal.throwIfAborted();
       if (!valid(pair) || token !== generation) throw new Error("Comparison inputs/settings changed; run the diagnosis again");
       return { pair, result, reused };
     }
@@ -173,7 +193,7 @@ async function run(both: boolean): Promise<void> {
     cache = forward.pair;
     if (reverse) {
       reverseCache = reverse.pair; comparison = { forward, reverse }; direction.value = "forward";
-      $("regions-both-summary").textContent = `${a.cloud.name} → ${b.cloud.name}: ${forward.result.exceeding.toLocaleString()} / ${forward.result.measured.toLocaleString()} measured (${ratio(forward.result)}) above threshold. ${b.cloud.name} → ${a.cloud.name}: ${reverse.result.exceeding.toLocaleString()} / ${reverse.result.measured.toLocaleString()} measured (${ratio(reverse.result)}) above threshold. Unmeasured/invalid: ${forward.result.unmeasured}/${forward.result.invalidPositions} forward; ${reverse.result.unmeasured}/${reverse.result.invalidPositions} reverse.`;
+      $("regions-both-summary").textContent = `${a.cloud.name} → ${b.cloud.name}: ${forward.result.exceeding.toLocaleString()} / ${forward.result.measured.toLocaleString()} measured (${ratio(forward.result)}) above threshold. ${b.cloud.name} → ${a.cloud.name}: ${reverse.result.exceeding.toLocaleString()} / ${reverse.result.measured.toLocaleString()} measured (${ratio(reverse.result)}) above threshold. Unmeasured/invalid: ${forward.result.unmeasured}/${forward.result.invalidPositions} forward; ${reverse.result.unmeasured}/${reverse.result.invalidPositions} reverse. Outside expected overlap: ${forward.result.outsideOverlap} forward; ${reverse.result.outsideOverlap} reverse. ${overlapNote(forward.result)}`;
       $("regions-directions").hidden = false;
     }
     publish(forward);
@@ -190,13 +210,13 @@ $("regions-both-json").onclick = () => {
   const pack = (d: Diagnosis) => ({ source: describe(d.pair.source), reference: describe(d.pair.reference), reusedDistances: d.reused,
     exceedingFractionOfMeasured: d.result.measured ? d.result.exceeding / d.result.measured : null, ...d.result });
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.bidirectional_regions.v1", method: "two independent unsigned CPU nearest-neighbor directions",
-    scope: "Loaded points in each direction separately; no overlap-footprint restriction or confirmed missing-map classification; each direction lists up to 50 regions",
+    scope: "Loaded query points in each direction, optionally restricted by the same world-XY overlap rectangle; full loaded reference searched; each direction lists up to 50 regions; not confirmed missing-map classification",
     forward: pack(comparison.forward), reverse: pack(comparison.reverse) }, null, 2)], { type: "application/json" }), "bidirectional-distance-regions.json");
 };
 $("regions-json").onclick = () => {
   if (!last || !valid(last.pair)) return;
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.distance_regions.v1", source: describe(last.pair.source), reference: describe(last.pair.reference),
-    method: "unsigned CPU nearest-neighbor source-to-reference", scope: "Loaded points; XY eight-neighbor connected cells, ranked by maximum distance then point count; top 50 eligible regions only; not a registration-defect classifier",
+    method: "unsigned CPU nearest-neighbor source-to-reference", scope: "Loaded query points, optionally restricted by a world-XY overlap rectangle; full loaded reference searched; XY eight-neighbor connected cells, ranked by maximum distance then point count; top 50 eligible regions only; not a registration-defect classifier",
     reusedDistances: last.reused, ...last.result }, null, 2)], { type: "application/json" }), "distance-regions.json");
 };
 $("regions-csv").onclick = () => { if (last && valid(last.pair)) download(new Blob([distanceRegionsCsv(last.result)], { type: "text/csv" }), "distance-regions.csv"); };
@@ -211,17 +231,21 @@ $("regions-cells-csv").onclick = () => {
 };
 addReportSection("distance-regions", () => last && valid(last.pair) ? { title: `Distance regions: ${last.pair.source.name} → ${last.pair.reference.name}`,
   metrics: { exceeding: { label: "Source points above threshold", value: last.result.exceeding }, eligible: { label: "Eligible distance regions", value: last.result.eligibleRegions },
-    listed: { label: "Listed distance regions", value: last.result.regions.length }, unmeasured: { label: "Unmeasured source distances", value: last.result.unmeasured } },
+    listed: { label: "Listed distance regions", value: last.result.regions.length }, unmeasured: { label: "Unmeasured source distances", value: last.result.unmeasured },
+    measured: { label: "Measured source distances in review area", value: last.result.measured },
+    outsideOverlap: { label: "Source points outside expected overlap", value: last.result.outsideOverlap } },
   notes: [`Loaded source → reference points only; threshold ${last.result.threshold}, grouping cell ${last.result.cell}, minimum ${last.result.minPoints} exceeding points.`,
-    "Possible scene/alignment/coverage differences, not confirmed defects; use Compare both directions to inspect the reverse comparison."] } : null);
+    overlapNote(last.result), "Possible scene/alignment/coverage differences, not confirmed defects; use Compare both directions to inspect the reverse comparison."] } : null);
 addReportSection("bidirectional-regions", () => comparison && valid(comparison.forward.pair) && valid(comparison.reverse.pair) ? {
   title: `Both distance directions: ${comparison.forward.pair.source.name} ↔ ${comparison.forward.pair.reference.name}`,
   metrics: { forwardExceeding: { label: "Source → reference exceeding points", value: comparison.forward.result.exceeding },
     forwardMeasured: { label: "Source → reference measured points", value: comparison.forward.result.measured },
     reverseExceeding: { label: "Reference → source exceeding points", value: comparison.reverse.result.exceeding },
-    reverseMeasured: { label: "Reference → source measured points", value: comparison.reverse.result.measured } },
+    reverseMeasured: { label: "Reference → source measured points", value: comparison.reverse.result.measured },
+    forwardOutsideOverlap: { label: "Source points outside expected overlap", value: comparison.forward.result.outsideOverlap },
+    reverseOutsideOverlap: { label: "Reference points outside expected overlap", value: comparison.reverse.result.outsideOverlap } },
   notes: [`Threshold ${comparison.forward.result.threshold}; forward ${ratio(comparison.forward.result)}, reverse ${ratio(comparison.reverse.result)} above threshold among measured points.`,
-    "Loaded survey footprints may differ; sampling, occlusion and scene changes can produce discrepancies. Not a missing-map or registration-defect classifier."] } : null);
+    overlapNote(comparison.forward.result), "Loaded survey footprints may differ; sampling, occlusion and scene changes can produce discrepancies. Not a missing-map or registration-defect classifier."] } : null);
 addReportSection("distance-region-cells", () => inspection && inspection.parent === last && valid(last.pair) ? {
   title: `Region ${inspection.result.regionRank} cell inspection: ${last.pair.source.name} → ${last.pair.reference.name}`,
   metrics: { points: { label: "Region exceeding points", value: inspection.result.regionPoints },
@@ -229,5 +253,6 @@ addReportSection("distance-region-cells", () => inspection && inspection.parent 
     listed: { label: "Listed inspection cells", value: inspection.result.cells.length },
     unlisted: { label: "Points in unlisted cells", value: inspection.result.unlistedPoints } },
   notes: [`XY cell ${inspection.result.cell}; same unsigned distance snapshot, selected connected component only; no support filter within the region.`,
+    overlapNote(inspection.result),
     "Maximum-distance ranking is sensitive to outliers; these are inspection candidates, not confirmed defects."] } : null);
 render();

@@ -1,3 +1,4 @@
+import { preservedSourcePath } from './preserved-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -20,7 +21,7 @@ function phases(c){
 
 test('reference preparation packet retains balanced cold/warm observations, unchanged math and bounded phase provenance',async()=>{
  const m=json(`${directory}/manifest.json`),priorBytes=bytes('benchmarks/wasm-gpu-packed-nodes/manifest.json'),prior=JSON.parse(priorBytes);
- const source=(n,h)=>{if(normal(n)===h)return n;const a=m.sourceAliases[h];assert.equal(a?.original,n);assert.ok(a.archived.startsWith(`${directory}/executed-source/`)&&!a.archived.includes('..'));assert.equal(normal(a.archived),h);return a.archived;};
+ const source=(n,h)=>{if(normal(n)===h)return n;const preserved=preservedSourcePath(n,h);if(preserved)return preserved;const a=m.sourceAliases[h];assert.equal(a?.original,n);assert.ok(a.archived.startsWith(`${directory}/executed-source/`)&&!a.archived.includes('..'));assert.equal(normal(a.archived),h);return a.archived;};
  assert.equal(m.purpose,'explanatory-only-no-adoption');assert.equal(m.productionDefaultChanged,false);assert.equal(m.backendSelectionChanged,false);assert.equal(m.normalProductionArtifactsUnchanged,true);assert.deepEqual(m.normalProductionBuild,prior.finalBuild);
  assert.equal(m.timingBudget.allowed,4);assert.equal(m.timingBudget.used,4);assert.equal(m.timingBudget.remaining,0);assert.equal(m.timingBudget.coldSamples,32);assert.equal(m.timingBudget.cachedWarmFollowups,32);assert.equal(m.timingBudget.gpuTimestampQueries,0);
  assert.equal(hash(Object.entries(m.normalizedSourceFootprint).sort(([a],[b])=>a<b?-1:1).map(([n,h])=>n+'\0'+h+'\n').join('')),m.normalizedSourceFingerprintSha256);

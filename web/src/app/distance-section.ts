@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { workerBusy } from "../api";
 import { SECTION_INPUT_BYTES, validateSection, type SectionSeries, type SectionSettings } from "../distance-section";
+import type { ExpectedOverlap } from "../distance-regions";
 import { projectChanged } from "../project-change";
 import { $, download, errorText, fmt, setStatus } from "./dom";
 import { addReportSection } from "./report";
@@ -12,7 +13,7 @@ import "./distance-section.css";
 interface Snapshot { entry: Entry; cloud: Entry["cloud"]; name: string }
 interface Context {
   source: Snapshot; reference: Snapshot; regionRank: number; cellRank: number;
-  bounds: readonly number[]; isCurrent: () => boolean;
+  bounds: readonly number[]; overlap: ExpectedOverlap | null; isCurrent: () => boolean;
 }
 type Result = { source: SectionSeries; reference: SectionSeries };
 const axis = $<HTMLSelectElement>("regions-section-axis"), length = $<HTMLInputElement>("regions-section-length"), width = $<HTMLInputElement>("regions-section-width");
@@ -117,8 +118,8 @@ $("regions-section-json").onclick=()=>{
   const summarize=(s:SectionSeries)=>({points:s.points,finitePoints:s.finitePoints,invalidPoints:s.invalidPoints,selectedPoints:s.selectedPoints,zMin:s.zMin,zMax:s.zMax});
   const c=last.context;
   download(new Blob([JSON.stringify({schema:"cloudanalyzer.distance_section.v1",source:{...describe(c.source),...summarize(last.result.source)},
-    reference:{...describe(c.reference),...summarize(last.result.reference)},regionRank:c.regionRank,cellRank:c.cellRank,cellBounds:c.bounds,settings:last.settings,
-    scope:"All finite loaded points inside a closed straight XY band, including non-exceeding points; only the selected pair, irrespective of visibility. No sampling or nearest-point height correspondence; not a registration or missing-map accuracy score."},null,2)],{type:"application/json"}),"distance-section-summary.json");
+    reference:{...describe(c.reference),...summarize(last.result.reference)},regionRank:c.regionRank,cellRank:c.cellRank,cellBounds:c.bounds,comparisonOverlap:c.overlap,settings:last.settings,
+    scope:"All finite loaded points inside a closed straight XY band, including non-exceeding points; only the selected pair, irrespective of visibility. The context band is not clipped to comparisonOverlap. No sampling or nearest-point height correspondence; not a registration or missing-map accuracy score."},null,2)],{type:"application/json"}),"distance-section-summary.json");
 };
 $("regions-section-csv").onclick=()=>{
   if(!last||!valid(last.context))return;
@@ -130,4 +131,5 @@ $("regions-section-csv").onclick=()=>{
 addReportSection("distance-section",()=>last&&valid(last.context)?{title:`Section: ${last.context.source.name} / ${last.context.reference.name}`,
   metrics:{sourcePoints:{label:"Source points in section",value:last.result.source.selectedPoints},referencePoints:{label:"Reference points in section",value:last.result.reference.selectedPoints}},
   notes:[`Region ${last.context.regionRank}, cell ${last.context.cellRank}; ${last.settings.axis.toUpperCase()} length ${last.settings.length}, width ${last.settings.width}; all loaded band points, not just threshold exceedances.`,
+    last.context.overlap ? `Parent comparison overlap XY [${last.context.overlap.join(", ")}]; the context band is not clipped to it.` : "Parent comparison uses the full loaded query cloud.",
     "Raw heights with no nearest-point correspondence. Empty bands, different sampling or different surfaces do not establish missing-map or registration accuracy."]}:null);

@@ -25,6 +25,34 @@ diagnosis. Running **Compute & locate regions** returns to one-direction output.
 Both-direction mode requires XYZ plus distances to fit within 64 MiB for each
 cloud, rather than the reference-XYZ-only limit of one-direction mode.
 
+Under **Expected overlap area**, enable **Limit comparison to a world XY
+rectangle** and enter all four bounds in the clouds' original coordinates.
+Only finite query points inside that closed rectangle contribute to measured,
+unmeasured, exceeding and region counts. Both directions use the same physical
+rectangle, with each cloud's own coordinate shift. All heights are included.
+The rectangle is supplied by the user; it does not establish that both surveys
+actually covered the area.
+
+Outside finite positions are counted as `outsideOverlap`, even when their
+distance is unknown. Invalid XYZ records remain in `invalidPositions`; the
+accounting is `points = measured + unmeasured + outsideOverlap + invalidPositions`.
+An empty review area has no measured points and an unavailable exceedance ratio,
+rather than a zero-error score. JSON retains `overlap` as
+`[minX, minY, maxX, maxY]` (or `null` for the full cloud), and QA reports retain
+the bounds and excluded counts. CSV exports contain only listed scoped rows;
+keep JSON alongside them for scope and accounting.
+
+Nearest-neighbor searches still use the full loaded reference, including points
+outside the rectangle, so a query at its edge does not lose nearby references.
+The distance colors also continue to show the full source cloud. Changing the
+rectangle invalidates the diagnosis, fine-cell inspection, section and report,
+but can reuse unchanged distance snapshots. Fine cells retain exactly the
+scoped component's points, including when excluded points share a coarse cell.
+The grid origin remains the full finite source XY minimum. Scope does not
+reduce C2C input/memory limits. Section bands remain full-pair context and can
+extend outside the rectangle; section JSON records the parent
+`comparisonOverlap` separately.
+
 The tool computes existing unsigned CPU C2C nearest-neighbor distances from the
 loaded source to the loaded reference. Points strictly above the threshold are
 grouped into eight-neighbor-connected XY cells, ranked by maximum distance,

@@ -1,3 +1,4 @@
+import { preservedSourcePath } from './preserved-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -32,6 +33,7 @@ test('shared GPU measurement packets retain executed sources, raw reports and fr
   Object.assign(aliases, JSON.parse(readFileSync(resolve(root, "benchmarks/wasm-reference-preparation/manifest.json"), "utf8")).sourceAliases);
   const source = (name, expected) => {
     try { if (normalizedHash(name) === expected) return; } catch { /* Try a preserved source version. */ }
+    if (preservedSourcePath(name, expected)) return;
     const alias = aliases[expected];
     assert.equal(alias?.original, name, `Missing executed source: ${name}`);
     assert.ok(alias.archived.startsWith('benchmarks/') && !alias.archived.includes('..'));

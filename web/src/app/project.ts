@@ -1,5 +1,6 @@
 /** Portable editing projects; source files stay external and are verified. */
 import { parseProject, projectSources, type Project, type ControlSetting, type SavedPoseGraph } from "../project";
+import { captureNamedAreas, replaceNamedAreas } from "../named-areas";
 import { matchesFile, referenceFile, sourceName, type SourceReference } from "../source-reference";
 import { vectorMap, workerBusy, exportCloud, exportMesh, prepareWorkspace, commitWorkspace, discardWorkspace } from "../api";
 import { writeProjectSnapshot, readProjectSnapshot } from "../project-snapshot";
@@ -77,7 +78,7 @@ async function cloudReference(id: number, signal: AbortSignal): Promise<SourceRe
 }
 
 export async function captureProject(signal: AbortSignal, progress = true, snapshots?: Map<number, File>, assets?: File[]): Promise<Project> {
-  const session = structuredClone(captureSession(!!snapshots)), settings = captureSettings();
+  const session = structuredClone(captureSession(!!snapshots)), settings = captureSettings(), reviewAreas = captureNamedAreas();
   if (new Set(session.clouds.map(c => c.name)).size !== session.clouds.length) throw new Error("Rename duplicate cloud files before saving a project; source names must be unique");
   const reviews = captureLaneReviews();
   const map = await captureMapProject(), captured = await captureGraphProject();
@@ -111,7 +112,7 @@ export async function captureProject(signal: AbortSignal, progress = true, snaps
   const archive = assets ? captureReviewArchive() : null;
   if (archive) assets?.push(archive);
   const reviewArchive = archive ? await referenceFile(archive,signal) : undefined;
-  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap: map, poseGraph, settings, reviews, ...(reviewArchive ? {reviewArchive} : {}) };
+  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap: map, poseGraph, settings, reviews, reviewAreas, ...(reviewArchive ? {reviewArchive} : {}) };
 }
 
 /** Stage projects before loading; graph inputs go to the graph reader. */
@@ -231,6 +232,7 @@ export async function restoreWorkspaceFiles(files: File[], extraFiles: File[] = 
     clearCloudHistory();
     for(const [i,cloud] of prepared.clouds.entries()) addEntry(cloud,{kind:"file",file:inputs[i].file,loadMaxPoints:0,displayPreview:project.session.clouds[i].displayPreview});
     renderList();takePreparedGraph(prepared.graph,project.poseGraph??undefined);takePreparedMap("project-map.json",JSON.parse(prepared.map));
+    replaceNamedAreas(project.reviewAreas ?? []);
     restoreSettings(project.settings);$("memory-apply").click();
     await applySession(project.session,true);restoreLaneReviews(project.reviews);restoreReviewDraft(draft);
     await restoreReviewArchive(archive,signal,archivedReview);
@@ -313,6 +315,7 @@ export async function completePendingProject(): Promise<void> {
     setTool(null);
     await restoreGraphProject(native, project.poseGraph ?? undefined);
     await openVectorMap("project-map.json", project.vectorMap);
+    replaceNamedAreas(project.reviewAreas ?? []);
     restoreSettings(project.settings);
     $("memory-apply").click();
     if (!clearCloudHistory()) throw new Error("Finish Undo or Redo before opening a project");

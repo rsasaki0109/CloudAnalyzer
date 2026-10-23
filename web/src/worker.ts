@@ -2187,7 +2187,7 @@ async function handle(
       const after = surface(req.after);
       let out: ReturnType<typeof computeVolume>;
       try {
-        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined);
+        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false);
       } finally { before.free(); after.free(); }
       const value: VolumeOutput = {
         added: out.added,
@@ -2203,7 +2203,7 @@ async function handle(
         millis: 0,
       };
       const transfer: Transferable[] = [];
-      if (out.matchedCells > 0) {
+      if (out.matchedCells > 0 && !req.summaryOnly) {
         const cells = out.takeCells();
         const id = nextId++;
         items.set(id, { kind: "cloud", cloud: cells, name: `volume_${label(req.before)}_${label(req.after)}` });

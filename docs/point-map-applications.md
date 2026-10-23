@@ -30,11 +30,12 @@ estimate, not a closed-solid measurement.
 
 | Use | Available workflow | Next application work |
 | --- | --- | --- |
-| Construction / earthwork | Before/After heights, cut/fill/net, compared area, missing cells, JSON/CSV | Named work areas, per-area summaries and comparison across visits |
+| Construction / earthwork | Before/After heights, named rectangles, independent per-area cut/fill/net and missing-cell summaries, project/JSON definition reuse, JSON/CSV results | Comparison across repeated visits |
 | Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence | Review decisions for change candidates and a report of confirmed/deferred updates |
 | Terrain monitoring | Height changes, sections, M3C2 with detection limits, terrain meshes | Consistent repeated-visit inputs and reports retaining registration/coverage limitations |
 
-The next-work column is planned, not implemented by the shared-area change.
+The next-work column is planned. Named area summaries reuse the current input
+pair and full-grid settings; overlapping rows are not combined into a total.
 Candidate distances and height changes do not establish causes such as erosion,
 landslides, missing map objects or construction quantities accepted for payment.
 User-defined thresholds are not automatically calibrated survey uncertainty.

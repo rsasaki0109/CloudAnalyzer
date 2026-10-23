@@ -186,6 +186,9 @@ button[aria-pressed="true"] { background: var(--accent); border-color: var(--acc
 .stats { width: 100%; border-collapse: collapse; margin: 8px 0; font-variant-numeric: tabular-nums; }
 .stats th { text-align: left; font-weight: normal; color: var(--muted); padding: 2px 0; }
 .stats td { text-align: right; padding: 2px 0; }
+.area-volume-table { min-width: 560px; }
+.area-volume-table th, .area-volume-table td { padding: 4px 6px; white-space: nowrap; overflow-wrap: normal; }
+.area-volume-table th:first-child, .area-volume-table td:first-child { width: 120px; min-width: 120px; max-width: 150px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
 .segment-table th { white-space: nowrap; padding-right: 8px; vertical-align: top; }
 .segment-table td { font-size: 11px; overflow-wrap: anywhere; }
 .segment-table .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }

@@ -145,6 +145,40 @@ All results and their screening rows publish together after the entire run;
 cancellation or settings/input edits discard partial totals, screening and masks.
 The existing serial processing, 1M-grid, 8-visit and 32-area budgets remain.
 
+## Inspect the largest screened grid cells
+
+After computing height screening, **Inspect screened cells** opens the single
+pair's cell evidence. Supplemental saved-area/visit/interval tables provide an
+**Inspect cells** button for each row. No extra analysis runs and no derived
+cloud is added. Rows with no listed exceedances have a disabled button.
+**Close cell inspection** hides the list without discarding its parent result.
+
+Each row retains at most **50** strict exceedance cells ordered by descending
+absolute original `f64` height difference, with ties by ascending row-major grid
+index. A bounded priority queue limits retained geometry while the full raster
+still contributes to aggregate counts, areas and volumes. The list reports
+listed versus unlisted exceedances; it is not complete coverage or a balanced
+sample of rise/fall. Within-band, missing, masked and outside cells are absent.
+Grid indices refer to the full union grid, not list positions or source IDs.
+
+The evidence shows original world XY cell centers, Before/After heights and
+signed differences. **Focus cell** frames the full cell square and its
+Before/After height span, using the viewer's coordinate shift. Other points
+remain visible. It does not isolate points, confirm a physical change or match
+source points. Interpolated heights remain estimates when interpolation is on.
+Cells use the row's exact bounds/support and threshold; a common observed mask
+does not mean its pairs have identical exceedances.
+
+**Save listed screened cells CSV** exports only this bounded list with context,
+unit label, threshold, cell size, listed rank, full-grid index, world XY, both
+heights, signed difference, rise/fall and unlisted count. Keep the normal summary
+JSON for input descriptors, bounds, grid/support provenance and complete totals.
+Its `heightReview` also retains `cells`, `cellLimit` and `unlistedCells`, including
+in saved-area/visit/interval JSON and the standalone report's embedded snapshot.
+These are generated raster-cell records, not raw input point coordinates.
+Changing settings/inputs, rerunning, cancelling or invalidating the result clears
+the inspector and its exports; old focus controls cannot act on a newer result.
+
 ## Named areas and independent area summaries
 
 In **Review area**, enter an **Area name** and save the current enabled rectangle
@@ -283,7 +317,8 @@ length and SHA-256, but does not embed the binary. Save **common cells mask**
 separately and retain it with the JSON to identify the exact full-grid cells;
 apply each row's bounds separately. The mask hash identifies a cell mask, not
 the source point contents. Runtime IDs and names are not content fingerprints.
-The report contains no point coordinates and does not register surveys,
+The report contains no raw input point coordinates; optional screened grid-cell
+coordinates are retained in its JSON. It does not register surveys,
 calibrate uncertainty, certify field accuracy or approve quantities for payment.
 
 The download is available only for the current valid completed comparison.

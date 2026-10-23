@@ -30,3 +30,11 @@ test('constant reference and interpolated estimates are explicit instead of impl
  assert.ok(html.includes('enabled (estimated heights may be included)'));
  assert.ok(html.includes('constant baseline is a plane, not an observed survey footprint'));
 });
+test('screened report preserves separate total and screened tables, rule and exact embedded snapshot',()=>{
+ const h={threshold:1,riseCells:1,fallCells:1,withinCells:0,riseArea:1,fallArea:1,riseVolume:3,fallVolume:2};
+ const snapshot={...base,settings:{...base.settings,heightThreshold:1},rows:[{...row,heightReview:h},{...row,matchedCells:0,comparisonAvailable:false,heightReview:{...h,riseCells:0,fallCells:0,withinCells:0,riseVolume:0,fallVolume:0}}],intervals:{scope:'direct',rows:[{...row,heightReview:h,intervalIndex:1,fromVisitIndex:1,toVisitIndex:2,fromId:8,toId:9,fromVisit:'A',toVisit:'B'}]}};
+ const html=volumeVisitReport(snapshot);assert.deepEqual(embedded(html),snapshot);
+ assert.ok(html.includes('id="baseline-screening"'));assert.ok(html.includes('id="interval-screening"'));assert.ok(html.includes('strict ±1 ft'));
+ assert.ok(html.includes('full height differences'));assert.ok(html.includes('not calibrated survey uncertainty'));
+ const screened=html.match(/<table id="baseline-screening">([\s\S]*?)<\/table>/)[1];assert.equal((screened.match(/<td>Unavailable<\/td>/g)||[]).length,5);
+});

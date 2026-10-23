@@ -1,6 +1,7 @@
 /** Small portable world-XY area definitions; no clouds or calculated results. */
 import { validateExpectedOverlap, type ExpectedOverlap } from "./distance-regions.ts";
 import { projectChanged } from "./project-change.ts";
+import type { HeightReview } from "./protocol.ts";
 
 export const MAX_NAMED_AREAS = 32;
 export interface NamedArea { name: string; bounds: ExpectedOverlap }
@@ -34,16 +35,21 @@ export function replaceNamedAreas(value: unknown): void {
 export function onNamedAreasChanged(listener: () => void): void { listeners.add(listener); }
 
 export interface AreaVolumeRow extends NamedArea {
+  heightReview?: HeightReview;
   added: number; removed: number; addedArea: number; removedArea: number;
   matchedCells: number; totalCells: number; outsideRegionCells: number;
 }
-export function areaVolumesCsv(rows: AreaVolumeRow[], unit: string): string {
+export function areaVolumesCsv(rows: AreaVolumeRow[], unit: string, screening = rows.some(r => !!r.heightReview)): string {
   const label = (value: string) => '"' + (/^[=+\-@]/.test(value) ? "'" + value : value).replaceAll('"', '""') + '"';
-  const output = ["area_name,min_x,min_y,max_x,max_y,coordinate_unit,comparison_available,fill,cut,net,fill_area,cut_area,compared_cells,uncompared_cells,outside_cells"];
+  const output = ["area_name,min_x,min_y,max_x,max_y,coordinate_unit,comparison_available,fill,cut,net,fill_area,cut_area,compared_cells,uncompared_cells,outside_cells" +
+    (screening ? ",height_threshold,rise_cells,fall_cells,within_cells,rise_area,fall_area,rise_volume,fall_volume,screened_net" : "")];
   for (const r of rows) {
     const quantities = r.matchedCells ? [r.added, r.removed, r.added - r.removed, r.addedArea, r.removedArea] : ["", "", "", "", ""];
+    const h = r.heightReview;
+    const screened = !h ? Array<string>(9).fill("") : [h.threshold, h.riseCells, h.fallCells, h.withinCells,
+      ...(r.matchedCells ? [h.riseArea, h.fallArea, h.riseVolume, h.fallVolume, h.riseVolume - h.fallVolume] : ["", "", "", "", ""])];
     output.push([label(r.name), ...r.bounds, label(unit), r.matchedCells > 0, ...quantities,
-      r.matchedCells, r.totalCells - r.matchedCells, r.outsideRegionCells].join(","));
+      r.matchedCells, r.totalCells - r.matchedCells, r.outsideRegionCells, ...(screening ? screened : [])].join(","));
   }
   return output.join("\n") + "\n";
 }

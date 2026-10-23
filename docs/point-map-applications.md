@@ -32,7 +32,7 @@ estimate, not a closed-solid measurement.
 | --- | --- | --- |
 | Construction / earthwork | Before/After heights, named rectangles, independent per-area cut/fill/net and missing-cell summaries, project/JSON definition reuse, JSON/CSV results, fixed-baseline repeated-visit comparisons on one union grid, optional intersection of raw observed cells with exportable mask, direct adjacent-visit cut/fill in an explicit order | Independent field validation and real-survey quantity workflows |
 | Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence; independent human reviewed/deferred records with comments and JSON/CSV/QA exports; read-only archives and HTML reports without clouds; A/B status/comment comparisons for identical archived diagnoses | Independent real-map validation and review across different diagnoses |
-| Terrain monitoring | Height changes, single-pair user-threshold screening with rise/fall/within-band counts and affected areas/volumes, sections, M3C2 with detection limits, terrain meshes, repeated-visit and direct interval summaries with common-observed-cell support | Independent field validation and uncertainty-aware monitoring |
+| Terrain monitoring | Height changes, user-threshold screening for single pairs, saved areas and repeated/direct visits with rise/fall/within-band counts and affected areas/volumes, sections, M3C2 with detection limits, terrain meshes, repeated-visit and direct interval summaries with common-observed-cell support | Independent field validation and uncertainty-aware monitoring |
 
 Construction and monitoring comparisons can export a standalone **volume report
 HTML** with baseline and optional direct interval tables, loaded-data scope,

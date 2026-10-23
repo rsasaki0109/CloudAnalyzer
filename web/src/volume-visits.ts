@@ -5,9 +5,10 @@ export const MAX_VOLUME_VISITS = 8;
 export interface VisitVolumeRow extends AreaVolumeRow { visit: string; visitIndex: number }
 export const visitVolumeScope = "Each visit is compared independently with the fixed Before baseline on one shared union grid. Visit order is user-controlled, initially loaded order; no acquisition dates are inferred. Whole cells selected by center; no fractional clipping. Missing heights are excluded, never zero change. Common grid does not imply common observed cells: support may differ even when counts match. Do not subtract totals to infer between-visit earthwork. Overlapping areas must not be summed. Optional interpolation uses full loaded surfaces and can fill unobserved cells. Loaded/decimated data only; no registration, unit conversion, closed-solid volume or survey-accuracy guarantee. Results are 2.5D.";
 export function visitVolumesCsv(rows: VisitVolumeRow[], unit: string, support?: VisitSupport): string {
+  const screening = rows.some(r => !!r.heightReview);
   const label = (s: string) => '"' + (/^[=+\-@]/.test(s) ? "'" + s : s).replaceAll('"', '""') + '"';
-  const header = "visit_index,visit_name," + areaVolumesCsv([], unit).trim() + (support ? ",support_mode,common_mask_sha256" : "");
-  return header + "\n" + rows.map(row => `${row.visitIndex},${label(row.visit)},${areaVolumesCsv([row], unit).trimEnd().split("\n")[1]}${support ? "," + support.mode + "," + (support.sha256 ?? "") : ""}\n`).join("");
+  const header = "visit_index,visit_name," + areaVolumesCsv([], unit, screening).trim() + (support ? ",support_mode,common_mask_sha256" : "");
+  return header + "\n" + rows.map(row => `${row.visitIndex},${label(row.visit)},${areaVolumesCsv([row], unit, screening).trimEnd().split("\n")[1]}${support ? "," + support.mode + "," + (support.sha256 ?? "") : ""}\n`).join("");
 }
 
 export type VisitSupportMode = "independent" | "common_observed";
@@ -25,8 +26,9 @@ export interface IntervalVolumeRow extends AreaVolumeRow {
 }
 export const intervalVolumeScope = "Direct after-minus-before height comparison for adjacent visits in the explicit order, not subtraction of baseline fill/cut totals. Same raw observed support mask across baseline and every selected visit, shared grid, height mode and named bounds. Point clouds only; interpolation off; full cell areas selected by closed centers. Missing-in-any-input cells are excluded. Empty support is unavailable, not zero change. Ordering is user-controlled, initially loaded order; no acquisition dates are inferred. Loaded/possibly decimated 2.5D surfaces, not closed-solid volumes, registration, physical-ground matching or field-accuracy proof. Overlapping areas and interval gross fill/cut must not be summed as unique earthwork.";
 export function intervalVolumesCsv(rows: readonly IntervalVolumeRow[], unit: string, support: VisitSupport): string {
+  const screening = rows.some(r => !!r.heightReview);
   const label = (s: string) => '"' + (/^\s*[=+\-@]/.test(s) ? "'" + s : s).replaceAll('"', '""') + '"';
-  const header = "interval_index,from_visit_index,from_cloud_id,from_visit_name,to_visit_index,to_cloud_id,to_visit_name," + areaVolumesCsv([], unit).trim() + ",support_mode,common_mask_sha256";
+  const header = "interval_index,from_visit_index,from_cloud_id,from_visit_name,to_visit_index,to_cloud_id,to_visit_name," + areaVolumesCsv([], unit, screening).trim() + ",support_mode,common_mask_sha256";
   return header + "\n" + rows.map(row => [row.intervalIndex, row.fromVisitIndex, row.fromId, label(row.fromVisit), row.toVisitIndex, row.toId, label(row.toVisit),
-    areaVolumesCsv([row], unit).trimEnd().split("\n")[1], support.mode, support.sha256 ?? ""].join(",") + "\n").join("");
+    areaVolumesCsv([row], unit, screening).trimEnd().split("\n")[1], support.mode, support.sha256 ?? ""].join(",") + "\n").join("");
 }

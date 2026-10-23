@@ -97,25 +97,25 @@ def confusion(tp: int, fp: int, fn: int, tn: int) -> dict:
                 iou=ratio(tp, tp + fp + fn), non_target_false_removal_rate=ratio(fp, fp + tn))
 
 
-def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidates: bytes,
-             report: dict, pairing: dict) -> dict:
-    """Read labels only as a reference for a previously frozen result."""
-    check(isinstance(report, dict) and isinstance(pairing, dict), "report and pairing must be JSON objects")
+def validate_native_result(scan: bytes, mask: bytes, retained: bytes, candidates: bytes,
+                           report: dict) -> tuple[bytearray, list, float]:
+    """Validate native provenance/records independently of annotation availability."""
+    check(isinstance(report, dict), "report must be a JSON object")
     check(bool(scan) and len(scan) % 16 == 0 and len(scan) <= MAX_POINTS * 16, "invalid single-scan XYZI records")
     count = len(scan) // 16
-    check(len(labels) == count * 4, "one uint32 annotation is required per original point")
-    validate_pairing(pairing, scan, labels)
     check(report.get("model") == "SalsaNext SemanticKITTI20" and report.get("backend") == "wgpu" and
           report.get("experimental") is True and report.get("device_selection") == "discrete_gpu_0" and
           report.get("source_weight_sha256") == CHECKPOINT and report.get("onnx_sha256") == ONNX and
           report.get("source_modified") is False and report.get("class_names") == list(CLASSES), "unsupported model result")
     profile = report.get("sensor_profile", {})
+    check(isinstance(profile, dict), "sensor profile must be a JSON object")
     check(all(profile.get(k) == v for k, v in dict(height=64, width=2048, fov_up_deg=3, fov_down_deg=-25, max_range_m=100,
                                                 remission="unchanged normalized0..1").items()), "unsupported sensor profile")
     check(report.get("input_sha256") == sha(scan), "result scan SHA256 differs")
     check(len(mask) == count and all(v in (0, 1) for v in mask), "invalid binary source-order mask")
     check(report.get("mask_bytes") == count, "mask length differs from report")
     selected = report.get("selection", {})
+    check(isinstance(selected, dict), "selection must be a JSON object")
     targets, threshold = selected.get("target_classes"), selected.get("threshold")
     check(isinstance(targets, list) and bool(targets) and all(c in CLASSES[1:] for c in targets), "invalid target classes")
     check(type(threshold) in (int, float) and math.isfinite(threshold) and 0 <= threshold <= 1, "invalid threshold")
@@ -132,6 +132,18 @@ def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidate
     removed_expected = b"".join(scan[i * 16:(i + 1) * 16] for i, remove in enumerate(mask) if remove)
     check(retained == kept_expected and candidates == removed_expected, "result records differ from exact source split")
     check(report.get("retained_sha256") == sha(retained) and report.get("candidate_sha256") == sha(candidates), "output SHA256 differs")
+    return classified, targets, threshold
+
+
+def evaluate(scan: bytes, labels: bytes, mask: bytes, retained: bytes, candidates: bytes,
+             report: dict, pairing: dict) -> dict:
+    """Read labels only as a reference for a previously frozen result."""
+    check(isinstance(report, dict) and isinstance(pairing, dict), "report and pairing must be JSON objects")
+    check(bool(scan) and len(scan) % 16 == 0 and len(scan) <= MAX_POINTS * 16, "invalid single-scan XYZI records")
+    count = len(scan) // 16
+    check(len(labels) == count * 4, "one uint32 annotation is required per original point")
+    validate_pairing(pairing, scan, labels)
+    classified, targets, threshold = validate_native_result(scan, mask, retained, candidates, report)
     return score_annotations(scan, labels, mask, retained, candidates, classified, targets, threshold, pairing)
 
 

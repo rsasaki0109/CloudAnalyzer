@@ -13,7 +13,7 @@ import struct
 import sys
 
 from evaluate_removal import (CLASSES, MAX_POINTS, bounded_read, check, evaluate,
-                              projected_owners, score_annotations, sha)
+                              projected_owners, score_annotations, sha, validate_native_result)
 
 RADIUS = .15
 SEPARATION = .02
@@ -22,14 +22,10 @@ CONFLICT = struct.unpack('<f', struct.pack('<f', .9))[0]
 LIMIT = 256
 
 
-def reference_completion(scan: bytes, tensor: bytes, baseline: bytes, targets=(1,), threshold=.9) -> tuple[bytes, dict]:
-    """Scalar independent projection/grid oracle, including the finite work cap."""
+def project_scan(scan: bytes):
+    """Independent nearest-owner projection shared by the scalar checks."""
+    check(bool(scan) and len(scan) % 16 == 0 and len(scan) <= MAX_POINTS * 16, 'invalid single-scan XYZI records')
     points = list(struct.iter_unpack('<4f', scan))
-    threshold = struct.unpack('<f', struct.pack('<f', threshold))[0]
-    check(bool(points) and len(points) <= MAX_POINTS and len(baseline) == len(points), 'source/mask budget mismatch')
-    check(len(tensor) == 20 * 64 * 2048 * 4, 'invalid probability tensor shape')
-    values = array('f'); values.frombytes(tensor)
-    if sys.byteorder != 'little': values.byteswap()
     owners, pixels, ranges = [-1] * 131072, [-1] * len(points), [math.inf] * 131072
     low, up = math.radians(-25), math.radians(3)
     for i, (x,y,z,intensity) in enumerate(points):
@@ -43,6 +39,34 @@ def reference_completion(scan: bytes, tensor: bytes, baseline: bytes, targets=(1
         row = min(63, math.floor((up-pitch)/(up-low)*64))
         p = row*2048+col; pixels[i]=p
         if r < ranges[p]: owners[p],ranges[p]=i,r
+    return points, owners, pixels, ranges
+
+
+def reference_input(scan: bytes) -> bytes:
+    """Rebuild the native little-endian f32 input, including f32 rounding steps."""
+    points, owners, _, ranges = project_scan(scan)
+    f32 = lambda value: struct.unpack('<f', struct.pack('<f', value))[0]
+    mean = tuple(map(f32, (12.12, 10.88, .23, -1.04, .21)))
+    std = tuple(map(f32, (12.32, 11.47, 6.91, .86, .16)))
+    values = array('f', [0]) * (5 * 131072)
+    for pixel, owner in enumerate(owners):
+        if owner < 0: continue
+        for channel, value in enumerate((f32(ranges[pixel]), *points[owner])):
+            values[channel * 131072 + pixel] = f32(f32(value - mean[channel]) / std[channel])
+    if sys.byteorder != 'little': values.byteswap()
+    return values.tobytes()
+
+
+def reference_completion(scan: bytes, tensor: bytes, baseline: bytes, targets=(1,), threshold=.9, *, class_counts=None) -> tuple[bytes, dict]:
+    """Scalar independent projection/grid oracle, including the finite work cap."""
+    check(type(threshold) in (int, float) and math.isfinite(threshold) and 0 <= threshold <= 1, 'invalid baseline threshold')
+    check(bool(targets) and all(type(c) is int and 0 < c < len(CLASSES) for c in targets), 'invalid target classes')
+    points, owners, pixels, _ = project_scan(scan)
+    threshold = struct.unpack('<f', struct.pack('<f', threshold))[0]
+    check(len(baseline) == len(points), 'source/mask budget mismatch')
+    check(len(tensor) == 20 * 64 * 2048 * 4, 'invalid probability tensor shape')
+    values = array('f'); values.frombytes(tensor)
+    if sys.byteorder != 'little': values.byteswap()
     classes, scores = {}, {}
     grid = defaultdict(list)
     cell = lambda p: tuple(math.floor(v/RADIUS) for v in p[:3])
@@ -56,6 +80,10 @@ def reference_completion(scan: bytes, tensor: bytes, baseline: bytes, targets=(1
         check(bool(baseline[i]) == (c in targets and scores[i] >= threshold), 'baseline mask does not match probabilities')
         if scores[i] >= CONFLICT: grid[cell(points[i])].append(i)
     check(all(not selected or i in classes for i,selected in enumerate(baseline)), 'baseline selects an unowned return')
+    if class_counts is not None:
+        actual_counts = [0] * len(CLASSES)
+        for predicted in classes.values(): actual_counts[predicted] += 1
+        check(class_counts == actual_counts, 'baseline class counts do not match probabilities')
     distance = lambda a,b: sum((float(a[k])-float(b[k]))**2 for k in range(3))
     result = bytearray(baseline)
     counts = dict(distance_rejected=0,crowded_rejected=0,conflict_rejected=0,support_rejected=0)
@@ -87,20 +115,29 @@ def reference_completion(scan: bytes, tensor: bytes, baseline: bytes, targets=(1
 
 def verify(scan: bytes, base: Path, result: Path, labels: bytes | None = None, pairing: dict | None = None) -> dict:
     report_raw=bounded_read(base/'report.json',65536);report=json.loads(report_raw)
+    check(isinstance(report, dict), 'native baseline report must be a JSON object')
     check(report['input_sha256']==sha(scan) and report['class_names']==list(CLASSES), 'native baseline source/classes differ')
     baseline=bounded_read(base/'candidate-mask.u8',MAX_POINTS)
+    validate_native_result(scan, baseline, bounded_read(base/'retained.bin',MAX_POINTS*16),
+                           bounded_read(base/'candidates.bin',MAX_POINTS*16), report)
     tensor=bounded_read(base/'probabilities.f32',20*131072*4)
     original_input=bounded_read(base/'input.f32',5*131072*4)
+    check(original_input == reference_input(scan), 'baseline debug input does not match this raw scan')
     metadata=json.loads(bounded_read(result/'completion-report.json',65536))
+    check(isinstance(metadata, dict) and isinstance(metadata.get('base'), dict), 'completion report/base must be JSON objects')
     check(metadata.get('app')=='CloudAnalyzer LiDAR surface completion experiment' and metadata.get('version')==1, 'unsupported completion report')
     check(metadata['input_sha256']==sha(scan) and metadata['source_modified'] is False, 'completion source differs')
     check(metadata['base']['report_sha256']==sha(report_raw) and metadata['base']['probabilities_sha256']==sha(tensor)
           and metadata['base']['input_tensor_sha256']==sha(original_input) and metadata['base']['candidate_mask_sha256']==sha(baseline), 'completion baseline hashes differ')
+    check(all(metadata['base'][key] == report[key] for key in ('onnx_sha256', 'weights_sha256'))
+          and all(metadata['base'][key] == report['selection'][key] for key in ('target_classes', 'threshold')),
+          'completion model/selection differs from the native baseline')
     policy=metadata['policy']
     check(policy==dict(id='near-surface-two-seeds-v1',radius_m=RADIUS,min_seed_separation_m=SEPARATION,
                       seed_score=SEED,conflict_score=CONFLICT,max_neighborhood_owners=LIMIT), 'unsupported completion policy')
     targets=tuple(CLASSES.index(name) for name in report['selection']['target_classes'])
-    expected,counts=reference_completion(scan,tensor,baseline,targets,report['selection']['threshold'])
+    expected,counts=reference_completion(scan,tensor,baseline,targets,report['selection']['threshold'],
+                                        class_counts=report['selection']['class_counts'])
     actual=bounded_read(result/'completed-mask.u8',MAX_POINTS)
     check(actual==expected and metadata['counts']==counts, 'Rust/Python completion mask or rejection counts differ')
     added=bytes(a and not b for a,b in zip(actual,baseline))
@@ -111,6 +148,7 @@ def verify(scan: bytes, base: Path, result: Path, labels: bytes | None = None, p
     check(bounded_read(result/'retained.bin',MAX_POINTS*16)==kept and bounded_read(result/'candidates.bin',MAX_POINTS*16)==removed,'completion changes source records')
     check(metadata['retained_sha256']==sha(kept) and metadata['candidate_sha256']==sha(removed),'completion output hashes differ')
     output={'app':'CloudAnalyzer surface completion check','version':1,'independent_mask_and_counts_exact':True,
+            'baseline_metadata_and_records_checked':True,'preprocessing_byte_exact':True,
             'source_record_split_exact':True,'baseline_report_sha256':sha(report_raw),'completion_report_sha256':sha(bounded_read(result/'completion-report.json',65536)),
             'counts':counts,'hashes':{'source':sha(scan),'probabilities':sha(tensor),'mask':sha(actual)}}
     if labels is not None:

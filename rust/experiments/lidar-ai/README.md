@@ -253,6 +253,18 @@ mask, rejection counts, hashes and exact source-record split:
 python rust/experiments/lidar-ai/verify_completion.py --scan scan.bin --base notes/frozen-native-debug-result --result notes/new-completion --out notes/new-completion-check.json
 ```
 
+Verification without annotation files also checks the native model/profile,
+projection and class counts, exact baseline records, completion model/selection
+bindings, and the debug input reconstructed from the scan with native f32 rounding.
+Rehashing a substituted debug input does not make it valid. This checks a frozen
+result's consistency; it does not run inference or measure semantic accuracy.
+
+The CPU-only Rust/Python integration test needs no model, GPU, NumPy or scan
+download. Build `ca-lidar-complete` as above, then set `CA_LIDAR_COMPLETE_BIN` to
+its absolute executable path when running the Python unit tests. CI runs this
+test against the actual CPU binary and synthetic records; without that variable,
+only this integration case is skipped.
+
 Optionally supply **both** `--labels frame.label --pairing pairing.json` to score
 the frozen completed mask against annotations, using the pairing format above.
 The original `evaluate_removal.py` command still rejects non-nearest removal;

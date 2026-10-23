@@ -58,3 +58,9 @@ For general 3D discrepancy candidates and an explicit review rectangle, use
 [distance discrepancy regions](distance-regions.md). M3C2 remains available in
 the distance tool when a normal-direction change and its level of detection are
 needed; neither C2C nor raw height difference alone establishes survey accuracy.
+
+The [recorded browser smoke check](../benchmarks/map-coverage/surface-analysis.json)
+uses six synthetic Before cells and five After cells: fill 2, cut 1, net 1,
+with one uncompared cell. It also verifies signed CSV, input roles, stale-result
+invalidation and cancellation. This is known-cell arithmetic and workflow
+validation, not an independent survey-accuracy result.

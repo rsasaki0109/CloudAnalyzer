@@ -53,6 +53,14 @@ reduce C2C input/memory limits. Section bands remain full-pair context and can
 extend outside the rectangle; section JSON records the parent
 `comparisonOverlap` separately.
 
+The [overlap smoke receipt](../benchmarks/map-coverage/surface-analysis.json)
+records an explicit 50 × 50 review rectangle on unchanged alternating-index
+Autoware survey subsets. Forward accounting is 35,054 measured plus 843,866
+outside; reverse is 35,049 plus 843,872, with no invalid or unmeasured records.
+There are 355/371 threshold exceedances inside that rectangle. Both original
+distance snapshots are reused; these are review counts, not confirmed changes
+between independent surveys.
+
 The tool computes existing unsigned CPU C2C nearest-neighbor distances from the
 loaded source to the loaded reference. Points strictly above the threshold are
 grouped into eight-neighbor-connected XY cells, ranked by maximum distance,

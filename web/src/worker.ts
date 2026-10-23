@@ -2200,7 +2200,7 @@ async function handle(
       const after = surface(req.after);
       let out: ReturnType<typeof computeVolume>;
       try {
-        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false, req.sharedGrid ? new Float64Array(req.sharedGrid) : undefined, req.supportMask);
+        out = computeVolume(before, after, req.cell, req.height, req.fillEmpty, req.region ? new Float64Array(req.region) : undefined, req.summaryOnly ?? false, req.sharedGrid ? new Float64Array(req.sharedGrid) : undefined, req.supportMask, req.heightThreshold);
       } finally { before.free(); after.free(); }
       const value: VolumeOutput = {
         added: out.added,
@@ -2216,6 +2216,13 @@ async function handle(
         millis: 0,
       };
       const transfer: Transferable[] = [];
+      const review = out.takeHeightReview();
+      if (review) {
+        try { value.heightReview = { threshold: review.threshold, riseCells: review.riseCells, fallCells: review.fallCells,
+          withinCells: review.withinCells, riseArea: review.riseArea, fallArea: review.fallArea,
+          riseVolume: review.riseVolume, fallVolume: review.fallVolume }; }
+        finally { review.free(); }
+      }
       if (out.matchedCells > 0 && !req.summaryOnly) {
         const cells = out.takeCells();
         const id = nextId++;

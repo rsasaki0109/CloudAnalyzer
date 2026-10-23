@@ -1,0 +1,176 @@
+{
+  "source_commit": "c5b0ffea64f039ce92409575a0fbfa91a6c9278e",
+  "normalized_source_sha256": {
+    "web/src/lidar-ai-review.ts": "644878503140223ee6afa8568d544e562268a0f15e69a2b42a50fea5aba1fc9b",
+    "web/src/lidar-completion-review.ts": "fef3d945efe3e8786e2aa7ac49bdcab42c854dad49c1167573f5068b3d87107f",
+    "web/src/app/lidar-ai.ts": "b0b3492cf191756566850df89a098b6476defd573d1eac72f52bafff9e5aaf53",
+    "web/index.html": "7dd6836642ec837d94bae451b81c90f0b4cd89e95975943f087e6f29c57697b9"
+  },
+  "build_assets_sha256": {
+    "c2c-worker-WJhdjU5B.js": "f143bfb8e616aad0a8017af2b7d4701c3b96b13cb5639ed2a3ce9c6c7b2f888f",
+    "ca_wasm_bg-CknP-APk.wasm": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216",
+    "index-C2OcIxsO.js": "e96254b53f0f3326068df300e999d5f04fbaef9ce1b615d0eafad3a8e1423769",
+    "index-DpTvHSKO.css": "a7178946033cc00692b6b33ebaa973fbe954eb5c613da2ee0d70273557b7233d",
+    "worker-CGqpRHSq.js": "68e26fbe4575d90e55b1dfb5b6d1140136f5c0daed921e2d69dd92cce2c8fc90"
+  },
+  "reader_verification": {
+    "normalized_source_sha256": {
+      "web/src/lidar-ai-review.ts": "644878503140223ee6afa8568d544e562268a0f15e69a2b42a50fea5aba1fc9b",
+      "web/src/lidar-completion-review.ts": "fef3d945efe3e8786e2aa7ac49bdcab42c854dad49c1167573f5068b3d87107f",
+      "web/src/app/lidar-ai.ts": "b0b3492cf191756566850df89a098b6476defd573d1eac72f52bafff9e5aaf53",
+      "web/index.html": "7dd6836642ec837d94bae451b81c90f0b4cd89e95975943f087e6f29c57697b9"
+    },
+    "all_six_exact": true,
+    "full_probability_rule_rerun": false,
+    "annotations_read": false,
+    "runs": [
+      {
+        "frame": "000000",
+        "group": "development",
+        "source_sha256": "92e945f37a6cd4a58acc8aa15b275af2e271ecf69c0a44a311d888524473c451",
+        "completion_report_sha256": "71223f6370279ff86cd1678a9f583848b7130e721d43762cb4bc5ed1dd43b674",
+        "completed_candidates_sha256": "e89b20eb4f8658cd0a918fb1c2853164d98f7882af0317e4047567eabb156d7e",
+        "completed_retained_sha256": "6265b7304391cc7d22c853672f1e11031b8a541d9d3b09a1b4adb344d6277724",
+        "added_records_sha256": "88a9098cc4eab76231fbfe6fbd907f02a3797266b4974e68a7a55179f87d8202",
+        "counts": {
+          "baseline": 1143,
+          "added": 159,
+          "completed": 1302
+        },
+        "exact_source_record_split": true
+      },
+      {
+        "frame": "001000",
+        "group": "development",
+        "source_sha256": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+        "completion_report_sha256": "0b9519d31ff851929489bb55532ef5181574d22b35932208586b7735f2941bae",
+        "completed_candidates_sha256": "b5fa2786be38091981b8a2e3ca7ae2a0a965084f59a64ce14d8e36d54012797f",
+        "completed_retained_sha256": "d33880b6cbc884eeb37cbd45bece304c61f5a0f2566c2de861b4f107d12e4315",
+        "added_records_sha256": "e4ecc9324ce1fe7e17cb6add96781b8ca4e549531b134ece05c4be5c76bcf098",
+        "counts": {
+          "baseline": 1636,
+          "added": 293,
+          "completed": 1929
+        },
+        "exact_source_record_split": true
+      },
+      {
+        "frame": "002000",
+        "group": "development",
+        "source_sha256": "15b8589cc1d203966b8055a159178bb2706e9eec491c6d840c4ec460d65532a4",
+        "completion_report_sha256": "7248e6ce8109b04fd39e50d17df7169306638fc202a8939cda1d38bb6304cd35",
+        "completed_candidates_sha256": "75802116ab656ef4e1db3c2d0f4ce56bd21727cb22d205691cac8d2b8f7b16dd",
+        "completed_retained_sha256": "44018ddfce814c95a76b54d2d9b78ccf0a415f76386e14c1e71ee6650ebb10f5",
+        "added_records_sha256": "84121de348b85f10ddd9df9757d372b39645b50ef772997b1624ce7a227ced3a",
+        "counts": {
+          "baseline": 2155,
+          "added": 161,
+          "completed": 2316
+        },
+        "exact_source_record_split": true
+      },
+      {
+        "frame": "000500",
+        "group": "additional",
+        "source_sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+        "completion_report_sha256": "fc6edf4cf31a4e35020acb4ccc3b580da8bcdb87c6b6a5ee4974a16a79300058",
+        "completed_candidates_sha256": "840bc0f59d3e754ecff867c98ad9a7ef1346124a70049686c97a33cfc728c4c9",
+        "completed_retained_sha256": "96692866fae8f1b55b9e02294307ed1f6d68a1ed292405b377a0f766792796ea",
+        "added_records_sha256": "8fbac4cbab94fcfc6d45efc55f5f053a6b247476e23cd441610a84a64552c662",
+        "counts": {
+          "baseline": 4150,
+          "added": 492,
+          "completed": 4642
+        },
+        "exact_source_record_split": true
+      },
+      {
+        "frame": "001500",
+        "group": "additional",
+        "source_sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+        "completion_report_sha256": "7807c3f2387c3fbd6a3dc16cdbee7bb6f81d6542482df8d602f4fd027a3f5003",
+        "completed_candidates_sha256": "8c0f00464ceaa86b7afc2cfde0ff10ca17747121d2b88e9384dfd1af4ccaef8f",
+        "completed_retained_sha256": "6553f0db5960745d6782cae29bed039f0f1acee39e0f0fab8f001209c3c14892",
+        "added_records_sha256": "682551f6a8897af0e36639e5adbc4b9e4c1033f008f8a6dcc86b2a311953fc2a",
+        "counts": {
+          "baseline": 1103,
+          "added": 177,
+          "completed": 1280
+        },
+        "exact_source_record_split": true
+      },
+      {
+        "frame": "002500",
+        "group": "additional",
+        "source_sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+        "completion_report_sha256": "35123f95bcd63332271116c59371de575b641e26d6ff4b9bb9616974fdb96d0e",
+        "completed_candidates_sha256": "3d0695377a1c8df71e95350c8e95b72c660b75023148d7c6b4a8beea2299d24c",
+        "completed_retained_sha256": "81f45bd64554340613d540d440835a2e07481e14aadaa9963c721dd9c51ea4a6",
+        "added_records_sha256": "820642917d1c210c0b31a58795303e2a872fdea6be6a53ba74482513145edf4c",
+        "counts": {
+          "baseline": 4793,
+          "added": 708,
+          "completed": 5501
+        },
+        "exact_source_record_split": true
+      }
+    ]
+  },
+  "actual_browser_runs": [
+    {
+      "frame": "001000",
+      "completion_report_sha256": "0b9519d31ff851929489bb55532ef5181574d22b35932208586b7735f2941bae",
+      "receipt": {
+        "sourceSha256": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+        "baseline": 1636,
+        "added": 293,
+        "completed": 1929,
+        "exactDownloads": true,
+        "sourceUnchanged": true,
+        "undoRedoAddedView": true,
+        "browserErrors": [],
+        "fullProbabilityRuleRerun": false,
+        "semanticAccuracyMeasuredByBrowser": false
+      },
+      "screenshot": "001000-highlight.png",
+      "screenshot_sha256": "f26dcb5d234491f2887d74fa77845884942db9a5418896a4597e2fb54f5411fe"
+    },
+    {
+      "frame": "002500",
+      "completion_report_sha256": "35123f95bcd63332271116c59371de575b641e26d6ff4b9bb9616974fdb96d0e",
+      "receipt": {
+        "sourceSha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+        "baseline": 4793,
+        "added": 708,
+        "completed": 5501,
+        "exactDownloads": true,
+        "sourceUnchanged": true,
+        "undoRedoAddedView": true,
+        "browserErrors": [],
+        "fullProbabilityRuleRerun": false,
+        "semanticAccuracyMeasuredByBrowser": false
+      },
+      "screenshot": "002500-highlight.png",
+      "screenshot_sha256": "155118df357e56cfcbe4b55521c96842b76b96a105330cc8786adddd733ef570"
+    }
+  ],
+  "local_checks": {
+    "web_unit_tests_passed": 113,
+    "typescript_vite_build": "passed",
+    "completion_browser_cases_passed": 4,
+    "native_browser_cases_passed": 6,
+    "c2c_browser_cases_passed": 4,
+    "lane_review_browser_cases_passed": 2,
+    "additional_actual_frame_completion_passed": true,
+    "test_note": "A Playwright disabled-option matcher assertion was changed to check the DOM disabled property; the zero-addition/native-switch case and all four completion cases then passed"
+  },
+  "frozen_completion_packet": {
+    "path": "../near-surface-completion",
+    "frozen_completion_sha256": "b7f732428ea3269a3ae03364b493715cc5507c38723ebb7094bd5c98cf1b480b"
+  },
+  "inference_completion_policy_defaults_or_outputs_changed": false,
+  "annotations_to_browser": false,
+  "full_probability_rule_rerun_in_browser": false,
+  "browser_establishes_semantic_accuracy": false,
+  "raw_data_models_or_generated_point_files_redistributed": false
+}

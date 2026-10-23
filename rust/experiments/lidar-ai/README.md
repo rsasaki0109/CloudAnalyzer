@@ -237,6 +237,10 @@ policy. Use the native command or independent Python oracle for those checks.
 The browser runs no inference and receives no annotations. Completion can
 increase false removals; the nearest-only default remains unchanged.
 
+[Completion review examples and failure traces](../../../benchmarks/lidar-ai/completion-review/README.md)
+show actual browser comparisons and why the earlier two failed cases remain
+experimental.
+
 An independent standard-library Python projector/grid oracle checks the complete
 mask, rejection counts, hashes and exact source-record split:
 

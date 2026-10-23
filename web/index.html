@@ -375,23 +375,27 @@
         </details>
         <button id="volume-run" class="primary" disabled>Compute volume</button>
         <details id="height-review-options" class="options">
-          <summary>Height-change screening (single Before / After)</summary>
-          <label class="check"><input id="height-review-enabled" type="checkbox" /> Also screen height differences</label>
+          <summary>Height-change screening</summary>
+          <label class="check"><input id="height-review-enabled" type="checkbox" /> Screen single Before / After</label>
+          <label class="check"><input id="height-review-batch-enabled" type="checkbox" /> Screen saved areas and repeated visits (including intervals)</label>
           <label>Absolute height threshold <input id="height-review-threshold" type="number" min="0" step="any" value="0.1" disabled /></label>
-          <p class="hint small">Set before Compute volume. Strictly above / below ±threshold; equality stays within-band. Reports full differences in selected cells, not only excess. This is a user review criterion, not calibrated uncertainty or an M3C2 detection limit. Named-area batches and repeated visits do not use this option.</p>
+          <p class="hint small">Set before computing. Strictly above / below ±threshold; equality stays within-band. Reports full differences in selected cells, not only excess. This is a user review criterion, not calibrated uncertainty or an M3C2 detection limit. Single-pair and saved-area/visit screening are separate opt-ins; the threshold is shared.</p>
         </details>
         <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
         <div id="height-review-result" hidden><h3>Height-change screening</h3><table class="stats"><tbody id="height-review-stats"></tbody></table><p id="height-review-scope" class="hint small"></p><button id="height-review-csv">Save height screening CSV</button></div>
         <div id="volume-areas-result" hidden>
+          <div id="volume-areas-screening" hidden></div>
           <p id="volume-areas-scope" class="hint small"></p>
           <div class="review-table-wrap" tabindex="0" aria-label="Area volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-areas-rows"></tbody></table></div>
           <div class="button-row"><button id="volume-areas-json">Save area summaries JSON</button><button id="volume-areas-csv">Save area summaries CSV</button></div>
         </div>
         <div id="volume-visits-result" hidden>
+          <div id="volume-visits-screening" hidden></div>
           <p id="volume-visits-scope" class="hint small"></p>
           <div class="review-table-wrap" tabindex="0" aria-label="Repeated visit volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Visit / area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-visits-rows"></tbody></table></div>
           <div id="volume-intervals-result" hidden>
             <h3>Direct intervals (visit to visit)</h3>
+            <div id="volume-intervals-screening" hidden></div>
             <p id="volume-intervals-scope" class="hint small"></p>
             <div class="review-table-wrap" tabindex="0" aria-label="Direct visit interval volumes; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Interval / area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Uncompared</th><th>Outside</th></tr></thead><tbody id="volume-intervals-rows"></tbody></table></div>
             <button id="volume-intervals-csv">Save direct intervals CSV</button>

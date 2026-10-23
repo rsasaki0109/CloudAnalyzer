@@ -153,10 +153,10 @@ function updateForm(): void {
   volumeRun.disabled = running || entries.size === 0 || both || volumeBefore.value === volumeAfter.value;
   for (const input of [volumeBefore, volumeAfter, volumeCell, coordinateUnit,
     $("volume-height"), $("volume-fill"), $("volume-before-z"), $("volume-after-z"), areaEnabled,
-    ...areaInputs, areaName, savedAreas, $("height-review-enabled"), $("height-review-threshold"), $("volume-area-save"), $("volume-area-apply"), $("volume-area-remove"),
+    ...areaInputs, areaName, savedAreas, $("height-review-enabled"), $("height-review-batch-enabled"), $("height-review-threshold"), $("volume-area-save"), $("volume-area-apply"), $("volume-area-remove"),
     $("volume-areas-import"), $("volume-areas-export"), $("volume-use-distance-area"), $("volume-send-distance-area")] as (HTMLInputElement | HTMLSelectElement | HTMLButtonElement)[]) input.disabled = running;
   $<HTMLButtonElement>("volume-areas-run").disabled = volumeRun.disabled || !captureNamedAreas().length;
-  $<HTMLInputElement>("height-review-threshold").disabled = running || !$<HTMLInputElement>("height-review-enabled").checked;
+  $<HTMLInputElement>("height-review-threshold").disabled = running || !($<HTMLInputElement>("height-review-enabled").checked || $<HTMLInputElement>("height-review-batch-enabled").checked);
   visitSelect.disabled = visitSupport.disabled = running;
   if (visitSupport.value !== "common_observed" || visitOrder.length < 2) intervalEnabled.checked = false;
   intervalEnabled.disabled = running || visitSupport.value !== "common_observed" || visitOrder.length < 2;
@@ -188,7 +188,7 @@ for (const id of ["volume-cell", "volume-before-z", "volume-after-z", "volume-he
 areaEnabled.onchange = () => { clearResult(); updateForm(); };
 for (const input of areaInputs) input.oninput = clearResult;
 areaName.oninput = clearResult;
-$("height-review-enabled").onchange = () => { clearResult(); updateForm(); };
+$("height-review-enabled").onchange = $("height-review-batch-enabled").onchange = () => { clearResult(); updateForm(); };
 $("height-review-threshold").oninput = clearResult;
 $("volume-use-distance-area").onclick = () => {
   if (running || taskActive()) return;
@@ -435,6 +435,28 @@ function describeInput(input: Input) {
     : { constantHeight: "z" in input.side ? input.side.z : null };
 }
 const batchScope = "Independent named rectangles on the same loaded union grid. Closed cell-center selection with full square cell areas; no fractional clipping. Full loaded surfaces determine grid, heights and interpolation. Outside and undefined-inside cells are distinct. Overlapping areas may count the same cells; do not sum rows. Counts do not establish coverage beyond the loaded grid. 2.5D height volume, not closed-solid volume or survey accuracy.";
+function renderScreening(id: string, data: readonly { label: string; row: AreaVolumeRow }[], settings: Settings): void {
+  const root = $(id); root.replaceChildren(); root.hidden = settings.heightThreshold === undefined;
+  if (root.hidden) return;
+  const title = document.createElement("h3"), note = document.createElement("p");
+  title.textContent = `Height screening: strict ±${settings.heightThreshold} ${settings.coordinateUnit}`;
+  note.className = "hint small"; note.textContent = "Full differences in screened cells; equality stays within-band. User criterion, not calibrated uncertainty. Totals remain separate. No compared cells means unavailable; overlapping areas and gross interval amounts must not be summed.";
+  const wrap = document.createElement("div"); wrap.className = "review-table-wrap"; wrap.tabIndex = 0;
+  wrap.setAttribute("aria-label", "Height screening summaries; scroll horizontally for quantities");
+  const table = document.createElement("table"); table.className = "stats review-table area-volume-table";
+  const head = table.createTHead().insertRow();
+  for (const text of ["Comparison / area", "Rise cells", "Fall cells", "Within cells", "Rise area", "Fall area", "Rise volume", "Fall volume", "Screened net"]) {
+    const th = document.createElement("th"); th.textContent = text; th.scope = "col"; head.append(th);
+  }
+  const body = table.createTBody();
+  for (const { label, row } of data) {
+    const h = row.heightReview!;
+    const tr = body.insertRow();
+    for (const value of [label, h.riseCells, h.fallCells, h.withinCells,
+      ...[h.riseArea, h.fallArea, h.riseVolume, h.fallVolume, h.riseVolume - h.fallVolume].map((v, i) => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}${i < 2 ? "²" : "³"}` : "Unavailable")]) tr.insertCell().textContent = String(value);
+  }
+  wrap.append(table); root.append(title, note, wrap);
+}
 $("volume-areas-run").onclick = async () => {
   if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before computing area volumes", true);
   const areas = captureNamedAreas(); if (!areas.length) return;
@@ -442,6 +464,8 @@ $("volume-areas-run").onclick = async () => {
     fillEmpty: $<HTMLInputElement>("volume-fill").checked, coordinateUnit: coordinateUnit.value };
   let inputs: Input[];
   try {
+    const threshold = readHeightThreshold($<HTMLInputElement>("height-review-batch-enabled").checked, $<HTMLInputElement>("height-review-threshold").value);
+    if (threshold !== undefined) settings.heightThreshold = threshold;
     inputs = [snapshot(volumeBefore, $<HTMLInputElement>("volume-before-z")), snapshot(volumeAfter, $<HTMLInputElement>("volume-after-z"))];
     if (volumeBefore.value === volumeAfter.value) throw new Error("Choose different before and after surfaces");
     validateVolumeGrid(inputs.filter(input => input.cloud).map(input => input.cloud!.bounds), settings.cell);
@@ -460,9 +484,11 @@ $("volume-areas-run").onclick = async () => {
       if (token !== generation || !inputs.every(validInput)) throw new Error("Area inputs/settings changed; compute the summaries again");
       if (![out.added, out.removed, out.addedArea, out.removedArea].every(Number.isFinite)) throw new Error("Area volume cannot be represented at this coordinate scale");
       const { added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells } = out;
-      rows.push({ ...area, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells });
+      if (settings.heightThreshold !== undefined && !out.heightReview) throw new Error("Height screening summary missing");
+      rows.push({ ...area, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells, ...(out.heightReview ? { heightReview: out.heightReview } : {}) });
     }
     batch = { rows, inputs, settings };
+    renderScreening("volume-areas-screening", rows.map(row => ({ label: row.name, row })), settings);
     $("volume-areas-rows").replaceChildren(...rows.map(row => {
       const tr = document.createElement("tr");
       for (const value of [row.name, ...[row.added, row.removed, row.added - row.removed].map(v => row.matchedCells ? `${fmt(v)} ${settings.coordinateUnit}³` : "Unavailable"), row.matchedCells, row.totalCells - row.matchedCells, row.outsideRegionCells]) {
@@ -480,7 +506,7 @@ $("volume-areas-run").onclick = async () => {
 $("volume-areas-json").onclick = () => {
   if (!batch || !batch.inputs.every(validInput)) return;
   download(new Blob([JSON.stringify({ schema: "cloudanalyzer.named_area_volumes.v1", before: describeInput(batch.inputs[0]), after: describeInput(batch.inputs[1]),
-    settings: batch.settings, scope: batchScope, areas: batch.rows.map(row => ({ ...row, net: row.added - row.removed,
+    settings: batch.settings, scope: batchScope, ...(batch.settings.heightThreshold !== undefined ? { screeningScope: heightReviewScope } : {}), areas: batch.rows.map(row => ({ ...row, net: row.added - row.removed,
       uncomparedCells: row.totalCells - row.matchedCells, comparisonAvailable: row.matchedCells > 0 })) }, null, 2)], { type: "application/json" }), "area-volumes.json");
 };
 $("volume-areas-csv").onclick = () => {
@@ -502,6 +528,19 @@ addReportSection("volume-areas", () => {
 });
 renderAreas();
 
+addReportSection("volume-areas-screening", () => {
+  if (!batch || batch.settings.heightThreshold === undefined || !batch.inputs.every(validInput)) return null;
+  const unit = batch.settings.coordinateUnit;
+  return { title: "Named area height screening", metrics: Object.fromEntries(batch.rows.flatMap(row => {
+    const h = row.heightReview!, prefix = `area_${encodeURIComponent(row.name)}_screen_`;
+    return [
+      [prefix + "threshold", { label: `${row.name}: user height threshold`, value: h.threshold, unit }],
+      ...(["riseCells", "fallCells", "withinCells"] as const).map(key => [prefix + key, { label: `${row.name}: ${key}`, value: h[key] }]),
+      ...(row.matchedCells ? (["riseArea", "fallArea", "riseVolume", "fallVolume"] as const).map(key => [prefix + key, { label: `${row.name}: ${key}`, value: h[key], unit: unit + (key.endsWith("Area") ? "²" : "³") }]) : []),
+    ];
+  })), notes: [heightReviewScope, ...batch.rows.map(row => `${row.name}: XY [${row.bounds.join(", ")}]; ${row.matchedCells} compared; ${row.totalCells - row.matchedCells} uncompared; ${row.outsideRegionCells} outside. ${row.matchedCells ? "" : "No support: quantities unavailable."}`)] };
+});
+
 // Stage summary-only rows serially: bounded worker memory and no partial publication.
 $("volume-visits-run").onclick = async () => {
   if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before comparing visits", true);
@@ -515,6 +554,8 @@ $("volume-visits-run").onclick = async () => {
     fillEmpty: $<HTMLInputElement>("volume-fill").checked, coordinateUnit: coordinateUnit.value };
   let inputs: Input[], grid: VolumeGrid;
   try {
+    const threshold = readHeightThreshold($<HTMLInputElement>("height-review-batch-enabled").checked, $<HTMLInputElement>("height-review-threshold").value);
+    if (threshold !== undefined) settings.heightThreshold = threshold;
     if (!areas.length || !selected.length || selected.length > MAX_VOLUME_VISITS) throw new Error("Choose 1–8 visit surfaces and save at least one area");
     inputs = [snapshot(volumeBefore, $<HTMLInputElement>("volume-before-z")), ...selected.map(option => {
       const entry = entries.get(Number(option.value));
@@ -559,7 +600,8 @@ $("volume-visits-run").onclick = async () => {
       if (![out.added, out.removed, out.addedArea, out.removedArea].every(Number.isFinite)) throw new Error("Visit volume cannot be represented at this coordinate scale");
       const { added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells } = out;
       completed++;
-      return { ...area, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells };
+      if (settings.heightThreshold !== undefined && !out.heightReview) throw new Error("Height screening summary missing");
+      return { ...area, added, removed, addedArea, removedArea, matchedCells, totalCells, outsideRegionCells, ...(out.heightReview ? { heightReview: out.heightReview } : {}) };
     }
     for (const [index, input] of inputs.slice(1).entries()) for (const area of areas) {
       rows.push({ ...await summarize(inputs[0], input, area, `Baseline → ${input.name}`), visit: input.name, visitIndex: index + 1 });
@@ -578,8 +620,10 @@ $("volume-visits-run").onclick = async () => {
       return tr;
     }));
     renderRows("volume-visits-rows", rows.map(row => ({ label: `${row.visitIndex}. ${row.visit} / ${row.name}`, row })));
+    renderScreening("volume-visits-screening", rows.map(row => ({ label: `${row.visitIndex}. ${row.visit} / ${row.name}`, row })), settings);
     $("volume-intervals-result").hidden = intervals === null;
     if (intervals) {
+      renderScreening("volume-intervals-screening", intervals.map(row => ({ label: `${row.fromVisitIndex}. ${row.fromVisit} → ${row.toVisitIndex}. ${row.toVisit} / ${row.name}`, row })), settings);
       renderRows("volume-intervals-rows", intervals.map(row => ({ label: `${row.fromVisitIndex}. ${row.fromVisit} → ${row.toVisitIndex}. ${row.toVisit} / ${row.name}`, row })));
       $("volume-intervals-scope").textContent = "Direct comparisons in the displayed visit order on the same common observed cells, including the baseline's footprint. Dates are not inferred. 2.5D cut/fill; overlapping areas and gross interval volumes must not be summed as unique earthwork. No compared cells means unavailable.";
     }
@@ -598,7 +642,7 @@ function visitSnapshot(visits: CompletedVisits): VolumeVisitSnapshot {
     ordering: { policy: "User-controlled visit list, initially loaded order; no acquisition dates inferred", cloudIds: visits.inputs.slice(1).map(input => input.cloud!.id) },
     ...(visits.intervals ? { intervals: { scope: intervalVolumeScope, rows: visits.intervals.map(row => ({ ...row, net: row.added - row.removed,
       uncomparedCells: row.totalCells - row.matchedCells, comparisonAvailable: row.matchedCells > 0 })) } } : {}),
-    settings: visits.settings, sharedGrid: { min: visits.grid.slice(0, 2), nx: visits.grid[2], ny: visits.grid[3], cell: visits.settings.cell, origin: "Lower-left boundary; centers offset by half a cell" },
+    settings: visits.settings, ...(visits.settings.heightThreshold !== undefined ? { screeningScope: heightReviewScope } : {}), sharedGrid: { min: visits.grid.slice(0, 2), nx: visits.grid[2], ny: visits.grid[3], cell: visits.settings.cell, origin: "Lower-left boundary; centers offset by half a cell" },
     support: { mode: visits.support.mode, ...(visits.support.mask ? { commonGridCells: visits.support.commonGridCells,
       commonGridArea: visits.support.commonGridCells! * visits.settings.cell ** 2, mask: { file: "common-observed-cells.bin", sha256: visits.support.sha256,
         byteLength: visits.support.mask.length, encoding: "uint8 0/1, row-major j*nx+i on sharedGrid; intersect with each named area's closed cell-center bounds" } } : {}) },

@@ -1,5 +1,6 @@
 /** Standalone, read-only report of a completed live comparison; no point data. */
 import type { VisitVolumeRow, IntervalVolumeRow, VisitSupportMode } from "./volume-visits.ts";
+import { heightReviewScope } from "./surface-volume.ts";
 
 export type VolumeReportInput = { constantHeight: number | null } | {
   id: number; name: string; kind: string; loadedPoints: number; filePoints: number;
@@ -11,7 +12,8 @@ export interface VolumeVisitSnapshot {
   baseline: VolumeReportInput;
   visits: (VolumeReportInput & { visitIndex: number })[];
   ordering: { policy: string; cloudIds: number[] };
-  settings: { cell: number; height: string; fillEmpty: boolean; coordinateUnit: string };
+  settings: { cell: number; height: string; fillEmpty: boolean; coordinateUnit: string; heightThreshold?: number };
+  screeningScope?: string;
   sharedGrid: { min: number[]; nx: number; ny: number; cell: number; origin: string };
   support: { mode: VisitSupportMode; commonGridCells?: number; commonGridArea?: number;
     mask?: { file: string; sha256?: string; byteLength: number; encoding: string } };
@@ -28,6 +30,14 @@ function table(headers: string[], rows: string[][], id: string): string {
 
 export function volumeVisitReport(snapshot: VolumeVisitSnapshot, exportedAt = new Date().toISOString()): string {
   const { settings: s, support, sharedGrid: g } = snapshot;
+  const screening = (rows: (VisitVolumeRow | IntervalVolumeRow)[], id: string): string => s.heightThreshold === undefined ? "" :
+    `<h2>Height screening: strict ±${escape(s.heightThreshold)} ${escape(s.coordinateUnit)}</h2><p>${escape(snapshot.screeningScope ?? heightReviewScope)}</p>` +
+    table(["Comparison", "Area", "Rise cells", "Fall cells", "Within cells", `Rise area (${s.coordinateUnit}²)`, `Fall area (${s.coordinateUnit}²)`, `Rise volume (${s.coordinateUnit}³)`, `Fall volume (${s.coordinateUnit}³)`, `Screened net (${s.coordinateUnit}³)`], rows.map(r => {
+      const h = r.heightReview;
+      return ["visitIndex" in r ? `${r.visitIndex}. ${r.visit}` : `${r.fromVisitIndex}. ${r.fromVisit} → ${r.toVisitIndex}. ${r.toVisit}`, r.name,
+        ...(h ? [h.riseCells, h.fallCells, h.withinCells].map(String) : ["Unavailable", "Unavailable", "Unavailable"]),
+        ...(h && r.matchedCells ? [h.riseArea, h.fallArea, h.riseVolume, h.fallVolume, h.riseVolume - h.fallVolume].map(String) : Array<string>(5).fill("Unavailable"))];
+    }), id);
   const inputRows = [snapshot.baseline, ...snapshot.visits].map((input, i) => [
     i ? `Visit ${i}` : "Baseline", ...("constantHeight" in input
       ? [`Constant height ${input.constantHeight}`, "—", "Plane", "—", "—", "—", "—", "—"]
@@ -60,8 +70,9 @@ ${table(["Role", "Name / height", "Runtime ID", "Kind", "Loaded points", "File p
 ${support.mask ? `<p>Companion mask: ${escape(support.mask.file)}; ${escape(support.mask.byteLength)} bytes; SHA-256: ${escape(support.mask.sha256)}. ${escape(support.mask.encoding)}. The mask is not embedded: retain the separately saved binary with the JSON for exact cell provenance.</p>` : ""}
 <h2>Relative to the fixed baseline</h2><p>${escape(snapshot.scope)}</p>
 ${table(["Visit", ...headers], snapshot.rows.map(r => [`${r.visitIndex}. ${r.visit}`, ...quantities(r)]), "baseline-volumes")}
+${screening(snapshot.rows, "baseline-screening")}
 <h2>Direct adjacent-visit intervals</h2>${snapshot.intervals
-    ? `<p>${escape(snapshot.intervals.scope)}</p>${table(["From → to", ...headers], snapshot.intervals.rows.map(r => [`${r.fromVisitIndex}. ${r.fromVisit} → ${r.toVisitIndex}. ${r.toVisit}`, ...quantities(r)]), "interval-volumes")}`
+    ? `<p>${escape(snapshot.intervals.scope)}</p>${table(["From → to", ...headers], snapshot.intervals.rows.map(r => [`${r.fromVisitIndex}. ${r.fromVisit} → ${r.toVisitIndex}. ${r.toVisit}`, ...quantities(r)]), "interval-volumes")}${screening(snapshot.intervals.rows, "interval-screening")}`
     : "<p>Not computed. Baseline-relative gross fill/cut differences are not direct interval fill/cut.</p>"}
 <p>Unavailable means no compared cells, not zero change. Fill and cut are nonnegative height-difference magnitudes; net = fill − cut. Visit indices express the user's chosen order and do not infer dates or elapsed time.</p>
 <details><summary>Complete comparison JSON snapshot</summary><p>Same comparison fields as Save visit summaries JSON; no point coordinates or binary mask included.</p><pre id="comparison-json">${escape(JSON.stringify(snapshot, null, 2))}</pre></details>

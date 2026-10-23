@@ -32,3 +32,13 @@ test('interval CSV retains direct pair identities, safe labels and common-mask l
   assert.ok(csv.includes('1,1,8,"\'  =earlier",2,9,"later, ""two""","A",0,0,1,1,"m",true,3,2,1,1,1,2,1,0,common_observed,'+'b'.repeat(64)));
   assert.ok(csv.includes('"Empty",0,0,1,1,"m",false,,,,,,0,3,0,common_observed,'));
 });
+test('screened visit and interval CSV align appended columns with optional support metadata for every row',async()=>{
+ const {intervalVolumesCsv}=await import('../src/volume-visits.ts');
+ const h={threshold:1,riseCells:1,fallCells:1,withinCells:0,riseArea:1,fallArea:1,riseVolume:3,fallVolume:2};
+ const row={name:'A',bounds:[0,0,2,1],added:3,removed:2,addedArea:1,removedArea:1,matchedCells:2,totalCells:3,outsideRegionCells:0,heightReview:h,visit:'B',visitIndex:1,intervalIndex:1,fromVisitIndex:1,toVisitIndex:2,fromId:8,toId:9,fromVisit:'A',toVisit:'B'};
+ const support={mode:'common_observed',sha256:'c'.repeat(64)};
+ for(const csv of [visitVolumesCsv([row,{...row,heightReview:undefined}],'m',support),intervalVolumesCsv([row,{...row,heightReview:undefined}],'m',support)]){
+  const lines=csv.trimEnd().split('\n');assert.equal(lines[0].split(',').length,lines[1].split(',').length);assert.equal(lines[1].split(',').length,lines[2].split(',').length);
+  assert.ok(lines[1].endsWith(',1,1,1,0,1,1,3,2,1,common_observed,'+'c'.repeat(64)));
+ }
+});

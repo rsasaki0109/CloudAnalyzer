@@ -59,13 +59,13 @@ counts remain in JSON. Grids above 1,000,000 cells are rejected before allocatio
 
 ## Height-change screening for a single pair
 
-Under **Height-change screening (single Before / After)**, enable **Also screen
-height differences**, enter a finite nonnegative **Absolute height threshold**
+Under **Height-change screening**, enable **Screen single Before / After**,
+enter a finite nonnegative **Absolute height threshold**
 in the existing coordinate unit, and choose **Compute volume**. The comparison
 uses the usual Before/After, cell size, height mode, optional interpolation and
 single world-XY review rectangle. It does not register surveys or convert units.
-The option is initially off and is not applied to **Compute all saved areas** or
-**Compare visits with baseline**.
+The option is initially off. Saved-area and visit comparisons have a separate
+opt-in described below; enabling the single-pair checkbox does not enable them.
 
 The original `f64` raster heights determine `d = after − before`:
 
@@ -106,6 +106,44 @@ have real change, and exceeding the threshold does not establish a physical
 cause. Use the existing M3C2 tool for its separately defined local uncertainty
 and detection-limit analysis. These remain loaded/possibly decimated 2.5D
 surface estimates, not closed-solid volumes or independent survey accuracy.
+
+## Screen saved areas, repeated visits and direct intervals
+
+Enable **Screen saved areas and repeated visits (including intervals)** under
+**Height-change screening** before **Compute all saved areas** or **Compare
+visits with baseline**. This checkbox is initially off and independent of the
+single-pair checkbox. Both use the same absolute height threshold; editing it
+invalidates current results. A bad enabled threshold fails before processing.
+An unused single-pair threshold does not affect batches, and vice versa.
+
+Each saved rectangle or visit/rectangle row uses the same strict f64 rules as
+the single comparison. Supplemental tables retain rise/fall/within-band counts,
+affected areas, full screened volumes and screened net; original total cut/fill
+tables remain separate. In independent-pair mode, support may differ between
+rows and interpolation may include estimated heights. In common-observed mode,
+screening uses each area's part of the unchanged common mask across the baseline
+and all selected visits. Direct intervals compare the adjacent pair's original
+heights, not differences of screened or total baseline quantities. Exceedance
+cells can differ by pair even though the observed comparison support is fixed.
+Changing only the threshold does not change the mask or grid.
+
+Area/visit JSON retains `settings.heightThreshold`, `screeningScope` and
+`heightReview` on every computed row, including direct intervals. Each row's
+existing `comparisonAvailable` applies to screening too. Empty-support amounts
+are unavailable, while a valid all-within-band row has zero screened amounts.
+Area, visit and interval CSVs append threshold/count/area/volume/net columns only
+when screening results exist. Column widths remain consistent across all rows;
+no-support amount fields are blank, and support mode/mask SHA remain separate.
+Keep JSON for full provenance and the separate binary for exact common cells.
+
+**Save volume report HTML** adds distinct screening tables for baseline-relative
+and optional direct interval rows, with the criterion and availability, and
+embeds the same full JSON as the normal download. Saved-area QA includes a
+separate screening section, with no-support quantity metrics omitted. There is
+no combined total for overlapping areas or gross amounts over multiple intervals.
+All results and their screening rows publish together after the entire run;
+cancellation or settings/input edits discard partial totals, screening and masks.
+The existing serial processing, 1M-grid, 8-visit and 32-area budgets remain.
 
 ## Named areas and independent area summaries
 

@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-23
+
+### Release highlights
+
+- Browser workspace for SLAM-map repair, source-supported vector-map drafting,
+  equipment review and Autoware Lanelet2 export, with saved projects and Undo.
+- Map coverage and density inspection, bidirectional discrepancy regions and
+  cell cross-sections, with explicit comparison scope and JSON/CSV evidence.
+- Two-surface cut/fill analysis, signed height-change cells and terrain meshing:
+  face/wireframe inspection, OBJ/PLY export, source/settings receipts and volume
+  handoff. These are 2.5D surface workflows, not closed-solid reconstruction.
+- Full-density tiled/COPC processing workflows and measured CPU/WASM/WebGPU
+  distance improvements. Physical ten-billion-point processing remains
+  unbenchmarked; loading previews and display LOD have distinct scopes.
+- Self QA smoke checks use explicit offline fixtures. Existing real-data
+  benchmark packets retain their recorded sources and hashes.
+
+See [v0.6.0 release notes](docs/release-v0.6.0.md) for workflows and limitations.
+
 ### Changed
 
 - Mapping-run connections accept a recorded path within 0.25 m of the connector
@@ -646,6 +665,7 @@ immediately" CLI (`ca evaluate`, `ca downsample`, `ca filter`,
 `ca traj-evaluate`, `ca run-evaluate`, `ca check`, `ca web`, ...) and the
 core / experiments split documented in `docs/architecture.md`.
 
+[0.6.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.6.0
 [0.5.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.5.0
 [0.4.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.4.0
 [0.3.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.3.0

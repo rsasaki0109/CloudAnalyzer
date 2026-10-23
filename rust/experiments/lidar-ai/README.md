@@ -75,6 +75,11 @@ The input stays unchanged. `--classes car,truck,other-vehicle` and `--threshold 
 are explicit alternatives. `--debug-tensors` writes input/output tensors for
 numerical comparison; it is off by default.
 
+Native source and weight hash reads enforce their byte budgets while reading,
+including the source recheck before publication. Oversized or growing inputs
+fail without publishing a result. Completion uses the same bounded reader for
+the source, baseline records and debug tensors.
+
 ## Review in the browser
 
 Open **Clouds → LiDAR AI scan review (experimental) → Open AI result…**, then

@@ -1,5 +1,6 @@
 //! Native-only, explicitly selected SalsaNext/HDL-64 experimental adapter.
 use burn::tensor::{Device, DeviceKind, Tensor, TensorData};
+use ca_lidar_ai::input::read;
 use ca_lidar_ai::projection::{self, CLASS_NAMES, CLASSES, HEIGHT, MAX_POINTS, PIXELS, WIDTH};
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -73,20 +74,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if output.exists() {
         return Err("output must be a new directory; no files overwritten".into());
     }
-    if fs::metadata(&scan)?.len() > 16 * MAX_POINTS as u64 {
-        return Err("input exceeds the single-scan point budget".into());
-    }
-    if fs::metadata(&weights)?.len() > 128 * 1024 * 1024 {
-        return Err("weights exceed128MiB budget".into());
-    }
-    let raw = fs::read(&scan)?;
+    let raw = read(&scan, 16 * MAX_POINTS)?;
     let original_hash = sha(&raw);
     let points = projection::read_scan(&raw)?;
     let projected = projection::project(&points)?;
     if projected.report.projected == 0 {
         return Err("no supported single-scan input pixels; no inference or removal".into());
     }
-    let weights_hash = sha(&fs::read(&weights)?);
+    let weights_hash = sha(&read(&weights, 128 * 1024 * 1024)?);
     if weights_hash != env!("CA_LIDAR_PACK_SHA") {
         return Err(
             "weights differ from this binary's imported model; no inference or removal".into(),
@@ -124,7 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let inference_millis = started.elapsed().as_secs_f64() * 1000.;
     let (mask, report) = projection::removal_mask(&projected, &probabilities, &targets, threshold)?;
     let (retained, candidates) = projection::split_scan(&raw, &mask)?;
-    if sha(&fs::read(&scan)?) != original_hash {
+    if sha(&read(&scan, 16 * MAX_POINTS)?) != original_hash {
         return Err("source scan changed while inference was running".into());
     }
     let metadata = json!({

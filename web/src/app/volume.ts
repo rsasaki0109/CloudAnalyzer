@@ -7,6 +7,7 @@ import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regio
 import { captureNamedAreas, replaceNamedAreas, onNamedAreasChanged, parseNamedAreas, parseAreaFile,
   areaVolumesCsv, type NamedArea, type AreaVolumeRow } from "../named-areas";
 import { MAX_VOLUME_VISITS, reconcileVisitOrder, intervalVolumeScope, intervalVolumesCsv, type IntervalVolumeRow, visitVolumeScope, commonVolumeScope, visitVolumesCsv, type VisitVolumeRow, type VisitSupport, type VisitSupportMode } from "../volume-visits";
+import { volumeVisitReport, type VolumeVisitSnapshot } from "../volume-visit-report";
 import { projectChanged } from "../project-change";
 import { finiteStats, showSigned } from "./distance";
 import { $, download, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
@@ -70,7 +71,8 @@ function scope(settings: Settings): string {
 }
 let last: { out: VolumeOutput; before: string; after: string; inputs: Input[]; settings: Settings; output: Entry | null } | null = null;
 let batch: { rows: AreaVolumeRow[]; inputs: Input[]; settings: Settings } | null = null;
-let visits: { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid; support: VisitSupport; intervals: IntervalVolumeRow[] | null } | null = null;
+type CompletedVisits = { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid; support: VisitSupport; intervals: IntervalVolumeRow[] | null };
+let visits: CompletedVisits | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
 function validInput(input: Input): boolean {
   return !input.entry || entries.get(input.cloud!.id) === input.entry && input.entry.cloud === input.cloud;
@@ -548,9 +550,8 @@ $("volume-visits-run").onclick = async () => {
   } catch (error) { setStatus(`Visit comparison failed: ${signal.aborted ? "Cancelled; no partial summaries published" : errorText(error)}`, true); }
   finally { signal.removeEventListener("abort", cancelled); activeInputs = []; running = false; endTask(signal); updateForm(); }
 };
-$("volume-visits-json").onclick = () => {
-  if (!visits || !visits.inputs.every(validInput)) return;
-  download(new Blob([JSON.stringify({ schema: "cloudanalyzer.area_volume_visits.v1", baseline: describeInput(visits.inputs[0]),
+function visitSnapshot(visits: CompletedVisits): VolumeVisitSnapshot {
+  return { schema: "cloudanalyzer.area_volume_visits.v1", baseline: describeInput(visits.inputs[0]),
     visits: visits.inputs.slice(1).map((input, i) => ({ visitIndex: i + 1, ...describeInput(input) })),
     ordering: { policy: "User-controlled visit list, initially loaded order; no acquisition dates inferred", cloudIds: visits.inputs.slice(1).map(input => input.cloud!.id) },
     ...(visits.intervals ? { intervals: { scope: intervalVolumeScope, rows: visits.intervals.map(row => ({ ...row, net: row.added - row.removed,
@@ -560,7 +561,15 @@ $("volume-visits-json").onclick = () => {
       commonGridArea: visits.support.commonGridCells! * visits.settings.cell ** 2, mask: { file: "common-observed-cells.bin", sha256: visits.support.sha256,
         byteLength: visits.support.mask.length, encoding: "uint8 0/1, row-major j*nx+i on sharedGrid; intersect with each named area's closed cell-center bounds" } } : {}) },
     scope: visits.support.mode === "common_observed" ? commonVolumeScope : visitVolumeScope, rows: visits.rows.map(row => ({ ...row, net: row.added - row.removed,
-      uncomparedCells: row.totalCells - row.matchedCells, comparisonAvailable: row.matchedCells > 0 })) }, null, 2)], { type: "application/json" }), "area-volume-visits.json");
+      uncomparedCells: row.totalCells - row.matchedCells, comparisonAvailable: row.matchedCells > 0 })) };
+}
+$("volume-visits-json").onclick = () => {
+  if (!visits || !visits.inputs.every(validInput)) return;
+  download(new Blob([JSON.stringify(visitSnapshot(visits), null, 2)], { type: "application/json" }), "area-volume-visits.json");
+};
+$("volume-visits-report").onclick = () => {
+  if (!visits || !visits.inputs.every(validInput)) return;
+  download(new Blob([volumeVisitReport(visitSnapshot(visits))], { type: "text/html" }), "survey-volume-report.html");
 };
 $("volume-visits-csv").onclick = () => {
   if (visits && visits.inputs.every(validInput)) download(new Blob([visitVolumesCsv(visits.rows, visits.settings.coordinateUnit, visits.support)], { type: "text/csv" }), "area-volume-visits.csv");

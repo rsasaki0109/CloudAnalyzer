@@ -147,6 +147,13 @@ cancellation publishes no partial result. Combined pair XYZ must fit within
 64 MiB and each series within 50,000 selected points, otherwise shorten/narrow
 the section or crop the pair. No silent sampling or output truncation is used.
 
+Height-change screening can open this same plot from a screened raster cell,
+using its own Before/After pair and independent section settings. See
+[surface volume](surface-volume.md#compare-the-loaded-beforeafter-points-around-a-screened-cell)
+for its support/precision limits and separate JSON/QA schema. Opening either
+type replaces the previous plot; editing the other type's settings does not
+invalidate the current section.
+
 **Large distances are inspection candidates, not confirmed registration defects.**
 Scene changes, occlusion, sparse sampling and missing reference coverage can all
 produce them. This direction does not locate points missing from the source;

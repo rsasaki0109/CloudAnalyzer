@@ -34,6 +34,13 @@ estimate, not a closed-solid measurement.
 | Map updates | Bidirectional distance regions, density/gap candidates, sections, scoped evidence; independent human reviewed/deferred records with comments and JSON/CSV/QA exports; read-only archives and HTML reports without clouds; A/B status/comment comparisons for identical archived diagnoses | Independent real-map validation and review across different diagnoses |
 | Terrain monitoring | Height changes, user-threshold screening for single pairs, saved areas and repeated/direct visits with rise/fall/within-band counts, affected areas/volumes and bounded cell inspection with camera focus, sections, M3C2 with detection limits, terrain meshes, repeated-visit and direct interval summaries with common-observed-cell support | Independent field validation and uncertainty-aware monitoring |
 
+Screened-cell inspection also opens a Before/After point section for that row's
+actual pair. Direction, length and width are adjustable; JSON/CSV preserve
+selected band points and provenance. Bands include loaded context outside parent
+bounds/masks and use display-coordinate precision, so they do not reproduce the
+original f64 raster or establish full-density survey accuracy. See the
+[section workflow](surface-volume.md#compare-the-loaded-beforeafter-points-around-a-screened-cell).
+
 Construction and monitoring comparisons can export a standalone **volume report
 HTML** with baseline and optional direct interval tables, loaded-data scope,
 settings, bounds, support/mask metadata and an expandable comparison JSON

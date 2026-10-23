@@ -153,7 +153,8 @@ visit index and runtime descriptors. Save JSON alongside CSV for full provenance
 Selections and computed rows are session-only; projects retain area definitions,
 and visits must be selected and computed again after reload.
 
-A common grid does **not** establish a common observed footprint: even equal
+In the default each-pair mode, a common grid alone does **not** establish a
+common observed footprint: even equal
 compared-cell counts can represent different cells. Do not subtract these
 totals to infer between-visit earthwork. Missing heights are excluded rather
 than treated as zero change; interpolation can create estimates in unobserved
@@ -168,3 +169,51 @@ comparison or change its selected visits. Synthetic checks cover shifted visit
 extents, exact known heights, missing/empty support, constant baselines,
 budget rejection, cancellation and stale-result invalidation. These checks do
 not establish accuracy on independent real surveys.
+
+## Restrict repeated visits to common observed cells
+
+Under **Repeated visits by area**, set **Comparison cells** to **Observed in
+baseline and all visits**. This mode requires point clouds for Before and every
+selected visit, and **Fill empty cells** off. Constant planes and meshes are
+rejected because their heights do not establish raw point observations. The
+existing each-pair mode remains the default and retains constant/mesh and
+optional interpolation support.
+
+A cell is common only when the selected height mode (mean/min/max) produces a
+finite raw, unfilled height from finite XYZ points in the baseline and **every** selected visit, on the
+same full union grid. The intersection is prepared once, processing one input
+at a time. Each area then selects full square cells by the same closed center
+bounds and applies that identical intersection to every visit. Compared counts
+are identical across visits within an area. Uncompared counts include cells
+missing in any selected input, even if the current baseline/visit pair has both
+heights there. Counts outside the area remain separate. An empty intersection
+shows unavailable quantities, not evidence of zero change.
+
+JSON records `support.mode`, the whole-grid common count/area, and the mask's
+encoding/size/SHA-256. **Save common cells mask** exports `common-observed-cells.bin`:
+one uint8 byte per union-grid cell, 0 excluded or 1 common, row-major `j*nx+i`.
+Use the JSON shared-grid boundary origin, dimensions and cell size to place it,
+and apply each area's bounds separately. The mask includes the whole grid,
+not only saved areas. Retain JSON with the binary; verify SHA-256 to bind the
+files. CSV appends support mode and mask SHA-256 so common-support results are
+explicitly distinguished from independent-pair results. No compared-cell scene
+clouds are created. Mask preparation and row computations remain cancellable
+between worker calls; an active call finishes before all staged results are
+discarded. Changed input/settings invalidate both the summaries and mask.
+
+The full-grid 1,000,000-cell budget and 8-visit/32-area limits still apply. Mask
+preparation retains one mask and rasterizes inputs serially; row requests copy
+the bounded mask and reuse it without rerasterizing all other visits. No full
+point data is copied to the UI for this operation. Adding/removing visits can
+change the union-grid placement and common footprint; compare a fixed selection.
+
+This supports baseline-relative volumes on identical observed cells. Differences
+of **net** baseline volumes have a consistent cell footprint (subject to floating
+point rounding); differences of **gross fill or cut** are not between-visit
+fill/cut. Those require directly comparing the two visits on the common mask.
+Loaded/decimated points define this support, not full-density survey coverage.
+A finite cell height is not proof of a common physical ground surface, adequate
+sampling, correct registration or acquisition order. Results remain 2.5D, with
+whole boundary cells and no fractional clipping, unit conversion or field
+accuracy guarantee. Synthetic equal-count/different-footprint tests validate
+the mask and arithmetic, not actual map accuracy.

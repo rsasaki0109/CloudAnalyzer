@@ -338,8 +338,10 @@
           <summary>Repeated visits by area</summary>
           <label>Visit surfaces <select id="volume-visits" multiple size="5" aria-describedby="volume-visits-help"></select></label>
           <p id="volume-visits-help" class="hint small">Select up to 8 loaded surfaces (Ctrl / Command to select several). Before is the fixed baseline; After is unused here. All saved areas and volume options apply. Rows follow loaded order; use dated filenames to identify visits. Selections and results are not saved in projects.</p>
+          <label>Comparison cells <select id="volume-visits-support"><option value="independent">Each baseline / visit pair</option><option value="common_observed">Observed in baseline and all visits</option></select></label>
+          <p class="hint small">Common observed cells require loaded point clouds and interpolation off. Constant baselines and meshes are not raw point observations. Changing the visit selection can change both the shared grid and common support.</p>
           <button id="volume-visits-run">Compare visits with baseline</button>
-          <p class="hint small">One common grid across the baseline and selected visits. Missing support can differ between visits, even with equal counts. Totals are relative to the baseline; subtracting them does not establish between-visit earthwork.</p>
+          <p class="hint small">Each-pair mode uses a shared grid but support can differ between visits, even with equal counts. Common mode uses identical observed cells. Totals are relative to the baseline; differences of gross fill/cut totals are not between-visit fill/cut.</p>
         </details>
         <details id="volume-options" class="options">
           <summary>Options</summary>
@@ -369,7 +371,7 @@
         <div id="volume-visits-result" hidden>
           <p id="volume-visits-scope" class="hint small"></p>
           <div class="review-table-wrap" tabindex="0" aria-label="Repeated visit volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Visit / area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-visits-rows"></tbody></table></div>
-          <div class="button-row"><button id="volume-visits-json">Save visit summaries JSON</button><button id="volume-visits-csv">Save visit summaries CSV</button></div>
+          <div class="button-row"><button id="volume-visits-json">Save visit summaries JSON</button><button id="volume-visits-csv">Save visit summaries CSV</button><button id="volume-visits-mask" disabled>Save common cells mask</button></div>
         </div>
         <div id="volume-exports" hidden>
           <p id="volume-scope" class="hint small"></p>

@@ -176,6 +176,77 @@ impl VolumeOutput {
     }
 }
 
+fn volume_shared_grid(values: &[f64], cell: f64) -> Result<ca_core::volume::Grid, JsError> {
+    if values.len() != 4
+        || !values.iter().all(|v| v.is_finite())
+        || values[2] < 1.0
+        || values[3] < 1.0
+        || values[2].fract() != 0.0
+        || values[3].fract() != 0.0
+        || values[2] * values[3] > 1_000_000.0
+    {
+        return Err(JsError::new(
+            "shared grid needs finite min X/Y and positive integer dimensions within 1,000,000 cells",
+        ));
+    }
+    let grid = ca_core::volume::Grid {
+        min: [values[0], values[1]],
+        cell,
+        nx: values[2] as usize,
+        ny: values[3] as usize,
+    };
+    if !grid.valid() {
+        return Err(JsError::new("invalid shared volume grid"));
+    }
+    Ok(grid)
+}
+
+/// Bounded raw-observation intersection; owns no input point clouds.
+#[wasm_bindgen]
+pub struct ObservedVolumeSupport {
+    grid: ca_core::volume::Grid,
+    height: ca_core::volume::CellHeight,
+    mask: Vec<u8>,
+}
+#[wasm_bindgen]
+impl ObservedVolumeSupport {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        cell: f64,
+        height: &str,
+        shared_grid: Vec<f64>,
+    ) -> Result<ObservedVolumeSupport, JsError> {
+        use ca_core::volume::CellHeight;
+        let height = match height {
+            "mean" => CellHeight::Mean,
+            "min" => CellHeight::Min,
+            "max" => CellHeight::Max,
+            _ => return Err(JsError::new("unknown volume cell height")),
+        };
+        let grid = volume_shared_grid(&shared_grid, cell)?;
+        Ok(Self {
+            grid,
+            height,
+            mask: vec![1; grid.nx * grid.ny],
+        })
+    }
+    pub fn intersect(&mut self, surface: &VolumeSurface) -> Result<usize, JsError> {
+        ca_core::volume::intersect_observed_support(
+            surface.surface(),
+            &self.grid,
+            self.height,
+            &mut self.mask,
+        )
+        .ok_or_else(|| {
+            JsError::new("observed support requires raw point surfaces and a valid mask")
+        })
+    }
+    #[wasm_bindgen(js_name = takeMask)]
+    pub fn take_mask(&mut self) -> Vec<u8> {
+        std::mem::take(&mut self.mask)
+    }
+}
+
 /// Cut/fill volume between two surfaces on a grid of `cell`-sized squares.
 /// `height` is `"mean"`, `"min"` or `"max"`; `fill_empty` interpolates cells
 /// a surface does not cover.
@@ -191,6 +262,7 @@ pub fn compute_volume(
     region: Option<Vec<f64>>,
     summary_only: bool,
     shared_grid: Option<Vec<f64>>,
+    support_mask: Option<Vec<u8>>,
 ) -> Result<VolumeOutput, JsError> {
     use ca_core::volume::{CellHeight, VolumeParams};
     let height = match height {
@@ -211,31 +283,19 @@ pub fn compute_volume(
         })
         .transpose()?;
     let result = if let Some(values) = shared_grid {
-        if values.len() != 4
-            || !values.iter().all(|v| v.is_finite())
-            || values[2] < 1.0
-            || values[3] < 1.0
-            || values[2].fract() != 0.0
-            || values[3].fract() != 0.0
-            || values[2] * values[3] > 1_000_000.0
-        {
-            return Err(JsError::new(
-                "shared volume grid needs finite min X/Y and positive integer dimensions within 1,000,000 cells",
-            ));
-        }
-        ca_core::volume::volume_on_grid(
+        let grid = volume_shared_grid(&values, cell)?;
+        ca_core::volume::volume_on_grid_with_support(
             before.surface(),
             after.surface(),
             params,
             region,
-            ca_core::volume::Grid {
-                min: [values[0], values[1]],
-                cell,
-                nx: values[2] as usize,
-                ny: values[3] as usize,
-            },
+            grid,
+            support_mask.as_deref(),
         )
     } else {
+        if support_mask.is_some() {
+            return Err(JsError::new("observed support requires a shared grid"));
+        }
         ca_core::volume::volume_in_region(before.surface(), after.surface(), params, region)
     };
     let r = result.ok_or_else(|| {

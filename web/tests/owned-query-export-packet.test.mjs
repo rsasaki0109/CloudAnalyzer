@@ -1,3 +1,4 @@
+import { preservedSourcePath } from './preserved-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -24,6 +25,7 @@ test('owned-query export packet retains exact outputs, owned buffers and the ado
   Object.assign(aliases, JSON.parse(readFileSync(resolve(root, "benchmarks/wasm-reference-preparation/manifest.json"), "utf8")).sourceAliases);
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
+    if (preservedSourcePath(name, expected)) return;
     const alias = aliases[expected];
     assert.equal(alias?.original, name);
     assert.ok((((alias.archived.startsWith(`${directory}/executed-source/`) || alias.archived.startsWith("benchmarks/wasm-reference-preparation/executed-source/")) || alias.archived.startsWith("benchmarks/wasm-gpu-packed-nodes/executed-source/")) || alias.archived.startsWith('benchmarks/wasm-gpu-inherited-bounds/executed-source/') || alias.archived.startsWith('benchmarks/wasm-gpu-diagnostics/executed-source/') || alias.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/") || alias.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !alias.archived.includes('..'));

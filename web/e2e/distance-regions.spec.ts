@@ -29,6 +29,81 @@ async function setup(page:Page){
   await page.locator('#regions-cell').fill('2');await page.locator('#regions-min').fill('5');await page.locator('#regions-threshold').fill('.3');
 }
 async function run(page:Page){await page.locator('#regions-run').click();await expect(page.locator('#status')).toContainText('Distance regions ready');}
+async function setOverlap(page:Page,bounds:number[]){
+  await page.getByText('Expected overlap area',{exact:true}).click();await page.locator('#regions-overlap-enabled').check();
+  for(const [i,key] of ['min-x','min-y','max-x','max-y'].entries())await page.locator(`#regions-overlap-${key}`).fill(String(bounds[i]));
+}
+
+test('overlap restricts both directions and fine inspection while reusing full-cloud distance snapshots',async({page},info)=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await setup(page);
+  await page.locator('#regions-cell').fill('25');await run(page);expect((await json(page)).exceeding).toBe(18);
+  const mask=[9,-1,11,1];await setOverlap(page,mask);await expect(page.locator('#regions-result')).toBeHidden();await run(page);
+  const result=await json(page);expect(result.overlap).toEqual(mask);expect(result.points).toBe(27);expect(result.measured).toBe(9);
+  expect(result.outsideOverlap).toBe(18);expect(result.exceeding).toBe(9);expect(result.regions).toHaveLength(1);
+  expect(result.regions[0].meanDistance).toBe(.5);expect(result.reusedDistances).toBe(true);
+  await expect(page.locator('#regions-summary')).toContainText('Distance colors still show the full cloud');
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  const cells=await cellsJson(page);expect(cells.overlap).toEqual(mask);expect(cells.regionPoints).toBe(9);expect(cells.cells[0].meanDistance).toBe(.5);
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#regions-section-plot')).toBeVisible();
+  const section=await sectionJson(page);expect(section.comparisonOverlap).toEqual(mask);expect(section.source.selectedPoints).toBeGreaterThan(9);
+  expect(section.scope).toContain('not clipped to comparisonOverlap');
+  await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  const both=await bothJson(page);
+  for(const r of [both.forward,both.reverse]){expect(r.overlap).toEqual(mask);expect(r.measured).toBe(9);expect(r.outsideOverlap).toBe(18);expect(r.exceedingFractionOfMeasured).toBe(1);}
+  const report=page.waitForEvent('download');await page.locator('#report-json').click();const sections=JSON.parse(await text(await report)).sections;
+  expect(sections['distance-regions'].metrics.outsideOverlap.value).toBe(18);expect(sections['bidirectional-regions'].metrics.reverseOutsideOverlap.value).toBe(18);
+  expect(sections['distance-regions'].notes.join(' ')).toContain('[9, -1] to [11, 1]');
+  await page.locator('#regions-direction').selectOption('reverse');await page.getByRole('button',{name:'Inspect cells',exact:true}).click();
+  await expect(page.locator('#status')).toContainText('cell inspection ready');expect((await cellsJson(page)).source.name).toBe('truth.ply');
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);
+  await page.locator('#regions-overlap-enabled').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('expected-overlap.png')});
+  await writeFile(info.outputPath('overlap-receipt.json'),JSON.stringify({fixture:'synthetic three-patch QA scene; not a survey accuracy benchmark',result,both,cells,section,errors},null,2));
+  expect(errors).toEqual([]);
+});
+
+test('invalid, empty and disabled overlap have explicit accounting and clear stale reports and sections',async({page})=>{
+  await setup(page);await setOverlap(page,[9,-1,11,1]);await run(page);
+  await page.getByRole('button',{name:'Inspect cells',exact:true}).click();await expect(page.locator('#status')).toContainText('cell inspection ready');
+  await page.getByRole('button',{name:'Compare section',exact:true}).first().click();await expect(page.locator('#regions-section-plot')).toBeVisible();
+  await page.locator('#regions-overlap-min-x').fill('100');await expect(page.locator('#regions-result')).toBeHidden();
+  await expect(page.locator('#regions-section-plot')).toBeHidden();await page.locator('#regions-run').click();
+  await expect(page.locator('#status')).toContainText('min X < max X');
+  const report=page.waitForEvent('download');await page.locator('#report-json').click();const sections=JSON.parse(await text(await report)).sections;
+  for(const key of ['distance-regions','distance-region-cells','distance-section','bidirectional-regions'])expect(sections[key]).toBeUndefined();
+  await page.locator('#regions-overlap-max-x').fill('');await page.locator('#regions-run').click();await expect(page.locator('#status')).toContainText('all four');
+  await page.locator('#regions-overlap-max-x').fill('101');await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  const empty=await bothJson(page);for(const r of [empty.forward,empty.reverse]){expect(r.measured).toBe(0);expect(r.outsideOverlap).toBe(27);expect(r.exceedingFractionOfMeasured).toBeNull();expect(r.regions).toEqual([]);}
+  await expect(page.locator('#regions-both-summary')).toContainText('n/a (no measured points)');
+  await page.locator('#regions-overlap-enabled').uncheck();await run(page);const full=await json(page);
+  expect(full.overlap).toBeNull();expect(full.outsideOverlap).toBe(0);expect(full.exceeding).toBe(18);
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);
+});
+
+test('overlap query restriction retains reference neighbors just outside the rectangle',async({page})=>{
+  await page.goto('/');await trackDistances(page);
+  const points=Array.from({length:3},(_,i)=>[0,i*.01,0]);
+  await page.locator('#file-input').setInputFiles([input('edge-reference.ply',ply(points.map(p=>[.1,p[1],0]))),input('edge-source.ply',ply(points))]);
+  await expect(page.locator('#cloud-list > li')).toHaveCount(2);await expect(page.locator('#task')).toBeHidden();
+  await page.locator('#coverage-source').selectOption({label:'edge-source.ply'});await page.locator('#coverage-reference').selectOption({label:'edge-reference.ply'});
+  await page.getByText('Locate distance discrepancies',{exact:true}).click();await page.locator('#regions-min').fill('1');await page.locator('#regions-threshold').fill('.05');
+  await setOverlap(page,[-.05,-.05,.05,.05]);await page.locator('#regions-both').click();await expect(page.locator('#status')).toContainText('ready in both directions');
+  const both=await bothJson(page);expect(both.forward.measured).toBe(3);expect(both.forward.unmeasured).toBe(0);
+  expect(both.forward.regions[0].meanDistance).toBeCloseTo(.1,6);expect(both.reverse.measured).toBe(0);expect(both.reverse.outsideOverlap).toBe(3);
+});
+
+test('overlap changed while grouping discards the in-flight diagnosis',async({page})=>{
+  await setup(page);await setOverlap(page,[9,-1,11,1]);
+  await page.evaluate(()=>{
+    const original=Worker.prototype.postMessage;
+    Worker.prototype.postMessage=function(message:any,...rest:any[]){
+      if(message?.overlap&&message?.distances){const el=document.getElementById('regions-overlap-max-x') as HTMLInputElement;el.value='12';el.dispatchEvent(new Event('input'));}
+      return (original as any).call(this,message,...rest);
+    };
+  });
+  await page.locator('#regions-run').click();await expect(page.locator('#status')).toContainText('inputs/settings changed');
+  await expect(page.locator('#regions-result')).toBeHidden();
+  const report=page.waitForEvent('download');await page.locator('#report-json').click();expect(JSON.parse(await text(await report)).sections['distance-regions']).toBeUndefined();
+});
 test('two known discrepancy patches rank and focus, export exact metrics and reuse distances for regrouping',async({page},info)=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await setup(page);await run(page);
   await expect(page.locator('#regions-list > li')).toHaveCount(2);
@@ -291,4 +366,17 @@ test('actual existing survey subsets produce bounded directed regions without mo
   expect(sha(await readFile(a!))).toBe(sha(rawA));expect(sha(await readFile(b!))).toBe(sha(rawB));expect(errors).toEqual([]);
   await writeFile(info.outputPath('section-receipt.json'),JSON.stringify({source_sha256:sha(rawA),reference_sha256:sha(rawB),result:section,
     source_files_unchanged:true,browser_errors:errors,registration_defect_accuracy_measured:false},null,2));
+  // A review window around an already observed cell, not a truth footprint.
+  const [x,y]=cells.cells[0].bounds,mask=[x-25,y-25,x+25,y+25];
+  await setOverlap(page,mask);await page.locator('#regions-both').click();
+  await expect(page.locator('#status')).toContainText('ready in both directions',{timeout:120000});const scoped=await bothJson(page);
+  for(const r of [scoped.forward,scoped.reverse]){
+    expect(r.overlap).toEqual(mask);expect(r.reusedDistances).toBe(true);expect(r.measured).toBeGreaterThan(0);expect(r.outsideOverlap).toBeGreaterThan(0);
+    expect(r.measured+r.unmeasured+r.invalidPositions+r.outsideOverlap).toBe(r.points);
+    for(const region of r.regions){expect(region.bounds[0]).toBeGreaterThanOrEqual(mask[0]);expect(region.bounds[1]).toBeGreaterThanOrEqual(mask[1]);expect(region.bounds[3]).toBeLessThanOrEqual(mask[2]);expect(region.bounds[4]).toBeLessThanOrEqual(mask[3]);}
+  }
+  expect(await page.evaluate(()=>(window as any).distanceCalls)).toBe(2);
+  expect(sha(await readFile(a!))).toBe(sha(rawA));expect(sha(await readFile(b!))).toBe(sha(rawB));expect(errors).toEqual([]);
+  await writeFile(info.outputPath('overlap-real-receipt.json'),JSON.stringify({source_sha256:sha(rawA),reference_sha256:sha(rawB),result:scoped,
+    scope:'User-style rectangle around a selected existing cell; alternating subsets of one survey, not independent change truth',source_files_unchanged:true,browser_errors:errors},null,2));
 });

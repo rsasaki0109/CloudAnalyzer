@@ -213,6 +213,8 @@
         <p class="hint small">XY projection combines heights. Enclosed empty cells are potential gaps, not confirmed missing survey data: buildings, occlusion and unmeasured areas can also be empty. This does not measure surface roughness or registration accuracy.</p>
         <label>Reference / another pass <select id="coverage-reference"></select></label>
         <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
+        <button id="coverage-volume" disabled>Prepare cut/fill volume comparison</button>
+        <p class="hint small">Volume uses reference as Before and source as After, across the full loaded surfaces. Crop the inputs to limit volume to a site; the expected-overlap rectangle below applies to distance review.</p>
         <details class="options">
           <summary>Locate distance discrepancies</summary>
           <div class="range">
@@ -220,6 +222,15 @@
             <label>Grouping XY cell <input id="regions-cell" type="number" min="0" step="any" value="5" /></label>
             <label>Min. exceeding points/region <input id="regions-min" type="number" min="1" max="1000000" step="1" value="5" /></label>
           </div>
+          <details class="options">
+            <summary>Expected overlap area</summary>
+            <label><input id="regions-overlap-enabled" type="checkbox" /> Limit comparison to a world XY rectangle</label>
+            <div id="regions-overlap-bounds" hidden>
+              <div class="range"><label>Min X <input id="regions-overlap-min-x" type="number" step="any" /></label><label>Max X <input id="regions-overlap-max-x" type="number" step="any" /></label></div>
+              <div class="range"><label>Min Y <input id="regions-overlap-min-y" type="number" step="any" /></label><label>Max Y <input id="regions-overlap-max-y" type="number" step="any" /></label></div>
+              <p class="hint small">Enter a shared area you expect both surveys to cover, in original cloud coordinates. Includes rectangle edges and all heights. Outside points are counted separately; nearest neighbors still use the full reference. This limits the review area without proving common coverage.</p>
+            </div>
+          </details>
           <div class="button-row"><button id="regions-run" disabled>Compute &amp; locate regions</button><button id="regions-both" disabled>Compare both directions</button></div>
           <div id="regions-result" hidden>
             <div id="regions-directions" hidden>
@@ -305,9 +316,15 @@
           <label class="check" title="Interpolate cells a surface does not cover from their neighbours">
             <input id="volume-fill" type="checkbox" /> Fill empty cells
           </label>
+          <label>Coordinate unit <select id="volume-unit"><option value="m">Metres (m)</option><option value="ft">Feet (ft)</option><option value="unit">Unspecified cloud units</option></select></label>
+          <p class="hint small">Units label the coordinates; no conversion. Use aligned ground surfaces for earthwork. This is a 2.5D height difference, not closed-solid volume. Undefined cells are excluded; interpolation is optional. Increase cell size or crop if the grid exceeds 1,000,000 cells.</p>
         </details>
         <button id="volume-run" class="primary" disabled>Compute volume</button>
         <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
+        <div id="volume-exports" hidden>
+          <p id="volume-scope" class="hint small"></p>
+          <div class="button-row"><button id="volume-isolate" disabled>Hide input surfaces</button><button id="volume-json">Save volume summary JSON</button><button id="volume-csv">Save compared cells CSV</button></div>
+        </div>
       </section>
 
       <section id="raster-panel">

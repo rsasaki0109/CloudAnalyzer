@@ -1,3 +1,4 @@
+import { preservedSourcePath } from './preserved-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -29,6 +30,7 @@ test('GPU diagnostic packet retains identical outputs, complete traces and paire
   const aliases = { ...manifest.historicalSourceAliases, ...manifest.measuredSourceAliases, ...boxes.historicalSourceAliases, ...parents.historicalSourceAliases, ...compact.historicalSourceAliases, ...packed.historicalSourceAliases };
   const source = (name, expected) => {
     if (normalizedHash(name) === expected) return;
+    if (preservedSourcePath(name, expected)) return;
     const a = aliases[expected]; assert.equal(a?.original, name);
     assert.ok(((a.archived.startsWith(`${directory}/executed-source/`) || a.archived.startsWith("benchmarks/wasm-gpu-packed-nodes/executed-source/")) || a.archived.startsWith("benchmarks/wasm-gpu-box-bounds/executed-source/") || a.archived.startsWith("benchmarks/wasm-gpu-parent-traversal/executed-source/") || a.archived.startsWith("benchmarks/wasm-gpu-compact-stack/executed-source/")) && !a.archived.includes('..'));
     assert.equal(normalizedHash(a.archived), expected);

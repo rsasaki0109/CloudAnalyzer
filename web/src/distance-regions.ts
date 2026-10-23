@@ -2,6 +2,20 @@
 export const REGION_INPUT_BYTES = 64 * 1024 * 1024;
 export const REGION_CELL_LIMIT = 50_000;
 export const REGION_LIST_LIMIT = 50;
+/** Closed world-XY rectangle: min X, min Y, max X, max Y. */
+export type ExpectedOverlap = readonly [number, number, number, number];
+export function validateExpectedOverlap(overlap: ExpectedOverlap | null): ExpectedOverlap | null {
+  if (overlap === null) return null;
+  if (!Array.isArray(overlap) || overlap.length !== 4 || !overlap.every(Number.isFinite) ||
+      overlap[0] >= overlap[2] || overlap[1] >= overlap[3]) {
+    throw new Error("Expected overlap needs finite world XY bounds with min X < max X and min Y < max Y");
+  }
+  return [overlap[0], overlap[1], overlap[2], overlap[3]];
+}
+function insideOverlap(x: number, y: number, shift: readonly number[], overlap: ExpectedOverlap | null): boolean {
+  return !overlap || x + shift[0] >= overlap[0] && x + shift[0] <= overlap[2] &&
+    y + shift[1] >= overlap[1] && y + shift[1] <= overlap[3];
+}
 export interface DistanceRegion {
   rank: number; points: number; maxDistance: number; meanDistance: number;
   bounds: [number, number, number, number, number, number];
@@ -9,6 +23,7 @@ export interface DistanceRegion {
 export interface DistanceRegions {
   threshold: number; effectiveThreshold: number; cell: number; minPoints: number;
   points: number; measured: number; invalidPositions: number; unmeasured: number;
+  overlap: ExpectedOverlap | null; outsideOverlap: number;
   exceeding: number; occupiedCells: number; components: number; eligibleRegions: number;
   smallRegionPoints: number; unlistedEligiblePoints: number;
   regions: DistanceRegion[];
@@ -17,6 +32,7 @@ interface Bucket { x: number; y: number; points: number; sum: number; max: numbe
 export interface DistanceCells {
   regionRank: number; regionPoints: number; threshold: number; effectiveThreshold: number;
   parentCell: number; cell: number; gridOrigin: [number, number]; occupiedCells: number; unlistedPoints: number;
+  overlap: ExpectedOverlap | null;
   cells: (DistanceRegion & { gridX: number; gridY: number })[];
 }
 export function validateRegionSettings(threshold: number, cell: number, minPoints: number): number {
@@ -28,40 +44,44 @@ export function validateRegionSettings(threshold: number, cell: number, minPoint
   return cutoff;
 }
 export function locateDistanceRegions(positions: Float32Array, distances: Float32Array, shift: readonly number[],
-  threshold: number, cell: number, minPoints: number): DistanceRegions {
-  return analyze(positions, distances, shift, threshold, cell, minPoints).summary;
+  threshold: number, cell: number, minPoints: number, overlap: ExpectedOverlap | null = null): DistanceRegions {
+  return analyze(positions, distances, shift, threshold, cell, minPoints, overlap).summary;
 }
 export function inspectDistanceCells(positions: Float32Array, distances: Float32Array, shift: readonly number[],
-  threshold: number, cell: number, minPoints: number, regionRank: number, fineCell: number): DistanceCells {
+  threshold: number, cell: number, minPoints: number, regionRank: number, fineCell: number,
+  overlap: ExpectedOverlap | null = null): DistanceCells {
   if (!Number.isSafeInteger(regionRank) || regionRank < 1 || regionRank > REGION_LIST_LIMIT ||
       !Number.isFinite(fineCell) || fineCell <= 0 || fineCell > cell) {
     throw new Error("Choose a listed region and a positive inspection cell no larger than the grouping cell");
   }
-  return analyze(positions, distances, shift, threshold, cell, minPoints, { regionRank, fineCell }).inspection!;
+  return analyze(positions, distances, shift, threshold, cell, minPoints, overlap, { regionRank, fineCell }).inspection!;
 }
 function analyze(positions: Float32Array, distances: Float32Array, shift: readonly number[],
-  threshold: number, cell: number, minPoints: number, inspect?: { regionRank: number; fineCell: number }):
+  threshold: number, cell: number, minPoints: number, overlap: ExpectedOverlap | null, inspect?: { regionRank: number; fineCell: number }):
   { summary: DistanceRegions; inspection?: DistanceCells } {
   if (!distances.length || positions.length !== distances.length * 3 || positions.byteLength + distances.byteLength > REGION_INPUT_BYTES) {
     throw new Error("Discrepancy input must have matching XYZ/distances up to 64 MiB; crop a smaller area");
   }
   const cutoff = validateRegionSettings(threshold, cell, minPoints);
+  const mask = validateExpectedOverlap(overlap);
   if (shift.length !== 3 || !shift.every(Number.isFinite)) throw new Error("Finite source coordinate shift required");
-  let minX = Infinity, minY = Infinity, invalidPositions = 0, unmeasured = 0, measured = 0, exceeding = 0;
+  let minX = Infinity, minY = Infinity, invalidPositions = 0, unmeasured = 0, measured = 0, exceeding = 0, outsideOverlap = 0;
   for (let i = 0; i < distances.length; i++) {
     const x = positions[i * 3], y = positions[i * 3 + 1], z = positions[i * 3 + 2];
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) { invalidPositions++; continue; }
     minX = Math.min(minX, x); minY = Math.min(minY, y);
     const distance = distances[i];
+    if (Number.isFinite(distance) && distance < 0) throw new Error("Unsigned nearest-neighbor distances required; signed/M3C2 results are unsupported");
+    if (!insideOverlap(x, y, shift, mask)) { outsideOverlap++; continue; }
     if (!Number.isFinite(distance)) { unmeasured++; continue; }
-    if (distance < 0) throw new Error("Unsigned nearest-neighbor distances required; signed/M3C2 results are unsupported");
     measured++; if (distance > cutoff) exceeding++;
   }
   const buckets = new Map<string, Bucket>();
   const key = (x: number, y: number) => `${x},${y}`;
   for (let i = 0; i < distances.length; i++) {
     const distance = distances[i], px = positions[i * 3], py = positions[i * 3 + 1], pz = positions[i * 3 + 2];
-    if (!Number.isFinite(distance) || distance <= cutoff || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(pz)) continue;
+    if (!Number.isFinite(distance) || distance <= cutoff || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(pz) ||
+        !insideOverlap(px, py, shift, mask)) continue;
     const x = Math.floor((px - minX) / cell), y = Math.floor((py - minY) / cell);
     if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y) || x >= Number.MAX_SAFE_INTEGER - 1 || y >= Number.MAX_SAFE_INTEGER - 1) {
       throw new Error("Grouping cell cannot represent this extent; increase cell size or crop a smaller area");
@@ -96,6 +116,7 @@ function analyze(positions: Float32Array, distances: Float32Array, shift: readon
   }
   const eligible = groups.filter(g => g.points >= minPoints).sort((a, b) => b.max - a.max || b.points - a.points || a.x - b.x || a.y - b.y);
   const summary: DistanceRegions = { threshold, effectiveThreshold: cutoff, cell, minPoints, points: distances.length, measured, invalidPositions, unmeasured,
+    overlap: mask, outsideOverlap,
     exceeding, occupiedCells, components: groups.length, eligibleRegions: eligible.length,
     smallRegionPoints: groups.filter(g => g.points < minPoints).reduce((n, g) => n + g.points, 0),
     unlistedEligiblePoints: eligible.slice(REGION_LIST_LIMIT).reduce((n, g) => n + g.points, 0),
@@ -108,6 +129,7 @@ function analyze(positions: Float32Array, distances: Float32Array, shift: readon
   for (let i = 0; i < distances.length; i++) {
     const d = distances[i], px = positions[i * 3], py = positions[i * 3 + 1], pz = positions[i * 3 + 2];
     if (!Number.isFinite(d) || d <= cutoff || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(pz) ||
+        !insideOverlap(px, py, shift, mask) ||
         !members.has(key(Math.floor((px - minX) / cell), Math.floor((py - minY) / cell)))) continue;
     const x = Math.floor((px - minX) / inspect.fineCell), y = Math.floor((py - minY) / inspect.fineCell);
     const world = [px + shift[0], py + shift[1], pz + shift[2]];
@@ -124,7 +146,7 @@ function analyze(positions: Float32Array, distances: Float32Array, shift: readon
   }
   const ranked = [...fine.values()].sort((a, b) => b.max - a.max || b.points - a.points || a.x - b.x || a.y - b.y);
   return { summary, inspection: { regionRank: inspect.regionRank, regionPoints: selected.points, threshold, effectiveThreshold: cutoff,
-    parentCell: cell, cell: inspect.fineCell, gridOrigin: [minX + shift[0], minY + shift[1]], occupiedCells: fine.size,
+    parentCell: cell, cell: inspect.fineCell, overlap: mask, gridOrigin: [minX + shift[0], minY + shift[1]], occupiedCells: fine.size,
     unlistedPoints: ranked.slice(REGION_LIST_LIMIT).reduce((n, b) => n + b.points, 0),
     cells: ranked.slice(0, REGION_LIST_LIMIT).map((b, i) => ({ rank: i + 1, gridX: b.x, gridY: b.y, points: b.points,
       maxDistance: b.max, meanDistance: b.sum / b.points, bounds: b.bounds as DistanceRegion["bounds"] })) } };

@@ -11,6 +11,7 @@ import { endTask, startTask, taskActive } from "./tasks";
 const source = $<HTMLSelectElement>("coverage-source"), reference = $<HTMLSelectElement>("coverage-reference");
 const cell = $<HTMLInputElement>("coverage-cell"), minimum = $<HTMLInputElement>("coverage-min");
 const run = $<HTMLButtonElement>("coverage-run"), compare = $<HTMLButtonElement>("coverage-compare");
+const prepareVolume = $<HTMLButtonElement>("coverage-volume");
 const canvas = $<HTMLCanvasElement>("coverage-grid");
 let running = false, generation = 0;
 let last: { entry: Entry; cloud: Entry["cloud"]; grid: CoverageGrid } | null = null;
@@ -37,7 +38,7 @@ function render(): void {
       (entry.cloud.keepEvery > 1 || entry.cloud.count < entry.cloud.filePoints || entry.cloud.copcLevels !== null || entry.origin.displayPreview
         ? "Sampled/partial data: this measures only loaded points, not the full source map."
         : "Analysis uses the loaded cloud, not an expected survey footprint.");
-  run.disabled = !entry || running; compare.disabled = !entry || !reference.value || running;
+  run.disabled = !entry || running; compare.disabled = prepareVolume.disabled = !entry || !reference.value || running;
   source.disabled = running || !entry; reference.disabled = running || !others.length;
   cell.disabled = minimum.disabled = running || !entry;
   $<HTMLButtonElement>("pg-map-coverage").disabled = running || !all.length;
@@ -111,6 +112,16 @@ compare.onclick = () => {
   select("c2c-compared", source.value); select("c2c-reference", reference.value); select("distance-method", "quality");
   $("c2c-panel").scrollIntoView({ block: "start" });
   setStatus("Map quality comparison prepared. Check alignment, distance threshold and voxel settings, then Compute. C2C/M3C2 are available in Method.");
+};
+prepareVolume.onclick = () => {
+  if (running || taskActive() || workerBusy()) return setStatus("Finish the current operation before preparing a volume comparison", true);
+  if (!entries.has(Number(source.value)) || !entries.has(Number(reference.value)) || source.value === reference.value) return;
+  for (const [id, value] of [["volume-before", reference.value], ["volume-after", source.value]]) {
+    const select = $<HTMLSelectElement>(id); select.value = value; select.dispatchEvent(new Event("change"));
+  }
+  const fill = $<HTMLInputElement>("volume-fill"); fill.checked = false; fill.dispatchEvent(new Event("change"));
+  $("volume-panel").scrollIntoView({ block: "start" });
+  setStatus("Surface volume prepared: reference is Before, source is After; interpolation off. Check cell size, height mode and coordinate unit, then Compute volume. Full loaded surfaces are used; crop inputs to limit the site.");
 };
 function summary() {
   if (!last) return null;

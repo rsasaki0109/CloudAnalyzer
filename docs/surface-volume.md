@@ -57,6 +57,43 @@ boundaries. Area selection does not reduce the full-grid allocation budget;
 crop inputs first to reduce processing. Preview/thinning scope and loaded/file
 counts remain in JSON. Grids above 1,000,000 cells are rejected before allocation.
 
+## Named areas and independent area summaries
+
+In **Review area**, enter an **Area name** and save the current enabled rectangle
+with **Save / update area by name**. Names are unique after trimming, with at
+most 80 characters and 32 definitions. Saving an existing name updates its bounds.
+Select a saved area and choose **Apply selected area** to restore its name and
+bounds for a single-area run or copying to distance review. Applying runs no
+analysis. A named single-area run includes the name in its JSON and QA title.
+
+Definitions are saved with projects, workspace snapshots and browser project
+recovery. **Save area definitions JSON** also exports the bounded list without
+point data. **Load area definitions** replaces the list after validation; bad
+files retain the existing list. Check coordinate frame and coordinate units
+before reuse. Bounds do not perform registration or unit conversion.
+
+**Compute all saved areas** uses the same selected Before/After, cell size,
+height mode, interpolation and coordinate-unit label for each saved rectangle.
+Runs are sequential and cancellable between active engine calls. No compared
+clouds or point exports are created for these summary-only runs. All rows are
+published together; cancellation or changed inputs/settings discards staged rows.
+The full-grid allocation limit still applies to every run. To inspect a row's
+colored cells or mesh them, apply that area and compute the ordinary volume.
+
+Rows are independent. Overlapping rectangles, including shared closed edges,
+may count the same cells, so there is no combined total. **Save area summaries
+JSON** records exact bounds, input runtime identities and loaded/file scope,
+settings, cut/fill/net, areas, compared/uncompared/outside counts and an explicit
+comparison-available flag. **Save area summaries CSV** exports one row per area;
+quantities are blank when no cells were compared. JSON retains arithmetic zero
+totals with `comparisonAvailable: false`; those are not measured zero change.
+CSV protects formula-leading labels for spreadsheet use; JSON preserves names.
+
+The QA report also records the current batch with area-specific metrics. Empty
+comparisons have counts but no volume gate metrics. Editing inputs, settings or
+definitions clears the batch and QA section; recompute for the new configuration.
+Calculated rows are exported separately and recomputed after opening a project.
+
 **Save volume summary JSON** records the exact runtime input identities,
 Before/After roles, settings, unit, added/removed/net volume, areas and compared/
 uncompared counts, selected bounds and outside-cell count. **Save compared cells CSV** exports every compared grid-cell

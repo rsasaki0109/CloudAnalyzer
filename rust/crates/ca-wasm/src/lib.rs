@@ -187,6 +187,7 @@ pub fn compute_volume(
     height: &str,
     fill_empty: bool,
     region: Option<Vec<f64>>,
+    summary_only: bool,
 ) -> Result<VolumeOutput, JsError> {
     use ca_core::volume::{CellHeight, VolumeParams};
     let height = match height {
@@ -208,18 +209,20 @@ pub fn compute_volume(
         .transpose()?;
     let r = ca_core::volume::volume_in_region(before.surface(), after.surface(), params, region)
         .ok_or_else(|| JsError::new("need a positive cell size and at least one cloud or mesh"))?;
-    let mut positions = Vec::with_capacity(r.matched_cells);
-    let mut difference = Vec::with_capacity(r.matched_cells);
-    for j in 0..r.grid.ny {
-        for i in 0..r.grid.nx {
-            let k = j * r.grid.nx + i;
-            let d = r.after[k] - r.before[k];
-            if d.is_nan() {
-                continue;
+    let mut positions = Vec::with_capacity(if summary_only { 0 } else { r.matched_cells });
+    let mut difference = Vec::with_capacity(if summary_only { 0 } else { r.matched_cells });
+    if !summary_only {
+        for j in 0..r.grid.ny {
+            for i in 0..r.grid.nx {
+                let k = j * r.grid.nx + i;
+                let d = r.after[k] - r.before[k];
+                if d.is_nan() {
+                    continue;
+                }
+                let [x, y] = r.grid.center(i, j);
+                positions.push([x, y, r.after[k]]);
+                difference.push(d as f32);
             }
-            let [x, y] = r.grid.center(i, j);
-            positions.push([x, y, r.after[k]]);
-            difference.push(d as f32);
         }
     }
     let cells = if positions.is_empty() {

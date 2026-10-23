@@ -925,6 +925,8 @@ export type Request =
   | { kind: "transform"; id: number; matrix: number[] }
   | {
       kind: "volume";
+      /** Return totals only, without staging a compared-cell cloud. */
+      summaryOnly?: boolean;
       region?: readonly [number, number, number, number];
       before: VolumeSide;
       after: VolumeSide;

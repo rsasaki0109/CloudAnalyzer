@@ -1,4 +1,5 @@
 import { parseReviews, type LaneReview } from "./lane-review";
+import { parseNamedAreas, type NamedArea } from "./named-areas.ts";
 import { parseSession, type Session } from "./session";
 import { parseSource, type SourceReference } from "./source-reference";
 import type { PoseGraphFiles } from "./protocol";
@@ -29,6 +30,7 @@ export interface Project {
   reviews: LaneReview[];
   /** Immutable original agent review ZIP; its audits do not describe later edits. */
   reviewArchive?: SourceReference;
+  reviewAreas?: NamedArea[];
 }
 
 const object = (v: unknown): Record<string, unknown> => {
@@ -100,7 +102,8 @@ export function parseProject(input: unknown): Project {
   }
   const reviewArchive = p.reviewArchive === undefined ? undefined : parseSource(p.reviewArchive);
   if (reviewArchive && reviewArchive.kind !== "file") throw new Error("Review archive must be a local file");
-  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap, poseGraph, settings, reviews: parseReviews(p.reviews ?? []), ...(reviewArchive ? {reviewArchive} : {}) };
+  const reviewAreas = p.reviewAreas === undefined ? undefined : parseNamedAreas(p.reviewAreas);
+  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap, poseGraph, settings, reviews: parseReviews(p.reviews ?? []), ...(reviewArchive ? {reviewArchive} : {}), ...(reviewAreas ? {reviewAreas} : {}) };
 }
 
 export function projectSources(project: Project): SourceReference[] {

@@ -1,8 +1,10 @@
 /** Demos: synthetic samples (see `scripts/make-samples.mjs`) and the analysis each one runs. */
 
 import { setPointSize } from "./display";
+import { workerBusy } from "../api";
 import { runButton } from "./distance";
-import { $, choose, setStatus } from "./dom";
+import { $, choose, errorText, setStatus } from "./dom";
+import { endTask, startTask, taskActive } from "./tasks";
 import { renderList } from "./entries";
 import { loadUrls } from "./loading";
 import { addGravity, compareParts, compareWithStart, findLoops, frameGraph, merge, open as openPoseGraph } from "./posegraph";
@@ -137,6 +139,7 @@ async function ncltSeasonsDemo(): Promise<void> {
 
 /** Load a demo's sample files, then run its analysis. */
 export async function runDemo(name: string): Promise<void> {
+  if (taskActive()) { setStatus("Finish the current operation before starting a demo", true); return; }
   if (name === "posegraph") {
     await poseGraphDemo();
     return;
@@ -161,6 +164,22 @@ export async function runDemo(name: string): Promise<void> {
   const missing = demo.files.filter((f) => !idOf(f));
   await loadUrls(missing.map((f) => `${import.meta.env.BASE_URL}samples/${f}`));
   if (!demo.files.every((f) => idOf(f))) return;
+  if (taskActive()) { setStatus("Finish the current operation before starting a demo", true); return; }
+  const inputs = demo.files.map(f => { const entry = entries.get(Number(idOf(f)))!; return { entry, cloud: entry.cloud }; });
+  // Loading may have started an automatic project snapshot. Reserve the next
+  // foreground task while its queued reads finish; do not drop the demo click.
+  const signal = startTask(), started = performance.now();
+  try {
+    if (workerBusy()) setStatus("Waiting for background worker requests before running the demo…");
+    while (workerBusy()) {
+      signal.throwIfAborted();
+      if (performance.now() - started > 10_000) throw new Error("Worker is still busy; try the demo again after the current operation");
+      await new Promise(resolve => setTimeout(resolve, 25));
+    }
+    signal.throwIfAborted();
+    if (inputs.some(({ entry, cloud }) => entries.get(cloud.id) !== entry || entry.cloud !== cloud)) throw new Error("Demo inputs changed while waiting; start the demo again");
+  } catch (error) { setStatus(signal.aborted ? "Demo cancelled" : errorText(error), true); return; }
+  finally { endTask(signal); }
   // The synthetic samples are dense grids: bigger points close the gaps.
   if (name !== "c2c") setPointSize(5);
   demo.run();

@@ -22,7 +22,7 @@ def copy_packet(tmp_path):
     target = tmp_path/'checkout/benchmarks/slam/flatwall-balance-dynamics'
     shutil.copytree(PACKET,target,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     manifest = packet.read(PACKET/'manifest.json')
-    for name in manifest['dependencies'] | manifest['normalized_native_sources_sha256'] | manifest['normalized_checkout_sources_sha256']:
+    for name in manifest['dependencies'] | manifest['normalized_native_sources_sha256'] | manifest['normalized_checkout_sources_sha256'] | dict.fromkeys(manifest.get('native_source_aliases', {}).values()):
         destination = target.parents[2]/name
         destination.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(ROOT/name,destination)
@@ -115,9 +115,9 @@ def test_changed_executed_source_is_detected_even_after_resigning_packet_files(t
         packet.verify(target)
 
 
-def test_development_corridor_source_can_change_but_resigned_executed_source_cannot(tmp_path):
+@pytest.mark.parametrize('name', ['rust/crates/ca-core/src/vector_map/corridors.rs', 'rust/crates/ca-core/src/volume.rs'])
+def test_development_corridor_source_can_change_but_resigned_executed_source_cannot(tmp_path, name):
     target = copy_packet(tmp_path)
-    name = 'rust/crates/ca-core/src/vector_map/corridors.rs'
     manifest = packet.read(target/'manifest.json')
     alias = manifest['native_source_aliases'][name]
     (target.parents[2]/name).write_bytes(b'// newer development source\n')

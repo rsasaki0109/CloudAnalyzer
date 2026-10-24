@@ -142,6 +142,8 @@ def test_archived_executed_native_source_is_still_hash_checked(tmp_path):
     'rust/crates/ca-py/python/cloudanalyzer_core/__init__.py',
     'rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi',
     'rust/crates/ca-wasm/src/gpu_c2c.rs',
+    'rust/crates/ca-core/src/volume.rs',
+    'rust/crates/ca-wasm/src/lib.rs',
 ])
 def test_development_native_source_can_change_but_resigned_executed_source_cannot(tmp_path,name):
     target=copy_packet(tmp_path)

@@ -1,0 +1,185 @@
+{
+  "purpose": "three-frame labelled removal validation; not an independent held-out benchmark",
+  "evaluator": {
+    "source_commit": "04bec4d89ed7bfc8494c4ecf527b7d6d9e61dfc8",
+    "evaluator_sha256": "4aca0aa648d33bc1fce6560879fa07e75aabfcf2a5fd0dcfdd422dd7b34c64a6",
+    "inference_freeze_sha256": "f414f05ee29846e0d625c695cde17fc60cbc0a12d29b7a31b449966370dd825c",
+    "protocol_sha256": "08ec3aae12eb706bb72ac70a2b942fe1e5a79f719bf3a6897a98940480246608"
+  },
+  "pooled": [
+    {
+      "threshold_requested": 0.9,
+      "points": 375162,
+      "removed": 4934,
+      "tp": 4730,
+      "fp": 151,
+      "fn": 1450,
+      "tn": 353514,
+      "precision": 0.9690637164515468,
+      "recall": 0.7653721682847896,
+      "iou": 0.7471173590270099,
+      "projected_owner_recall": 0.967280163599182,
+      "target_unclassified_retained": 1290,
+      "full_scan_recall_ceiling": 0.7912621359223301,
+      "ignored_removed": 53
+    },
+    {
+      "threshold_requested": 0.95,
+      "points": 375162,
+      "removed": 4824,
+      "tp": 4662,
+      "fp": 126,
+      "fn": 1518,
+      "tn": 353539,
+      "precision": 0.9736842105263158,
+      "recall": 0.7543689320388349,
+      "iou": 0.7392959086584205,
+      "projected_owner_recall": 0.9533742331288344,
+      "target_unclassified_retained": 1290,
+      "full_scan_recall_ceiling": 0.7912621359223301,
+      "ignored_removed": 36
+    },
+    {
+      "threshold_requested": 0.99,
+      "points": 375162,
+      "removed": 4509,
+      "tp": 4418,
+      "fp": 76,
+      "fn": 1762,
+      "tn": 353589,
+      "precision": 0.9830885625278148,
+      "recall": 0.7148867313915858,
+      "iou": 0.7062020460358056,
+      "projected_owner_recall": 0.903476482617587,
+      "target_unclassified_retained": 1290,
+      "full_scan_recall_ceiling": 0.7912621359223301,
+      "ignored_removed": 15
+    }
+  ],
+  "baseline_per_frame": [
+    {
+      "frame": "000000",
+      "points": 123389,
+      "removed": 1143,
+      "full_scan": {
+        "tp": 1102,
+        "fp": 14,
+        "fn": 432,
+        "tn": 114917,
+        "precision": 0.9874551971326165,
+        "recall": 0.7183833116036505,
+        "iou": 0.7118863049095607,
+        "non_target_false_removal_rate": 0.00012181221776544187
+      },
+      "projected_owners_only": {
+        "tp": 1102,
+        "fp": 14,
+        "fn": 61,
+        "tn": 91178,
+        "precision": 0.9874551971326165,
+        "recall": 0.9475494411006019,
+        "iou": 0.9362786745964317,
+        "non_target_false_removal_rate": 0.00015352223879287657
+      },
+      "target_unclassified_retained": 371,
+      "ignored_removed": 27,
+      "precision_if_all_ignored_removals_are_errors": 0.9641294838145232
+    },
+    {
+      "frame": "001000",
+      "points": 126624,
+      "removed": 1636,
+      "full_scan": {
+        "tp": 1488,
+        "fp": 128,
+        "fn": 558,
+        "tn": 121655,
+        "precision": 0.9207920792079208,
+        "recall": 0.7272727272727273,
+        "iou": 0.6844526218951242,
+        "non_target_false_removal_rate": 0.0010510498181191136
+      },
+      "projected_owners_only": {
+        "tp": 1488,
+        "fp": 128,
+        "fn": 41,
+        "tn": 95999,
+        "precision": 0.9207920792079208,
+        "recall": 0.973185088293002,
+        "iou": 0.8980084490042245,
+        "non_target_false_removal_rate": 0.0013315717748395351
+      },
+      "target_unclassified_retained": 517,
+      "ignored_removed": 20,
+      "precision_if_all_ignored_removals_are_errors": 0.9095354523227384
+    },
+    {
+      "frame": "002000",
+      "points": 125149,
+      "removed": 2155,
+      "full_scan": {
+        "tp": 2140,
+        "fp": 9,
+        "fn": 460,
+        "tn": 116942,
+        "precision": 0.9958120055839925,
+        "recall": 0.823076923076923,
+        "iou": 0.8202376389421234,
+        "non_target_false_removal_rate": 7.695530606835341e-05
+      },
+      "projected_owners_only": {
+        "tp": 2140,
+        "fp": 9,
+        "fn": 58,
+        "tn": 86643,
+        "precision": 0.9958120055839925,
+        "recall": 0.9736123748862603,
+        "iou": 0.9696420480289987,
+        "non_target_false_removal_rate": 0.0001038637307852098
+      },
+      "target_unclassified_retained": 402,
+      "ignored_removed": 6,
+      "precision_if_all_ignored_removals_are_errors": 0.9930394431554525
+    }
+  ],
+  "baseline_false_removals_by_raw_class": {
+    "11": 3,
+    "40": 13,
+    "48": 4,
+    "15": 87,
+    "44": 1,
+    "50": 37,
+    "51": 6
+  },
+  "instance_appearances": 29,
+  "fully_removed_instance_appearances": [
+    {
+      "frame": "002000",
+      "instance_id": 124,
+      "points": 4,
+      "removed": 4,
+      "retained": 0,
+      "projected": 4,
+      "removed_fraction": 1.0,
+      "raw_ids": [
+        10
+      ]
+    }
+  ],
+  "no_default_or_inference_change": true,
+  "no_labels_to_inference": true,
+  "local_tests": {
+    "python_audit_contracts_passed": 7,
+    "rust_contracts_passed": 4,
+    "python_evidence_packet_tests_passed": 1
+  },
+  "new_data_bytes": 7503240,
+  "new_result_bytes": 58480523,
+  "limits": [
+    "validation sequence08 may have informed the public checkpoint selection",
+    "frames and score thresholds frozen before measured predictions/metrics; only 3 frames",
+    "precision excludes official ignored labels; removed ignored counts and worst-case bound are explicit",
+    "full recall includes every annotated target return, even unsupported projection ownership",
+    "no raw scans, labels, generated point files, model weights or tensors included"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "official_source_record": "../semantic-kitti-smoke/official-accounting-check.json",
+  "scope": "binary car mask accounting; not official 19-class mIoU",
+  "runs": [
+    {
+      "frame": "000000",
+      "completed_binary_car_confusion_exact": true,
+      "completed_binary_car_iou_exact": true
+    },
+    {
+      "frame": "000500",
+      "completed_binary_car_confusion_exact": true,
+      "completed_binary_car_iou_exact": true
+    },
+    {
+      "frame": "001000",
+      "completed_binary_car_confusion_exact": true,
+      "completed_binary_car_iou_exact": true
+    },
+    {
+      "frame": "001500",
+      "completed_binary_car_confusion_exact": true,
+      "completed_binary_car_iou_exact": true
+    },
+    {
+      "frame": "002000",
+      "completed_binary_car_confusion_exact": true,
+      "completed_binary_car_iou_exact": true
+    },
+    {
+      "frame": "002500",
+      "completed_binary_car_confusion_exact": true,
+      "completed_binary_car_iou_exact": true
+    }
+  ]
+}

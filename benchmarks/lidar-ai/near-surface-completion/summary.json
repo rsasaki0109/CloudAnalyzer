@@ -1,0 +1,192 @@
+{
+  "source_commit": "48413334c03adbbcdfb2938cd0130c6318d5550c",
+  "normalized_source_sha256": {
+    "rust/experiments/lidar-ai/src/complete.rs": "b7acc3036581c354b811b2f9f899437d6490a2a371e98b3d13d509db36a198ce",
+    "rust/experiments/lidar-ai/src/completion.rs": "cda50b51ade8d1fbd38a866db7c8fba119fe154cef09706277c448cddf935182",
+    "rust/experiments/lidar-ai/verify_completion.py": "1bbe5eac9e54669f12a555d5f6ec0f69c89785408df2a796261d42fffcfb6c52",
+    "rust/experiments/lidar-ai/evaluate_removal.py": "5de1c709e2a74b7c4586de4732fd3357ed53ec78b82cb8b1dd3ef30d112e644c",
+    "rust/experiments/lidar-ai/Cargo.toml": "353ab02a5352b2db73479a568cf288f20e25b5ae41353bedec86a1bb7deb9584"
+  },
+  "groups": [
+    {
+      "group": "development",
+      "frames": [
+        "000000",
+        "001000",
+        "002000"
+      ],
+      "gate_passed_all_frames": false,
+      "added": 613,
+      "delta": {
+        "tp": 599,
+        "fp": 14,
+        "fn": -599,
+        "tn": -14,
+        "ignored_removed": 0
+      },
+      "baseline_audit": {
+        "tp": 4730,
+        "fp": 151,
+        "fn": 1450,
+        "tn": 353514,
+        "precision": 0.9690637164515468,
+        "recall": 0.7653721682847896,
+        "ignored_removed": 53,
+        "removed": 4934
+      },
+      "completed_audit": {
+        "tp": 5329,
+        "fp": 165,
+        "fn": 851,
+        "tn": 353500,
+        "precision": 0.9699672369858027,
+        "recall": 0.8622977346278318,
+        "ignored_removed": 53,
+        "removed": 5547
+      }
+    },
+    {
+      "group": "additional",
+      "frames": [
+        "000500",
+        "001500",
+        "002500"
+      ],
+      "gate_passed_all_frames": true,
+      "added": 1377,
+      "delta": {
+        "tp": 1377,
+        "fp": 0,
+        "fn": -1377,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "baseline_audit": {
+        "tp": 9912,
+        "fp": 92,
+        "fn": 2774,
+        "tn": 353974,
+        "precision": 0.9908036785285885,
+        "recall": 0.781333753744285,
+        "ignored_removed": 42,
+        "removed": 10046
+      },
+      "completed_audit": {
+        "tp": 11289,
+        "fp": 92,
+        "fn": 1397,
+        "tn": 353974,
+        "precision": 0.9919163518144275,
+        "recall": 0.8898786063376951,
+        "ignored_removed": 42,
+        "removed": 11423
+      }
+    }
+  ],
+  "per_frame": [
+    {
+      "frame": "000000",
+      "group": "development",
+      "delta": {
+        "tp": 157,
+        "fp": 2,
+        "fn": -157,
+        "tn": -2,
+        "ignored_removed": 0
+      },
+      "gate_passed": false,
+      "additional_false_removals_by_raw_class": {
+        "40": 2
+      }
+    },
+    {
+      "frame": "001000",
+      "group": "development",
+      "delta": {
+        "tp": 281,
+        "fp": 12,
+        "fn": -281,
+        "tn": -12,
+        "ignored_removed": 0
+      },
+      "gate_passed": false,
+      "additional_false_removals_by_raw_class": {
+        "15": 12
+      }
+    },
+    {
+      "frame": "002000",
+      "group": "development",
+      "delta": {
+        "tp": 161,
+        "fp": 0,
+        "fn": -161,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "gate_passed": true,
+      "additional_false_removals_by_raw_class": {}
+    },
+    {
+      "frame": "000500",
+      "group": "additional",
+      "delta": {
+        "tp": 492,
+        "fp": 0,
+        "fn": -492,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "gate_passed": true,
+      "additional_false_removals_by_raw_class": {}
+    },
+    {
+      "frame": "001500",
+      "group": "additional",
+      "delta": {
+        "tp": 177,
+        "fp": 0,
+        "fn": -177,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "gate_passed": true,
+      "additional_false_removals_by_raw_class": {}
+    },
+    {
+      "frame": "002500",
+      "group": "additional",
+      "delta": {
+        "tp": 708,
+        "fp": 0,
+        "fn": -708,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "gate_passed": true,
+      "additional_false_removals_by_raw_class": {}
+    }
+  ],
+  "diagnostic_gate_passed_all_frames": false,
+  "decision": "experimental_only_not_adopted_as_default",
+  "default_or_browser_behavior_changed": false,
+  "parameters_tuned_after_results": false,
+  "labels_to_completion_or_model": false,
+  "local_core_checks": {
+    "rust_unit_tests": 9,
+    "rust_cli_integration_tests": 2,
+    "python_tests": 13,
+    "clippy_warnings_denied": "passed"
+  },
+  "source_records_preserved": true,
+  "baseline_files_unchanged": true,
+  "limits": [
+    "Three development frames already inspected previously; three additional IDs fixed before the completion results",
+    "All six are validation sequence08, not independent held-out model accuracy",
+    "Two failed frame gates remain in the packet; no alternative radii/threshold policies selected after seeing results",
+    "Native/browser nearest-only defaults remain; completed masks use separate report and mask filenames",
+    "No raw scans, labels, model weights, tensors or generated point sets redistributed"
+  ],
+  "verification_source_commit": "a8e2d374835735f99251c461ac3492a1fbbfbf9c",
+  "source_hash_scope": "Source hashes at verification_source_commit; Rust completion source remains identical to source_commit"
+}

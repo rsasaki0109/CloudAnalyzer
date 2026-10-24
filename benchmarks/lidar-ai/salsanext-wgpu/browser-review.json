@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "purpose": "browser review of a frozen native AI result; no browser inference or semantic ground truth",
+  "source_commit": "dedce286388ebccd2dd270f31b904c45cbaf16a0",
+  "native_runtime_commit": "cc255043c43a706036dbfdece36eb748e265f932",
+  "normalized_source_sha256": {
+    "web/index.html": "83b2cd48dd7b5befaf714173e7e1df343c62591f9f99fdbd4e883e811e0f7221",
+    "web/src/app/lidar-ai.ts": "cced85253a71282fa27c6fcf211b0fe99bd1968e33c1a7a3be88cfedd77050b6",
+    "web/src/lidar-ai-review.ts": "43d52ac143bf4e24503dc41043013397c7ae38c34dac6b2e650c8220ec63498d",
+    "web/e2e/lidar-ai.spec.ts": "31e5a71d8cfc2c0f1ba7fe8a71673d1c4d065134701b540e8137d857708668b5",
+    "web/tests/lidar-ai-fixture.mjs": "e44cbf78f3bbf533dd2ae7fef9ba339843c7d2d8d81ddedbf5cce74004c11a8a",
+    "web/tests/lidar-ai-review.test.mjs": "9b2f8c903b5fd99f6e5451a7b873593df7164598840cde017c4cb305c1138ca0"
+  },
+  "native_packet": {
+    "file": "verification.json",
+    "sha256": "af6112c3cfc1d7bf52b76b8a7aaa2ecf0bc321d9fd0c79e2dbec75c2e1d6840a"
+  },
+  "native_source_sha256": "bf272996d5b6d25cc5589e1089137cb20a98b63bd4823a7fea5631b359f6d68c",
+  "native_retained_sha256": "c558410fe095b766d643766440ed761cef85148ae2b33fa5a2e6a42d62db3d1f",
+  "native_candidate_sha256": "8c19695437d17f067a3784f85c8389fe9389b43b524f4bedd451cd7516ca00b1",
+  "browser_receipt": {
+    "inputSha256": "bf272996d5b6d25cc5589e1089137cb20a98b63bd4823a7fea5631b359f6d68c",
+    "points": 124668,
+    "candidates": 3450,
+    "retained": 121218,
+    "exactNativeDownloads": true,
+    "sourceUnchanged": true,
+    "undoRedo": true,
+    "browserErrors": [],
+    "accuracyMeasured": false
+  },
+  "build": {
+    "typescript": "passed",
+    "vite": "passed",
+    "bundle_sha256": "79bbd34eec836d89c33ea350480d2de12ef5cc62cbb92de6c7bdd0586989d4e2",
+    "wasm_sha256": "c85f067995915aeb641d0cd00319c3673e6b78430bd6dab75ff15097dcc97216"
+  },
+  "local_tests": {
+    "unit_passed": 107,
+    "unit_failed": 0,
+    "new_review_contract_tests": 7,
+    "browser_passed": 8,
+    "browser_scenarios": [
+      "source-order/nearest ownership verification",
+      "four comparison views and candidate framing",
+      "Undo/Redo restores original-view selection",
+      "bad source/mask preserves previous review",
+      "zero candidates skips empty parser input",
+      "cancellation preserves previous Undo",
+      "insufficient Undo budget discards staged clouds",
+      "actual native point-record downloads are exact",
+      "existing C2C sample regression",
+      "existing generated vector-map review regression"
+    ]
+  },
+  "rendering": "Playwright Chromium / SwiftShader WebGL; no browser AI or physical-browser-GPU claim",
+  "limits": [
+    "one sensor-frame HDL-64/KITTI XYZI scan, at most 150000 points",
+    "browser comparison requires finite records; native path retains invalid returns",
+    "file/hash matching is not semantic accuracy",
+    "no fused-map, browser-inference or whole-car removal claim"
+  ]
+}

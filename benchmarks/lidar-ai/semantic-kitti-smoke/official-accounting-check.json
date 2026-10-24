@@ -1,0 +1,74 @@
+{
+  "mapping_matches_official": true,
+  "validation_split_matches_official": true,
+  "official_evaluator_sources": {
+    "config/semantic-kitti.yaml": {
+      "url": "https://raw.githubusercontent.com/PRBonn/semantic-kitti-api/a9c749e8124b2243b6eef1b8bcf971a9f1173a2d/config/semantic-kitti.yaml",
+      "bytes": 5539,
+      "sha256": "c39f77a2ca297f5dd43c4b5da09f343fcd0bbfeac8b923a823e14d5cd87adb62"
+    },
+    "auxiliary/np_ioueval.py": {
+      "url": "https://raw.githubusercontent.com/PRBonn/semantic-kitti-api/a9c749e8124b2243b6eef1b8bcf971a9f1173a2d/auxiliary/np_ioueval.py",
+      "bytes": 2532,
+      "sha256": "f0aae467af0f59c139698096c704794519fe404ae2b0a17802b314813198fe85"
+    }
+  },
+  "numpy_version": "2.3.4",
+  "scope": "car mask TP/FP/FN and IoU only; NOT official 19-class model predictions/mIoU",
+  "runs": [
+    {
+      "frame": "000000",
+      "threshold": 0.8999999761581421,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "000000",
+      "threshold": 0.949999988079071,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "000000",
+      "threshold": 0.9900000095367432,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "001000",
+      "threshold": 0.8999999761581421,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "001000",
+      "threshold": 0.949999988079071,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "001000",
+      "threshold": 0.9900000095367432,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "002000",
+      "threshold": 0.8999999761581421,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "002000",
+      "threshold": 0.949999988079071,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    },
+    {
+      "frame": "002000",
+      "threshold": 0.9900000095367432,
+      "binary_car_confusion_exact": true,
+      "binary_car_iou_exact": true
+    }
+  ]
+}

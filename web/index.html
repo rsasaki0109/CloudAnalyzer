@@ -108,6 +108,37 @@
             <details><summary>Dataset credit</summary><p id="mapping-review-credit" class="small"></p></details>
           </div>
         </details>
+        <details id="lidar-ai-panel" class="options">
+          <summary>LiDAR AI scan review (experimental)</summary>
+          <p class="hint small">Review a native AI result from one HDL-64 scan. Select the original .bin scan, report.json and candidate-mask.u8 together. Inference runs separately in the native experiment.</p>
+          <p class="hint small">For completion review, also select completion-report.json, completed-mask.u8 and added-mask.u8 (six files total). Added points appear orange; completion is experimental and can increase false removals.</p>
+          <button id="lidar-ai-open">Open AI result…</button>
+          <input id="lidar-ai-files" type="file" multiple accept=".bin,.json,.u8" hidden />
+          <div id="lidar-ai-result" hidden>
+            <p id="lidar-ai-summary" class="small" role="status"></p>
+            <label>Compare <select id="lidar-ai-view">
+              <option value="highlight">Highlight candidates</option>
+              <option value="original">Original scan</option>
+              <option value="retained">Retained scan</option>
+              <option value="candidates">Candidates only</option>
+              <option value="baseline-candidates" data-completion disabled>Baseline candidates only</option>
+              <option value="baseline-retained" data-completion disabled>Nearest-only retained scan</option>
+              <option value="added" data-completion disabled>Added points only</option>
+            </select></label>
+            <button id="lidar-ai-focus" title="Frame candidate bounds without hiding surrounding retained points">Focus candidates</button>
+            <p id="lidar-ai-state" class="hint small" role="status"></p>
+            <div class="button-row">
+              <button id="lidar-ai-download-retained">Download exact retained .bin</button>
+              <button id="lidar-ai-download-candidates">Download exact candidates .bin</button>
+              <button id="lidar-ai-download-added" hidden>Download exact added .bin</button>
+            </div>
+            <div id="lidar-ai-baseline-downloads" class="button-row" hidden>
+              <button id="lidar-ai-download-baseline-retained">Download nearest-only retained .bin</button>
+              <button id="lidar-ai-download-baseline-candidates">Download nearest-only candidates .bin</button>
+            </div>
+          </div>
+          <p class="hint small">Sensor-frame scans only; accumulated maps are unsupported. Parked and moving cars share the car class. Native inference retains unclassified returns; optional completion selects some nearby collision returns. Undo removes the added comparison clouds. Downloads preserve the verified result, including after later edits.</p>
+        </details>
         <div id="project-recovery-controls">
           <label class="inline"><input id="project-autosave" type="checkbox" checked /> Auto save editing state in this browser</label>
           <label class="inline"><input id="project-autosave-records" type="checkbox" /> Include current records and original inputs (64 MiB)</label>
@@ -1504,6 +1535,7 @@
     </footer>
 
     <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/app/lidar-ai.ts"></script>
     <script type="module" src="/src/app/map-coverage.ts"></script>
     <script type="module" src="/src/app/distance-regions.ts"></script>
     <script type="module" src="/src/app/candidate-review-archive.ts"></script>

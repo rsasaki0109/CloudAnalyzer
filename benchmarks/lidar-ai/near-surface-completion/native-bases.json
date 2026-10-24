@@ -1,0 +1,83 @@
+{
+  "additional_frozen_gpu_results": {
+    "native_runtime_commit": "cc255043c43a706036dbfdece36eb748e265f932",
+    "executable_sha256": "77bd27189eff065a4c0cfe5c5dc2443ed5763f1ac3458f3ed4b78fc24d851042",
+    "weights_sha256": "effced8d6df7c61dd5a6938daceb6e03a1bf5c318ee664e42236e9decae12438",
+    "protocol_sha256": "93f1e2f83c7e67b99b0e037dae4882e0b0d60b047ef254d54bdd18f390314667",
+    "reference_inputs": [],
+    "runs": [
+      {
+        "frame": "000500",
+        "source_sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+        "report_sha256": "066e9c0607d093807eeaf33dcfe68455a58491cf967b6094b4706d978902ea84",
+        "mask_sha256": "47144f358bfcaf36304fafb35e46b1eda8a5aae9f9ee641a5f9c4de705060733",
+        "probabilities_sha256": "355353117ca1a642e9c5c63e5b74b605b28604ed100ae09717f123805c9cdd14",
+        "candidates": 4150
+      },
+      {
+        "frame": "001500",
+        "source_sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+        "report_sha256": "13a5619a5acbe48189df56432edac8d1af6f7d0cf736e062c33ac3215d1a85cf",
+        "mask_sha256": "16eed5692dd9b403c554852cdd54779ca2a5c92ed6b9f33f033e5170d116ba46",
+        "probabilities_sha256": "0937c939f7f026b22071b6c81c51529eea3c8db7d0ec8647b3b94fffb026b5b3",
+        "candidates": 1103
+      },
+      {
+        "frame": "002500",
+        "source_sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+        "report_sha256": "590ea30be609fc98ee29eded9a7165392b08f6f8620c5b4cb7fed30617e3f763",
+        "mask_sha256": "90dfead0ce0c2e32bc88248dede92ec80a0d07adc4465c2a26666ecba7b14fd6",
+        "probabilities_sha256": "c29791153d1ba731bc0b69290937847452a8ae75fa3c615fe0b51ce2e06e2b08",
+        "candidates": 4793
+      }
+    ]
+  },
+  "cpu_numeric_checks": {
+    "000500": {
+      "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+      "cpu_runtime_version": "1.22.0",
+      "preprocessing_byte_exact": true,
+      "probability_max_absolute_difference": 1.4871358871459961e-05,
+      "probability_mean_absolute_difference": 1.8952306390929152e-08,
+      "all_pixel_argmax_agreement": 1.0,
+      "candidate_mask_byte_exact": true,
+      "retained_and_candidate_source_records_byte_exact": true,
+      "source_points": 125312,
+      "candidate_points": 4150,
+      "unclassified_retained": 26898,
+      "source_unchanged": true
+    },
+    "001500": {
+      "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+      "cpu_runtime_version": "1.22.0",
+      "preprocessing_byte_exact": true,
+      "probability_max_absolute_difference": 3.039836883544922e-05,
+      "probability_mean_absolute_difference": 2.321637104785168e-08,
+      "all_pixel_argmax_agreement": 1.0,
+      "candidate_mask_byte_exact": true,
+      "retained_and_candidate_source_records_byte_exact": true,
+      "source_points": 126458,
+      "candidate_points": 1103,
+      "unclassified_retained": 24747,
+      "source_unchanged": true
+    },
+    "002500": {
+      "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+      "cpu_runtime_version": "1.22.0",
+      "preprocessing_byte_exact": true,
+      "probability_max_absolute_difference": 1.0788440704345703e-05,
+      "probability_mean_absolute_difference": 2.1056717258716162e-08,
+      "all_pixel_argmax_agreement": 1.0,
+      "candidate_mask_byte_exact": true,
+      "retained_and_candidate_source_records_byte_exact": true,
+      "source_points": 124829,
+      "candidate_points": 4793,
+      "unclassified_retained": 24865,
+      "source_unchanged": true
+    }
+  },
+  "development_native_packet": {
+    "file": "../semantic-kitti-smoke/frozen-inference.json",
+    "sha256": "f414f05ee29846e0d625c695cde17fc60cbc0a12d29b7a31b449966370dd825c"
+  }
+}

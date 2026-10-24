@@ -1,0 +1,57 @@
+{
+  "purpose": "post-hoc explanation of both frozen failed cases, not a tuned policy or new accuracy test",
+  "annotation_inputs_to_inference_completion_or_browser": false,
+  "rule_or_outputs_changed": false,
+  "frames": [
+    {
+      "frame": "000000",
+      "added_false_removals": 2,
+      "candidate_raw_classes": {
+        "40": 2
+      },
+      "direct_owner_raw_classes": {
+        "252": 2
+      },
+      "direct_owner_annotated_car": 2,
+      "any_annotated_car_supporter": 2,
+      "all_supporters_annotated_car": 0,
+      "no_confident_different_class_veto": true,
+      "direct_owner_distance_m_range": [
+        0.134348205520129,
+        0.13645874231341876
+      ]
+    },
+    {
+      "frame": "001000",
+      "added_false_removals": 12,
+      "candidate_raw_classes": {
+        "15": 12
+      },
+      "direct_owner_raw_classes": {
+        "15": 12
+      },
+      "direct_owner_annotated_car": 0,
+      "any_annotated_car_supporter": 0,
+      "all_supporters_annotated_car": 0,
+      "no_confident_different_class_veto": true,
+      "direct_owner_distance_m_range": [
+        0.03546230357958191,
+        0.14326448829234337
+      ]
+    }
+  ],
+  "label_pairings": [
+    {
+      "frame": "000000",
+      "sha256": "d0e41df9e6e4a42369157a61cf195b9d946ebcee8e956b9ef0dd2f74487df0a6"
+    },
+    {
+      "frame": "001000",
+      "sha256": "d2f5704a420ddaabce5e0d5b586bc45fbd50474fbf68b176cb03f445e6cc6f39"
+    }
+  ],
+  "full_trace_private": false,
+  "trace_file": "false-removal-traces.json",
+  "trace_contains": "source-record indices, raw semantic IDs, car scores and distances only; no XYZI coordinates, scans, labels or tensors",
+  "frozen_checks_sha256": "35df6a182686199ace88f6a32d9a10c7357e435add0e8a0071956286b06c57a0"
+}

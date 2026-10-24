@@ -26,6 +26,7 @@ import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
 import { appendDashedPairs, crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
 import { parseRoadBuildFailure, type RoadBuildFailure } from "./road-build-failure";
+import { resampleLaneCurve as resample, type SurveyLane } from "../lane-surface-overlap";
 
 type XYZ = [number, number, number];
 
@@ -295,29 +296,6 @@ let dashDisplayLimited = false;
 /** A polyline cut into bounded display dashes. */
 function dashedPairs(points: XYZ[], out: number[], dash = DASH, gap = GAP): void {
   if (!appendDashedPairs(points, origin, out, dash, gap)) dashDisplayLimited = true;
-}
-
-/** Resample a polyline to `n` points evenly spaced along it. */
-function resample(points: XYZ[], n: number): XYZ[] {
-  if (points.length === 0) return [];
-  if (points.length === 1) return Array.from({ length: n }, () => [...points[0]] as XYZ);
-  const cumulative = [0];
-  for (let i = 1; i < points.length; i++) {
-    const [a, b] = [points[i - 1], points[i]];
-    cumulative.push(cumulative[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1]));
-  }
-  const total = cumulative[cumulative.length - 1];
-  const out: XYZ[] = [];
-  let j = 1;
-  for (let k = 0; k < n; k++) {
-    const s = (total * k) / (n - 1);
-    while (j < points.length - 1 && cumulative[j] < s) j++;
-    const span = cumulative[j] - cumulative[j - 1] || 1;
-    const t = Math.min(1, Math.max(0, (s - cumulative[j - 1]) / span));
-    const [a, b] = [points[j - 1], points[j]];
-    out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
-  }
-  return out;
 }
 
 /** The area between a lane's boundaries as a triangle strip. */
@@ -1486,6 +1464,16 @@ $("vm-review-save").onclick = () => {
 };
 
 export const vectorMapChanged = new Signal();
+let surveyMapRevision = 0;
+/** Read-only input for spatial review hints; the geometry remains owned by the map editor. */
+export function surveyMapView(): { revision: number; lanes: readonly SurveyLane[] } {
+  return { revision: surveyMapRevision, lanes: view.lanes };
+}
+export function focusSurveyLane(id: number): boolean {
+  if (busy || !view.lanes.some(lane => lane.id === id)) return false;
+  selectLane(id, true);
+  return true;
+}
 function takeView(edited: Edited, editing = true): void {
   clearBuildFailure();
   clearQuality();
@@ -1512,6 +1500,7 @@ function takeView(edited: Edited, editing = true): void {
   $<HTMLButtonElement>("vm-plan").disabled = $<HTMLButtonElement>("vm-iso").disabled = view.boundaries.length === 0;
   renderLane();
   void renderIssues();
+  surveyMapRevision++;
   vectorMapChanged.emit();
   if (editing) projectChanged();
 }

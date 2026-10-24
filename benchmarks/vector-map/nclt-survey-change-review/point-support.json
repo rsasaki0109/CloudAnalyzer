@@ -1,0 +1,186 @@
+{
+  "scope": "Independent individual-core projection check on generated lane strips. This is a geometric proxy, not physical-change truth, lane accuracy, or a false-positive rate.",
+  "checkedCorePoints": 163699,
+  "verifiedCandidateObjects": 169,
+  "coordinateToleranceM": 2.4897894516744336e-13,
+  "boxLanePairs": 24,
+  "pairsWithAtLeastOneCore": 13,
+  "pairsWithNoCore": 11,
+  "selectedPair": {
+    "candidate": 1,
+    "lane": 3,
+    "candidateCorePoints": 655,
+    "coresInsideLaneAtHeightMargin1m": 77,
+    "fraction": 0.11755725190839694
+  },
+  "pairs": [
+    {
+      "candidate": 1,
+      "lane": 3,
+      "candidateCorePoints": 655,
+      "coresInsideLaneAtHeightMargin1m": 77,
+      "fraction": 0.11755725190839694
+    },
+    {
+      "candidate": 1,
+      "lane": 15,
+      "candidateCorePoints": 655,
+      "coresInsideLaneAtHeightMargin1m": 12,
+      "fraction": 0.0183206106870229
+    },
+    {
+      "candidate": 7,
+      "lane": 3,
+      "candidateCorePoints": 143,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 7,
+      "lane": 15,
+      "candidateCorePoints": 143,
+      "coresInsideLaneAtHeightMargin1m": 20,
+      "fraction": 0.13986013986013987
+    },
+    {
+      "candidate": 25,
+      "lane": 9,
+      "candidateCorePoints": 34,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 30,
+      "lane": 12,
+      "candidateCorePoints": 31,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 41,
+      "lane": 3,
+      "candidateCorePoints": 23,
+      "coresInsideLaneAtHeightMargin1m": 7,
+      "fraction": 0.30434782608695654
+    },
+    {
+      "candidate": 41,
+      "lane": 15,
+      "candidateCorePoints": 23,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 42,
+      "lane": 12,
+      "candidateCorePoints": 22,
+      "coresInsideLaneAtHeightMargin1m": 5,
+      "fraction": 0.22727272727272727
+    },
+    {
+      "candidate": 43,
+      "lane": 3,
+      "candidateCorePoints": 21,
+      "coresInsideLaneAtHeightMargin1m": 20,
+      "fraction": 0.9523809523809523
+    },
+    {
+      "candidate": 48,
+      "lane": 12,
+      "candidateCorePoints": 20,
+      "coresInsideLaneAtHeightMargin1m": 3,
+      "fraction": 0.15
+    },
+    {
+      "candidate": 54,
+      "lane": 9,
+      "candidateCorePoints": 19,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 70,
+      "lane": 6,
+      "candidateCorePoints": 14,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 79,
+      "lane": 9,
+      "candidateCorePoints": 13,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 87,
+      "lane": 12,
+      "candidateCorePoints": 12,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 91,
+      "lane": 12,
+      "candidateCorePoints": 12,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 92,
+      "lane": 3,
+      "candidateCorePoints": 12,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 103,
+      "lane": 3,
+      "candidateCorePoints": 11,
+      "coresInsideLaneAtHeightMargin1m": 10,
+      "fraction": 0.9090909090909091
+    },
+    {
+      "candidate": 103,
+      "lane": 15,
+      "candidateCorePoints": 11,
+      "coresInsideLaneAtHeightMargin1m": 9,
+      "fraction": 0.8181818181818182
+    },
+    {
+      "candidate": 128,
+      "lane": 3,
+      "candidateCorePoints": 9,
+      "coresInsideLaneAtHeightMargin1m": 0,
+      "fraction": 0.0
+    },
+    {
+      "candidate": 134,
+      "lane": 3,
+      "candidateCorePoints": 9,
+      "coresInsideLaneAtHeightMargin1m": 9,
+      "fraction": 1.0
+    },
+    {
+      "candidate": 134,
+      "lane": 15,
+      "candidateCorePoints": 9,
+      "coresInsideLaneAtHeightMargin1m": 9,
+      "fraction": 1.0
+    },
+    {
+      "candidate": 147,
+      "lane": 3,
+      "candidateCorePoints": 8,
+      "coresInsideLaneAtHeightMargin1m": 8,
+      "fraction": 1.0
+    },
+    {
+      "candidate": 147,
+      "lane": 15,
+      "candidateCorePoints": 8,
+      "coresInsideLaneAtHeightMargin1m": 7,
+      "fraction": 0.875
+    }
+  ]
+}

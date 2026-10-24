@@ -49,6 +49,7 @@ import { acquireKnn, invalidateKnnPreparation, knnCacheState, type KnnLease } fr
 import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED, isBag } from "./protocol";
 import { parseFilterRecipe, recipeParameters } from "./filter-recipe";
+import { computeLaneCoreEvidence, readCandidateCores } from "./lane-core-support";
 import { poolMemory, releasePool, eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
@@ -2483,6 +2484,13 @@ async function handle(
         transfer.push(...described.transfer);
       }
       return { value: out, transfer };
+    }
+    case "change-core-support": {
+      const cores = readCandidateCores(getCloud(req.id), req.rank, req.expectedPoints, req.bounds);
+      const value = computeLaneCoreEvidence(cores, req.lanes, req.heightMargin);
+      const transfer: Transferable[] = [value.positions.buffer, value.indices.buffer];
+      for (const row of value.rows) if (row.mask) transfer.push(row.mask.buffer);
+      return { value, transfer };
     }
     case "field": {
       const cloud = getCloud(req.id);

@@ -203,6 +203,7 @@
   },
   "native_source_aliases": {
     "rust/crates/ca-core/src/distance.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/distance.rs",
-    "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs"
+    "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs",
+    "rust/crates/ca-core/src/volume.rs": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs"
   }
 }

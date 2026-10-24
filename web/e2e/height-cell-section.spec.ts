@@ -52,6 +52,10 @@ test('height cell section uses its hidden original pair and exports band points,
   const narrow = await section(page); expect(narrow.settings.axis).toBe('y'); expect(narrow.after.selectedPoints).toBe(1);
   await page.locator('#regions-section-plot').screenshot({ path: info.outputPath('height-cell-section.png') });
   expect(await page.locator('#regions-section-canvas').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(40);
+  for (const viewport of [{ width: 1280, height: 720 }, { width: 1024, height: 600 }]) {
+    await page.setViewportSize(viewport);
+    await expect.poll(() => page.locator('#regions-section-canvas').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(40);
+  }
   await page.locator('#height-cell-close').click(); await expect(page.locator('#regions-section-plot')).toBeHidden();
   expect(JSON.parse(await output(page, '#report-json')).sections['height-cell-section']).toBeUndefined(); expect(errors).toEqual([]);
 });

@@ -405,6 +405,8 @@
     "rust/crates/ca-py/src/vector_map.rs": "benchmarks/slam/executed-source/ca-py-vector-map-e9c06155.rs",
     "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "benchmarks/slam/executed-source/ca-py-package-init-3ebd6319.py",
     "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "benchmarks/slam/executed-source/ca-py-core-acc3d904.pyi",
-    "rust/crates/ca-wasm/src/gpu_c2c.rs": "benchmarks/wasm-query-export/executed-source/pr338/rust/crates/ca-wasm/src/gpu_c2c.rs"
+    "rust/crates/ca-wasm/src/gpu_c2c.rs": "benchmarks/wasm-query-export/executed-source/pr338/rust/crates/ca-wasm/src/gpu_c2c.rs",
+    "rust/crates/ca-core/src/volume.rs": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs",
+    "rust/crates/ca-wasm/src/lib.rs": "benchmarks/source-history/6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555/lib.rs"
   }
 }

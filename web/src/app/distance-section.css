@@ -1,5 +1,5 @@
-#regions-section-plot { top: 12px; bottom: auto; right: 180px; height: 30%; z-index: 2; background: #16181d; }
-#regions-section-plot canvas { flex: 1; min-height: 0; width: 100%; }
+#regions-section-plot { top: 12px; bottom: auto; right: 180px; height: 30%; min-height: min(280px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow: auto; z-index: 2; background: #16181d; }
+#regions-section-plot canvas { flex: 1 0 80px; min-height: 80px; width: 100%; }
 #regions-section-plot .profile-head { flex-wrap: wrap; gap: 8px; }
 #regions-section-summary { margin: 0 8px 4px; font-size: 11px; color: var(--muted); max-height: 76px; overflow: auto; flex-shrink: 0; }
 #regions-section-close { margin-left: auto; }

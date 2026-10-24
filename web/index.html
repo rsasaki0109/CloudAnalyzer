@@ -936,12 +936,107 @@
             <label title="The first node of the second part: the path before it is compared with the path from it (for two joined sessions, the second session's first node)">Split at node <input id="pg-split" type="number" step="1" /></label>
             <button id="pg-parts" title="The map of the path before the split against the map from it, by M3C2: what changed between two sessions, or how well two passes agree">Compare parts (M3C2)</button>
           </div>
-          <div id="pg-changes" hidden>
-            <h3>Changes</h3>
-            <p id="pg-changes-hint" class="hint small"></p>
-            <ol id="pg-change-list" class="loop-list"></ol>
-          </div>
         </div>
+        <div id="pg-changes" hidden>
+          <h3>Changes · survey review</h3>
+          <p id="pg-change-stale" class="hint small" role="status" hidden></p>
+          <p id="pg-change-quality" class="hint small"></p>
+          <p id="pg-changes-hint" class="hint small"></p>
+          <label>Review view
+            <select id="pg-change-view">
+              <option value="before">Before</option>
+              <option value="after">After</option>
+              <option value="difference" selected>Difference (M3C2)</option>
+            </select>
+          </label>
+          <label>Candidate filter
+            <select id="pg-change-filter">
+              <option value="all">All candidates</option>
+              <option value="decided">With a decision</option>
+            </select>
+          </label>
+          <button id="pg-change-next-unreviewed">Next unreviewed</button>
+          <p id="pg-change-filter-summary" class="hint small"></p>
+          <p id="pg-change-empty" class="hint small" hidden>No candidates match this filter. Choose another filter to continue.</p>
+          <ol id="pg-change-list" class="loop-list"></ol>
+          <div class="button-row">
+            <button id="pg-change-prev">Previous candidates</button>
+            <span id="pg-change-page" class="hint small"></span>
+            <button id="pg-change-next">Next candidates</button>
+          </div>
+          <div id="pg-change-editor" hidden>
+            <h4 id="pg-change-selected"></h4>
+            <p id="pg-change-selected-context" class="hint small"></p>
+            <button id="pg-change-show-selected" hidden>Show selected candidate</button>
+            <label>Decision <select id="pg-change-decision"></select></label>
+            <label>Review note <textarea id="pg-change-note" rows="3" maxlength="2000" placeholder="Evidence for this judgment; what to inspect next"></textarea></label>
+            <details id="pg-change-lanes">
+              <summary>Related map lanes</summary>
+              <label><input id="pg-change-lane-frame" type="checkbox" /> I confirmed that this map and the comparison use the same Cartesian metre frame</label>
+              <div class="range">
+                <label>XY margin m <input id="pg-change-lane-xy" type="number" min="0" max="10" step="0.1" value="0" /></label>
+                <label>Height margin m <input id="pg-change-lane-z" type="number" min="0" max="10" step="0.1" value="1" /></label>
+              </div>
+              <p id="pg-change-lane-hint" class="hint small" role="status"></p>
+              <ol id="pg-change-lane-list" class="loop-list"></ol>
+              <button id="pg-core-overlay-clear" hidden>Clear core overlay</button>
+              <p id="pg-core-overlay-hint" class="hint small" role="status"></p>
+              <p class="hint small">Core support tests individual changed points inside the lane's XY surface and within the height margin of its interpolated Z. XY margin expands boxes only. Zero support is an inspection cue; it does not establish that no update is needed. Unavailable is not zero.</p>
+              <p class="hint small">Geometric overlap with the candidate's box is a review hint, not proof that a lane changed. Margins expand the box. Coordinate alignment is not performed. Map edits and loading a new map require confirmation again.</p>
+            </details>
+          </div>
+          <p id="pg-change-summary" class="hint small" aria-live="polite"></p>
+          <p class="hint small">Decisions are human judgments. Weighted residuals are not metres or independent accuracy checks. Unmeasured areas and small changes remain outside the candidate list. Signed distances do not label additions or removals; newly visible surfaces may need a reverse comparison.</p>
+          <button id="pg-change-export">Save review JSON</button>
+          <p class="hint small">Save before rerunning or leaving this page. Review decisions are not included in browser projects.</p>
+        </div>
+        <details id="pg-lane-tasks">
+          <summary>Lane follow-up tasks</summary>
+          <p id="pg-lane-task-summary" class="hint small" aria-live="polite"></p>
+          <p class="hint small">Record a related lane for human follow-up. Decisions here do not edit the map. Save JSON before leaving; tasks are not included in project autosave.</p>
+          <ol id="pg-lane-task-list" class="loop-list"></ol>
+          <div class="button-row">
+            <button id="pg-lane-task-prev">Previous tasks</button>
+            <span id="pg-lane-task-page" class="hint small"></span>
+            <button id="pg-lane-task-next">Next tasks</button>
+          </div>
+          <div id="pg-lane-task-editor" hidden>
+            <h3 id="pg-lane-task-title"></h3>
+            <p id="pg-lane-task-source" class="hint small"></p>
+            <button id="pg-lane-task-inspect">Inspect task lane</button>
+            <label>Follow-up state <select id="pg-lane-task-state"></select></label>
+            <label>Task note <textarea id="pg-lane-task-note" rows="3" maxlength="2000"></textarea></label>
+            <button id="pg-lane-task-save">Save task decision</button>
+          </div>
+          <button id="pg-lane-task-export">Save lane tasks JSON</button>
+          <button id="pg-lane-task-open">Open lane tasks JSON…</button>
+          <input id="pg-lane-task-file" type="file" accept=".json,application/json" hidden />
+          <div id="pg-lane-task-archive" hidden>
+            <h3 id="pg-lane-task-archive-name"></h3>
+            <p class="hint small">Historical file only. No task decisions are applied to the current queue, map or reused lane IDs. File consistency checks do not verify reviewer identity.</p>
+            <ol id="pg-lane-task-archive-list"></ol>
+            <button id="pg-lane-task-archive-close">Close lane tasks file</button>
+          </div>
+        </details>
+        <details id="pg-review-archive">
+          <summary>Saved survey reviews</summary>
+          <button id="pg-review-open">Open review JSON…</button>
+          <input id="pg-review-file" type="file" accept=".json,application/json" hidden />
+          <div id="pg-review-result" hidden>
+            <h3 id="pg-review-name"></h3>
+            <p id="pg-review-summary" class="hint small"></p>
+            <p class="hint small">Saved file shown as history. Opening it keeps current decisions unchanged. Resume replaces decisions only when comparison contents match. File checks do not verify reviewer identity.</p>
+            <p id="pg-review-match" class="hint small" role="status"></p>
+            <button id="pg-review-resume" disabled>Resume saved decisions</button>
+            <ol id="pg-review-list"></ol>
+            <div class="button-row">
+              <button id="pg-review-prev">Previous saved candidates</button>
+              <span id="pg-review-page" class="hint small"></span>
+              <button id="pg-review-next">Next saved candidates</button>
+            </div>
+            <button id="pg-review-close">Close saved review</button>
+          </div>
+        </details>
       </section>
 
       <section id="trajectory-panel">

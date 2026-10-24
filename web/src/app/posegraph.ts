@@ -55,12 +55,13 @@ import {
 } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
 import { refreshColors } from "./colors";
+import { checkChangeReviewGraph, invalidateChangeReview, setChangeReviewBusy, startChangeReview } from "./change-review";
 import { runM3c2 } from "./distance";
 import { addEntry, renderList } from "./entries";
 import { showRaster } from "./raster";
 import { colorByField } from "./scalars";
 import { record } from "./history";
-import { display, distanceChanged, entries, globalShift, hideEntry, listChanged, toRender, viewer } from "./state";
+import { display, distanceChanged, globalShift, hideEntry, listChanged, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
 
@@ -246,6 +247,7 @@ let busy = false;
 const num = (id: string) => Number($<HTMLInputElement>(id).value);
 
 function clearGroup(): void {
+  invalidateChangeReview("The pose graph was closed or replaced. Run Compare parts again.");
   stopAligning();
   for (const child of [...group.children]) {
     group.remove(child);
@@ -302,6 +304,7 @@ function build(g: Graph): void {
 /** Place the scans at `state`'s poses and redraw nodes, edges and the selection. */
 function update(state: PoseGraphState): void {
   if (!graph) return;
+  checkChangeReviewGraph(state);
   graph.state = state;
   projectChanged();
   drawnShift = globalShift().join();
@@ -577,6 +580,7 @@ function fitGraph(state: PoseGraphState): void {
 }
 
 function renderInfo(): void {
+  setChangeReviewBusy(busy);
   const g = graph;
   $("pg-body").hidden = !g;
   $("pg-close").hidden = !g;
@@ -614,6 +618,7 @@ function renderInfo(): void {
   );
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-merge-files").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-floor").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-gravity").disabled = busy;
   const a = nodeA();
@@ -1699,6 +1704,7 @@ const PART_REACH = 50;
  */
 export const compareParts = (): Promise<void> =>
   run("Comparing the parts", async () => {
+    invalidateChangeReview("A new comparison was started. Export this historical review before replacing it.");
     const { state, sessions } = graph!;
     const n = state.poses.length / 16;
     const typed = $<HTMLInputElement>("pg-split").value;
@@ -1751,7 +1757,20 @@ export const compareParts = (): Promise<void> =>
       distanceChanged.emit();
     }
     if (showScans()) $<HTMLInputElement>("pg-show-scans").click();
-    await listChanges(result.cloud.id);
+    const flat = await changedObjects(result.cloud.id, CHANGE_MIN, CHANGE_LINK, CHANGE_MIN_POINTS);
+    if (!result.cloud.scalarNames.includes("change_object")) {
+      result.cloud.scalarNames.push("change_object");
+      listChanged.emit();
+    }
+    await startChangeReview({
+      graph: graph!.name, sessions, splitNode: ids[split],
+      firstNodes: first.map(i => ids[i]), secondNodes: second.map(i => ids[i]),
+      mapVoxel: voxel, reach: PART_REACH,
+      m3c2: { normalRadius: 1, projectionRadius: 0.5, maxDepth: 2, coreSpacing: 0.5 },
+      clustering: { minChange: CHANGE_MIN, link: CHANGE_LINK, minPoints: CHANGE_MIN_POINTS },
+    }, state, before, after, result, flat);
+    const count = flat.length / 11;
+    setStatus(`${status()} · ${count.toLocaleString()} changed object${count === 1 ? "" : "s"} (see Changes)`);
   });
 $<HTMLButtonElement>("pg-parts").onclick = () => void compareParts();
 
@@ -1761,56 +1780,6 @@ const CHANGE_MIN = 0.3;
 const CHANGE_LINK = 1;
 /** Fewest core points of a listed object. */
 const CHANGE_MIN_POINTS = 8;
-/** Objects listed at most. */
-const CHANGE_LIMIT = 50;
-
-/**
- * The changed objects of an M3C2 result, largest first: where each is,
- * how big, and by how much it changed. Clicking one frames it in the view.
- */
-async function listChanges(id: number): Promise<void> {
-  const flat = await changedObjects(id, CHANGE_MIN, CHANGE_LINK, CHANGE_MIN_POINTS);
-  const count = flat.length / 11;
-  // The result now has a change_object field for the scalar field tools.
-  const result = entries.get(id);
-  if (result && !result.cloud.scalarNames.includes("change_object")) {
-    result.cloud.scalarNames.push("change_object");
-    listChanged.emit();
-  }
-  $("pg-changes").hidden = false;
-  $("pg-changes-hint").textContent =
-    count === 0
-      ? "No significant change forms an object."
-      : `${count.toLocaleString()} changed object${count === 1 ? "" : "s"} (points that changed by ${CHANGE_MIN} m or more), largest first` +
-        (count > CHANGE_LIMIT ? ` (the first ${CHANGE_LIMIT} listed)` : "") +
-        ". Color the result by its change_object field to see them all.";
-  $("pg-change-list").replaceChildren(
-    ...Array.from({ length: Math.min(count, CHANGE_LIMIT) }, (_, k) => {
-      const o = flat.subarray(k * 11, k * 11 + 11);
-      const size = [o[7] - o[4], o[8] - o[5], o[9] - o[6]].map((v) => fmt(Math.max(v, 0))).join(" × ");
-      const li = document.createElement("li");
-      const name = document.createElement("button");
-      name.className = "name link";
-      name.textContent = `#${k + 1} · ${size} m`;
-      name.title = "Frame it in the view";
-      // With some room round it, so its surroundings show what changed.
-      name.onclick = () =>
-        viewer.frameBox(
-          new THREE.Box3(toRender([o[4], o[5], o[6]]), toRender([o[7], o[8], o[9]])).expandByScalar(
-            Math.max(2, 0.5 * Math.max(o[7] - o[4], o[8] - o[5])),
-          ),
-        );
-      const meta = document.createElement("span");
-      meta.className = "meta";
-      meta.textContent = `${o[10] > 0 ? "+" : ""}${fmt(o[10])} m · ${o[0].toLocaleString()} points`;
-      li.append(name, meta);
-      return li;
-    }),
-  );
-  const listed = status();
-  setStatus(`${listed} · ${count.toLocaleString()} changed object${count === 1 ? "" : "s"} (see Changes)`);
-}
-
 const status = () => $("status").textContent ?? "";
 
 $<HTMLButtonElement>("pg-close").onclick = async () => {

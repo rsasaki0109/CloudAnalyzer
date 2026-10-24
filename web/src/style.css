@@ -417,3 +417,16 @@ label.inline input[type="color"] { width: 28px; height: 22px; padding: 0 2px; }
 
 #review-archive-list { max-height: 420px; overflow-y: auto; overflow-wrap: anywhere; }
 #review-archive-list .archive-comment { white-space: pre-wrap; }
+
+#pg-change-list li { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 4px 0; }
+#pg-change-list [aria-pressed="true"] { font-weight: 700; text-decoration: underline; }
+#pg-change-stale { color: var(--danger); }
+#pg-change-note { box-sizing: border-box; width: 100%; }
+
+#pg-lane-task-list li { grid-template-columns: minmax(0, 1fr); }
+#pg-lane-task-note { box-sizing: border-box; width: 100%; }
+#pg-lane-task-archive-list { max-height: 420px; overflow-y: auto; overflow-wrap: anywhere; }
+#pg-lane-task-archive-list .archive-comment { white-space: pre-wrap; }
+
+#pg-change-lane-list li { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+#pg-change-lane-list .meta { overflow-wrap: anywhere; }

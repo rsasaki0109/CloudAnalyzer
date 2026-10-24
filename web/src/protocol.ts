@@ -1086,6 +1086,7 @@ export type Request =
       keep: "inside" | "outside" | "both";
     }
   | { kind: "field"; id: number; name: string }
+  | { kind: "change-core-support"; id: number; rank: number; expectedPoints: number; bounds: number[]; lanes: import("./lane-surface-overlap").SurveyLane[]; heightMargin: number }
   | { kind: "set-field"; id: number; name: string; values: Float32Array }
   | {
       kind: "filter-field";

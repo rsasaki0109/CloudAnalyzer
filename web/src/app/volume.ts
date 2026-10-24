@@ -4,6 +4,8 @@ import * as THREE from "three";
 import { prepareVolumeSupport, computeVolume, removeCloud, workerBusy } from "../api";
 import type { VolumeOutput, HeightReview } from "../protocol";
 import { screenedCellBounds, screenedCellsCsv } from "../height-review-cells";
+import { REVIEW_NOTE_LIMIT, reviewCounts } from "../candidate-review";
+import { startHeightCellReview, updateHeightCellReview, heightCellReviewSnapshot, heightCellReviewsCsv, heightCellReviewScope, type HeightCellReviewSession } from "../height-cell-review";
 import { clearHeightSection, inspectHeightSection } from "./distance-section";
 import { validateVolumeGrid, sharedVolumeGrid, type VolumeGrid, volumeCellsCsv, heightReviewScope, readHeightThreshold, heightReviewCsv } from "../surface-volume";
 import { validateExpectedOverlap, type ExpectedOverlap } from "../distance-regions";
@@ -77,6 +79,11 @@ let batch: { rows: AreaVolumeRow[]; inputs: Input[]; settings: Settings } | null
 type CompletedVisits = { rows: VisitVolumeRow[]; inputs: Input[]; settings: Settings; grid: VolumeGrid; support: VisitSupport; intervals: IntervalVolumeRow[] | null };
 let visits: CompletedVisits | null = null;
 let running = false, generation = 0, activeInputs: Input[] = [];
+const cellReviews = new Map<HeightReview, HeightCellReviewSession>();
+function renderCellReviewCounts(): void {
+  const counts = reviewCounts([...cellReviews.values()].flatMap(s => s.decisions));
+  $("height-cell-review-counts").textContent = `${cellReviews.size} opened comparison lists; ${counts.unreviewed} unreviewed, ${counts.reviewed} reviewed, ${counts.deferred} deferred listed records. Overlapping areas/comparisons may repeat the same ground. Save JSON for bounds, settings and support provenance.`;
+}
 let cellInspection: { review: HeightReview; settings: Settings; label: string; token: number } | null = null;
 function clearCellInspection(): void {
   clearHeightSection();
@@ -88,6 +95,14 @@ function inspectCells(review: HeightReview, settings: Settings, label: string, p
   clearHeightSection();
   const token = generation;
   const selection = { review, settings, label, token }; cellInspection = selection;
+  let reviews = cellReviews.get(review);
+  if (!reviews) {
+    reviews = startHeightCellReview(review, { label, settings, before: describeInput(pair[0]), after: describeInput(pair[1]),
+      support: { mode: support?.mode ?? "independent", ...(support?.sha256 ? { sha256: support.sha256 } : {}), ...(support?.commonGridCells !== undefined ? { commonGridCells: support.commonGridCells } : {}) } });
+    cellReviews.set(review, reviews);
+  }
+  const session = reviews;
+  renderCellReviewCounts();
   $("height-cell-context").textContent = `${label}; strict ±${review.threshold} ${settings.coordinateUnit}; cell ${settings.cell}, ${settings.height}, interpolation ${settings.fillEmpty ? "enabled" : "disabled"}. ${review.cells?.length ?? 0} listed of ${review.riseCells + review.fallCells} exceedance cells; ${review.unlistedCells ?? "unknown"} unlisted. Largest absolute original height differences first, ties by row-major grid index; maximum ${review.cellLimit ?? 50}. Grid centers, not source-point matches. Full aggregates include unlisted cells. Camera focus does not isolate or identify physical changes.`;
   $("height-cell-list").replaceChildren(...(review.cells ?? []).map((c, index) => {
     const li = document.createElement("li"), text = document.createElement("p"), button = document.createElement("button");
@@ -117,7 +132,24 @@ function inspectCells(review: HeightReview, settings: Settings, label: string, p
         length: Number($<HTMLInputElement>("height-section-length").value), width: Number($<HTMLInputElement>("height-section-width").value),
       });
     };
-    li.append(text, button, section); return li;
+    const stateLabel = document.createElement("label"), state = document.createElement("select"), noteLabel = document.createElement("label"), note = document.createElement("textarea"), updated = document.createElement("p");
+    stateLabel.textContent = "Review state "; state.setAttribute("aria-label", `Review state for screened cell ${index + 1}`);
+    state.append(new Option("Unreviewed", "unreviewed"), new Option("Reviewed", "reviewed"), new Option("Deferred", "deferred"));
+    state.value = session.decisions[index].status; stateLabel.append(state);
+    noteLabel.textContent = "Review note "; note.setAttribute("aria-label", `Review note for screened cell ${index + 1}`); note.maxLength = REVIEW_NOTE_LIMIT;
+    note.rows = 2; note.style.width = "100%"; note.value = session.decisions[index].note; noteLabel.append(note);
+    updated.className = "hint small";
+    const showUpdated = () => { updated.textContent = `Updated: ${session.decisions[index].updatedAt ?? "not reviewed"}`; }; showUpdated();
+    const edit = () => {
+      if (cellInspection !== selection || token !== generation || !pair.every(validInput)) return;
+      try {
+        if (running || taskActive()) throw new Error("Wait for the current task before editing cell reviews");
+        updateHeightCellReview(session, index, state.value, note.value);
+        showUpdated(); renderCellReviewCounts(); distanceChanged.emit();
+      } catch (error) { state.value = session.decisions[index].status; note.value = session.decisions[index].note; setStatus(errorText(error), true); }
+    };
+    state.onchange = note.oninput = edit;
+    li.append(text, button, section, stateLabel, noteLabel, updated); return li;
   }));
   $("height-cell-inspection").hidden = false;
   $("height-cell-inspection").scrollIntoView({ block: "nearest" });
@@ -127,6 +159,23 @@ $("height-cell-csv").onclick = () => {
   const { review, settings, label } = cellInspection;
   download(new Blob([screenedCellsCsv(review, settings.cell, settings.coordinateUnit, label)], { type: "text/csv" }), "listed-height-screening-cells.csv");
 };
+for (const format of ["json", "csv"] as const) $(`height-cell-reviews-${format}`).onclick = () => {
+  if (!cellInspection || cellInspection.token !== generation || running || taskActive()) return;
+  const sessions = [...cellReviews.values()];
+  download(new Blob([format === "json" ? JSON.stringify(heightCellReviewSnapshot(sessions), null, 2) : heightCellReviewsCsv(sessions)],
+    { type: format === "json" ? "application/json" : "text/csv" }), `height-cell-reviews.${format}`);
+};
+addReportSection("height-cell-reviews", () => {
+  if (!cellReviews.size) return null;
+  return new Map(heightCellReviewSnapshot([...cellReviews.values()]).comparisons.map((c, i) => [String(i + 1), {
+    title: `Height cell reviews: ${c.label}`, metrics: {
+      unreviewed: { label: "Unreviewed listed cells", value: c.counts.unreviewed },
+      reviewed: { label: "Reviewed listed cells (human inspection)", value: c.counts.reviewed },
+      deferred: { label: "Deferred listed cells", value: c.counts.deferred },
+      ...(c.screening.unlistedCells === undefined ? {} : { unlisted: { label: "Unlisted exceedance cells outside review", value: c.screening.unlistedCells } }),
+    }, notes: [heightCellReviewScope, JSON.stringify(c)],
+  }]));
+});
 for (const id of ["height-section-axis", "height-section-length", "height-section-width"]) $(id).addEventListener(id.endsWith("axis") ? "change" : "input", clearHeightSection);
 function validInput(input: Input): boolean {
   return !input.entry || entries.get(input.cloud!.id) === input.entry && input.entry.cloud === input.cloud;
@@ -136,6 +185,7 @@ function validResult(result: NonNullable<typeof last>): boolean {
 }
 function clearResult(): void {
   clearCellInspection();
+  cellReviews.clear();
   for (const id of ["volume-areas-screening", "volume-visits-screening", "volume-intervals-screening"]) {
     $(id).replaceChildren(); $(id).hidden = true;
   }

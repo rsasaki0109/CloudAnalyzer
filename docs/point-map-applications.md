@@ -41,6 +41,12 @@ bounds/masks and use display-coordinate precision, so they do not reproduce the
 original f64 raster or establish full-density survey accuracy. See the
 [section workflow](surface-volume.md#compare-the-loaded-beforeafter-points-around-a-screened-cell).
 
+Listed height cells also support independent human review states and notes per
+comparison/area, with JSON/CSV and QA output. Records survive inspection/section
+navigation but reset when the parent is recomputed or invalidated. Reviewed
+means inspection completed, without automatic cause or earthwork acceptance.
+See [cell review records](surface-volume.md#record-human-inspection-of-screened-cells).
+
 Construction and monitoring comparisons can export a standalone **volume report
 HTML** with baseline and optional direct interval tables, loaded-data scope,
 settings, bounds, support/mask metadata and an expandable comparison JSON

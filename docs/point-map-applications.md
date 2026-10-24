@@ -46,6 +46,10 @@ comparison/area, with JSON/CSV and QA output. Records survive inspection/section
 navigation but reset when the parent is recomputed or invalidated. Reviewed
 means inspection completed, without automatic cause or earthwork acceptance.
 See [cell review records](surface-volume.md#record-human-inspection-of-screened-cells).
+Saved records also open read-only without point clouds, with exact original
+JSON re-download, CSV and a standalone offline HTML report. Historical records
+do not populate live decisions or QA; see the
+[archive workflow](surface-volume.md#open-saved-height-cell-review-records-without-point-clouds).
 
 Construction and monitoring comparisons can export a standalone **volume report
 HTML** with baseline and optional direct interval tables, loaded-data scope,

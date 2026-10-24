@@ -214,6 +214,40 @@ areas and pairs can describe the same ground and must not be summed as unique
 changes. Saving notes does not modify ordinary volume JSON/CSV or offline volume
 reports; use the review exports or QA report to retain them.
 
+### Open saved height-cell review records without point clouds
+
+Under **Saved height-cell reviews → Read saved height-cell reviews**, open the
+separate `cloudanalyzer.height_cell_reviews.v1` JSON. This read-only viewer
+shows each opened comparison list's original cell evidence, state, multiline
+note and update time, alongside input descriptors, bounds, screening summary
+and support/hash metadata. Expand a comparison to render its cells. No source
+point clouds or GPU are needed. The archive stays separate from live analysis,
+decisions, camera, projects and QA, including when live results are invalidated.
+
+The reader accepts at most **64 MiB**, **480 comparisons** (32 areas × 8
+baseline visits plus 7 intervals) and **50 listed cells per comparison**. It
+checks schema, finite numbers, descriptors, settings, count/area consistency,
+listed cell differences/ranking/uniqueness/bounds, decision validation and
+available support metadata. Listed volume sums are checked against summaries
+with floating-point tolerance; unlisted cell geometry cannot be reconstructed.
+Internal consistency does not authenticate source files, masks, reviewers,
+survey accuracy or physical causes. First-open time is not acquisition or
+analysis time. Unopened lists and unlisted/missing/excluded cells remain outside
+the review; overlapping lists do not provide a unique-change total.
+
+**Save original height reviews JSON** preserves the uploaded bytes. **Save
+height review archive CSV** reuses the live review CSV format, with safe quoted
+notes and original f64 values. **Save height review archive HTML** creates a
+standalone, script-free report that opens offline and includes a complete
+normalized JSON snapshot as escaped text. Keep the original JSON and ordinary
+volume/grid/mask evidence; unknown uploaded fields are not part of normalized
+CSV/HTML. No saved decisions are applied to a new calculation.
+
+Invalid, oversized or inconsistent files retain the previous valid archive.
+Closing or superseding a pending read prevents old records from reappearing.
+Closing the viewer releases its records without altering live results; archive
+viewing itself is session-only and excluded from project/autosave data.
+
 ### Compare the loaded Before/After points around a screened cell
 
 **Compare point section** opens a straight XY band centered on the selected

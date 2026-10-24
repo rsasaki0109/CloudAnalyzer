@@ -446,6 +446,21 @@
         </div>
       </section>
 
+      <section id="height-archive-panel">
+        <h2>Saved height-cell reviews</h2>
+        <details id="height-archive-options" class="options">
+          <summary>Read saved height-cell reviews</summary>
+          <button id="height-archive-open">Open height-cell review JSON…</button>
+          <input id="height-archive-file" type="file" accept=".json" hidden />
+          <p class="hint small">Read-only records without point clouds. Maximum 64 MiB, 480 comparison lists and 50 cells per list. No decisions applied to current analysis or QA. Keep the original JSON and volume/grid/mask evidence.</p>
+          <div id="height-archive-result" hidden>
+            <p id="height-archive-name"></p><p id="height-archive-count" class="hint small"></p><p id="height-archive-scope" class="hint small"></p>
+            <div class="button-row"><button id="height-archive-json">Save original height reviews JSON</button><button id="height-archive-csv">Save height review archive CSV</button><button id="height-archive-html">Save height review archive HTML</button><button id="height-archive-close">Close height review archive</button></div>
+            <div id="height-archive-list"></div>
+          </div>
+        </details>
+      </section>
+
       <section id="mesh-panel">
         <h2>Mesh (Delaunay 2.5D)</h2>
         <label>Cloud <select id="mesh-cloud"></select></label>
@@ -1397,5 +1412,6 @@
     <script type="module" src="/src/app/map-coverage.ts"></script>
     <script type="module" src="/src/app/distance-regions.ts"></script>
     <script type="module" src="/src/app/candidate-review-archive.ts"></script>
+    <script type="module" src="/src/app/height-review-archive.ts"></script>
   </body>
 </html>

@@ -179,6 +179,41 @@ These are generated raster-cell records, not raw input point coordinates.
 Changing settings/inputs, rerunning, cancelling or invalidating the result clears
 the inspector and its exports; old focus controls cannot act on a newer result.
 
+### Record human inspection of screened cells
+
+Each listed cell has **Unreviewed**, **Reviewed** or **Deferred** state and a
+review note (up to 2,000 characters), with an ISO update time. **Reviewed** means
+human inspection completed, not a confirmed physical change, cause, accepted
+earthwork quantity or accuracy decision. Notes do not alter screening, total
+volumes, source points or section settings. Within-band, missing, excluded and
+unlisted cells remain outside these records.
+
+Records belong to the exact computed comparison/area row, including its bounded
+f64 cell evidence. The same index in another area or visit is independent.
+Closing/reopening the inspector, focusing cells or editing section settings
+retains notes. Recomputing or invalidating the parent through settings, named
+areas or input changes clears all its records. They are session-only, excluded
+from project/autosave data, with no import, spatial matching or transfer to a
+later analysis. Merely opening a list creates its initially unreviewed records;
+unopened comparison lists are absent, not implicitly reviewed.
+
+**Save cell reviews JSON/CSV** includes **all opened comparison lists** in the
+current parent result. JSON schema `cloudanalyzer.height_cell_reviews.v1` retains
+the first-open time (not acquisition/analysis time), input runtime descriptors,
+settings/bounds, support mode and optional common-mask hash, screening summary,
+listed/unlisted counts, original cell values and decisions. CSV keeps pair
+descriptors, full-grid indices, heights, states, safe quoted multiline notes and
+times; keep JSON alongside it for full bounds/settings. Also retain the ordinary
+volume summary and exported mask for the complete grid/mask provenance. Runtime
+descriptors do not prove file identity or independent survey accuracy.
+
+QA reports expose separate `height-cell-reviews:<comparison index>` entries
+with listed state counts, explicit unlisted counts and escaped notes/context,
+including after closing the inspector. Counts are inspection records; overlapping
+areas and pairs can describe the same ground and must not be summed as unique
+changes. Saving notes does not modify ordinary volume JSON/CSV or offline volume
+reports; use the review exports or QA report to retain them.
+
 ### Compare the loaded Before/After points around a screened cell
 
 **Compare point section** opens a straight XY band centered on the selected

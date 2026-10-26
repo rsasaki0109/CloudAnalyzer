@@ -17,6 +17,8 @@ intervals and semantics, rather than a certified road network.
 
 ### Start from an external SLAM map
 
+For GLIM global LiDAR dumps, first use [mapping-prepare-glim](mapping-prepare-glim.md) to prepare the documented `traj_lidar.txt` and PLY pair without changing their coordinates or timestamps.
+
 If SLAM has already produced a PLY map and TUM trajectory, use
 the CLI command below, or the MCP tool
 start_mapping_run_from_slam(map_path, trajectory_path, out_dir, provenance, layout_hypothesis).
@@ -338,6 +340,32 @@ final checks/comparisons and root/owner decision records. Duplicate files are
 stored once. `manifest.json` identifies each role with a relative member path,
 SHA-256 and byte count; `review` keeps the output diagnosis and adoption decision.
 Read the full audits for problem locations omitted from the compact diagnosis.
+
+For external SLAM imports, the ZIP also carries `slam_import` (the producer
+declaration and input preflight) and `source_trajectory` (the original TUM
+bytes). If preparation linked a GLIM execution report, it is included as
+`glim_execution_report`. These optional roles are hashed and verified like
+other members, in both full and preview packages. Existing packages without
+them remain readable. Original paths inside these evidence files remain
+historical provenance; the manifest roles locate the included files without
+accessing those paths. The browser verifies this evidence and keeps it in the
+downloadable original archive. Its Original SLAM producer panel shows declared
+backend/version and, when source/import/run identities agree, the recorded GLIM
+image ID and trajectory match. It also distinguishes recorded input-preflight
+success, explicitly unrequested diagnostics and older reports without diagnostic
+records. A diagnostic pass is shown only when its input hash matches the run's
+single-file input inventory and its saved gap policy/results are consistent.
+The panel shows diagnostic topics, gap limit/maximum and warning count. When a
+saved configuration-topic check also agrees with these topics and both config
+file identities match the run inventory, it shows the recorded configuration
+match. Older diagnostics without that check show “not recorded”. This is a local
+record consistency check, not a fresh read of configuration files or validation
+of calibration, scaling, offsets or module compatibility. Inconsistent optional
+diagnostics or configuration evidence show an unavailable notice while maps
+remain usable.
+It does not execute report contents. A matching local execution record does not establish estimator accuracy
+or prove that the PLY was exported from the same optimized state.
+
 
 Use `inspect_mapping_bundle(bundle_path)` on the receiving machine to check every
 member before opening the map. It needs neither the original directories/logs

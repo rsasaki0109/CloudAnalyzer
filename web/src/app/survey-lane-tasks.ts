@@ -1,6 +1,7 @@
+import { projectChanged } from "../project-change";
 /** A bounded follow-up queue, independent of native map edits and historical file inspection. */
 import { LANE_TASK_BYTES, LANE_TASK_LIMIT, LANE_TASK_STATES, laneTaskCounts, laneTaskFile, newLaneTask,
-  parseLaneTaskFile, setLaneTaskDecision, laneCoreSnapshotText, type LaneCoreSnapshot, type SurveyLaneTask } from "../survey-lane-tasks";
+  parseLaneTaskFile, resumeLaneTask, setLaneTaskDecision, laneCoreSnapshotText, type LaneCoreSnapshot, type SurveyLaneTask } from "../survey-lane-tasks";
 import type { ChangeCandidate, SurveyReview } from "../change-review";
 import type { SurveyLane } from "../lane-surface-overlap";
 import { captureMapProject, focusSurveyLane, surveyMapView } from "./vectormap";
@@ -8,6 +9,7 @@ import { $, download, errorText, setStatus } from "./dom";
 
 interface Entry { task: SurveyLaneTask; valid: (() => boolean) | null }
 const records: Entry[] = [];
+let queueGeneration = 0;
 let selected = -1, page = 0, nextId = 1, busy = false, recording = false;
 let mapHash: { revision: number; digest: string | null } | null = null;
 const state = $<HTMLSelectElement>("pg-lane-task-state"), note = $<HTMLTextAreaElement>("pg-lane-task-note");
@@ -28,18 +30,23 @@ export function invalidateLaneTasks(reason: string): void {
 }
 export function setLaneTasksBusy(value: boolean): void { busy = value; renderTaskControls(); }
 export async function recordSurveyLaneTask(review: SurveyReview, candidate: ChangeCandidate, lane: SurveyLane,
-  overlap: SurveyLaneTask["overlap"], revision: number, canCommit: () => boolean, remainsCurrent: () => boolean, captureCores: () => Promise<LaneCoreSnapshot>): Promise<void> {
+  overlap: SurveyLaneTask["overlap"], revision: number, canCommit: () => boolean, remainsCurrent: () => boolean, captureCores: () => Promise<LaneCoreSnapshot>, resume = false): Promise<void> {
   if (busy || recording) return;
+  const generation = queueGeneration, sourceCurrent = canCommit;
+  canCommit = () => generation === queueGeneration && sourceCurrent();
+  const resumable = resume ? records.filter(entry => !entry.valid && !entry.task.staleReason &&
+    entry.task.candidate.rank === candidate.rank && entry.task.lane.id === lane.id) : [];
   recording = true; renderTaskControls();
   try {
     if (!canCommit()) throw new Error("The lane overlap changed; inspect it again before recording");
-    const duplicate = records.findIndex(entry => entry.valid && entry.valid() && entry.task.comparison.analyzedAt === review.analyzedAt &&
+    const duplicate = records.findIndex(entry => entry.valid && entry.valid() &&
       entry.task.candidate.rank === candidate.rank && entry.task.lane.id === lane.id);
     if (duplicate >= 0) {
       selected = duplicate; page = Math.floor(selected / 50); renderTasks();
       setStatus("This candidate and lane already have a current follow-up record."); return;
     }
-    if (records.length >= LANE_TASK_LIMIT) throw new Error("Lane task queue is limited to 1,000 records");
+    if (resume && resumable.length !== 1) throw new Error("Select a lane with exactly one saved task awaiting verification");
+    if (!resume && records.length >= LANE_TASK_LIMIT) throw new Error("Lane task queue is limited to 1,000 records");
     setStatus(`Recording candidate #${candidate.rank}, lane ${lane.id}…`);
     if (!mapHash || mapHash.revision !== revision) {
       const text = await captureMapProject();
@@ -52,11 +59,21 @@ export async function recordSurveyLaneTask(review: SurveyReview, candidate: Chan
     const coreSupport = await captureCores();
     if (!canCommit()) throw new Error("Map, comparison or selection changed while collecting core evidence; inspect it again");
     const task = newLaneTask(nextId, review, candidate, lane, overlap, mapHash.digest, coreSupport);
+    if (resume) {
+      const entry = resumable[0];
+      entry.task = resumeLaneTask(entry.task, task);
+      entry.valid = remainsCurrent;
+      selected = records.indexOf(entry); page = Math.floor(selected / 50);
+      $<HTMLDetailsElement>("pg-lane-tasks").open = true;
+      projectChanged(); renderTasks();
+      setStatus(`Resumed task ${entry.task.id}; saved decision and note retained.`);
+      return;
+    }
     // Validate the export budget before committing, reserving 256 bytes per record for the fixed historical-reason messages.
     const proposed = laneTaskFile([...records.map(entry => entry.task), task]);
     if (new Blob([JSON.stringify(proposed, null, 2)]).size + 256 * proposed.tasks.length > LANE_TASK_BYTES) throw new Error("Lane task records exceed the 16 MiB export limit");
     parseLaneTaskFile(proposed);
-    records.push({ task, valid: remainsCurrent }); nextId++;
+    records.push({ task, valid: remainsCurrent }); nextId++; projectChanged();
     selected = records.length - 1; page = Math.floor(selected / 50);
     $<HTMLDetailsElement>("pg-lane-tasks").open = true;
     renderTasks(); setStatus(`Recorded candidate #${candidate.rank}, lane ${lane.id} for human follow-up.`);
@@ -64,7 +81,7 @@ export async function recordSurveyLaneTask(review: SurveyReview, candidate: Chan
   finally { recording = false; renderTaskControls(); }
 }
 function renderTaskControls(): void {
-  const entry = records[selected], locked = busy || recording || !entry || !!entry.task.staleReason;
+  const entry = records[selected], locked = busy || recording || !entry || !entry.valid || !!entry.task.staleReason;
   state.disabled = note.disabled = locked;
   $<HTMLButtonElement>("pg-lane-task-save").disabled = locked;
   $<HTMLButtonElement>("pg-lane-task-inspect").disabled = locked;
@@ -74,7 +91,7 @@ function renderTaskControls(): void {
 }
 function renderTasks(): void {
   const tasks = records.map(entry => entry.task), counts = laneTaskCounts(tasks);
-  $("pg-lane-task-summary").textContent = `${tasks.length} follow-up records; ${tasks.filter(task => !!task.staleReason).length} historical. ` +
+  $("pg-lane-task-summary").textContent = `${tasks.length} follow-up records; ${records.filter(entry => !entry.valid || !!entry.task.staleReason).length} historical. ` +
     Object.entries(counts).map(([key, value]) => `${value} ${LANE_TASK_STATES[key as keyof typeof counts].toLowerCase()}`).join(" · ");
   $("pg-lane-task-list").replaceChildren(...records.slice(page * 50, (page + 1) * 50).map((entry, i) => {
     const li = document.createElement("li"), button = document.createElement("button");
@@ -90,7 +107,7 @@ function renderTasks(): void {
   if (task) {
     $("pg-lane-task-title").textContent = `Task ${task.id} · lane ${task.lane.id} · candidate #${task.candidate.rank}`;
     $("pg-lane-task-source").textContent = `${task.comparison.graph} · comparison ${task.comparison.analyzedAt}. ` +
-      `XY margin ${task.overlap.xyMargin} m; height margin ${task.overlap.zMargin} m. ` + (task.staleReason ?? "Current source snapshot.") + " " + laneCoreSnapshotText(task.coreSupport);
+      `XY margin ${task.overlap.xyMargin} m; height margin ${task.overlap.zMargin} m. ` + (task.staleReason ?? (records[selected]?.valid ? "Current source snapshot." : "Saved snapshot awaiting verification. Use Resume saved task in Related map lanes after restoring the matching comparison decisions.")) + " " + laneCoreSnapshotText(task.coreSupport);
     state.value = task.status; note.value = task.note;
   }
   renderTaskControls();
@@ -99,12 +116,13 @@ $("pg-lane-task-save").onclick = () => {
   if (busy || recording || !records[selected]) return;
   const entry = records[selected];
   try {
-    if (entry.valid && !entry.valid()) expire(entry, "Source changed before saving the task decision.");
+    if (!entry.valid || !entry.valid()) throw new Error("Verify the saved task against the current comparison and map before editing");
     const updated = structuredClone(entry.task);
     setLaneTaskDecision(updated, state.value, note.value);
     const proposed = laneTaskFile(records.map(record => record === entry ? updated : record.task));
     if (new Blob([JSON.stringify(proposed, null, 2)]).size + 256 * proposed.tasks.length > LANE_TASK_BYTES) throw new Error("Task notes exceed the 16 MiB export limit");
     entry.task = updated;
+    projectChanged();
     renderTasks(); setStatus("Lane follow-up decision saved; map and survey judgments unchanged.");
   } catch (err) { setStatus(errorText(err), true); renderTasks(); }
 };
@@ -145,3 +163,16 @@ fileInput.onchange = async () => {
 };
 $("pg-lane-task-archive-close").onclick = () => { archiveGeneration++; $("pg-lane-task-archive").hidden = true; $("pg-lane-task-archive-list").replaceChildren(); };
 renderTasks();
+
+export function captureSurveyLaneTasks(): unknown | undefined {
+  refreshLaneTasks();
+  return records.length ? structuredClone(laneTaskFile(records.map(entry => entry.task))) : undefined;
+}
+export function restoreSurveyLaneTasks(value: unknown | undefined): void {
+  const tasks = value === undefined ? [] : parseLaneTaskFile(value);
+  queueGeneration++;
+  records.splice(0, records.length, ...tasks.map(task => ({ task, valid: null })));
+  nextId = Math.max(0, ...tasks.map(task => task.id)) + 1;
+  selected = tasks.length ? 0 : -1; page = 0; mapHash = null;
+  renderTasks();
+}

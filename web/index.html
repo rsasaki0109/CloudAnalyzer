@@ -102,6 +102,13 @@
           <p class="hint small">Open a review ZIP from your mapping agent. The point map and HD map share their original coordinates. Opening replaces the current HD map.</p>
           <div id="mapping-review-result" hidden>
             <p id="mapping-review-summary" class="small" role="status"></p>
+            <details open><summary>Saved quality and unresolved items</summary><ul id="mapping-review-holds" class="small"></ul></details>
+            <details id="mapping-review-provenance"><summary>Original SLAM producer</summary><ul id="mapping-review-producer" class="small"></ul></details>
+            <details id="mapping-review-history"><summary>Generation decision history</summary><p id="mapping-review-history-summary" class="small"></p><ol id="mapping-review-history-list" class="small"></ol></details>
+            <button id="mapping-location-clear" hidden>Clear source interval</button><p id="mapping-location-status" class="hint small"></p>
+            <label class="inline"><input id="mapping-trajectory-show" type="checkbox" disabled /> Show saved trajectory</label>
+            <button id="mapping-trajectory-fit" disabled>Fit saved trajectory</button>
+            <p id="mapping-trajectory-status" class="hint small"></p>
             <button id="mapping-review-download" disabled>Download original map package</button>
             <label>Saved source audit <select id="mapping-review-audit"></select></label>
             <p id="mapping-review-state" class="hint small" role="status"></p>
@@ -988,12 +995,12 @@
           <p id="pg-change-summary" class="hint small" aria-live="polite"></p>
           <p class="hint small">Decisions are human judgments. Weighted residuals are not metres or independent accuracy checks. Unmeasured areas and small changes remain outside the candidate list. Signed distances do not label additions or removals; newly visible surfaces may need a reverse comparison.</p>
           <button id="pg-change-export">Save review JSON</button>
-          <p class="hint small">Save before rerunning or leaving this page. Review decisions are not included in browser projects.</p>
+          <p class="hint small">Save before rerunning or leaving this page. Project saves include review decisions; resuming them requires matching comparison contents.</p>
         </div>
         <details id="pg-lane-tasks">
           <summary>Lane follow-up tasks</summary>
           <p id="pg-lane-task-summary" class="hint small" aria-live="polite"></p>
-          <p class="hint small">Record a related lane for human follow-up. Decisions here do not edit the map. Save JSON before leaving; tasks are not included in project autosave.</p>
+          <p class="hint small">Record a related lane for human follow-up. Decisions here do not edit the map. Project autosave includes saved task decisions. After reopening, use Resume saved task in Related map lanes to verify the source evidence before editing.</p>
           <ol id="pg-lane-task-list" class="loop-list"></ol>
           <div class="button-row">
             <button id="pg-lane-task-prev">Previous tasks</button>

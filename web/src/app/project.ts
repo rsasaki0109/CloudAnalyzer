@@ -1,3 +1,5 @@
+import { captureSurveyReview, restoreSurveyReview } from "./change-review";
+import { captureSurveyLaneTasks, restoreSurveyLaneTasks } from "./survey-lane-tasks";
 /** Portable editing projects; source files stay external and are verified. */
 import { parseProject, projectSources, type Project, type ControlSetting, type SavedPoseGraph } from "../project";
 import { captureNamedAreas, replaceNamedAreas } from "../named-areas";
@@ -112,7 +114,7 @@ export async function captureProject(signal: AbortSignal, progress = true, snaps
   const archive = assets ? captureReviewArchive() : null;
   if (archive) assets?.push(archive);
   const reviewArchive = archive ? await referenceFile(archive,signal) : undefined;
-  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap: map, poseGraph, settings, reviews, reviewAreas, ...(reviewArchive ? {reviewArchive} : {}) };
+  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap: map, poseGraph, settings, reviews, reviewAreas, surveyReview: captureSurveyReview(), surveyLaneTasks: captureSurveyLaneTasks(), ...(reviewArchive ? {reviewArchive} : {}) };
 }
 
 /** Stage projects before loading; graph inputs go to the graph reader. */
@@ -234,7 +236,7 @@ export async function restoreWorkspaceFiles(files: File[], extraFiles: File[] = 
     renderList();takePreparedGraph(prepared.graph,project.poseGraph??undefined);takePreparedMap("project-map.json",JSON.parse(prepared.map));
     replaceNamedAreas(project.reviewAreas ?? []);
     restoreSettings(project.settings);$("memory-apply").click();
-    await applySession(project.session,true);restoreLaneReviews(project.reviews);restoreReviewDraft(draft);
+    await applySession(project.session,true);restoreLaneReviews(project.reviews);restoreSurveyReview(project.surveyReview);restoreSurveyLaneTasks(project.surveyLaneTasks);restoreReviewDraft(draft);
     await restoreReviewArchive(archive,signal,archivedReview);
     pending=null;pendingWorkspace=null;pendingDraft=undefined;available.clear();restoringBrowser=false;
     if(browser) {offerRecovery=false;autosave.recovered();}
@@ -320,7 +322,7 @@ export async function completePendingProject(): Promise<void> {
     $("memory-apply").click();
     if (!clearCloudHistory()) throw new Error("Finish Undo or Redo before opening a project");
     await applySession(project.session, true);
-    restoreLaneReviews(project.reviews);
+    restoreLaneReviews(project.reviews);restoreSurveyReview(project.surveyReview);restoreSurveyLaneTasks(project.surveyLaneTasks);
     restoreReviewDraft(pendingDraft);
     await restoreReviewArchive(archive, signal, archivedReview);
     pendingDraft = undefined;

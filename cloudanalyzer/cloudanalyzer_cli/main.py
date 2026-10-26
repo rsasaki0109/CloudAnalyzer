@@ -1982,6 +1982,99 @@ def mapping_run_cmd(
         raise typer.Exit(1)
 
 
+@app.command("mapping-prepare-glim-recording")
+def mapping_prepare_glim_recording_cmd(
+    lidar: str = typer.Argument(..., help="ROS2 point cloud MCAP"),
+    imu: str = typer.Option(..., "--imu", help="ROS2 raw IMU MCAP"),
+    points_topic: str = typer.Option(..., "--points-topic"),
+    imu_topic: str = typer.Option(..., "--imu-topic"),
+    max_imu_gap: float = typer.Option(.05, "--max-imu-gap", min=1e-9, max=3600, help="Maximum IMU header interval in seconds; default 50 ms"),
+    out: str = typer.Option(..., "--out", help="New recording and receipt directory"),
+) -> None:
+    """Join selected point/IMU streams unchanged and run the GLIM input diagnostic."""
+    from ca.glim_recording import prepare_glim_recording
+    try:
+        result = prepare_glim_recording(lidar, imu, out, points_topic, imu_topic, max_imu_gap_s=max_imu_gap)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result['status'] != 'basic_checks_passed':
+        raise typer.Exit(1)
+
+
+@app.command("mapping-check-glim")
+def mapping_check_glim_cmd(
+    bag: str = typer.Argument(..., help="ROS2 MCAP recording"),
+    points_topic: str = typer.Option(..., "--points-topic"),
+    imu_topic: str = typer.Option(..., "--imu-topic"),
+    max_imu_gap: float = typer.Option(.05, "--max-imu-gap", min=1e-9, max=3600, help="Maximum IMU header interval in seconds; default 50 ms"),
+) -> None:
+    """Inspect GLIM input sensor availability and timestamps without running SLAM."""
+    from ca.glim_preflight import inspect_glim_bag
+    try:
+        result = inspect_glim_bag(bag, points_topic, imu_topic, max_imu_gap_s=max_imu_gap)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result['status'] != 'basic_checks_passed':
+        raise typer.Exit(1)
+
+
+@app.command("mapping-inspect-glim")
+def mapping_inspect_glim_cmd(
+    directory: str = typer.Argument(..., help="GLIM run directory containing glim-run.json"),
+) -> None:
+    """Recheck recorded GLIM inputs, configuration and trajectory without running SLAM."""
+    from ca.glim_inspect import inspect_glim_run
+    try:
+        result = inspect_glim_run(directory)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result['status'] != 'recorded_files_match':
+        raise typer.Exit(1)
+
+
+@app.command("mapping-run-glim")
+def mapping_run_glim_cmd(
+    bag: str = typer.Argument(..., help="ROS2 MCAP file or bag directory"),
+    config: str = typer.Option(..., "--config", help="Complete sensor-specific GLIM configuration directory"),
+    out: str = typer.Option(..., "--out", help="New run directory"),
+    image: str = typer.Option(..., "--image", help="Already installed GLIM ROS2 Docker image"),
+    points_topic: str | None = typer.Option(None, "--points-topic", help="Enable input preflight for this MCAP point topic; also supply --imu-topic"),
+    imu_topic: str | None = typer.Option(None, "--imu-topic", help="MCAP IMU topic to preflight before starting Docker"),
+    max_imu_gap: float = typer.Option(.05, "--max-imu-gap", min=1e-9, max=3600),
+    timeout: float = typer.Option(3600, "--timeout", min=1, help="Maximum execution seconds"),
+) -> None:
+    """Execute GLIM in Docker and retain input hashes, logs and dump artifacts."""
+    from ca.glim_run import run_glim
+    import subprocess
+    try:
+        result = run_glim(bag, config, out, image, timeout, points_topic=points_topic, imu_topic=imu_topic, max_imu_gap_s=max_imu_gap)
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result['status'] != 'process_succeeded':
+        raise typer.Exit(1)
+
+
+@app.command("mapping-prepare-glim")
+def mapping_prepare_glim_cmd(
+    dump: str = typer.Argument(..., help="GLIM dump containing global traj_lidar.txt"),
+    point_map: str = typer.Option(..., "--map", help="PLY exported from the same optimized GLIM state"),
+    out: str = typer.Option(..., "--out", help="New directory for trajectory and provenance"),
+    run_report: str | None = typer.Option(None, "--run-report", help="Successful GLIM run report to bind to this exact trajectory"),
+    provenance: str = typer.Option(..., "--provenance", help="Explicit GLIM version, source, frame, time and configuration JSON"),
+) -> None:
+    """Prepare a GLIM global LiDAR export for mapping-import, without running SLAM."""
+    from ca.glim_import import prepare_glim_export
+    try:
+        result = prepare_glim_export(dump, point_map, out, _load_json_mapping(provenance), run_report=run_report)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-import")
 def mapping_import_cmd(
     point_map: str = typer.Argument(..., help="Existing PLY map; referenced without copying"),

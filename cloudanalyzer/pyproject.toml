@@ -55,11 +55,13 @@ Issues = "https://github.com/rsasaki0109/CloudAnalyzer/issues"
 Documentation = "https://github.com/rsasaki0109/CloudAnalyzer#readme"
 
 [project.optional-dependencies]
+benchmark = ["psutil>=5.9"]
 dev = [
     "build>=1.2.2",
     "mypy",
     "pkginfo>=1.12.0",
     "pytest",
+    "psutil>=5.9",
     "pyproj>=3.6",
     "twine>=6.0.0",
 ]
@@ -77,6 +79,8 @@ slam = [
 ]
 ros = [
     "rosbags>=0.10",
+    "mcap>=1.2",
+    "zstandard>=0.22",
 ]
 gs = [
     "torch>=2.0.0",

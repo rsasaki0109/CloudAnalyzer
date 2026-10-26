@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { changeCandidates } from '../src/change-review.ts';
-import { newLaneTask, laneTaskFile, parseLaneTaskFile, setLaneTaskDecision, laneTaskCounts } from '../src/survey-lane-tasks.ts';
+import { resumeLaneTask, newLaneTask, laneTaskFile, parseLaneTaskFile, setLaneTaskDecision, laneTaskCounts } from '../src/survey-lane-tasks.ts';
 const source = () => ({ analyzedAt: '2026-10-24T00:00:00.000Z', context: { graph: 'survey' }, identity: { algorithm: 'sha256-ply-graph-v1', digest: 'a'.repeat(64) }, staleReason: null });
 const candidate = () => changeCandidates(new Float64Array([8,.5,.5,.5,0,0,0,1,1,1,.5]))[0];
 const lane = () => ({ id: 101, left: [[-1,2,0],[2,2,0]], right: [[-1,-1,0],[2,-1,0]] });
@@ -80,4 +80,37 @@ test('core evidence rejects inconsistent counts, settings, status, reason and pr
     const record=newLaneTask(1,source(),candidate(),lane(),overlap(),null,evidence());
     mutate(record.coreSupport);assert.throws(()=>parseLaneTaskFile(laneTaskFile([record])));
   }
+});
+
+
+test('matching rerun resumes saved task decisions without rebasing timestamps or trusting lane IDs alone', () => {
+  const saved = task(); setLaneTaskDecision(saved, 'deferred', 'Keep this note');
+  const current = task(99); current.comparison.analyzedAt = '2026-10-26T00:00:00.000Z';
+  const result = resumeLaneTask(saved, current);
+  assert.deepEqual(result, saved);
+  result.note = 'new'; assert.equal(saved.note, 'Keep this note');
+  current.overlap = Object.fromEntries(Object.entries(current.overlap).reverse());
+  assert.deepEqual(resumeLaneTask(saved, current), saved);
+});
+
+test('mismatched, unknown or invalidated evidence never unlocks a saved task', () => {
+  const saved = task(); setLaneTaskDecision(saved, 'update-needed', 'retain');
+  for (const mutate of [
+    t => t.comparison.identity = null,
+    t => t.comparison.identity.digest = 'c'.repeat(64),
+    t => t.mapSha256 = null,
+    t => t.mapSha256 = 'd'.repeat(64),
+    t => t.candidate.note = 'different decision',
+    t => t.candidate.bounds[0] = -2,
+    t => t.lane.left[0][2] = 1,
+    t => t.overlap.zMargin = 2,
+    t => t.coreSupport = { protocol:'xy-lane-z-v1',status:'complete',total:8,supported:0,heightMarginM:1,reason:null },
+    t => t.staleReason = 'Map changed',
+  ]) {
+    const current = task(), original = structuredClone(saved); mutate(current);
+    assert.throws(() => resumeLaneTask(saved, current));
+    assert.deepEqual(saved, original);
+  }
+  const stale = task(); stale.staleReason = 'Map changed';
+  assert.throws(() => resumeLaneTask(stale, task()));
 });

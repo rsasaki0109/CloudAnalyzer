@@ -8,7 +8,7 @@ contents under the Database Contents License; the bag is a derived database unde
     python scripts/prepare_nclt.py 2012-04-29 nclt/2012-04-29      # the scans, sensors and keyframe times
     python scripts/make_nclt_bag.py nclt/2012-04-29 2520 2740 web/public/samples/nclt-2012-04-29.mcap
     python scripts/make_nclt_bag.py nclt/2012-06-15 2476 2700 web/public/samples/nclt-2012-06-15.mcap
-    # pip install numpy mcap zstandard
+    # pip install numpy mcap zstandard rosbags
 
 takes the drive from keyframe ``first`` to keyframe ``end`` (``times.txt``): every ``--every``-th Velodyne
 scan (5 Hz in ``velodyne_sync``) on ``/velodyne_points`` (sensor_msgs/PointCloud2), in the frame the
@@ -25,6 +25,7 @@ import mcap.writer
 import numpy as np
 import zstandard
 from mcap.writer import CompressionType, Writer
+from nclt_ros2_schemas import schemas
 
 # The mcap writer compresses at zstd's default level; a demo downloaded by every visitor is worth level 19.
 mcap.writer.zstandard.compress = lambda data: zstandard.ZstdCompressor(level=19).compress(data)  # type: ignore
@@ -159,8 +160,9 @@ total = 0
 with open(args.out, "wb") as f:
     w = Writer(f, compression=CompressionType.ZSTD, chunk_size=1 << 20)
     w.start(profile="ros2", library="CloudAnalyzer make_nclt_bag.py")
-    cloud_schema = w.register_schema(name="sensor_msgs/msg/PointCloud2", encoding="ros2msg", data=b"")
-    imu_schema = w.register_schema(name="sensor_msgs/msg/Imu", encoding="ros2msg", data=b"")
+    definitions = schemas()
+    cloud_schema = w.register_schema(name="sensor_msgs/msg/PointCloud2", encoding="ros2msg", data=definitions["sensor_msgs/msg/PointCloud2"])
+    imu_schema = w.register_schema(name="sensor_msgs/msg/Imu", encoding="ros2msg", data=definitions["sensor_msgs/msg/Imu"])
     clouds = w.register_channel(topic="/velodyne_points", message_encoding="cdr", schema_id=cloud_schema)
     imus = w.register_channel(topic="/imu", message_encoding="cdr", schema_id=imu_schema)
     for k, (ns, kind, up) in enumerate(messages):

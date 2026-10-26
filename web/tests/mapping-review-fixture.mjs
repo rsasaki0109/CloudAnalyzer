@@ -17,9 +17,18 @@ export function quality(failed = true) {
 export function fixture() {
   const evidence = {editable:{quality:quality()},reopened_osm:{quality:quality()},
     ground_consensus:{editable:{quality:quality(false)},reopened_osm:{quality:quality(false)}}};
-  const data = {map:cloud,graph:Buffer.from('graph'),trajectory:Buffer.from('1 0 0 0 0 1 0 0 0 0 1 0\n'),
+  const data = {map:cloud,graph:Buffer.from('graph'),trajectory:Buffer.from('1 0 0 0 0 1 0 0 0 0 1 2\n1 0 0 10 0 1 0 0 0 0 1 2\n1 0 0 10 0 1 0 10 0 0 1 2\n'),
     hd_map:Buffer.from('<osm/>'),hd_editable_map:Buffer.from(JSON.stringify(map)),hd_projector:Buffer.from('projector_type: Local'),
-    hd_source_audits:Buffer.from(JSON.stringify(evidence)),layout_hypothesis:Buffer.from('{}'),source_proposal:Buffer.from('{}'),decision_history:Buffer.from('{}')};
+    hd_source_audits:Buffer.from(JSON.stringify(evidence)),layout_hypothesis:Buffer.from('{}'),source_proposal:Buffer.from(JSON.stringify({schema:'cloudanalyzer.corridor_proposals.v1',coordinate_frame:'local_slam_metres',candidates:[{id:1,from_m:10,to_m:20,sections:[
+      {station_m:10,left:[0,1.75,2],right:[0,-1.75,2]},{station_m:20,left:[10,1.75,2],right:[10,-1.75,2]},
+    ]}]})),decision_history:Buffer.from(JSON.stringify({schema:'cloudanalyzer.mapping_run.v1',history:[
+      {sequence:1,action:{type:'inspect',candidate_ids:[1]},reason:'Inspect recorded source evidence',status:'inspected'},
+      {sequence:2,action:{type:'draft',decisions:[{candidate_id:1,action:'defer',from_m:10,to_m:20,reason:'Source observations are insufficient'}]},reason:'Keep the unsupported interval unresolved',status:'audited_draft'},
+      {sequence:3,action:{type:'finish',candidate_id:2},reason:'Retain the draft with review holds',status:'finished'},
+    ]}))};
+  const history=JSON.parse(data.decision_history.toString());
+  for(const step of history.history)step.proposal_sha256=hash(data.source_proposal);
+  data.decision_history=Buffer.from(JSON.stringify(history));
   const roles = {}, files = [], entries = [], artifacts = {};
   for (const [role, value] of Object.entries(data)) {
     const path = `files/${role}${role === 'map'?'.ply':'.json'}`;
@@ -82,4 +91,40 @@ export function previewFixture() {
 export function packagePreview(change=()=>{}) {
   const data=previewFixture();change(data);
   return zip([['manifest.json',Buffer.from(JSON.stringify(data.manifest))],...data.entries]);
+}
+
+export function addGlimEvidence(data, {version='test GLIM', mutateRun}={}) {
+  const add = (role, bytes) => {
+    const path=`files/${role}.json`, descriptor={path,bytes:bytes.length,sha256:hash(bytes)};
+    data.entries.push([path,bytes]);data.manifest.files.push(descriptor);data.manifest.roles[role]=path;
+    return descriptor;
+  };
+  const trajectory=add('source_trajectory',Buffer.from('1 0 0 0 0 0 0 1\n2 1 0 0 0 0 0 1\n'));
+  const run={schema:'cloudanalyzer.glim_run.v1',status:'process_succeeded',exit_code:0,
+    inputs_unchanged:true,configuration_copy_matches:true,image_id:`sha256:${'a'.repeat(64)}`,
+    trajectory,trajectory_check:trajectory};
+  mutateRun?.(run);
+  const report=add('glim_execution_report',Buffer.from(JSON.stringify(run)));
+  add('slam_import',Buffer.from(JSON.stringify({schema:'cloudanalyzer.mapping_slam_import.v1',
+    producer_declaration:{backend:'GLIM',version},inputs:{source_trajectory:trajectory,glim_execution_report:report}})));
+}
+
+
+export function addPassingGlimPreflight(run) {
+  const input={path:'/original/recording.mcap',sha256:'b'.repeat(64),bytes:1234};
+  run.inputs={bag:[input]};
+  run.input_preflight_status='basic_checks_passed';
+  run.input_preflight={schema:'cloudanalyzer.glim_preflight.v1',status:'basic_checks_passed',input:{...input},
+    points_topic:'/points',imu_topic:'/raw',issues:[],warnings:[],
+    imu_gaps:{limit_ns:50_000_000,max_observed_ns:10_000_000,count:0}};
+}
+
+export function addMatchedGlimConfiguration(run) {
+  addPassingGlimPreflight(run);
+  const files = ['config.json', 'selected/config_ros.json'].map((name, i) => ({
+    path:`/original/config/${name}`, relative_path:name, bytes:100 + i, sha256:String(i + 1).repeat(64),
+  }));
+  run.inputs.configuration = files;
+  run.config_topics = {schema:'cloudanalyzer.glim_config_topics.v1', status:'matched',
+    points_topic:'/points', imu_topic:'/raw', files:files.map(file => ({...file}))};
 }

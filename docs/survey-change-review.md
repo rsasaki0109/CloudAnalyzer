@@ -79,8 +79,7 @@ point order can prevent resumption even when a scene looks similar.
 The JSON contains neither the recordings nor a self-contained reproducible dataset.
 Its digest is a matching aid, not proof of reviewer identity or file authenticity.
 
-Save before rerunning, refreshing or leaving the page. Reviews are not included
-in browser project saves/autosave. A successful new comparison starts a fresh
+Save before rerunning, refreshing or leaving the page. Project saves/autosave include the latest live review (or the opened review when no live review exists). Restoring opens saved evidence for inspection; rerun the matching comparison and use Resume saved decisions before editing. A successful new comparison starts a fresh
 review and hides the earlier comparison clouds, which remain in the cloud list.
 A failed rerun leaves the earlier record available as historical evidence.
 Changing graph poses/constraints, closing/replacing the graph or modifying/removing
@@ -113,8 +112,7 @@ M3C2. Matching uses the complete evidence, never candidate rank or filenames alo
 A changed input, setting, graph or candidate geometry prevents resumption.
 Historical reviews (including those invalidated by closing/changing a graph)
 cannot resume decisions. The earlier judgments stay available for reference.
-This is an explicit JSON save/open workflow; browser projects/autosave still do
-not contain these reviews.
+This is an explicit JSON save/open workflow; browser projects/autosave also retain this saved evidence.
 
 ## Inspect related map lanes
 
@@ -235,7 +233,7 @@ its source or selection changes before it finishes.
 and their status totals. Lists page at 50 records; totals include historical
 records. Limits are 1,000 tasks, 100,000 copied boundary vertices and 16 MiB of
 exported JSON. Exceeding a limit leaves the queue/saved decision unchanged.
-Save before leaving the page: this queue is not part of browser project autosave.
+Save before leaving the page: project saves/autosave also retain this queue. Restored tasks remain locked until their evidence is verified. After rerunning the same comparison, resuming its saved decisions and confirming the map frame, use **Resume saved task for lane ID** in Related map lanes. Exactly one saved nonhistorical task must match the comparison identity, complete map hash, candidate judgment, lane geometry, overlap settings and core evidence. Successful resumption preserves the task ID, status, note and timestamps. Changed or missing evidence leaves it locked; tasks invalidated by source edits remain historical.
 
 **Open lane tasks JSON…** validates a saved file and opens it as a separate,
 read-only historical list. It never merges into the live queue, changes a map,

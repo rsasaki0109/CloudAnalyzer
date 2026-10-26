@@ -1,3 +1,5 @@
+import { parseSurveyReview, SURVEY_REVIEW_BYTES } from "./survey-review-archive";
+import { parseLaneTaskFile, LANE_TASK_BYTES } from "./survey-lane-tasks";
 import { parseReviews, type LaneReview } from "./lane-review";
 import { parseNamedAreas, type NamedArea } from "./named-areas.ts";
 import { parseSession, type Session } from "./session";
@@ -31,6 +33,8 @@ export interface Project {
   /** Immutable original agent review ZIP; its audits do not describe later edits. */
   reviewArchive?: SourceReference;
   reviewAreas?: NamedArea[];
+  surveyReview?: unknown;
+  surveyLaneTasks?: unknown;
 }
 
 const object = (v: unknown): Record<string, unknown> => {
@@ -103,7 +107,18 @@ export function parseProject(input: unknown): Project {
   const reviewArchive = p.reviewArchive === undefined ? undefined : parseSource(p.reviewArchive);
   if (reviewArchive && reviewArchive.kind !== "file") throw new Error("Review archive must be a local file");
   const reviewAreas = p.reviewAreas === undefined ? undefined : parseNamedAreas(p.reviewAreas);
-  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap, poseGraph, settings, reviews: parseReviews(p.reviews ?? []), ...(reviewArchive ? {reviewArchive} : {}), ...(reviewAreas ? {reviewAreas} : {}) };
+  for (const [value, limit, parse] of [
+    [p.surveyReview, SURVEY_REVIEW_BYTES, parseSurveyReview],
+    [p.surveyLaneTasks, LANE_TASK_BYTES, parseLaneTaskFile],
+  ] as const) {
+    if (value !== undefined) {
+      if (new TextEncoder().encode(JSON.stringify(value)).length > limit) throw new Error("Project survey evidence exceeds its size limit");
+      parse(value);
+    }
+  }
+  return { ...(p.surveyReview === undefined ? {} : { surveyReview: p.surveyReview }),
+    ...(p.surveyLaneTasks === undefined ? {} : { surveyLaneTasks: p.surveyLaneTasks }),
+    app: "CloudAnalyzer Project", version: 1, session, vectorMap, poseGraph, settings, reviews: parseReviews(p.reviews ?? []), ...(reviewArchive ? {reviewArchive} : {}), ...(reviewAreas ? {reviewAreas} : {}) };
 }
 
 export function projectSources(project: Project): SourceReference[] {

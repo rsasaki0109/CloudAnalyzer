@@ -514,3 +514,11 @@ formatter. Unknown accuracy and human intervention counts remain explicit;
 diagnostic strings escape terminal controls. Tests cover read-only CLI output,
 comparison direction, unavailable evidence, binding/process diagnostics and
 module/main-CLI parity.
+
+### Save scorecards to a new report file
+
+Both scorecard entry points support `--output FILE` for JSON or `--text` reports.
+Save UTF-8 with a trailing newline and suppress stdout. A flushed temporary file
+is published exclusively without replacing existing files, symlinks or concurrent
+writers. The parent directory must exist. Tests cover formats, comparisons,
+input preservation, module parity, failures/interruption and a raced destination.

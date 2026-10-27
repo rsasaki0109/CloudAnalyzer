@@ -5,7 +5,9 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
+import tempfile
 
 
 MAX_METADATA_BYTES = 32 * 1024**2
@@ -246,15 +248,42 @@ def format_text(result: dict) -> str:
     return '\n'.join(lines)
 
 
+def save_output(path: str, content: str) -> None:
+    """Publish a complete UTF-8 report without overwriting an existing path."""
+    target = Path(path)
+    if target.exists() or target.is_symlink():
+        raise FileExistsError(f'output already exists: {target}')
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=target.parent,
+                                         prefix='.ca-scorecard-', suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(content + '\n')
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, target)
+    finally:
+        if temporary is not None:
+            temporary.unlink()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('run')
     parser.add_argument('--baseline')
     parser.add_argument('--text', action='store_true', help='Show a readable summary instead of JSON')
+    parser.add_argument('--output', help='Save to a new file instead of stdout; parent directory must exist')
     args = parser.parse_args()
     current = scorecard(args.run)
     result = compare(scorecard(args.baseline), current) if args.baseline else current
-    print(format_text(result) if args.text else json.dumps(result, indent=2, allow_nan=False))
+    content = format_text(result) if args.text else json.dumps(result, indent=2, allow_nan=False)
+    if args.output is not None:
+        try:
+            save_output(args.output, content)
+        except OSError as error:
+            parser.error(str(error))
+    else:
+        print(content)
 
 
 if __name__ == '__main__':

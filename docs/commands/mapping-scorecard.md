@@ -7,6 +7,8 @@ ca mapping-scorecard runs/current
 ca mapping-scorecard runs/current --baseline runs/previous > comparison.json
 ca mapping-scorecard runs/current --text
 ca mapping-scorecard runs/current --baseline runs/previous --text
+ca mapping-scorecard runs/current --output scorecard.json
+ca mapping-scorecard runs/current --baseline runs/previous --text --output comparison.txt
 ```
 
 The command reads `run.json`, `job.json` and optional `measurement.json`. It does
@@ -18,6 +20,15 @@ measurement status, run hashes, metrics with units, diagnostics and comparison
 reasons in the terminal. Positive deltas have a `+` sign; missing values are
 `unavailable`. Saved diagnostic strings are escaped to prevent terminal control
 characters from changing the display. Both entry points support this option.
+
+`--output FILE` saves the selected format as UTF-8 with a trailing newline and
+suppresses stdout. The parent directory must exist. Existing files and symlinks
+are rejected, including the input metadata files. A completed temporary file is
+flushed and published exclusively, so a concurrent writer is not overwritten.
+Handled write failures remove temporary files; abrupt termination can leave a
+hidden `.ca-scorecard-*.tmp` file. Publication requires filesystem hard-link
+support and does not guarantee durability after power loss. Only the explicitly
+requested output file is added; input files remain unchanged.
 
 A single scorecard includes recorded generation extent, unresolved traces,
 action count and available performance measurements. Human intervention counts

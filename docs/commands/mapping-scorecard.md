@@ -21,6 +21,11 @@ A baseline must have identical source and layout hashes. Comparison deltas are
 deltas are eligible and why they may be omitted. Known matching generation stages,
 successful current measurements, the supported protocol and matching sampling
 intervals are required. This does not establish identical hardware or system load.
+If an eligible difference overflows floating-point arithmetic, only that delta
+becomes `null`, with a reason in `delta_errors`. Other deltas and both original
+scorecards remain available. Integer-only differences remain exact. Comparison
+eligibility describes the recorded conditions, not whether every delta can be
+computed; check individual values and `delta_errors` as well.
 
 Missing, stale or damaged optional measurement evidence leaves generation
 summaries available. Unavailable metrics are `null`; `measurement_status`,

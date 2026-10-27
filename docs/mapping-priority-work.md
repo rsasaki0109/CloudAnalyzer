@@ -470,3 +470,11 @@ records a bounded error by filename, and other hashes and measured results remai
 available. Process success/failure is unchanged; scorecards cannot bind metrics
 with a missing required hash. Regression tests cover read denial and disappearance
 during hashing after both successful and failed real child commands.
+
+### Preserve comparisons when a numeric delta overflows
+
+Comparing a very large integer measurement with a float no longer aborts the
+whole comparison. The affected delta is null with a field-specific `delta_errors`
+entry; other deltas and the original scorecards remain available. Integer-only
+differences remain exact. CLI tests exercise both subtraction directions and
+verify an independent metric is still compared.

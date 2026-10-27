@@ -461,3 +461,12 @@ run/job files, preventing a summary from being paired with a later version's
 identity or receipt. Tests replace run/job metadata during receipt loading and
 check both old and updated receipts. This does not provide a multi-file atomic
 snapshot or certify that the on-disk files remain unchanged afterward.
+
+### Preserve measurements when final metadata hashing fails
+
+An operating-system error while reading final run/job metadata no longer loses
+the process receipt. The affected identity becomes null, `metadata_hash_errors`
+records a bounded error by filename, and other hashes and measured results remain
+available. Process success/failure is unchanged; scorecards cannot bind metrics
+with a missing required hash. Regression tests cover read denial and disappearance
+during hashing after both successful and failed real child commands.

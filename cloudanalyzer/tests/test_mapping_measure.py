@@ -54,6 +54,33 @@ def test_failed_command_keeps_evidence_without_claiming_success_metrics(tmp_path
     assert (root/'measurement.json').read_bytes()==before
 
 
+@pytest.mark.parametrize('filename', ['run.json', 'job.json'])
+@pytest.mark.parametrize('error_type', [PermissionError, FileNotFoundError])
+@pytest.mark.parametrize('exit_code', [0, 3])
+def test_final_hash_failure_preserves_process_receipt(tmp_path, monkeypatch, filename, error_type, exit_code):
+    root = tmp_path/'hash-failure'
+    original_open = Path.open
+    def fail_read(path, *args, **kwargs):
+        if path == root/filename and args == ('rb',):
+            raise error_type('fixture final hash read failed')
+        return original_open(path, *args, **kwargs)
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, 'open', fail_read)
+        result = measure(command(root, exit_code), str(root), .01)
+    assert result['status'] == ('process_succeeded' if exit_code == 0 else 'process_failed')
+    assert result['exit_code'] == exit_code
+    assert result['wall_time_seconds'] > 0
+    assert result['metadata_hash_errors'] == {filename:'fixture final hash read failed'}
+    key = filename.removesuffix('.json') + '_sha256'
+    other_key = 'job_sha256' if filename == 'run.json' else 'run_sha256'
+    assert result[key] is None
+    assert len(result[other_key]) == 64
+    assert json.loads((root/'measurement.json').read_text()) == result
+    card = scorecard(str(root))
+    assert card['measurement_status'] == 'stale_or_unsupported'
+    assert card['wall_time_seconds'] is None
+
+
 def test_size_ignores_external_symlinks_and_launch_failure_is_recorded(tmp_path):
     root=tmp_path/'size';root.mkdir()
     outside=tmp_path/'external';outside.write_bytes(b'x'*4096)

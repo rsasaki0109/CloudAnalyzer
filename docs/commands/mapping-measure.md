@@ -35,6 +35,12 @@ which may therefore contain child logs before the JSON. For automation, read
 timeout, interruption or invalid options return nonzero. Check `status`,
 `exit_code`, `error` and `cleanup_error` for details. Missing output-size evidence
 is null with `output_size_error`; it does not erase independent timing metrics.
+If reading `run.json` or `job.json` for its final hash fails, the receipt still
+preserves the process result and measurements. The affected hash is null and
+`metadata_hash_errors` records the error by filename. This does not change the
+child's exit status, but prevents scorecards from attaching those measurements
+to a run. Missing or nonregular metadata already has a null hash; it does not
+necessarily produce a read error.
 
 The receipt records command/script identities, platform, elapsed time, sampled
 RSS and output bytes. RSS may miss short peaks or double-count shared pages.

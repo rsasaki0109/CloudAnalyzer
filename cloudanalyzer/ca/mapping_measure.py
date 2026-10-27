@@ -165,6 +165,14 @@ def measure(command: list[str], run_dir: str, interval: float = .05, *, timeout:
     if root.is_symlink():
         raise ValueError('run directory became a symbolic link')
     size, size_error = output_size(root)
+    metadata_hashes: dict[str, str | None] = {}
+    metadata_hash_errors = {}
+    for name in ('run.json', 'job.json'):
+        try:
+            metadata_hashes[name] = file_hash(root / name)
+        except OSError as exc:
+            metadata_hashes[name] = None
+            metadata_hash_errors[name] = str(exc)[:4096]
     result = {
         'schema': SCHEMA, 'protocol': PROTOCOL, 'sample_interval_seconds': interval, 'timeout_seconds': timeout,
         'status': status, 'exit_code': code, 'error': error, 'cleanup_error': cleanup_error,
@@ -172,7 +180,8 @@ def measure(command: list[str], run_dir: str, interval: float = .05, *, timeout:
         'started_unix_seconds': started, 'wall_time_seconds': elapsed,
         'sampled_peak_tree_rss_bytes': peak, 'rss_samples': samples, 'unavailable_process_reads': missing,
         'logical_output_bytes': size, 'output_size_error': size_error,
-        'run_sha256': file_hash(root / 'run.json'), 'job_sha256': file_hash(root / 'job.json'),
+        'run_sha256': metadata_hashes['run.json'], 'job_sha256': metadata_hashes['job.json'],
+        'metadata_hash_errors': metadata_hash_errors,
         'human_interventions': None,
         'scope': 'Wall time covers process launch through observed exit, excluding final hashing and output inventory. RSS is the observed sum of parent/descendant RSS samples, may double-count shared pages and miss short-lived peaks/processes. Output size excludes this report, symlinks and external inputs; it is not peak disk use. Process success is not map quality or generation completion.',
     }

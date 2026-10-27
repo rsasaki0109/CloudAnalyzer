@@ -3,6 +3,24 @@ from __future__ import annotations
 
 from pathlib import Path
 import math
+from typing import TypedDict
+
+
+class StreamStats(TypedDict):
+    messages: int
+    first_stamp_ns: int | None
+    last_stamp_ns: int | None
+    non_increasing_stamps: int
+    invalid_stamps: int
+
+
+class ImuGaps(TypedDict):
+    limit_ns: int
+    max_observed_ns: int | None
+    count: int
+    examples: list[dict[str, int]]
+    example_limit: int
+    scope: str
 
 from ca.core.bag_ingest import require_rosbags
 from ca.mapping_job import _artifact
@@ -24,16 +42,16 @@ def inspect_glim_bag(path: str, points_topic: str, imu_topic: str, *, max_imu_ga
         raise ValueError('this preflight currently requires a ROS2 MCAP file')
     before = _artifact(bag)
     issues = set()
-    stats = {name: {'messages': 0, 'first_stamp_ns': None, 'last_stamp_ns': None,
+    stats: dict[str, StreamStats] = {name: {'messages': 0, 'first_stamp_ns': None, 'last_stamp_ns': None,
                     'non_increasing_stamps': 0, 'invalid_stamps': 0} for name in ['points', 'imu']}
     missing = {'angular_velocity': 0, 'linear_acceleration': 0}
     nonfinite = 0
-    gaps = {'limit_ns': limit_ns, 'max_observed_ns': None, 'count': 0,
+    gaps: ImuGaps = {'limit_ns': limit_ns, 'max_observed_ns': None, 'count': 0,
             'examples': [], 'example_limit': 32, 'scope': 'all selected IMU messages'}
     point_checks = {'checked_messages': 0, 'invalid_layout_messages': 0, 'points': 0,
                     'finite_points': 0, 'nonfinite_points': 0, 'nondense_messages_with_nonfinite': 0}
-    fields_seen = set()
-    frames = {'points': set(), 'imu': set()}
+    fields_seen: set[str] = set()
+    frames: dict[str, set[str]] = {'points': set(), 'imu': set()}
     AnyReader = require_rosbags()
     try:
         with AnyReader([bag]) as reader:
@@ -114,8 +132,10 @@ def inspect_glim_bag(path: str, points_topic: str, imu_topic: str, *, max_imu_ga
     if gaps['count']:
         issues.add(f"imu: {gaps['count']} header timestamp gaps exceed {limit_ns} ns")
     p, i = stats['points'], stats['imu']
-    if p['messages'] and i['messages']:
-        if i['first_stamp_ns'] > p['first_stamp_ns'] or i['last_stamp_ns'] < p['last_stamp_ns']:
+    p_first, p_last = p['first_stamp_ns'], p['last_stamp_ns']
+    i_first, i_last = i['first_stamp_ns'], i['last_stamp_ns']
+    if p_first is not None and p_last is not None and i_first is not None and i_last is not None:
+        if i_first > p_first or i_last < p_last:
             issues.add('imu: header timestamp span does not cover the point cloud span')
     after = _artifact(bag)
     if before != after:

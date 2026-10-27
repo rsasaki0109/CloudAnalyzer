@@ -151,6 +151,7 @@ def test_invalid_partial_output_does_not_mask_process_failure(inputs, monkeypatc
 
 
 def test_real_demo_preflight_blocks_before_any_docker_call(inputs,monkeypatch):
+    pytest.importorskip('rosbags')
     _,config,out=inputs
     (config/'config_ros.json').write_text(json.dumps({'glim_ros':{'points_topic':'/velodyne_points','imu_topic':'/imu'}}))
     bag=Path(__file__).resolve().parents[2]/'web/public/samples/nclt-2012-04-29.mcap'

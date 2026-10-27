@@ -49,7 +49,7 @@ def inspect_pointcloud(message) -> dict:
     endian = '>' if message.is_bigendian else '<'
     for name in 'xyz':
         field = fields[name]
-        values = np.ndarray((height, width), dtype=endian + ('f4' if field.datatype == 7 else 'f8'),
+        values: np.ndarray = np.ndarray((height, width), dtype=endian + ('f4' if field.datatype == 7 else 'f8'),
                             buffer=data, offset=field.offset, strides=(row_step, step))
         valid &= np.isfinite(values)
     finite = int(np.count_nonzero(valid))

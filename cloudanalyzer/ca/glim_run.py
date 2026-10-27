@@ -80,16 +80,18 @@ def run_glim(bag: str, config: str, out: str, image: str, timeout: float = 3600,
     checked = None
     topic_check = None
     if points_topic is not None:
+        assert imu_topic is not None
         checked = inspect_glim_bag(str(source), points_topic, imu_topic, max_imu_gap_s=max_imu_gap_s)
         try:
             topic_check = inspect_config_topics(settings, points_topic, imu_topic)
         except (OSError, ValueError) as error:
             topic_check = {'status': 'blocked', 'error': str(error)}
-    report = {'schema': SCHEMA, 'image_requested': image, 'image_id': None,
+    report: dict = {'schema': SCHEMA, 'image_requested': image, 'image_id': None,
               'inputs': inputs, 'command': [], 'status': 'initializing', 'exit_code': None,
               'input_preflight_status': checked['status'] if checked else 'not_requested',
               'input_preflight': checked, 'config_topics': topic_check, 'accuracy_verified': False, 'map_export_required': True}
     if checked:
+        assert topic_check is not None
         if (any(checked['input'][k] != inputs['bag'][0][k] for k in ('sha256', 'bytes'))
                 or inputs != {'bag': inventory(source), 'configuration': inventory(settings)}):
             report['status'] = 'inputs_changed'

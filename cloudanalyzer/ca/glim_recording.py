@@ -53,7 +53,7 @@ def prepare_glim_recording(lidar: str, imu: str, out: str, points_topic: str, im
             schemas.append(schema)
         root.mkdir(parents=True, exist_ok=False)
         output = root/'recording.mcap'
-        report = {'schema': 'cloudanalyzer.glim_recording.v1', 'inputs': inputs,
+        report: dict = {'schema': 'cloudanalyzer.glim_recording.v1', 'inputs': inputs,
                   'max_imu_gap_s': max_imu_gap_s, 'points_topic': points_topic, 'imu_topic': imu_topic, 'status': 'preparing',
                   'message_counts': [0, 0], 'calibration_verified': False,
                   'scope': 'Selected channels only; CDR payloads, log/header/publish timestamps, sequences and channel metadata preserved. No resampling, axis conversion, synchronization, deskew or calibration. Other channels, attachments and file metadata are not copied. Basic preflight success is not GLIM readiness.'}

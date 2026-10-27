@@ -46,8 +46,8 @@ def output_size(root: Path) -> tuple[int | None, str | None]:
 def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
     try:
         import psutil
-    except ImportError as error:
-        raise RuntimeError("Install cloudanalyzer[benchmark] to measure process memory") from error
+    except ImportError as import_error:
+        raise RuntimeError("Install cloudanalyzer[benchmark] to measure process memory") from import_error
 
     if not command or not .01 <= interval <= 1:
         raise ValueError('supply a command and a sample interval between .01 and 1 second')

@@ -28,7 +28,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
-          pip install -e .[dev]
+          pip install -e .[dev,ros]
 
       - name: Install example SLAM driver plugin (validates Phase 28 entry-point pathway)
         # Installs the canonical third-party SLAM driver package shipped

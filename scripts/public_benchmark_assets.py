@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import math
+import http.client
 import shutil
 import tarfile
 import tempfile
+import time
 import zipfile
 import urllib.request
+import urllib.error
 from pathlib import Path
 
 import numpy as np
@@ -34,12 +37,35 @@ RELLIS_LABEL_CONFIG_URL = (
 RELLIS_EXAMPLE_ARCHIVE_NAME = "rellis_lidar_example.zip"
 
 
+def _download_bunny_archive(path: Path) -> None:
+    """Retry transient transport failures without reusing partial archives."""
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(BUNNY_ARCHIVE_URL, timeout=30) as response:
+                with path.open('wb') as output:
+                    shutil.copyfileobj(response, output)
+                    expected = response.headers.get('Content-Length')
+                    if expected is not None and output.tell() < int(expected):
+                        raise http.client.IncompleteRead(b'', int(expected) - output.tell())
+            return
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.IncompleteRead) as error:
+            path.unlink(missing_ok=True)
+            if isinstance(error, urllib.error.HTTPError):
+                retryable = error.code in (408, 429) or 500 <= error.code < 600
+                error.close()
+                if not retryable:
+                    raise
+            if attempt == 3:
+                raise RuntimeError(f'Failed to download Stanford Bunny after 3 attempts: {BUNNY_ARCHIVE_URL}') from error
+            time.sleep(attempt)
+
+
 def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
     """Download and return the Stanford Bunny mesh."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)
         archive_path = root / "bunny.tar.gz"
-        urllib.request.urlretrieve(BUNNY_ARCHIVE_URL, archive_path)
+        _download_bunny_archive(archive_path)
         with tarfile.open(archive_path, "r:gz") as archive:
             archive.extractall(root)
         mesh_path = root / "bunny" / "reconstruction" / "bun_zipper.ply"

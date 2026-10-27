@@ -105,3 +105,55 @@ def test_join_propagates_gap_policy(recordings,tmp_path):
     assert result['preflight']['imu_gaps']['count']>0
     assert result['preflight']['imu_gaps']['limit_ns']==5_000_000
     assert result['max_imu_gap_s']==.005
+
+
+@pytest.mark.parametrize('stage', ['recording_write', 'input_preflight'])
+@pytest.mark.parametrize('interrupted', [False, True])
+def test_failure_receipt_records_stage_and_preserves_inputs(recordings, tmp_path, monkeypatch, stage, interrupted):
+    from ca import glim_recording
+    points, make_imu = recordings
+    imu = make_imu()
+    originals = [points.read_bytes(), imu.read_bytes()]
+    out = tmp_path/'failed'
+    def fail(*args, **kwargs):
+        if interrupted:
+            raise KeyboardInterrupt()
+        raise OSError('fixture failure')
+    if stage == 'recording_write':
+        monkeypatch.setattr(Writer, 'add_message', fail)
+    else:
+        monkeypatch.setattr(glim_recording, 'inspect_glim_bag', fail)
+    with pytest.raises(KeyboardInterrupt if interrupted else OSError):
+        prepare_glim_recording(str(points), str(imu), str(out), '/points', '/raw')
+    receipt = json.loads((out/'preparation.json').read_text())
+    assert receipt['status'] == ('interrupted' if interrupted else 'preparation_failed')
+    assert receipt['failure_stage'] == stage
+    assert receipt['error']
+    assert [points.read_bytes(), imu.read_bytes()] == originals
+    if stage == 'input_preflight':
+        assert receipt['output']['bytes'] > 0
+        assert receipt['message_counts'][0] == 2
+    else:
+        assert 'output' not in receipt
+
+
+def test_failed_receipt_replacement_preserves_initial_json(recordings, tmp_path, monkeypatch):
+    from ca import mapping_job
+    points, make_imu = recordings; imu = make_imu()
+    out = tmp_path/'replace-failed'
+    original_replace = mapping_job.os.replace
+    calls = 0
+    def replace(source, target):
+        nonlocal calls
+        if str(target).endswith('preparation.json'):
+            calls += 1
+            if calls == 2:
+                raise OSError('fixture replacement failed')
+        return original_replace(source, target)
+    monkeypatch.setattr(mapping_job.os, 'replace', replace)
+    with pytest.raises(OSError, match='replacement failed'):
+        prepare_glim_recording(str(points), str(imu), str(out), '/points', '/raw')
+    receipt = json.loads((out/'preparation.json').read_text())
+    assert receipt['status'] == 'preparing'
+    assert receipt['message_counts'] == [0, 0]
+    assert (out/'recording.mcap').is_file()

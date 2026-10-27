@@ -44,3 +44,13 @@ Tests use actual demo point payloads with explicitly synthetic IMU fixtures to
 check preservation, coverage failures, unavailable gyro, topic errors and CLI
 exit status. No original raw NCLT IMU recording is present in this workspace;
 real GLIM estimation and accuracy remain unverified.
+
+If preparation raises an error or is interrupted with Ctrl+C after the initial
+receipt was saved, `preparation.json` records `preparation_failed` or `interrupted`
+and a `failure_stage`: `recording_write`, `input_verification`,
+`output_verification` or `input_preflight`. The exception still propagates;
+partial output is retained for inspection and is not approved for execution.
+
+Receipts use atomic temporary-file replacement. A failed final replacement keeps
+the previous valid JSON, which may still say `preparing`. Filesystem write
+failures, hard termination and power loss cannot guarantee a final failure record.

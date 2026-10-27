@@ -329,3 +329,11 @@ It rejects duplicate object keys, nonfinite numbers and parser nesting failures,
 so a conflicting duplicate execution status cannot silently override another.
 Valid raw bytes are preserved for hashing and export. This applies to the Python
 receipt workflows; it does not add authenticity guarantees to local records.
+
+### Interrupted recording preparation receipts
+
+MCAP preparation now records interruption and failure stages for writing,
+input/output verification and sensor preflight. Receipts use atomic replacement;
+exceptions still propagate and partial recordings remain available for diagnosis.
+Tests cover write/preflight errors and Ctrl+C, unchanged inputs, retained completed
+output identities and preservation of the previous receipt on replacement failure.

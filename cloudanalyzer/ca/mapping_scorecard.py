@@ -36,6 +36,7 @@ def scorecard(directory: str) -> dict:
     identity = {'source_sha256': digest(source), 'layout_sha256': digest(layout)}
     from ca.mapping_measure import SCHEMA, PROTOCOL, file_hash
     measured = {}
+    diagnostics: dict = {'exit_code': None, 'error': None, 'cleanup_error': None, 'output_size_error': None}
     measurement_status = 'unavailable'
     if (root / 'measurement.json').is_file():
         report = _read(root / 'measurement.json')
@@ -43,8 +44,13 @@ def scorecard(directory: str) -> dict:
                 and report.get('run_sha256') == file_hash(root / 'run.json')
                 and report.get('job_sha256') == file_hash(root / 'job.json')):
             measurement_status = report.get('status', 'unavailable')
+            diagnostics['exit_code'] = report.get('exit_code') if type(report.get('exit_code')) is int else None
+            for key in ('error', 'cleanup_error', 'output_size_error'):
+                value = report.get(key)
+                diagnostics[key] = value[:4096] if isinstance(value, str) else None
             interval = number(report.get('sample_interval_seconds'))
             if (measurement_status == 'process_succeeded' and type(report.get('exit_code')) is int and report['exit_code'] == 0
+                    and report.get('error') is None and report.get('cleanup_error') is None
                     and interval is not None and .01 <= interval <= 1):
                 measured = report
         else:
@@ -58,8 +64,9 @@ def scorecard(directory: str) -> dict:
             'recorded_actions': len(run.get('history', [])),
             'human_interventions': None, 'wall_time_seconds': number(measured.get('wall_time_seconds')),
             'sampled_peak_tree_rss_bytes': number(measured.get('sampled_peak_tree_rss_bytes')),
-            'logical_output_bytes': number(measured.get('logical_output_bytes')),
+            'logical_output_bytes': number(measured.get('logical_output_bytes')) if measured.get('output_size_error') is None else None,
             'measurement_status': measurement_status,
+            'measurement_diagnostics': diagnostics,
             'measurement_protocol': measured.get('protocol'),
             'measurement_context': {key: measured.get(key) for key in ('command', 'script_sha256', 'platform', 'rss_samples', 'unavailable_process_reads')},
             'sample_interval_seconds': number(measured.get('sample_interval_seconds')),

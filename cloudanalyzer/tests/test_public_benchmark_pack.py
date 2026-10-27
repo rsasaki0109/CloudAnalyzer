@@ -192,7 +192,8 @@ def _synthetic_source_points() -> np.ndarray:
     return np.asarray(points, dtype=float)
 
 
-def test_local_bunny_archive_builds_offline_and_records_exact_identity(tmp_path, monkeypatch):
+@pytest.mark.parametrize('verify_digest', [False, True])
+def test_local_bunny_archive_builds_offline_and_records_exact_identity(tmp_path, monkeypatch, verify_digest):
     import hashlib
     import tarfile
     import public_benchmark_assets as assets
@@ -206,11 +207,15 @@ def test_local_bunny_archive_builds_offline_and_records_exact_identity(tmp_path,
     monkeypatch.setattr(builder, 'download_bunny_mesh', forbid)
     monkeypatch.setattr(urllib.request, 'urlopen', forbid)
     output = tmp_path/'pack'
-    result = build_public_benchmark_pack(output, bunny_archive=archive)
+    digest = hashlib.sha256(raw).hexdigest()
+    result = build_public_benchmark_pack(output, bunny_archive=archive,
+                                         bunny_sha256=digest.upper() if verify_digest else None)
     assert result['source'] == 'local-bunny-archive'
     manifest = json.loads((output/'manifest.json').read_text())
-    assert manifest['source_archive'] == {'sha256':hashlib.sha256(raw).hexdigest(), 'bytes':len(raw),
-                                          'origin':'local', 'authenticity_verified':False}
+    expected_identity = {'sha256':digest, 'bytes':len(raw), 'origin':'local', 'authenticity_verified':False}
+    if verify_digest:
+        expected_identity['expected_sha256'] = digest
+    assert manifest['source_archive'] == expected_identity
     assert archive.read_bytes() == raw
     assert 'authenticity' in (output/'ATTRIBUTION.md').read_text()
     assert '--bunny-archive' in (output/'README.md').read_text()
@@ -259,6 +264,40 @@ def test_cli_forwards_local_archive_and_rejects_synthetic(monkeypatch):
         builder.main()
     assert error.value.code == 2
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize('digest', ['0'*64, '', 'g'*64, 'a'*63, 'a'*65])
+def test_bunny_digest_failure_precedes_extraction_and_output_changes(tmp_path, monkeypatch, digest):
+    import public_benchmark_assets as assets
+    archive = tmp_path/'input.tar.gz'; archive.write_bytes(b'not even an archive')
+    output = tmp_path/'pack'; output.mkdir()
+    sentinel = output/'keep'; sentinel.write_text('keep')
+    monkeypatch.setattr(assets, '_extract_bunny_mesh', lambda *args: pytest.fail('unverified archive extracted'))
+    with pytest.raises(ValueError, match='SHA-256'):
+        build_public_benchmark_pack(output, bunny_archive=archive, bunny_sha256=digest)
+    assert sentinel.read_text() == 'keep'
+
+
+def test_digest_without_archive_never_downloads(tmp_path, monkeypatch):
+    monkeypatch.setattr(builder, 'download_bunny_mesh', lambda: pytest.fail('unexpected download'))
+    with pytest.raises(ValueError, match='requires bunny_archive'):
+        build_public_benchmark_pack(tmp_path/'output', bunny_sha256='a'*64)
+    assert not (tmp_path/'output').exists()
+    monkeypatch.setattr(sys, 'argv', ['build', '--bunny-sha256', 'a'*64])
+    with pytest.raises(SystemExit) as error:
+        builder.main()
+    assert error.value.code == 2
+
+
+def test_cli_forwards_expected_bunny_digest(monkeypatch):
+    calls = []
+    def capture(output_dir, **options):
+        calls.append(options)
+        return {'output_dir':str(output_dir), 'pack_name':'test', 'source':'local-bunny-archive', 'manifest':{'configs':[]}}
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
+    monkeypatch.setattr(sys, 'argv', ['build', '--bunny-archive', 'local.tar.gz', '--bunny-sha256', 'a'*64])
+    builder.main()
+    assert calls == [{'fixture':'stanford-bunny', 'bunny_archive':Path('local.tar.gz'), 'bunny_sha256':'a'*64}]
 
 
 class TestPublicBenchmarkPack:

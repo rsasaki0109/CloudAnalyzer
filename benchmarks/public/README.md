@@ -34,6 +34,11 @@ python scripts/build_public_benchmark_pack.py --bunny-archive /data/bunny.tar.gz
 読み込んだバイト列のSHA-256とサイズを `manifest.json` の `source_archive` に保存し、
 sourceを `local-bunny-archive` として直接ダウンロードと区別する。
 ハッシュは内容の識別用で、公式配布物との一致を保証するものではない。
+既知のアーカイブとの一致を必須にするには `--bunny-sha256 EXPECTED_SHA256` を追加する。
+64桁の16進数を指定すると、展開・生成前に同じ読み込み内容のハッシュを比較し、
+不一致や不正な形式なら既存出力を変更せずに終了する。大文字の16進数も受け付ける。
+一致した期待値は `source_archive.expected_sha256` に記録する。
+期待値は利用者が指定するため、一致しても `authenticity_verified` は false のままとする。
 既存の出力ディレクトリは生成時に置き換えられるため、入力アーカイブをその中に置かないこと。
 
 生成される pack には以下が含まれる:

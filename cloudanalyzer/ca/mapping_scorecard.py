@@ -168,6 +168,12 @@ def compare(before: dict, after: dict) -> dict:
         left, right = before[key], after[key]
         if left is None or right is None:
             delta[key] = None
+            if left is None and right is None:
+                delta_errors[key] = 'Baseline and current values are unavailable.'
+            elif left is None:
+                delta_errors[key] = 'Baseline value is unavailable.'
+            else:
+                delta_errors[key] = 'Current value is unavailable.'
             continue
         try:
             difference = right - left

@@ -193,7 +193,8 @@ def test_cli_comparison_preserves_other_metrics_on_delta_overflow(measured_run, 
     assert comparison['after']['wall_time_seconds'] == new_time
     assert comparison['delta']['wall_time_seconds'] is None
     assert comparison['delta']['logical_output_bytes'] == 1024
-    assert comparison['delta_errors'] == {'wall_time_seconds':'Difference exceeds the finite floating-point range.'}
+    assert comparison['delta_errors']['wall_time_seconds'] == 'Difference exceeds the finite floating-point range.'
+    assert 'logical_output_bytes' not in comparison['delta_errors']
     assert comparison['performance_comparison']['eligible']
 
 
@@ -202,7 +203,46 @@ def test_large_integer_deltas_remain_exact(measured_run):
     other = {**card, 'logical_output_bytes':10**400 + 1}
     assert compare(card, other)['delta']['logical_output_bytes'] == 1
     assert compare(other, card)['delta']['logical_output_bytes'] == -1
-    assert compare(card, other)['delta_errors'] == {}
+    assert 'logical_output_bytes' not in compare(card, other)['delta_errors']
+
+
+@pytest.mark.parametrize('key', ['generated_length_m', 'trajectory_length_m',
+    'unexplained_traces', 'wall_time_seconds', 'sampled_peak_tree_rss_bytes', 'logical_output_bytes'])
+@pytest.mark.parametrize('left,right,reason', [
+    (None, 0, 'Baseline value is unavailable.'),
+    (0, None, 'Current value is unavailable.'),
+    (None, None, 'Baseline and current values are unavailable.'),
+])
+def test_missing_delta_identifies_unavailable_side(measured_run, key, left, right, reason):
+    card = save_card(measured_run)
+    result = compare({**card, key:left}, {**card, key:right})
+    assert result['delta'][key] is None
+    assert result['delta_errors'][key] == reason
+    assert result['delta']['recorded_actions'] == 0
+    assert 'recorded_actions' not in result['delta_errors']
+
+
+def test_ineligible_performance_is_omitted_without_missing_value_errors(measured_run):
+    card = save_card(measured_run)
+    result = compare(card, {**card, 'status':'different-stage', 'wall_time_seconds':None})
+    assert not result['performance_comparison']['eligible']
+    for key in ('wall_time_seconds', 'sampled_peak_tree_rss_bytes', 'logical_output_bytes'):
+        assert key not in result['delta']
+        assert key not in result['delta_errors']
+
+
+def test_cli_comparison_explains_missing_metrics(measured_run):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    save_card(measured_run, logical_output_bytes=None)
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root), '--baseline', str(root)])
+    assert result.exit_code == 0, result.output
+    comparison = json.loads(result.stdout)
+    assert comparison['delta']['logical_output_bytes'] is None
+    assert comparison['delta_errors']['logical_output_bytes'] == 'Baseline and current values are unavailable.'
+    assert comparison['delta']['wall_time_seconds'] == 0
+    assert 'wall_time_seconds' not in comparison['delta_errors']
 
 
 def test_explicit_metadata_nesting_boundary(tmp_path):

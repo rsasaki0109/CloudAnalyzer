@@ -1982,6 +1982,22 @@ def mapping_run_cmd(
         raise typer.Exit(1)
 
 
+@app.command("mapping-scorecard")
+def mapping_scorecard_cmd(
+    run: str = typer.Argument(..., help="Saved mapping run directory"),
+    baseline: str | None = typer.Option(None, "--baseline", help="Saved run to compare against; requires identical source/layout hashes"),
+) -> None:
+    """Summarize saved generation and measurement evidence without running mapping."""
+    from ca.mapping_scorecard import scorecard, compare
+    try:
+        current = scorecard(run)
+        result = compare(scorecard(baseline), current) if baseline is not None else current
+        encoded = json.dumps(result, indent=2, allow_nan=False)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(encoded)
+
+
 @app.command("mapping-prepare-glim-recording")
 def mapping_prepare_glim_recording_cmd(
     lidar: str = typer.Argument(..., help="ROS2 point cloud MCAP"),

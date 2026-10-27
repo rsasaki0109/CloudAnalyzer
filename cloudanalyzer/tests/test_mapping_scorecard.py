@@ -171,3 +171,49 @@ def test_timed_out_measurement_cannot_supply_success_deltas(measured_run):
     assert card['measurement_diagnostics']['error'] == 'timeout'
     assert card['wall_time_seconds'] is None
     assert not compare(card, card)['performance_comparison']['eligible']
+
+
+@pytest.mark.parametrize('baseline', [False, True])
+def test_cli_scorecard_and_comparison_are_read_only(measured_run, baseline):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    card = save_card(measured_run)
+    before = {path.name:path.read_bytes() for path in root.iterdir()}
+    args = ['mapping-scorecard', str(root)]
+    if baseline:
+        args += ['--baseline', str(root)]
+    result = CliRunner().invoke(app, args)
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout) == (compare(card, card) if baseline else card)
+    assert {path.name:path.read_bytes() for path in root.iterdir()} == before
+
+
+def test_cli_damaged_optional_report_still_returns_summary(measured_run):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    (root/'measurement.json').write_text('{damaged')
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root)])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)['measurement_status'] == 'invalid_report'
+
+
+def test_cli_missing_run_returns_nonzero(tmp_path):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(tmp_path/'missing')])
+    assert result.exit_code != 0
+    assert not (tmp_path/'missing').exists()
+
+
+def test_cli_incompatible_baseline_returns_nonzero(measured_run, tmp_path):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    other = tmp_path/'baseline'; other.mkdir()
+    (other/'run.json').write_bytes((root/'run.json').read_bytes())
+    (other/'job.json').write_text(json.dumps({'source':{'sha256':'c'*64}}))
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root), '--baseline', str(other)])
+    assert result.exit_code != 0
+    assert 'identical source' in result.output

@@ -526,6 +526,90 @@ def test_module_text_output_matches_main_cli(measured_run):
     assert result.stdout == cli.stdout
 
 
+@pytest.mark.parametrize('text_output', [False, True])
+@pytest.mark.parametrize('baseline', [False, True])
+def test_cli_saves_report_without_stdout_or_input_changes(measured_run, text_output, baseline):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    save_card(measured_run)
+    original = {path.name:path.read_bytes() for path in root.iterdir()}
+    target = root/'summary.txt'
+    args = ['mapping-scorecard', str(root)]
+    if baseline:
+        args += ['--baseline', str(root)]
+    if text_output:
+        args += ['--text']
+    runner = CliRunner()
+    expected = runner.invoke(app, args)
+    result = runner.invoke(app, [*args, '--output', str(target)])
+    assert result.exit_code == expected.exit_code == 0, result.output
+    assert result.stdout == ''
+    assert target.read_text() == expected.stdout
+    assert all((root/name).read_bytes() == data for name, data in original.items())
+    assert not list(root.glob('.ca-scorecard-*'))
+    again = runner.invoke(app, [*args, '--output', str(target)])
+    assert again.exit_code != 0
+    assert target.read_text() == expected.stdout
+
+
+@pytest.mark.parametrize('destination', ['input', 'symlink', 'missing_parent'])
+def test_output_rejects_unsafe_or_unavailable_destination(measured_run, destination):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    target = root/'run.json'
+    original = target.read_bytes()
+    if destination == 'symlink':
+        target = root/'output-link'
+        target.symlink_to(root/'missing')
+    elif destination == 'missing_parent':
+        target = root/'missing-parent'/'report.json'
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root), '--output', str(target)])
+    assert result.exit_code != 0
+    assert (root/'run.json').read_bytes() == original
+    assert not (root/'missing').exists()
+    assert not (root/'missing-parent').exists()
+
+
+@pytest.mark.parametrize('failure', ['flush', 'publish', 'interrupted', 'raced_target'])
+def test_output_save_failure_never_publishes_partial_report(tmp_path, monkeypatch, failure):
+    from ca import mapping_scorecard
+    target = tmp_path/'report.json'
+    original_link = mapping_scorecard.os.link
+    def fail(*args):
+        if failure == 'interrupted':
+            raise KeyboardInterrupt()
+        if failure == 'raced_target':
+            target.write_text('other writer')
+            return original_link(*args)
+        raise OSError('fixture save failure')
+    monkeypatch.setattr(mapping_scorecard.os, 'fsync' if failure == 'flush' else 'link', fail)
+    with pytest.raises((OSError, KeyboardInterrupt)):
+        mapping_scorecard.save_output(str(target), '{"complete":true}')
+    assert not list(tmp_path.glob('.ca-scorecard-*'))
+    if failure == 'raced_target':
+        assert target.read_text() == 'other writer'
+    else:
+        assert not target.exists()
+
+
+def test_module_output_file_matches_main_cli(measured_run):
+    import subprocess
+    import sys
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    args = [str(root), '--text']
+    expected = CliRunner().invoke(app, ['mapping-scorecard', *args])
+    target = root/'module-summary.txt'
+    result = subprocess.run([sys.executable, '-m', 'ca.mapping_scorecard', *args, '--output', str(target)],
+                            capture_output=True, text=True, timeout=15)
+    assert result.returncode == expected.exit_code == 0
+    assert result.stdout == ''
+    assert target.read_text() == expected.stdout
+
+
 def test_cli_incompatible_baseline_returns_nonzero(measured_run, tmp_path):
     from typer.testing import CliRunner
     from cloudanalyzer_cli.main import app

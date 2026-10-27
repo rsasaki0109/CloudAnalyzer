@@ -1987,16 +1987,20 @@ def mapping_scorecard_cmd(
     run: str = typer.Argument(..., help="Saved mapping run directory"),
     baseline: str | None = typer.Option(None, "--baseline", help="Saved run to compare against; requires identical source/layout hashes"),
     text_output: bool = typer.Option(False, "--text", help="Show a readable summary instead of JSON"),
+    output: str | None = typer.Option(None, "--output", help="Save to a new file instead of stdout; parent directory must exist"),
 ) -> None:
     """Summarize saved generation and measurement evidence without running mapping."""
-    from ca.mapping_scorecard import scorecard, compare, format_text
+    from ca.mapping_scorecard import scorecard, compare, format_text, save_output
     try:
         current = scorecard(run)
         result = compare(scorecard(baseline), current) if baseline is not None else current
         encoded = format_text(result) if text_output else json.dumps(result, indent=2, allow_nan=False)
+        if output is not None:
+            save_output(output, encoded)
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
-    typer.echo(encoded)
+    if output is None:
+        typer.echo(encoded)
 
 
 @app.command("mapping-measure")

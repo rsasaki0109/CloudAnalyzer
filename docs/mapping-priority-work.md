@@ -91,7 +91,7 @@ with the native core and recording readers available:
 PYTHONPATH=cloudanalyzer python -m ca.mapping_measure --run-dir runs/april -- \
   python scripts/mapping_e2e_coverage.py \
   web/public/samples/nclt-2012-04-29.mcap runs/april 2.5
-PYTHONPATH=cloudanalyzer python -m ca.mapping_scorecard runs/april
+ca mapping-scorecard runs/april
 ```
 
 The output directory must be new. The synchronous child command inherits its
@@ -405,3 +405,13 @@ near the deadline. Process creation or a blocking monitoring call can delay its
 observation, and bounded termination waits add up to ten seconds afterward.
 This is not a strict wall-clock deadline. Cleanup errors remain explicit and the
 existing process-group/descendant limitations still apply.
+
+
+### Standard CLI for scorecards
+
+`ca mapping-scorecard RUN [--baseline BASELINE]` now exposes the existing read-only
+summary and comparison workflow through the main CLI. Successful JSON output
+returns zero even when optional measurements are unavailable; missing required
+metadata and incompatible baselines return nonzero. Integration tests exercise
+real saved fixtures, comparisons, damaged optional evidence and unchanged files.
+See [command documentation](commands/mapping-scorecard.md).

@@ -13,6 +13,10 @@ make adoption decisions using a hidden ranking. No additional model API key is
 required by the MCP server. The output is a draft with recorded unresolved
 intervals and semantics, rather than a certified road network.
 
+For saved run summaries and compatible before/after comparisons, use
+[`ca mapping-scorecard`](mapping-scorecard.md). It reads existing evidence without
+starting a new mapping attempt.
+
 ## Ask the agent to run
 
 ### Start from an external SLAM map

@@ -66,6 +66,54 @@ def test_stale_measurement_diagnostics_are_not_attached_to_current_run(measured_
     assert all(value is None for value in card['measurement_diagnostics'].values())
 
 
+@pytest.mark.parametrize('key,reason', [
+    ('schema', 'Measurement schema is missing or unsupported.'),
+    ('protocol', 'Measurement protocol is missing or unsupported.'),
+    ('run_sha256', 'Measurement run_sha256 is missing or does not match the parsed run.json.'),
+    ('job_sha256', 'Measurement job_sha256 is missing or does not match the parsed job.json.'),
+])
+@pytest.mark.parametrize('value', [None, 'unsupported', []])
+def test_binding_failure_explains_rejected_field(measured_run, key, reason, value):
+    card = save_card(measured_run, **{key:value, 'error':'unrelated process error'})
+    assert card['measurement_status'] == 'stale_or_unsupported'
+    assert card['measurement_binding_reasons'] == [reason]
+    assert card['wall_time_seconds'] is None
+    assert all(value is None for value in card['measurement_diagnostics'].values())
+
+
+@pytest.mark.parametrize('filename', ['run.json', 'job.json'])
+def test_symlink_binding_failure_has_explicit_reason(measured_run, filename):
+    root, _ = measured_run
+    path = root/filename
+    target = root/(filename + '.original')
+    path.rename(target)
+    path.symlink_to(target)
+    card = save_card(measured_run)
+    assert card['measurement_binding_reasons'] == [filename + ' is a symbolic link.']
+    assert card['measurement_status'] == 'stale_or_unsupported'
+    assert card['wall_time_seconds'] is None
+
+
+def test_cli_lists_multiple_binding_failures(measured_run):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    save_card(measured_run, run_sha256=None, job_sha256='f'*64)
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root)])
+    assert result.exit_code == 0, result.output
+    card = json.loads(result.stdout)
+    assert len(card['measurement_binding_reasons']) == 2
+    assert 'run_sha256' in card['measurement_binding_reasons'][0]
+    assert 'job_sha256' in card['measurement_binding_reasons'][1]
+    assert card['status'] == 'finished'
+
+
+def test_bound_failed_receipt_has_no_binding_failure(measured_run):
+    card = save_card(measured_run, status='process_failed', exit_code=3)
+    assert card['measurement_binding_reasons'] == []
+    assert card['measurement_diagnostics']['exit_code'] == 3
+
+
 def test_diagnostic_text_is_bounded_and_invalid_types_are_omitted(measured_run):
     card = save_card(measured_run, status='interrupted', exit_code=True,
                      error='x'*5000, cleanup_error=['not text'])

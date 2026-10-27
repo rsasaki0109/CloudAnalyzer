@@ -97,6 +97,7 @@ def scorecard(directory: str) -> dict:
     diagnostics: dict = {'exit_code': None, 'error': None, 'cleanup_error': None, 'output_size_error': None}
     measurement_status = 'unavailable'
     measurement_report_error = None
+    binding_reasons = []
     if (root / 'measurement.json').is_file():
         try:
             report, _ = _read(root / 'measurement.json')
@@ -104,10 +105,17 @@ def scorecard(directory: str) -> dict:
             report = None
             measurement_status = 'invalid_report'
             measurement_report_error = str(error)[:4096]
-        if report is not None and (report.get('schema') == SCHEMA and report.get('protocol') == PROTOCOL
-                and not (root / 'run.json').is_symlink() and not (root / 'job.json').is_symlink()
-                and report.get('run_sha256') == run_sha256
-                and report.get('job_sha256') == job_sha256):
+        if report is not None:
+            if report.get('schema') != SCHEMA:
+                binding_reasons.append('Measurement schema is missing or unsupported.')
+            if report.get('protocol') != PROTOCOL:
+                binding_reasons.append('Measurement protocol is missing or unsupported.')
+            for name, expected in (('run', run_sha256), ('job', job_sha256)):
+                if (root / f'{name}.json').is_symlink():
+                    binding_reasons.append(f'{name}.json is a symbolic link.')
+                if report.get(f'{name}_sha256') != expected:
+                    binding_reasons.append(f'Measurement {name}_sha256 is missing or does not match the parsed {name}.json.')
+        if report is not None and not binding_reasons:
             measurement_status = report.get('status', 'unavailable')
             diagnostics['exit_code'] = report.get('exit_code') if type(report.get('exit_code')) is int else None
             for key in ('error', 'cleanup_error', 'output_size_error'):
@@ -132,6 +140,7 @@ def scorecard(directory: str) -> dict:
             'logical_output_bytes': number(measured.get('logical_output_bytes')) if measured.get('output_size_error') is None else None,
             'measurement_status': measurement_status,
             'measurement_report_error': measurement_report_error,
+            'measurement_binding_reasons': binding_reasons,
             'measurement_diagnostics': diagnostics,
             'measurement_protocol': measured.get('protocol'),
             'measurement_context': {key: measured.get(key) for key in ('command', 'script_sha256', 'platform', 'rss_samples', 'unavailable_process_reads')},

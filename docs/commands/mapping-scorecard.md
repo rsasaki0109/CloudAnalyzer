@@ -38,6 +38,12 @@ summaries available. Unavailable metrics are `null`; `measurement_status`,
 `measurement_report_error` and `measurement_diagnostics` explain the recorded
 state. A successful command does not mean that mapping succeeded or its outputs
 are accurate.
+For `stale_or_unsupported` receipts, `measurement_binding_reasons` lists the
+unsupported schema/protocol, missing or mismatched run/job identities, or
+symlinked metadata preventing attachment. These are checks against the parsed
+files, not diagnostics attributed to the current run from an unbound receipt.
+An empty list does not establish measurement success: read/parse failures remain
+in `measurement_report_error`, and bound process failures retain their own status.
 
 Metadata must use unambiguous JSON: duplicate object keys (including nested or
 escaped duplicates), `NaN`, `Infinity` and floating-point overflow such as `1e999`

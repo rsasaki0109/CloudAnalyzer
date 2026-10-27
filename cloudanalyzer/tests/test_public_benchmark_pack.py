@@ -115,6 +115,68 @@ def test_bunny_mesh_download_uses_retrying_transport(tmp_path, monkeypatch):
     assert calls == [(assets.BUNNY_ARCHIVE_URL, 30)]
 
 
+def _bunny_archive(path, members):
+    import io
+    import tarfile
+    with tarfile.open(path, 'w:gz') as archive:
+        for name, kind, payload in members:
+            info = tarfile.TarInfo(name)
+            info.type = kind
+            if kind == tarfile.REGTYPE:
+                info.size = len(payload)
+                archive.addfile(info, io.BytesIO(payload))
+            else:
+                info.linkname = 'target.ply'
+                archive.addfile(info)
+
+
+def test_bunny_extraction_ignores_archive_paths_and_preserves_mesh_bytes(tmp_path):
+    import tarfile
+    import public_benchmark_assets as assets
+    archive = tmp_path/'input.tar.gz'
+    output_dir = tmp_path/'output'; output_dir.mkdir()
+    outside = tmp_path/'outside'; outside.write_bytes(b'original')
+    _bunny_archive(archive, [
+        ('../outside', tarfile.REGTYPE, b'overwrite'),
+        (str(outside), tarfile.REGTYPE, b'overwrite'),
+        ('unused-link', tarfile.SYMTYPE, b''),
+        (assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, b'exact mesh bytes'),
+    ])
+    target = output_dir/'mesh.ply'
+    assets._extract_bunny_mesh(archive, target)
+    assert target.read_bytes() == b'exact mesh bytes'
+    assert outside.read_bytes() == b'original'
+    assert list(output_dir.iterdir()) == [target]
+
+
+@pytest.mark.parametrize('case', ['missing', 'duplicate', 'symlink', 'hardlink', 'directory', 'empty', 'oversize', 'entries'])
+def test_bunny_extraction_rejects_invalid_mesh_without_output(tmp_path, monkeypatch, case):
+    import tarfile
+    import public_benchmark_assets as assets
+    entry = (assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, b'mesh')
+    members = [entry]
+    if case == 'missing':
+        members = [('other.ply', tarfile.REGTYPE, b'mesh')]
+    elif case == 'duplicate':
+        members = [entry, entry]
+    elif case in ('symlink', 'hardlink', 'directory'):
+        kind = {'symlink':tarfile.SYMTYPE, 'hardlink':tarfile.LNKTYPE, 'directory':tarfile.DIRTYPE}[case]
+        members = [(assets.BUNNY_MESH_MEMBER, kind, b'')]
+    elif case == 'empty':
+        members = [(assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, b'')]
+    elif case == 'oversize':
+        monkeypatch.setattr(assets, 'MAX_BUNNY_MESH_BYTES', 3)
+    else:
+        monkeypatch.setattr(assets, 'MAX_BUNNY_ARCHIVE_ENTRIES', 1)
+        members += [('other.ply', tarfile.REGTYPE, b'other')]
+    archive = tmp_path/'input.tar.gz'
+    _bunny_archive(archive, members)
+    target = tmp_path/'mesh.ply'
+    with pytest.raises(RuntimeError, match='Stanford Bunny'):
+        assets._extract_bunny_mesh(archive, target)
+    assert not target.exists()
+
+
 def _synthetic_source_points() -> np.ndarray:
     """Create a deterministic nontrivial 3D shape for offline tests."""
     angles = np.linspace(0.0, 2.0 * np.pi, 80, endpoint=False)

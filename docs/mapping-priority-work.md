@@ -305,3 +305,11 @@ and portable-review checks. Malformed, truncated, nonhex or multiple IDs retain
 an image-lookup failure receipt before configuration copy or container launch.
 Orchestration fixtures now use a complete synthetic image ID; they remain mock
 contract tests, not evidence of actual GLIM execution.
+
+### Reject numeric overflow in GLIM configuration JSON
+
+Integrated topic checks now reject floating-point exponent overflow as well as
+explicit NaN/Infinity in either selected configuration file, including nested
+arrays and settings. Tests retain finite boundary values, numeric-looking text,
+comments and original bytes, and verify a blocked receipt before Docker access.
+This does not validate calibration or sensor-specific numeric ranges.

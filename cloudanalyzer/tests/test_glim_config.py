@@ -47,3 +47,27 @@ def test_topic_mismatch_and_missing_file(settings):
     (settings/'topics.json').unlink()
     with pytest.raises(ValueError,match='regular file'):
         config.inspect_config_topics(settings,'/points','/raw')
+
+
+@pytest.mark.parametrize('filename', ['config.json', 'topics.json'])
+@pytest.mark.parametrize('number', ['1e999', '-1e999', '1.8e308', 'NaN', 'Infinity', '-Infinity'])
+def test_nonfinite_numbers_in_nested_settings_rejected(settings, filename, number):
+    path = settings/filename
+    # Keep valid topic selection while adding an unrelated nested numeric setting.
+    base = '{"global":{"config_ros":"topics.json"}' if filename == 'config.json' else '{"glim_ros":{"points_topic":"/points","imu_topic":"/raw"}'
+    original = base + ',"extra":{"values":[' + number + ']}}'
+    path.write_text(original)
+    with pytest.raises(ValueError, match='nonfinite JSON number'):
+        config.inspect_config_topics(settings, '/points', '/raw')
+    assert path.read_text() == original
+
+
+@pytest.mark.parametrize('number', ['1.7976931348623157e308', '-1.7976931348623157e308', '5e-324', '0.0'])
+def test_finite_numbers_and_numeric_text_are_preserved(settings, number):
+    path = settings/'topics.json'
+    original = ('{"glim_ros":{"points_topic":"/points","imu_topic":"/raw"},'
+                '"values":[' + number + '],"note":"1e999 Infinity NaN" /* 1e999 */}')
+    path.write_text(original)
+    result = config.inspect_config_topics(settings, '/points', '/raw')
+    assert result['status'] == 'matched'
+    assert path.read_text() == original

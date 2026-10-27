@@ -331,3 +331,19 @@ def test_invalid_image_identity_stops_before_copy_or_launch(inputs, monkeypatch,
     assert not (out/'config').exists()
     assert not (out/'dump').exists()
     assert json.loads((out/'glim-run.json').read_text()) == result
+
+
+def test_overflowing_config_number_blocks_before_docker(inputs, monkeypatch):
+    bag, config, out = inputs
+    (config/'config_ros.json').write_text(
+        '{"glim_ros":{"points_topic":"/points","imu_topic":"/raw","offset":1e999}}')
+    monkeypatch.setattr(runner, 'inspect_glim_bag', lambda *a, **k: {
+        'status':'basic_checks_passed', 'input':runner._artifact(bag)})
+    monkeypatch.setattr(runner.subprocess, 'check_output', lambda *a, **k: pytest.fail('Docker contacted'))
+    result = runner.run_glim(str(bag), str(config), str(out), 'test',
+                             points_topic='/points', imu_topic='/raw')
+    assert result['status'] == 'config_blocked'
+    assert 'nonfinite JSON number' in result['config_topics']['error']
+    assert result['command'] == []
+    assert not (out/'config').exists()
+    assert json.loads((out/'glim-run.json').read_text()) == result

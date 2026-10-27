@@ -28,6 +28,10 @@ Commented JSON (`//` and `/* ... */`) is supported, including literal comment
 markers inside strings. Each configuration file is limited to 1 MiB. Duplicate
 keys, malformed JSON and external/parent-traversing `config_ros` paths are
 rejected. The result and checked file hashes appear in `config_topics`.
+The two selected configuration files also reject nonfinite numeric values,
+including exponent overflow such as `1e999` anywhere in nested settings.
+Numeric-looking strings and comments remain unchanged; this syntax check does
+not validate the physical meaning or valid range of finite sensor settings.
 A mismatch or unreadable/unsupported configuration returns `config_blocked`
 with the reason in the run receipt, before any Docker call.
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 
@@ -31,8 +32,14 @@ def _read(path: Path) -> tuple[dict, dict]:
     text = TOKENS.sub(lambda m: m[0] if m[0].startswith('"') else ' ', text)
     def invalid_constant(value):
         raise ValueError('nonfinite JSON number')
+    def finite_float(token):
+        value = float(token)
+        if not math.isfinite(value):
+            raise ValueError('nonfinite JSON number')
+        return value
     try:
-        value = json.loads(text, object_pairs_hook=_object, parse_constant=invalid_constant)
+        value = json.loads(text, object_pairs_hook=_object, parse_constant=invalid_constant,
+                           parse_float=finite_float)
     except (ValueError, RecursionError) as error:
         raise ValueError(f'invalid GLIM config JSON: {error}') from error
     if not isinstance(value, dict):

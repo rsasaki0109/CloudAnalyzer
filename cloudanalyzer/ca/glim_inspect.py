@@ -55,6 +55,24 @@ def inspect_glim_run(directory: str) -> dict:
     for key in ('bag','configuration'):
         for index,entry in enumerate(inputs[key]):
             verify(Path(entry['path']),entry,f'{key}[{index}]')
+    # New receipts record roots so additions can be detected as well as mutations.
+    roots = report.get('input_roots')
+    inventory_status = 'not_recorded'
+    if roots is not None:
+        if not isinstance(roots, dict) or set(roots) != {'bag', 'configuration'}:
+            raise ValueError('invalid input roots')
+        inventory_status = 'matched'
+        for key in ('bag', 'configuration'):
+            value = roots[key]
+            if not isinstance(value, str) or not Path(value).is_absolute():
+                raise ValueError('input roots must be absolute paths')
+            try:
+                current = inventory(Path(value))
+                if current != inputs[key]:
+                    raise ValueError('input directory membership or file identities differ from inventory')
+            except (OSError, ValueError) as error:
+                inventory_status = 'changed_or_missing'
+                errors.append(f'{key} inventory: {error}')
     # Only runs that reached container command creation require a copied config.
     if report.get('command'):
         expected = {}
@@ -97,9 +115,10 @@ def inspect_glim_run(directory: str) -> dict:
             'status':'recorded_files_match' if not errors else 'changed_or_missing',
             'recorded_execution_status':report.get('status'), 'recorded_exit_code':report.get('exit_code'),
             'recorded_image_id':report.get('image_id'), 'report_sha256':digest,
+            'input_inventory_status': inventory_status,
             'recorded_failure_stage':report.get('failure_stage'), 'recorded_error':report.get('error'),
             'recorded_cleanup_error':report.get('cleanup_error'),
             'verified_file_count':count, 'issue_count':len(errors), 'issues':errors[:32],
             'issues_truncated':len(errors)>32, 'trajectory_check':trajectory,
             'accuracy_verified':False,
-            'scope':'Read-only check of recorded input files, copied configuration when a command was recorded, and recorded trajectory. No Docker calls. Unrecorded files added to original input directories, process logs and other dump files are not verified. Matching file hashes do not prove execution, calibration, PLY consistency or accuracy.'}
+            'scope':'Read-only check of recorded input files, complete input inventories when roots were recorded, copied configuration when a command was recorded, and recorded trajectory. No Docker calls. Older reports without input roots cannot detect added input files. Process logs and other dump files are not verified. Matching file hashes do not prove execution, calibration, PLY consistency or accuracy.'}

@@ -313,3 +313,11 @@ explicit NaN/Infinity in either selected configuration file, including nested
 arrays and settings. Tests retain finite boundary values, numeric-looking text,
 comments and original bytes, and verify a blocked receipt before Docker access.
 This does not validate calibration or sensor-specific numeric ranges.
+
+### Complete original input inventory inspection
+
+New GLIM receipts record absolute input roots. Read-only inspection now compares
+the complete current file inventories against the saved lists, detecting added
+configuration/bag files as well as changed or missing files. Old receipts remain
+readable and explicitly report that the complete inventory check was not recorded.
+The inspector does not launch Docker or rewrite any evidence.

@@ -20,6 +20,9 @@ The JSON result separates current file integrity from historical execution:
   from the original run, without relabelling a failed/blocked run as successful.
 - `recorded_failure_stage`, `recorded_error`, `recorded_cleanup_error`: retained
   execution/preparation failure details when present.
+- `input_inventory_status`: `matched` or `changed_or_missing` when the run
+  recorded input roots. The full file inventory is compared, including newly
+  added files. Older receipts report `not_recorded` for this additional check.
 - `verified_file_count`, `issue_count`, `issues`: matching files and discrepancies;
   all issues are counted and the first 32 are shown.
 - `trajectory_check`: current pose count, time span and path length when valid.
@@ -32,8 +35,9 @@ invalid report metadata. No files are rewritten. Missing original inputs remain
 visible failures; for portable review without original paths, export the finished
 mapping review ZIP and use `mapping-bundle-inspect` instead.
 
-This command checks individually recorded original input files. New unrecorded
-files added to original directories, process logs, unrecorded/invalid partial
+This command checks individually recorded original input files and, for new
+receipts with `input_roots`, the complete file inventories at those roots.
+Older receipts cannot detect newly added input files. Process logs, unrecorded/invalid partial
 trajectories, other dump files and Docker image contents are not verified.
 Hash agreement is not proof of estimator execution, calibration, common-state
 PLY export or accuracy. A failed run with no recorded trajectory can still have

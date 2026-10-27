@@ -87,7 +87,8 @@ def run_glim(bag: str, config: str, out: str, image: str, timeout: float = 3600,
         except (OSError, ValueError) as error:
             topic_check = {'status': 'blocked', 'error': str(error)}
     report: dict = {'schema': SCHEMA, 'image_requested': image, 'image_id': None,
-              'inputs': inputs, 'command': [], 'status': 'initializing', 'exit_code': None,
+              'inputs': inputs, 'input_roots': {'bag': str(source.resolve()), 'configuration': str(settings.resolve())},
+              'command': [], 'status': 'initializing', 'exit_code': None,
               'input_preflight_status': checked['status'] if checked else 'not_requested',
               'input_preflight': checked, 'config_topics': topic_check, 'accuracy_verified': False, 'map_export_required': True}
     if checked:

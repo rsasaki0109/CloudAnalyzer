@@ -346,3 +346,14 @@ subdirectory, or a special file is found. It no longer treats a partial director
 scan as a complete byte count. The 100,000-entry limit includes directories and
 symlinks; symlink contents remain excluded. Other successful process metrics stay
 available, while scorecards retain null size and omit numeric size deltas.
+
+### Bounded cleanup after measurement failure
+
+A monitoring error after process launch now stops the launched process instead
+of waiting indefinitely for it. Ctrl+C uses the same cleanup path: SIGTERM to
+its process group on POSIX (direct termination elsewhere), a five-second wait,
+then SIGKILL/direct kill and one final five-second wait if needed. Signal errors,
+timeouts and cleanup interruption are retained separately as `cleanup_error`;
+failed/interrupted measurements remain excluded from successful scorecards.
+The exit code describes the direct child; detached descendants or descendants
+that outlive a terminated group leader are not independently confirmed stopped.

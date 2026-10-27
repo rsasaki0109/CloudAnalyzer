@@ -15,6 +15,30 @@ import time
 SCHEMA = 'cloudanalyzer.mapping_measurement.v1'
 PROTOCOL = 'process-tree-rss-sampled-v1'
 MAX_OUTPUT_ENTRIES = 100_000
+STOP_TIMEOUT_SECONDS = 5
+
+
+def _stop_process(process: subprocess.Popen) -> tuple[int | None, str | None]:
+    """Stop this measurement's child with bounded waits, retaining cleanup errors."""
+    def send(force: bool):
+        try:
+            if os.name == 'posix':
+                os.killpg(process.pid, signal.SIGKILL if force else signal.SIGTERM)
+            elif force:
+                process.kill()
+            else:
+                process.terminate()
+        except ProcessLookupError:
+            pass
+    try:
+        send(False)
+        try:
+            return process.wait(timeout=STOP_TIMEOUT_SECONDS), None
+        except subprocess.TimeoutExpired:
+            send(True)
+            return process.wait(timeout=STOP_TIMEOUT_SECONDS), None
+    except (OSError, subprocess.TimeoutExpired, KeyboardInterrupt) as error:
+        return process.returncode, str(error) or 'Process cleanup interrupted; termination is unconfirmed'
 
 
 def file_hash(path: Path) -> str | None:
@@ -69,6 +93,7 @@ def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
     peak = None
     samples = missing = 0
     status, code, error = 'launch_failed', None, None
+    cleanup_error = None
     process = None
     try:
         process = subprocess.Popen(command, start_new_session=os.name == 'posix')
@@ -99,33 +124,19 @@ def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
     except KeyboardInterrupt:
         status, error = 'interrupted', 'Measurement interrupted'
         if process is not None:
-            if os.name == 'posix':
-                try:
-                    os.killpg(process.pid, signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
-            else:
-                process.terminate()
-            try:
-                code = process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                if os.name == 'posix':
-                    os.killpg(process.pid, signal.SIGKILL)
-                else:
-                    process.kill()
-                code = process.wait()
+            code, cleanup_error = _stop_process(process)
     except (OSError, psutil.Error) as exc:
         error = str(exc)
         if process is not None:
-            code = process.wait()
             status = 'measurement_failed'
+            code, cleanup_error = _stop_process(process)
     elapsed = time.perf_counter() - clock
     if root.is_symlink():
         raise ValueError('run directory became a symbolic link')
     size, size_error = output_size(root)
     result = {
         'schema': SCHEMA, 'protocol': PROTOCOL, 'sample_interval_seconds': interval,
-        'status': status, 'exit_code': code, 'error': error,
+        'status': status, 'exit_code': code, 'error': error, 'cleanup_error': cleanup_error,
         'command': command, 'script_sha256': script_hashes, 'cwd': str(Path.cwd()), 'platform': platform.platform(),
         'started_unix_seconds': started, 'wall_time_seconds': elapsed,
         'sampled_peak_tree_rss_bytes': peak, 'rss_samples': samples, 'unavailable_process_reads': missing,

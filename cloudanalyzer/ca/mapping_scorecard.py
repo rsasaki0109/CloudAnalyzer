@@ -12,7 +12,8 @@ MAX_METADATA_BYTES = 32 * 1024**2
 MAX_METADATA_DEPTH = 128
 
 
-def _read(path: Path) -> dict:
+def _read(path: Path) -> tuple[dict, str]:
+    """Parse and identify the same bounded bytes, without a second file read."""
     if path.stat().st_size > MAX_METADATA_BYTES:
         raise ValueError(f"metadata exceeds 32 MiB: {path.name}")
     with path.open('rb') as stream:
@@ -55,12 +56,13 @@ def _read(path: Path) -> dict:
             if len(stack) >= MAX_METADATA_DEPTH:
                 raise ValueError('metadata nesting exceeds 128 levels')
             stack.append(iter(item.values() if isinstance(item, dict) else item))
-    return value
+    return value, hashlib.sha256(raw).hexdigest()
 
 
 def scorecard(directory: str) -> dict:
     root = Path(directory)
-    run, job = _read(root / 'run.json'), _read(root / 'job.json')
+    run, run_sha256 = _read(root / 'run.json')
+    job, job_sha256 = _read(root / 'job.json')
     if run.get('schema') != 'cloudanalyzer.mapping_run.v1':
         raise ValueError('unsupported mapping run')
     def object_field(parent, key, path, *, nullable=False):
@@ -90,21 +92,22 @@ def scorecard(directory: str) -> dict:
             return value if value >= 0 else None
         return value if type(value) is float and math.isfinite(value) and value >= 0 else None
     identity = {'source_sha256': digest(source), 'layout_sha256': digest(layout)}
-    from ca.mapping_measure import SCHEMA, PROTOCOL, file_hash
+    from ca.mapping_measure import SCHEMA, PROTOCOL
     measured = {}
     diagnostics: dict = {'exit_code': None, 'error': None, 'cleanup_error': None, 'output_size_error': None}
     measurement_status = 'unavailable'
     measurement_report_error = None
     if (root / 'measurement.json').is_file():
         try:
-            report = _read(root / 'measurement.json')
+            report, _ = _read(root / 'measurement.json')
         except (OSError, ValueError) as error:
             report = None
             measurement_status = 'invalid_report'
             measurement_report_error = str(error)[:4096]
         if report is not None and (report.get('schema') == SCHEMA and report.get('protocol') == PROTOCOL
-                and report.get('run_sha256') == file_hash(root / 'run.json')
-                and report.get('job_sha256') == file_hash(root / 'job.json')):
+                and not (root / 'run.json').is_symlink() and not (root / 'job.json').is_symlink()
+                and report.get('run_sha256') == run_sha256
+                and report.get('job_sha256') == job_sha256):
             measurement_status = report.get('status', 'unavailable')
             diagnostics['exit_code'] = report.get('exit_code') if type(report.get('exit_code')) is int else None
             for key in ('error', 'cleanup_error', 'output_size_error'):
@@ -118,7 +121,7 @@ def scorecard(directory: str) -> dict:
         elif report is not None:
             measurement_status = 'stale_or_unsupported'
     return {'schema': 'cloudanalyzer.mapping_scorecard.v1', 'identity': identity,
-            'run_sha256': hashlib.sha256((root / 'run.json').read_bytes()).hexdigest(),
+            'run_sha256': run_sha256,
             'status': output.get('status', run.get('status')),
             'generated_length_m': number(extent.get('generated_length_m')),
             'trajectory_length_m': number(extent.get('trajectory_length_m')),

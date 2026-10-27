@@ -175,10 +175,47 @@ def test_explicit_metadata_nesting_boundary(tmp_path):
     from ca.mapping_scorecard import _read
     path = tmp_path/'metadata.json'
     path.write_text('{"x":' + '['*127 + '0' + ']'*127 + '}')
-    assert 'x' in _read(path)
+    assert 'x' in _read(path)[0]
     path.write_text('{"x":' + '['*128 + '0' + ']'*128 + '}')
     with pytest.raises(ValueError, match='128 levels'):
         _read(path)
+
+
+@pytest.mark.parametrize('filename', ['run.json', 'job.json'])
+@pytest.mark.parametrize('new_receipt', [False, True])
+def test_summary_and_receipt_binding_use_parsed_bytes(measured_run, monkeypatch, filename, new_receipt):
+    import hashlib
+    from ca import mapping_scorecard
+    root, report = measured_run
+    original_run = (root/'run.json').read_bytes()
+    original_read = mapping_scorecard._read
+    reads = []
+    def read(path):
+        reads.append(path.name)
+        if path.name == 'measurement.json':
+            target = root/filename
+            data = json.loads(target.read_text())
+            if filename == 'run.json':
+                data['status'] = 'changed'
+                data['history'] = [{}]
+            else:
+                data['source']['sha256'] = 'c'*64
+            raw = json.dumps(data).encode()
+            target.write_bytes(raw)
+            if new_receipt:
+                report[filename.removesuffix('.json') + '_sha256'] = hashlib.sha256(raw).hexdigest()
+                path.write_text(json.dumps(report))
+        return original_read(path)
+    (root/'measurement.json').write_text(json.dumps(report))
+    monkeypatch.setattr(mapping_scorecard, '_read', read)
+    card = scorecard(str(root))
+    assert card['run_sha256'] == hashlib.sha256(original_run).hexdigest()
+    assert card['status'] == 'finished'
+    assert card['recorded_actions'] == 0
+    assert card['identity']['source_sha256'] == 'a'*64
+    assert reads == ['run.json', 'job.json', 'measurement.json']
+    assert card['measurement_status'] == ('stale_or_unsupported' if new_receipt else 'process_succeeded')
+    assert card['wall_time_seconds'] == (None if new_receipt else 1.5)
 
 
 @pytest.mark.parametrize('filename,keys', [

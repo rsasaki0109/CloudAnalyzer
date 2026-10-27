@@ -127,3 +127,63 @@ def test_size_error_retains_other_metrics_but_not_comparison_size(tmp_path, monk
     assert card['logical_output_bytes'] is None
     assert card['wall_time_seconds'] > 0
     assert compare(card, card)['delta']['logical_output_bytes'] is None
+
+
+@pytest.mark.parametrize('interrupt', [False, True])
+def test_monitor_failure_stops_real_child_and_saves_receipt(tmp_path, monkeypatch, interrupt):
+    import psutil
+    from ca import mapping_measure
+    started = []
+    popen = mapping_measure.subprocess.Popen
+    def launch(*args, **kwargs):
+        process = popen(*args, **kwargs)
+        started.append(process)
+        return process
+    def unavailable(pid):
+        if interrupt:
+            raise KeyboardInterrupt()
+        raise psutil.AccessDenied(pid)
+    monkeypatch.setattr(mapping_measure.subprocess, 'Popen', launch)
+    monkeypatch.setattr(psutil, 'Process', unavailable)
+    root = tmp_path/'monitor-failed'
+    try:
+        result = measure([sys.executable, '-c', 'import time; time.sleep(30)'], str(root))
+        assert result['status'] == ('interrupted' if interrupt else 'measurement_failed')
+        assert started[0].poll() is not None
+        assert result['cleanup_error'] is None
+        assert result['exit_code'] is not None
+        assert json.loads((root/'measurement.json').read_text()) == result
+    finally:
+        for process in started:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+
+
+@pytest.mark.parametrize('mode', ['forced', 'still_running', 'denied', 'interrupted'])
+def test_cleanup_waits_are_bounded_and_failures_explicit(monkeypatch, mode):
+    from ca import mapping_measure
+    from types import SimpleNamespace
+    import subprocess
+    waits, signals = [], []
+    def wait(*, timeout):
+        waits.append(timeout)
+        if mode == 'interrupted':
+            raise KeyboardInterrupt()
+        if len(waits) == 1 or mode == 'still_running':
+            raise subprocess.TimeoutExpired('fixture', timeout)
+        return -9
+    def send(*args):
+        signals.append(args)
+        if mode == 'denied':
+            raise PermissionError('fixture signal denied')
+    process = SimpleNamespace(pid=123, returncode=None, wait=wait, terminate=send, kill=send)
+    monkeypatch.setattr(mapping_measure.os, 'killpg', send, raising=False)
+    code, error = mapping_measure._stop_process(process)
+    assert all(timeout == 5 for timeout in waits)
+    assert len(waits) <= 2
+    if mode == 'forced':
+        assert code == -9 and error is None
+        assert len(signals) == 2
+    else:
+        assert code is None and error

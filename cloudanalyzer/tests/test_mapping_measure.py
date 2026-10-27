@@ -12,7 +12,7 @@ def command(root, exit_code=0):
     return [sys.executable, '-c', '''import sys,json,time
 from pathlib import Path
 p=Path(sys.argv[1]);p.mkdir()
-(p/'run.json').write_text(json.dumps({'schema':'cloudanalyzer.mapping_run.v1','layout_file':{'sha256':'b'*64},'history':[]}))
+(p/'run.json').write_text(json.dumps({'schema':'cloudanalyzer.mapping_run.v1','layout_file':{'sha256':'b'*64},'history':[],'status':'finished'}))
 (p/'job.json').write_text(json.dumps({'source':{'sha256':'a'*64}}))
 (p/'output.bin').write_bytes(b'x'*1024)
 data=bytearray(8*1024*1024)

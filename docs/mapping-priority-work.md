@@ -381,3 +381,13 @@ rewritten. Required run/job metadata still fails explicitly when invalid.
 Metadata reads are bounded to 32 MiB even if the file grows after its size check.
 Metadata nesting is limited to 128 container levels independently of the Python
 JSON parser, with the root object counted as level one.
+
+### Explicit performance comparison eligibility
+
+Scorecard comparisons include `performance_comparison.eligible` and `reasons`.
+Performance deltas require known matching generation stages, successful current
+measurements, the supported measurement protocol and valid matching sampling
+intervals. Two missing generation stages are no longer treated as an agreement.
+Generation metrics remain available when performance comparison is unavailable;
+individual unavailable performance values stay null even in eligible comparisons.
+Eligibility does not establish identical hardware, system load or accuracy.

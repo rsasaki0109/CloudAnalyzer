@@ -39,6 +39,12 @@ an error naming the field instead of producing misleading action counts. Missing
 or null output/diagnostic sections are supported for incomplete runs and leave
 their metrics unknown. Missing history retains the default count of zero.
 
+The run hash and measurement binding use the exact bytes parsed for each
+metadata file, without reopening those files to compute identities. A receipt
+for a later version cannot supply metrics for an earlier parsed summary.
+This is not a transaction across files or a guarantee that files remain unchanged
+after reading; use a completed, inactive run for a stable comparison.
+
 Exit 0 means the summary/comparison was produced, including summaries of failed
 runs or invalid optional measurements. Missing/invalid required metadata or an
 incompatible baseline returns a nonzero exit status. Use the JSON fields, rather

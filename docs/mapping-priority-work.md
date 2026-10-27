@@ -452,3 +452,12 @@ Malformed structures now produce field-specific errors rather than internal
 exceptions or character/key counts. Missing/null diagnostic sections remain
 supported for partial runs. Regression tests cover falsey invalid containers,
 malformed history, unchanged evidence and unavailable diagnosis.
+
+### Bind scorecards to the bytes actually parsed
+
+The bounded metadata reader now returns the hash of its parsed bytes. Scorecard
+run identity and measurement binding reuse these hashes instead of reopening
+run/job files, preventing a summary from being paired with a later version's
+identity or receipt. Tests replace run/job metadata during receipt loading and
+check both old and updated receipts. This does not provide a multi-file atomic
+snapshot or certify that the on-disk files remain unchanged afterward.

@@ -187,3 +187,55 @@ def test_cleanup_waits_are_bounded_and_failures_explicit(monkeypatch, mode):
         assert len(signals) == 2
     else:
         assert code is None and error
+
+
+@pytest.mark.parametrize('timeout', [0, -1, float('inf'), float('nan'), True])
+def test_invalid_timeout_does_not_launch_or_create_output(tmp_path, monkeypatch, timeout):
+    from ca import mapping_measure
+    root = tmp_path/'invalid-timeout'
+    monkeypatch.setattr(mapping_measure.subprocess, 'Popen', lambda *a, **k: pytest.fail('process launched'))
+    with pytest.raises(ValueError, match='timeout'):
+        measure(command(root), str(root), timeout=timeout)
+    assert not root.exists()
+
+
+def test_timeout_stops_real_child_and_saves_terminal_receipt(tmp_path, monkeypatch):
+    from ca import mapping_measure
+    started = []
+    popen = mapping_measure.subprocess.Popen
+    def launch(*args, **kwargs):
+        process = popen(*args, **kwargs); started.append(process); return process
+    monkeypatch.setattr(mapping_measure.subprocess, 'Popen', launch)
+    root = tmp_path/'timed-out'
+    try:
+        result = measure([sys.executable, '-c', 'import time; time.sleep(30)'], str(root), .01, timeout=.05)
+        assert result['status'] == 'timed_out'
+        assert result['timeout_seconds'] == .05
+        assert result['cleanup_error'] is None
+        assert started[0].poll() is not None
+        assert json.loads((root/'measurement.json').read_text()) == result
+    finally:
+        for process in started:
+            if process.poll() is None:
+                process.kill(); process.wait(timeout=5)
+
+
+def test_command_completes_before_timeout(tmp_path):
+    root = tmp_path/'within-limit'
+    result = measure(command(root), str(root), .01, timeout=10)
+    assert result['status'] == 'process_succeeded'
+    assert result['timeout_seconds'] == 10
+    assert scorecard(str(root))['wall_time_seconds'] is not None
+
+
+def test_cli_timeout_returns_nonzero_and_records_limit(tmp_path):
+    import subprocess
+    root = tmp_path/'cli-timeout'
+    process = subprocess.run([sys.executable, '-m', 'ca.mapping_measure', '--run-dir', str(root),
+        '--timeout', '.05', '--', sys.executable, '-c', 'import time; time.sleep(30)'],
+        capture_output=True, text=True, timeout=15)
+    assert process.returncode == 1
+    report = json.loads(process.stdout)
+    assert report['status'] == 'timed_out'
+    assert report['timeout_seconds'] == .05
+    assert json.loads((root/'measurement.json').read_text()) == report

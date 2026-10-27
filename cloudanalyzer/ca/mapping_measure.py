@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -76,7 +77,7 @@ def output_size(root: Path) -> tuple[int | None, str | None]:
         return None, str(error)
 
 
-def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
+def measure(command: list[str], run_dir: str, interval: float = .05, *, timeout: float | None = None) -> dict:
     try:
         import psutil
     except ImportError as import_error:
@@ -84,6 +85,8 @@ def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
 
     if not command or not .01 <= interval <= 1:
         raise ValueError('supply a command and a sample interval between .01 and 1 second')
+    if timeout is not None and (isinstance(timeout, bool) or not math.isfinite(timeout) or timeout <= 0):
+        raise ValueError('timeout must be positive and finite')
     root = Path(run_dir).absolute()
     if root.exists() or root.is_symlink():
         raise FileExistsError('measurement requires a new run directory')
@@ -118,9 +121,17 @@ def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
                 peak = max(peak or 0, rss)
             if process.poll() is not None:
                 break
-            time.sleep(interval)
+            remaining = timeout - (time.perf_counter() - clock) if timeout is not None else None
+            if remaining is not None and remaining <= 0:
+                assert timeout is not None
+                raise subprocess.TimeoutExpired(command, timeout)
+            time.sleep(min(interval, remaining) if remaining is not None else interval)
         code = process.wait()
         status = 'process_succeeded' if code == 0 else 'process_failed'
+    except subprocess.TimeoutExpired as exc:
+        status, error = 'timed_out', str(exc)
+        if process is not None:
+            code, cleanup_error = _stop_process(process)
     except KeyboardInterrupt:
         status, error = 'interrupted', 'Measurement interrupted'
         if process is not None:
@@ -135,7 +146,7 @@ def measure(command: list[str], run_dir: str, interval: float = .05) -> dict:
         raise ValueError('run directory became a symbolic link')
     size, size_error = output_size(root)
     result = {
-        'schema': SCHEMA, 'protocol': PROTOCOL, 'sample_interval_seconds': interval,
+        'schema': SCHEMA, 'protocol': PROTOCOL, 'sample_interval_seconds': interval, 'timeout_seconds': timeout,
         'status': status, 'exit_code': code, 'error': error, 'cleanup_error': cleanup_error,
         'command': command, 'script_sha256': script_hashes, 'cwd': str(Path.cwd()), 'platform': platform.platform(),
         'started_unix_seconds': started, 'wall_time_seconds': elapsed,
@@ -155,10 +166,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run-dir', required=True)
     parser.add_argument('--interval', type=float, default=.05)
+    parser.add_argument('--timeout', type=float, help='Maximum command duration in seconds before termination; omitted means unlimited')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
-    result = measure(command, args.run_dir, args.interval)
+    result = measure(command, args.run_dir, args.interval, timeout=args.timeout)
     print(json.dumps(result, indent=2))
     raise SystemExit(0 if result['status'] == 'process_succeeded' else 1)
 

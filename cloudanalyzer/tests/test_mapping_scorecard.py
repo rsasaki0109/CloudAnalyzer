@@ -163,3 +163,11 @@ def test_two_unknown_generation_stages_are_not_comparable(measured_run):
     result = compare(card, card)
     assert not result['performance_comparison']['eligible']
     assert 'wall_time_seconds' not in result['delta']
+
+
+def test_timed_out_measurement_cannot_supply_success_deltas(measured_run):
+    card = save_card(measured_run, status='timed_out', exit_code=-15, error='timeout', timeout_seconds=1)
+    assert card['measurement_status'] == 'timed_out'
+    assert card['measurement_diagnostics']['error'] == 'timeout'
+    assert card['wall_time_seconds'] is None
+    assert not compare(card, card)['performance_comparison']['eligible']

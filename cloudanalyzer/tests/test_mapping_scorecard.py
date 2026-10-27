@@ -130,3 +130,36 @@ def test_explicit_metadata_nesting_boundary(tmp_path):
     path.write_text('{"x":' + '['*128 + '0' + ']'*128 + '}')
     with pytest.raises(ValueError, match='128 levels'):
         _read(path)
+
+
+def test_compatible_comparison_reports_eligibility(measured_run):
+    card = save_card(measured_run)
+    result = compare(card, card)
+    assert result['performance_comparison'] == {'eligible':True, 'reasons':[]}
+    assert result['delta']['wall_time_seconds'] == 0
+
+
+@pytest.mark.parametrize('change,reason', [
+    ({'status':None}, 'Generation stage is missing'),
+    ({'status':'other-stage'}, 'Generation stages differ'),
+    ({'measurement_status':'interrupted'}, 'successful, current measurements'),
+    ({'measurement_protocol':'unknown'}, 'Measurement protocols'),
+    ({'sample_interval_seconds':None}, 'Sampling intervals are missing'),
+    ({'sample_interval_seconds':True}, 'Sampling intervals are missing'),
+    ({'sample_interval_seconds':float('nan')}, 'Sampling intervals are missing'),
+    ({'sample_interval_seconds':.1}, 'Sampling intervals differ'),
+])
+def test_incompatible_comparison_explains_omitted_metrics(measured_run, change, reason):
+    card = save_card(measured_run)
+    result = compare(card, {**card, **change})
+    assert result['performance_comparison']['eligible'] is False
+    assert any(reason in text for text in result['performance_comparison']['reasons'])
+    assert 'wall_time_seconds' not in result['delta']
+    assert 'recorded_actions' in result['delta']
+
+
+def test_two_unknown_generation_stages_are_not_comparable(measured_run):
+    card = {**save_card(measured_run), 'status':None}
+    result = compare(card, card)
+    assert not result['performance_comparison']['eligible']
+    assert 'wall_time_seconds' not in result['delta']

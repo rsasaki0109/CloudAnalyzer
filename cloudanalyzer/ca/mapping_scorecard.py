@@ -108,10 +108,26 @@ def compare(before: dict, after: dict) -> dict:
     if before['identity'] != after['identity']:
         raise ValueError('comparison requires identical source and layout identities')
     keys = ['generated_length_m', 'trajectory_length_m', 'unexplained_traces', 'recorded_actions']
-    if (before.get('status') == after.get('status') and before.get('measurement_protocol') and before.get('measurement_protocol') == after.get('measurement_protocol')
-            and before.get('sample_interval_seconds') == after.get('sample_interval_seconds')):
+    reasons = []
+    statuses = [card.get('status') for card in (before, after)]
+    if any(not isinstance(value, str) or not value.strip() for value in statuses):
+        reasons.append('Generation stage is missing or invalid.')
+    elif statuses[0] != statuses[1]:
+        reasons.append('Generation stages differ.')
+    if any(card.get('measurement_status') != 'process_succeeded' for card in (before, after)):
+        reasons.append('Both runs need successful, current measurements.')
+    from ca.mapping_measure import PROTOCOL
+    if any(card.get('measurement_protocol') != PROTOCOL for card in (before, after)):
+        reasons.append('Measurement protocols are missing, unsupported or different.')
+    intervals = [card.get('sample_interval_seconds') for card in (before, after)]
+    if any(not isinstance(value, (int, float)) or isinstance(value, bool) or not .01 <= value <= 1 for value in intervals):
+        reasons.append('Sampling intervals are missing or invalid.')
+    elif intervals[0] != intervals[1]:
+        reasons.append('Sampling intervals differ.')
+    if not reasons:
         keys += ['wall_time_seconds', 'sampled_peak_tree_rss_bytes', 'logical_output_bytes']
     return {'before': before, 'after': after,
+            'performance_comparison': {'eligible': not reasons, 'reasons': reasons},
             'delta': {key: after[key] - before[key] if before[key] is not None and after[key] is not None else None for key in keys}}
 
 

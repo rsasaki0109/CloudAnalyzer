@@ -44,6 +44,9 @@ necessarily produce a read error.
 
 The receipt records command/script identities, platform, elapsed time, sampled
 RSS and output bytes. RSS may miss short peaks or double-count shared pages.
+If a command exits before memory monitoring can attach, its confirmed exit code
+still determines success/failure. The receipt records zero RSS samples, a null
+peak and an unavailable process read; this does not invent a zero-memory result.
 These observations are not accuracy measurements or controlled hardware benchmarks.
 Only runs with valid `run.json` and `job.json` can subsequently be summarized by
 [mapping-scorecard](mapping-scorecard.md).

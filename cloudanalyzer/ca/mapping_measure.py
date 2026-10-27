@@ -120,8 +120,16 @@ def measure(command: list[str], run_dir: str, interval: float = .05, *, timeout:
     process = None
     try:
         process = subprocess.Popen(command, start_new_session=os.name == 'posix')
-        owner = psutil.Process(process.pid)
-        while True:
+        try:
+            owner = psutil.Process(process.pid)
+        except psutil.NoSuchProcess:
+            # A short-lived child can exit before the first memory observation.
+            # Trust Popen's exit result; an absent RSS sample is not a failure.
+            if process.poll() is None:
+                raise
+            owner = None
+            missing += 1
+        while owner is not None:
             rss = 0
             observed = False
             try:

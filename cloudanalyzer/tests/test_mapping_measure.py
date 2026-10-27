@@ -156,8 +156,8 @@ def test_size_error_retains_other_metrics_but_not_comparison_size(tmp_path, monk
     assert compare(card, card)['delta']['logical_output_bytes'] is None
 
 
-@pytest.mark.parametrize('interrupt', [False, True])
-def test_monitor_failure_stops_real_child_and_saves_receipt(tmp_path, monkeypatch, interrupt):
+@pytest.mark.parametrize('failure', ['denied', 'interrupted', 'missing'])
+def test_monitor_failure_stops_real_child_and_saves_receipt(tmp_path, monkeypatch, failure):
     import psutil
     from ca import mapping_measure
     started = []
@@ -167,15 +167,17 @@ def test_monitor_failure_stops_real_child_and_saves_receipt(tmp_path, monkeypatc
         started.append(process)
         return process
     def unavailable(pid):
-        if interrupt:
+        if failure == 'interrupted':
             raise KeyboardInterrupt()
+        if failure == 'missing':
+            raise psutil.NoSuchProcess(pid)
         raise psutil.AccessDenied(pid)
     monkeypatch.setattr(mapping_measure.subprocess, 'Popen', launch)
     monkeypatch.setattr(psutil, 'Process', unavailable)
     root = tmp_path/'monitor-failed'
     try:
         result = measure([sys.executable, '-c', 'import time; time.sleep(30)'], str(root))
-        assert result['status'] == ('interrupted' if interrupt else 'measurement_failed')
+        assert result['status'] == ('interrupted' if failure == 'interrupted' else 'measurement_failed')
         assert started[0].poll() is not None
         assert result['cleanup_error'] is None
         assert result['exit_code'] is not None
@@ -185,6 +187,40 @@ def test_monitor_failure_stops_real_child_and_saves_receipt(tmp_path, monkeypatc
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=5)
+
+
+@pytest.mark.parametrize('exit_code', [0, 7])
+def test_exit_before_monitor_attachment_preserves_exit_result(tmp_path, monkeypatch, exit_code):
+    import psutil
+    from ca import mapping_measure
+    started = []
+    original_popen = mapping_measure.subprocess.Popen
+    def launch(*args, **kwargs):
+        process = original_popen(*args, **kwargs)
+        started.append(process)
+        return process
+    def vanished(pid):
+        assert started[0].pid == pid
+        # Deterministically simulate the child exiting during monitor setup.
+        started[0].wait(timeout=5)
+        raise psutil.NoSuchProcess(pid)
+    monkeypatch.setattr(mapping_measure.subprocess, 'Popen', launch)
+    monkeypatch.setattr(psutil, 'Process', vanished)
+    monkeypatch.setattr(mapping_measure, '_stop_process', lambda process: pytest.fail('exited child was stopped'))
+    root = tmp_path/'fast-child'
+    result = measure(command(root, exit_code), str(root), .01)
+    assert result['status'] == ('process_succeeded' if exit_code == 0 else 'process_failed')
+    assert result['exit_code'] == exit_code
+    assert result['error'] is None
+    assert result['cleanup_error'] is None
+    assert result['rss_samples'] == 0
+    assert result['sampled_peak_tree_rss_bytes'] is None
+    assert result['unavailable_process_reads'] == 1
+    assert result['wall_time_seconds'] > 0
+    assert json.loads((root/'measurement.json').read_text()) == result
+    card = scorecard(str(root))
+    assert (card['wall_time_seconds'] is not None) == (exit_code == 0)
+    assert card['sampled_peak_tree_rss_bytes'] is None
 
 
 @pytest.mark.parametrize('mode', ['forced', 'still_running', 'denied', 'interrupted'])

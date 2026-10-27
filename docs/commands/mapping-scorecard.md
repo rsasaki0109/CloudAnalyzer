@@ -33,5 +33,6 @@ runs or invalid optional measurements. Missing/invalid required metadata or an
 incompatible baseline returns a nonzero exit status. Use the JSON fields, rather
 than the command exit code, to assess generation and measurement outcomes.
 
+Create measurement receipts with [mapping-measure](mapping-measure.md).
 See [mapping-run](mapping-run.md) and the
 [measurement workflow](../mapping-priority-work.md#measure-a-fresh-real-log-run).

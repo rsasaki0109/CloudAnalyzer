@@ -88,7 +88,7 @@ Install `cloudanalyzer[benchmark]` (adds psutil), and run from the repository ro
 with the native core and recording readers available:
 
 ```sh
-PYTHONPATH=cloudanalyzer python -m ca.mapping_measure --run-dir runs/april -- \
+ca mapping-measure --run-dir runs/april -- \
   python scripts/mapping_e2e_coverage.py \
   web/public/samples/nclt-2012-04-29.mcap runs/april 2.5
 ca mapping-scorecard runs/april
@@ -415,3 +415,13 @@ returns zero even when optional measurements are unavailable; missing required
 metadata and incompatible baselines return nonzero. Integration tests exercise
 real saved fixtures, comparisons, damaged optional evidence and unchanged files.
 See [command documentation](commands/mapping-scorecard.md).
+
+
+### Standard CLI for mapping measurements
+
+`ca mapping-measure --run-dir RUN [--interval SECONDS] [--timeout SECONDS] -- COMMAND`
+now exposes measurement through the main CLI. Child flags and paths pass through
+unchanged without shell interpretation. Tests exercise actual child argument
+receipt, failures, timeout, invalid options and existing-output preservation.
+See [command documentation](commands/mapping-measure.md), including inherited
+child logs and the machine-readable receipt file.

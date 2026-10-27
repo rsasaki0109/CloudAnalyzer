@@ -1998,6 +1998,24 @@ def mapping_scorecard_cmd(
     typer.echo(encoded)
 
 
+@app.command("mapping-measure")
+def mapping_measure_cmd(
+    command: list[str] = typer.Argument(..., help="Executable and arguments after --; no shell expansion"),
+    run_dir: str = typer.Option(..., "--run-dir", help="New run directory used by the child command"),
+    interval: float = typer.Option(.05, "--interval", min=.01, max=1, help="Memory sampling interval in seconds"),
+    timeout: float | None = typer.Option(None, "--timeout", help="Positive command duration limit in seconds; omitted means unlimited"),
+) -> None:
+    """Measure a synchronous command and save its receipt in a new run directory."""
+    from ca.mapping_measure import measure
+    try:
+        result = measure(command, run_dir, interval, timeout=timeout)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2, allow_nan=False))
+    if result['status'] != 'process_succeeded':
+        raise typer.Exit(1)
+
+
 @app.command("mapping-prepare-glim-recording")
 def mapping_prepare_glim_recording_cmd(
     lidar: str = typer.Argument(..., help="ROS2 point cloud MCAP"),

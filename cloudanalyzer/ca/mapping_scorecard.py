@@ -198,13 +198,63 @@ def compare(before: dict, after: dict) -> dict:
             'delta': delta, 'delta_errors': delta_errors}
 
 
+def format_text(result: dict) -> str:
+    """Render saved evidence without hiding missing values or eligibility limits."""
+    metrics = (
+        ('generated_length_m', 'Generated length (m)'),
+        ('trajectory_length_m', 'Trajectory length (m)'),
+        ('unexplained_traces', 'Unexplained traces'),
+        ('recorded_actions', 'Recorded actions'),
+        ('wall_time_seconds', 'Wall time (s)'),
+        ('sampled_peak_tree_rss_bytes', 'Sampled peak RSS (bytes)'),
+        ('logical_output_bytes', 'Logical output (bytes)'),
+    )
+    def display(value):
+        # Escape saved strings so control characters cannot affect the terminal.
+        return 'unavailable' if value is None else json.dumps(value, ensure_ascii=True, allow_nan=False)
+
+    def summary(card, title):
+        lines = [title, f"  Generation: {display(card['status'])}",
+                 f"  Measurement: {display(card['measurement_status'])}",
+                 f"  Run SHA-256: {card['run_sha256']}"]
+        lines += [f'  {label}: {display(card[key])}' for key, label in metrics]
+        if card['measurement_report_error']:
+            lines.append(f"  Report error: {display(card['measurement_report_error'])}")
+        lines += [f'  Binding: {display(reason)}' for reason in card['measurement_binding_reasons']]
+        lines += [f'  {key}: {display(value)}' for key, value in card['measurement_diagnostics'].items() if value is not None]
+        return lines
+
+    if 'before' not in result:
+        lines = summary(result, 'Mapping scorecard')
+    else:
+        lines = summary(result['before'], 'Baseline') + [''] + summary(result['after'], 'Current')
+        eligibility = result['performance_comparison']
+        lines += ['', 'Delta (current - baseline)',
+                  '  Performance comparison: ' + ('eligible' if eligibility['eligible'] else 'ineligible')]
+        lines += [f'  Reason: {display(reason)}' for reason in eligibility['reasons']]
+        for key, label in metrics:
+            if key not in result['delta']:
+                continue
+            value = result['delta'][key]
+            rendered = display(value)
+            if value is not None and value > 0:
+                rendered = '+' + rendered
+            reason = result['delta_errors'].get(key)
+            lines.append(f'  {label}: {rendered}' + (f' ({display(reason)})' if reason else ''))
+    lines += ['', 'Saved evidence only; independent accuracy and human intervention counts are unknown.',
+              'Performance comparability does not establish identical hardware or system load.']
+    return '\n'.join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('run')
     parser.add_argument('--baseline')
+    parser.add_argument('--text', action='store_true', help='Show a readable summary instead of JSON')
     args = parser.parse_args()
     current = scorecard(args.run)
-    print(json.dumps(compare(scorecard(args.baseline), current) if args.baseline else current, indent=2, allow_nan=False))
+    result = compare(scorecard(args.baseline), current) if args.baseline else current
+    print(format_text(result) if args.text else json.dumps(result, indent=2, allow_nan=False))
 
 
 if __name__ == '__main__':

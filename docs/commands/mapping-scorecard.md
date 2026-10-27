@@ -5,11 +5,19 @@ Read a saved mapping run's generation and measurement summary as JSON:
 ```sh
 ca mapping-scorecard runs/current
 ca mapping-scorecard runs/current --baseline runs/previous > comparison.json
+ca mapping-scorecard runs/current --text
+ca mapping-scorecard runs/current --baseline runs/previous --text
 ```
 
 The command reads `run.json`, `job.json` and optional `measurement.json`. It does
 not run mapping, start Docker or modify those files. The existing
 `python -m ca.mapping_scorecard` entry point remains available.
+
+JSON remains the default for automation. `--text` displays generation and
+measurement status, run hashes, metrics with units, diagnostics and comparison
+reasons in the terminal. Positive deltas have a `+` sign; missing values are
+`unavailable`. Saved diagnostic strings are escaped to prevent terminal control
+characters from changing the display. Both entry points support this option.
 
 A single scorecard includes recorded generation extent, unresolved traces,
 action count and available performance measurements. Human intervention counts

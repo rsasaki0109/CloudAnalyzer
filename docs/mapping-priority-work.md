@@ -504,3 +504,13 @@ its exit result and elapsed time, while recording an unavailable read and null
 RSS peak. An unconfirmed exit still follows monitor-failure cleanup. Regression
 tests deterministically exercise successful/failed real children exiting during
 monitor setup, plus a missing monitor for a still-running child.
+
+### Readable scorecard output
+
+`ca mapping-scorecard RUN [--baseline BASELINE] --text` displays statuses,
+run hashes, metrics with units, signed deltas and reasons for unavailable or
+ineligible comparisons. JSON stays the default and both entry points share the
+formatter. Unknown accuracy and human intervention counts remain explicit;
+diagnostic strings escape terminal controls. Tests cover read-only CLI output,
+comparison direction, unavailable evidence, binding/process diagnostics and
+module/main-CLI parity.

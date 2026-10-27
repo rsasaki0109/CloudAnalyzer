@@ -465,6 +465,67 @@ def test_cli_missing_run_returns_nonzero(tmp_path):
     assert not (tmp_path/'missing').exists()
 
 
+def test_cli_text_summary_is_read_only_and_keeps_unknowns(measured_run):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    save_card(measured_run)
+    before = {path.name:path.read_bytes() for path in root.iterdir()}
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root), '--text'])
+    assert result.exit_code == 0, result.output
+    assert 'Mapping scorecard' in result.stdout
+    assert 'Wall time (s): 1.5' in result.stdout
+    assert 'Generated length (m): unavailable' in result.stdout
+    assert 'Recorded actions: 0' in result.stdout
+    assert 'independent accuracy and human intervention counts are unknown' in result.stdout
+    assert {path.name:path.read_bytes() for path in root.iterdir()} == before
+
+
+def test_text_comparison_shows_signed_deltas_and_missing_reasons(measured_run):
+    from ca.mapping_scorecard import format_text
+    card = save_card(measured_run)
+    other = {**card, 'wall_time_seconds':2.5, 'logical_output_bytes':512}
+    rendered = format_text(compare(card, other))
+    assert 'Delta (current - baseline)' in rendered
+    assert 'Performance comparison: eligible' in rendered
+    assert 'Wall time (s): +1.0' in rendered
+    assert 'Logical output (bytes): -512' in rendered
+    assert 'Baseline and current values are unavailable.' in rendered
+    incompatible = format_text(compare(card, {**other, 'status':'other-stage'}))
+    delta_section = incompatible.split('Delta (current - baseline)')[1]
+    assert 'Performance comparison: ineligible' in delta_section
+    assert 'Generation stages differ.' in delta_section
+    assert 'Wall time (s)' not in delta_section
+
+
+def test_text_diagnostics_escape_terminal_control_characters(measured_run):
+    from ca.mapping_scorecard import format_text
+    card = save_card(measured_run, status='process_failed', exit_code=7,
+                     error='failure\nforged line\x1b[2J')
+    rendered = format_text(card)
+    assert 'exit_code: 7' in rendered
+    assert '\x1b' not in rendered
+    assert '\\u001b[2J' in rendered
+    assert '\\nforged line' in rendered
+    stale = format_text(save_card(measured_run, run_sha256=None))
+    assert 'Binding:' in stale and 'run_sha256 is missing' in stale
+
+
+def test_module_text_output_matches_main_cli(measured_run):
+    import subprocess
+    import sys
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    save_card(measured_run)
+    args = [str(root), '--baseline', str(root), '--text']
+    result = subprocess.run([sys.executable, '-m', 'ca.mapping_scorecard', *args],
+                            capture_output=True, text=True, timeout=15)
+    cli = CliRunner().invoke(app, ['mapping-scorecard', *args])
+    assert result.returncode == cli.exit_code == 0
+    assert result.stdout == cli.stdout
+
+
 def test_cli_incompatible_baseline_returns_nonzero(measured_run, tmp_path):
     from typer.testing import CliRunner
     from cloudanalyzer_cli.main import app

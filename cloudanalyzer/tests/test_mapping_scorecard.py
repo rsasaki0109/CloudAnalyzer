@@ -122,6 +122,55 @@ def test_invalid_required_run_still_fails(measured_run):
         scorecard(str(root))
 
 
+@pytest.mark.parametrize('extra', [
+    '"status":"process_failed"',
+    '"nested":{"key":1,"k\\u0065y":2}',
+    '"platform":NaN', '"command":[Infinity]',
+    '"nested":{"value":-Infinity}', '"nested":{"value":1e999}',
+])
+def test_ambiguous_optional_json_preserves_cli_summary(measured_run, extra):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, report = measured_run
+    raw = json.dumps(report)[:-1] + ',' + extra + '}'
+    path = root/'measurement.json'
+    path.write_text(raw)
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root)])
+    assert result.exit_code == 0, result.output
+    card = json.loads(result.stdout)
+    assert card['status'] == 'finished'
+    assert card['measurement_status'] == 'invalid_report'
+    assert card['measurement_report_error']
+    assert card['wall_time_seconds'] is None
+    assert not compare(card, card)['performance_comparison']['eligible']
+    assert path.read_text() == raw
+
+
+@pytest.mark.parametrize('filename', ['run.json', 'job.json'])
+@pytest.mark.parametrize('extra', ['"extra":{"x":1,"x":2}', '"extra":1e999', '"extra":NaN'])
+def test_ambiguous_required_json_fails_cleanly(measured_run, filename, extra):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    path = root/filename
+    raw = path.read_text()[:-1] + ',' + extra + '}'
+    path.write_text(raw)
+    with pytest.raises(ValueError, match='metadata contains'):
+        scorecard(str(root))
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root)])
+    assert result.exit_code != 0
+    assert 'metadata contains' in result.output
+    assert path.read_text() == raw
+
+
+def test_large_integer_metrics_do_not_overflow_float_conversion(measured_run):
+    huge = 10**400
+    card = save_card(measured_run, logical_output_bytes=huge)
+    assert card['logical_output_bytes'] == huge
+    assert compare(card, card)['delta']['logical_output_bytes'] == 0
+    json.dumps(card, allow_nan=False)
+
+
 def test_explicit_metadata_nesting_boundary(tmp_path):
     from ca.mapping_scorecard import _read
     path = tmp_path/'metadata.json'

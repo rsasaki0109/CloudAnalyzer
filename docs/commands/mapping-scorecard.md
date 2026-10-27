@@ -28,6 +28,12 @@ summaries available. Unavailable metrics are `null`; `measurement_status`,
 state. A successful command does not mean that mapping succeeded or its outputs
 are accurate.
 
+Metadata must use unambiguous JSON: duplicate object keys (including nested or
+escaped duplicates), `NaN`, `Infinity` and floating-point overflow such as `1e999`
+are rejected. Invalid optional measurements produce `invalid_report` while
+preserving the generation summary; invalid required run/job metadata stops the
+command. Nonnegative integer metrics retain their exact integer values.
+
 Exit 0 means the summary/comparison was produced, including summaries of failed
 runs or invalid optional measurements. Missing/invalid required metadata or an
 incompatible baseline returns a nonzero exit status. Use the JSON fields, rather

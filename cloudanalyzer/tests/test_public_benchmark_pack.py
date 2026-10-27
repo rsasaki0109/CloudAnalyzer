@@ -84,13 +84,48 @@ def test_bunny_http404_is_not_retried(tmp_path, monkeypatch):
 def test_bunny_local_write_failure_is_not_retried(tmp_path, monkeypatch):
     import io
     import public_benchmark_assets as assets
-    def fail_copy(*args):
+    class Response(io.BytesIO):
+        headers = {}
+    def fail_open(*args, **kwargs):
         raise PermissionError('fixture disk error')
-    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: io.BytesIO(b'data'))
-    monkeypatch.setattr(assets.shutil, 'copyfileobj', fail_copy)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: Response(b'data'))
+    monkeypatch.setattr(Path, 'open', fail_open)
     monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('local failure retried'))
     with pytest.raises(PermissionError, match='disk error'):
         assets._download_bunny_archive(tmp_path/'bunny.tar.gz')
+
+
+@pytest.mark.parametrize('length', ['9', None, '1', '-1', 'invalid'])
+def test_download_limit_or_invalid_length_stops_without_retry(tmp_path, monkeypatch, length):
+    import io
+    import public_benchmark_assets as assets
+    reads = []
+    class Response(io.BytesIO):
+        headers = {} if length is None else {'Content-Length':length}
+        def read(self, size=-1):
+            reads.append(size)
+            return super().read(size)
+    monkeypatch.setattr(assets, 'MAX_BUNNY_DOWNLOAD_BYTES', 8)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: Response(b'x'*100))
+    monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('invalid response retried'))
+    path = tmp_path/'bunny.tar.gz'
+    with pytest.raises(ValueError):
+        assets._download_bunny_archive(path)
+    assert not path.exists()
+    assert reads == ([9] if length in (None, '1') else [])
+
+
+@pytest.mark.parametrize('length', [None, '8'])
+def test_download_accepts_exact_size_limit(tmp_path, monkeypatch, length):
+    import io
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {} if length is None else {'Content-Length':length}
+    monkeypatch.setattr(assets, 'MAX_BUNNY_DOWNLOAD_BYTES', 8)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: Response(b'12345678'))
+    path = tmp_path/'bunny.tar.gz'
+    assets._download_bunny_archive(path)
+    assert path.read_bytes() == b'12345678'
 
 
 def test_bunny_mesh_download_uses_retrying_transport(tmp_path, monkeypatch):

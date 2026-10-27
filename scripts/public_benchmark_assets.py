@@ -23,6 +23,7 @@ BUNNY_MESH_MEMBER = "bunny/reconstruction/bun_zipper.ply"
 MAX_BUNNY_MESH_BYTES = 64 * 1024**2
 MAX_BUNNY_ARCHIVE_ENTRIES = 10_000
 MAX_LOCAL_BUNNY_ARCHIVE_BYTES = 128 * 1024**2
+MAX_BUNNY_DOWNLOAD_BYTES = 128 * 1024**2
 HDL_LOCALIZATION_MAP_URL = (
     "https://raw.githubusercontent.com/koide3/hdl_localization/master/data/map.pcd"
 )
@@ -47,12 +48,28 @@ def _download_bunny_archive(path: Path) -> None:
     for attempt in range(1, 4):
         try:
             with urllib.request.urlopen(BUNNY_ARCHIVE_URL, timeout=30) as response:
+                length = response.headers.get('Content-Length')
+                expected = int(length) if length is not None else None
+                if expected is not None and expected < 0:
+                    raise ValueError('Stanford Bunny response has a negative Content-Length')
+                if expected is not None and expected > MAX_BUNNY_DOWNLOAD_BYTES:
+                    raise ValueError('Stanford Bunny download exceeds 128 MiB')
                 with path.open('wb') as output:
-                    shutil.copyfileobj(response, output)
-                    expected = response.headers.get('Content-Length')
-                    if expected is not None and output.tell() < int(expected):
-                        raise http.client.IncompleteRead(b'', int(expected) - output.tell())
+                    received = 0
+                    while True:
+                        block = response.read(min(1024**2, MAX_BUNNY_DOWNLOAD_BYTES - received + 1))
+                        if not block:
+                            break
+                        received += len(block)
+                        if received > MAX_BUNNY_DOWNLOAD_BYTES:
+                            raise ValueError('Stanford Bunny download exceeds 128 MiB')
+                        output.write(block)
+                    if expected is not None and received < expected:
+                        raise http.client.IncompleteRead(b'', expected - received)
             return
+        except ValueError:
+            path.unlink(missing_ok=True)
+            raise
         except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.IncompleteRead) as error:
             path.unlink(missing_ok=True)
             if isinstance(error, urllib.error.HTTPError):

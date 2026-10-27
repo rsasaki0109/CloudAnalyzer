@@ -357,3 +357,16 @@ timeouts and cleanup interruption are retained separately as `cleanup_error`;
 failed/interrupted measurements remain excluded from successful scorecards.
 The exit code describes the direct child; detached descendants or descendants
 that outlive a terminated group leader are not independently confirmed stopped.
+
+### Measurement diagnostics in scorecards
+
+Scorecards now include `measurement_diagnostics` with the recorded exit code,
+measurement error, cleanup error and output-size error. These fields are exposed
+only when the measurement schema/protocol and run/job hashes match; stale or
+missing measurements have null diagnostics. Text is capped at 4,096 characters
+per field. The original receipt retains the full text.
+
+A contradictory success receipt with a measurement/cleanup error does not supply
+performance metrics. An output-size error suppresses size and its delta while
+retaining independently available timing/memory metrics. Recorded process status
+is preserved; diagnostics do not turn a failed run into successful evidence.

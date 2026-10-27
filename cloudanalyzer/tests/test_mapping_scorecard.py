@@ -181,6 +181,56 @@ def test_explicit_metadata_nesting_boundary(tmp_path):
         _read(path)
 
 
+@pytest.mark.parametrize('filename,keys', [
+    ('job.json', ['source']), ('run.json', ['layout_file']),
+    ('run.json', ['output']), ('run.json', ['output', 'diagnosis']),
+    ('run.json', ['output', 'diagnosis', 'extent']),
+    ('run.json', ['output', 'diagnosis', 'review_holds']),
+])
+@pytest.mark.parametrize('value', [[], '', False, 1])
+def test_invalid_metadata_objects_report_the_field(measured_run, filename, keys, value):
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, _ = measured_run
+    path = root/filename
+    data = json.loads(path.read_text())
+    parent = data
+    for key in keys[:-1]:
+        parent = parent.setdefault(key, {})
+    parent[keys[-1]] = value
+    raw = json.dumps(data)
+    path.write_text(raw)
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root)])
+    assert result.exit_code != 0
+    assert filename + '.' + '.'.join(keys) + ' must be an object' in result.output
+    assert path.read_text() == raw
+
+
+@pytest.mark.parametrize('history', [None, 'actions', {}, 3, [None], ['action']])
+def test_invalid_history_cannot_be_counted_as_actions(measured_run, history):
+    root, _ = measured_run
+    path = root/'run.json'
+    data = json.loads(path.read_text()); data['history'] = history
+    path.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match='history must be an array of objects'):
+        scorecard(str(root))
+
+
+@pytest.mark.parametrize('output', [None, {}, {'diagnosis':None},
+    {'diagnosis':{'extent':None, 'review_holds':None}}])
+def test_unavailable_diagnosis_keeps_partial_run_summary(measured_run, output):
+    root, _ = measured_run
+    path = root/'run.json'
+    data = json.loads(path.read_text()); data['output'] = output
+    data.pop('history')
+    path.write_text(json.dumps(data))
+    card = scorecard(str(root))
+    assert card['status'] == 'finished'
+    assert card['recorded_actions'] == 0
+    assert card['generated_length_m'] is None
+    assert card['unexplained_traces'] is None
+
+
 def test_compatible_comparison_reports_eligibility(measured_run):
     card = save_card(measured_run)
     result = compare(card, card)

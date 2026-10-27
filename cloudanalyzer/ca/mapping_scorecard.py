@@ -63,15 +63,28 @@ def scorecard(directory: str) -> dict:
     run, job = _read(root / 'run.json'), _read(root / 'job.json')
     if run.get('schema') != 'cloudanalyzer.mapping_run.v1':
         raise ValueError('unsupported mapping run')
-    source, layout = job.get('source', {}), run.get('layout_file', {})
+    def object_field(parent, key, path, *, nullable=False):
+        value = parent.get(key, {})
+        if value is None and nullable:
+            return {}
+        if not isinstance(value, dict):
+            raise ValueError(f'{path} must be an object' + (' or null' if nullable else ''))
+        return value
+
+    source = object_field(job, 'source', 'job.json.source')
+    layout = object_field(run, 'layout_file', 'run.json.layout_file')
     def digest(value):
         result = value.get('sha256')
         if not isinstance(result, str) or len(result) != 64 or any(c not in '0123456789abcdef' for c in result):
             raise ValueError('source and layout require SHA-256 identities')
         return result
-    output = run.get('output') or {}
-    diagnosis = output.get('diagnosis') or {}
-    holds, extent = diagnosis.get('review_holds', {}), diagnosis.get('extent', {})
+    output = object_field(run, 'output', 'run.json.output', nullable=True)
+    diagnosis = object_field(output, 'diagnosis', 'run.json.output.diagnosis', nullable=True)
+    holds = object_field(diagnosis, 'review_holds', 'run.json.output.diagnosis.review_holds', nullable=True)
+    extent = object_field(diagnosis, 'extent', 'run.json.output.diagnosis.extent', nullable=True)
+    history = run.get('history', [])
+    if not isinstance(history, list) or any(not isinstance(entry, dict) for entry in history):
+        raise ValueError('run.json.history must be an array of objects')
     def number(value):
         if type(value) is int:
             return value if value >= 0 else None
@@ -110,7 +123,7 @@ def scorecard(directory: str) -> dict:
             'generated_length_m': number(extent.get('generated_length_m')),
             'trajectory_length_m': number(extent.get('trajectory_length_m')),
             'unexplained_traces': number(holds.get('unexplained_traces_total')),
-            'recorded_actions': len(run.get('history', [])),
+            'recorded_actions': len(history),
             'human_interventions': None, 'wall_time_seconds': number(measured.get('wall_time_seconds')),
             'sampled_peak_tree_rss_bytes': number(measured.get('sampled_peak_tree_rss_bytes')),
             'logical_output_bytes': number(measured.get('logical_output_bytes')) if measured.get('output_size_error') is None else None,

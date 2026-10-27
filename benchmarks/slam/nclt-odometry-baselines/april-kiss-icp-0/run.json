@@ -1,0 +1,62 @@
+{
+  "driver": "kiss-icp",
+  "session": "april",
+  "input": {
+    "name": "nclt-2012-04-29.mcap",
+    "bytes": 12568564,
+    "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+  },
+  "settings": {
+    "min_range_m": 1.5,
+    "max_range_m": 80.0,
+    "deskew": false,
+    "threads": 1,
+    "upstream_config": {
+      "out_dir": "results",
+      "data": {
+        "max_range": 80.0,
+        "min_range": 1.5,
+        "deskew": false
+      },
+      "registration": {
+        "max_num_iterations": 500,
+        "convergence_criterion": 0.0001,
+        "max_num_threads": 1
+      },
+      "mapping": {
+        "voxel_size": 1.0,
+        "max_points_per_voxel": 20
+      },
+      "adaptive_threshold": {
+        "fixed_threshold": null,
+        "initial_threshold": 2.0,
+        "min_motion_th": 0.1
+      }
+    }
+  },
+  "implementation": {
+    "package": "kiss-icp",
+    "version": "1.2.3"
+  },
+  "script": {
+    "name": "compare_nclt_odometry.py",
+    "bytes": 9269,
+    "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+  },
+  "frames": 236,
+  "points": 1400069,
+  "frame_ids": [
+    "velodyne"
+  ],
+  "registration_seconds": 64.24570764397504,
+  "pipeline_seconds": 64.67006676600431,
+  "frame_p50_ms": 246.6274549951777,
+  "frame_p95_ms": 541.6404002426134,
+  "peak_process_rss_bytes": 159907840,
+  "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+  "poses": {
+    "name": "poses.npz",
+    "bytes": 25292,
+    "sha256": "ef02531505ddbb84fa7e04cdade72d01280b88ba54ed0ef66120352543752c6a"
+  }
+}

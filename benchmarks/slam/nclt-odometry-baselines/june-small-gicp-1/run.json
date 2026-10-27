@@ -1,0 +1,45 @@
+{
+  "driver": "small-gicp",
+  "session": "june",
+  "input": {
+    "name": "nclt-2012-06-15.mcap",
+    "bytes": 11726449,
+    "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+  },
+  "settings": {
+    "min_range_m": 1.5,
+    "max_range_m": 80.0,
+    "deskew": false,
+    "threads": 1,
+    "map_voxel_m": 1.0,
+    "downsampling_m": 0.5,
+    "correspondence_distance_m": 5.0,
+    "max_iterations": 30,
+    "map_retention": "all scans; unlike bounded local maps in the other arms"
+  },
+  "implementation": {
+    "package": "small-gicp",
+    "version": "1.0.0"
+  },
+  "script": {
+    "name": "compare_nclt_odometry.py",
+    "bytes": 9269,
+    "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+  },
+  "frames": 238,
+  "points": 1311273,
+  "frame_ids": [
+    "velodyne"
+  ],
+  "registration_seconds": 8.83996305501205,
+  "pipeline_seconds": 9.078364619999775,
+  "frame_p50_ms": 36.04308649664745,
+  "frame_p95_ms": 58.88945544356829,
+  "peak_process_rss_bytes": 145272832,
+  "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+  "poses": {
+    "name": "poses.npz",
+    "bytes": 25474,
+    "sha256": "6c3712f14f73f7f3e8237d54cbc6775fb22ebe1399b36251c0d102e08f3f4beb"
+  }
+}

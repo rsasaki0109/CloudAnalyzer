@@ -71,3 +71,59 @@ def test_invalid_sampling_protocol_keeps_performance_unavailable(tmp_path):
     result['sample_interval_seconds']=-1
     (root/'measurement.json').write_text(json.dumps(result))
     assert scorecard(str(root))['wall_time_seconds'] is None
+
+
+@pytest.mark.parametrize('kind', ['missing', 'file', 'symlink'])
+def test_unavailable_output_root_has_no_size(tmp_path, kind):
+    root = tmp_path/'output'
+    if kind == 'file':
+        root.write_bytes(b'contents')
+    elif kind == 'symlink':
+        target = tmp_path/'actual'; target.mkdir(); root.symlink_to(target)
+    size, error = output_size(root)
+    assert size is None
+    assert error
+
+
+def test_unreadable_subdirectory_does_not_report_partial_size(tmp_path, monkeypatch):
+    from ca import mapping_measure
+    root = tmp_path/'output'; root.mkdir(); (root/'visible').write_bytes(b'visible')
+    def walk(path, *, followlinks, onerror):
+        yield str(root), [], ['visible']
+        onerror(PermissionError('unreadable child'))
+    monkeypatch.setattr(mapping_measure.os, 'walk', walk)
+    size, error = output_size(root)
+    assert size is None
+    assert 'unreadable child' in error
+
+
+def test_empty_directories_count_toward_inventory_limit(tmp_path, monkeypatch):
+    from ca import mapping_measure
+    monkeypatch.setattr(mapping_measure, 'MAX_OUTPUT_ENTRIES', 2)
+    for name in ('a', 'b', 'c'):
+        (tmp_path/name).mkdir()
+    size, error = output_size(tmp_path)
+    assert size is None
+    assert 'entry count' in error
+
+
+def test_special_output_file_is_unavailable(tmp_path):
+    import os
+    os.mkfifo(tmp_path/'pipe')
+    size, error = output_size(tmp_path)
+    assert size is None
+    assert 'nonregular' in error
+
+
+def test_size_error_retains_other_metrics_but_not_comparison_size(tmp_path, monkeypatch):
+    from ca import mapping_measure
+    root = tmp_path/'run'
+    monkeypatch.setattr(mapping_measure, 'output_size', lambda path: (None, 'unreadable child'))
+    result = measure(command(root), str(root), .01)
+    assert result['status'] == 'process_succeeded'
+    assert result['logical_output_bytes'] is None
+    assert result['output_size_error'] == 'unreadable child'
+    card = scorecard(str(root))
+    assert card['logical_output_bytes'] is None
+    assert card['wall_time_seconds'] > 0
+    assert compare(card, card)['delta']['logical_output_bytes'] is None

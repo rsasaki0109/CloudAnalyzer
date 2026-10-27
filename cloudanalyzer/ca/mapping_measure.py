@@ -8,11 +8,13 @@ import os
 from pathlib import Path
 import platform
 import signal
+import stat
 import subprocess
 import time
 
 SCHEMA = 'cloudanalyzer.mapping_measurement.v1'
 PROTOCOL = 'process-tree-rss-sampled-v1'
+MAX_OUTPUT_ENTRIES = 100_000
 
 
 def file_hash(path: Path) -> str | None:
@@ -28,16 +30,23 @@ def file_hash(path: Path) -> str | None:
 def output_size(root: Path) -> tuple[int | None, str | None]:
     total = count = 0
     try:
-        for directory, dirs, files in os.walk(root, followlinks=False):
+        if root.is_symlink() or not root.is_dir():
+            return None, 'Output root is missing, not a directory or a symlink'
+        def unreadable(error):
+            raise error
+        for directory, dirs, files in os.walk(root, followlinks=False, onerror=unreadable):
+            count += len(dirs) + len(files)
+            if count > MAX_OUTPUT_ENTRIES:
+                return None, 'Output entry count exceeds measurement limit'
             dirs[:] = [name for name in dirs if not (Path(directory) / name).is_symlink()]
             for name in files:
                 path = Path(directory) / name
-                if path.is_symlink():
+                metadata = path.lstat()
+                if stat.S_ISLNK(metadata.st_mode):
                     continue
-                count += 1
-                if count > 100_000:
-                    return None, 'Output file count exceeds measurement limit'
-                total += path.stat().st_size
+                if not stat.S_ISREG(metadata.st_mode):
+                    return None, 'Output contains a nonregular file'
+                total += metadata.st_size
         return total, None
     except OSError as error:
         return None, str(error)

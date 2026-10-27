@@ -18,6 +18,9 @@ import open3d as o3d
 
 BUNNY_ARCHIVE_URL = "https://graphics.stanford.edu/pub/3Dscanrep/bunny.tar.gz"
 BUNNY_SOURCE_PAGE = "https://graphics.stanford.edu/data/3Dscanrep/"
+BUNNY_MESH_MEMBER = "bunny/reconstruction/bun_zipper.ply"
+MAX_BUNNY_MESH_BYTES = 64 * 1024**2
+MAX_BUNNY_ARCHIVE_ENTRIES = 10_000
 HDL_LOCALIZATION_MAP_URL = (
     "https://raw.githubusercontent.com/koide3/hdl_localization/master/data/map.pcd"
 )
@@ -60,15 +63,37 @@ def _download_bunny_archive(path: Path) -> None:
             time.sleep(attempt)
 
 
+def _extract_bunny_mesh(archive_path: Path, mesh_path: Path) -> None:
+    """Copy only the expected regular mesh, never archive-controlled paths."""
+    with tarfile.open(archive_path, 'r:gz') as archive:
+        selected = None
+        for count, member in enumerate(archive, start=1):
+            if count > MAX_BUNNY_ARCHIVE_ENTRIES:
+                raise RuntimeError('Stanford Bunny archive has too many entries')
+            if member.name != BUNNY_MESH_MEMBER:
+                continue
+            if selected is not None:
+                raise RuntimeError('Stanford Bunny archive contains duplicate mesh entries')
+            if not member.isfile() or not 0 < member.size <= MAX_BUNNY_MESH_BYTES:
+                raise RuntimeError('Stanford Bunny mesh must be a regular file of at most 64 MiB')
+            selected = member
+        if selected is None:
+            raise RuntimeError('Stanford Bunny archive is missing the expected mesh')
+        source = archive.extractfile(selected)
+        if source is None:
+            raise RuntimeError('Cannot read Stanford Bunny mesh')
+        with source, mesh_path.open('xb') as output:
+            shutil.copyfileobj(source, output)
+
+
 def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
     """Download and return the Stanford Bunny mesh."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)
         archive_path = root / "bunny.tar.gz"
         _download_bunny_archive(archive_path)
-        with tarfile.open(archive_path, "r:gz") as archive:
-            archive.extractall(root)
-        mesh_path = root / "bunny" / "reconstruction" / "bun_zipper.ply"
+        mesh_path = root / "bun_zipper.ply"
+        _extract_bunny_mesh(archive_path, mesh_path)
         mesh = o3d.io.read_triangle_mesh(str(mesh_path))
         if len(mesh.vertices) == 0:
             raise RuntimeError("failed to load Stanford Bunny mesh")

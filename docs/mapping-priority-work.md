@@ -337,3 +337,12 @@ input/output verification and sensor preflight. Receipts use atomic replacement;
 exceptions still propagate and partial recordings remain available for diagnosis.
 Tests cover write/preflight errors and Ctrl+C, unchanged inputs, retained completed
 output identities and preservation of the previous receipt on replacement failure.
+
+### Unavailable output size stays explicit
+
+The measurement wrapper now returns a null logical output size with an error
+when its output root is missing/invalid, traversal encounters an unreadable
+subdirectory, or a special file is found. It no longer treats a partial directory
+scan as a complete byte count. The 100,000-entry limit includes directories and
+symlinks; symlink contents remain excluded. Other successful process metrics stay
+available, while scorecards retain null size and omit numeric size deltas.

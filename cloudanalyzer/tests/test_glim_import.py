@@ -199,3 +199,14 @@ def test_execution_link_enters_job_immutable_dependencies(glim_pair,execution_re
     from ca.mapping_job import _verify
     with pytest.raises(ValueError,match='changed'):
         _verify(recorded)
+
+
+def test_duplicate_execution_status_rejected_without_prepared_output(glim_pair, execution_report, tmp_path):
+    dump, cloud, provenance = glim_pair
+    report_path, _ = execution_report
+    report_path.write_text(report_path.read_text().replace('{', '{"status":"failed",', 1))
+    out = tmp_path/'duplicate-receipt-export'
+    with pytest.raises(ValueError, match='duplicate object key'):
+        adapter.prepare_glim_export(str(dump), str(cloud), str(out), provenance,
+                                    run_report=str(report_path))
+    assert not out.exists()

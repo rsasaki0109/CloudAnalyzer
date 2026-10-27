@@ -37,6 +37,9 @@ mapping review ZIP and use `mapping-bundle-inspect` instead.
 
 This command checks individually recorded original input files and, for new
 receipts with `input_roots`, the complete file inventories at those roots.
+For these receipts, each original input is hashed once per inventory scan;
+the same result supplies both membership and file-identity checks. There is no
+persistent hash cache, so a later inspection reads the files again.
 Older receipts cannot detect newly added input files. Process logs, unrecorded/invalid partial
 trajectories, other dump files and Docker image contents are not verified.
 Hash agreement is not proof of estimator execution, calibration, common-state

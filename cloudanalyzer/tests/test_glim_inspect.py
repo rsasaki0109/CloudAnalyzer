@@ -144,3 +144,39 @@ def test_invalid_input_roots_rejected(saved, roots):
     path.write_text(json.dumps(report))
     with pytest.raises(ValueError, match='input roots'):
         inspect_glim_run(str(saved[0]))
+
+
+def test_complete_inventory_hashes_each_original_file_once(saved, monkeypatch):
+    from collections import Counter
+    from ca import glim_inspect, glim_run
+    root, bag, config = saved
+    add_input_roots(saved)
+    reads = Counter()
+    def tracked(path):
+        reads[Path(path)] += 1
+        return _artifact(path)
+    monkeypatch.setattr(glim_inspect, '_artifact', tracked)
+    monkeypatch.setattr(glim_run, '_artifact', tracked)
+    result = inspect_glim_run(str(root))
+    assert result['status'] == 'recorded_files_match'
+    assert result['verified_file_count'] == 4
+    assert reads[bag] == 1
+    assert reads[config/'config.json'] == 1
+
+
+@pytest.mark.parametrize('change', ['bag_bytes', 'config_bytes', 'recorded_path'])
+def test_single_pass_inventory_still_detects_identity_changes(saved, change):
+    root, bag, config = saved
+    path, report = add_input_roots(saved)
+    if change == 'bag_bytes':
+        bag.write_bytes(b'changed recording')
+    elif change == 'config_bytes':
+        (config/'config.json').write_text('{"new":true}')
+    else:
+        report['inputs']['bag'][0]['path'] = str(bag.with_name('elsewhere.mcap'))
+        path.write_text(json.dumps(report))
+    result = inspect_glim_run(str(root))
+    assert result['status'] == 'changed_or_missing'
+    assert result['input_inventory_status'] == 'changed_or_missing'
+    assert result['verified_file_count'] == 3
+    assert any('inventory:' in issue for issue in result['issues'])

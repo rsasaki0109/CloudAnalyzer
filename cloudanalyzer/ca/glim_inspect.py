@@ -52,13 +52,14 @@ def inspect_glim_run(directory: str) -> dict:
             count += 1
         except (OSError, ValueError) as error:
             errors.append(f'{role}: {error}')
-    for key in ('bag','configuration'):
-        for index,entry in enumerate(inputs[key]):
-            verify(Path(entry['path']),entry,f'{key}[{index}]')
     # New receipts record roots so additions can be detected as well as mutations.
     roots = report.get('input_roots')
     inventory_status = 'not_recorded'
-    if roots is not None:
+    if roots is None:
+        for key in ('bag', 'configuration'):
+            for index, entry in enumerate(inputs[key]):
+                verify(Path(entry['path']), entry, f'{key}[{index}]')
+    else:
         if not isinstance(roots, dict) or set(roots) != {'bag', 'configuration'}:
             raise ValueError('invalid input roots')
         inventory_status = 'matched'
@@ -68,6 +69,10 @@ def inspect_glim_run(directory: str) -> dict:
                 raise ValueError('input roots must be absolute paths')
             try:
                 current = inventory(Path(value))
+                # Inventory already hashes every file. Do not reread large bags
+                # for the individual-file check when complete roots are available.
+                by_path = {entry['path']: entry for entry in current}
+                count += sum(by_path.get(entry['path']) == entry for entry in inputs[key])
                 if current != inputs[key]:
                     raise ValueError('input directory membership or file identities differ from inventory')
             except (OSError, ValueError) as error:

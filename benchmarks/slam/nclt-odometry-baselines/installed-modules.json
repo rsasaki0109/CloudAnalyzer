@@ -1,0 +1,36 @@
+{
+  "kiss-icp": {
+    "module": "kiss_icp.kiss_icp",
+    "file": "kiss_icp.py",
+    "bytes": 3419,
+    "sha256": "e7db6f58e1eac8ff0029b246e01820c8762b1035114f3f4ff3481bbcfc2e2586",
+    "version": "1.2.3",
+    "native_libraries": [
+      {
+        "name": "kiss_icp/pybind/kiss_icp_pybind.cpython-312-x86_64-linux-gnu.so",
+        "bytes": 871440,
+        "sha256": "e06d5a97c9a0d4d2f7f5ec393de4bb0ce5ef5d162e6ab20faf209798b775db00"
+      }
+    ]
+  },
+  "small-gicp": {
+    "module": "small_gicp",
+    "file": "small_gicp.cpython-312-x86_64-linux-gnu.so",
+    "bytes": 567985,
+    "sha256": "657ef1fc186d2e704c1b209b149e8f1620c38ed0e619088c89f84b67d23c21a0",
+    "version": "1.0.0",
+    "native_libraries": [
+      {
+        "name": "small_gicp.cpython-312-x86_64-linux-gnu.so",
+        "bytes": 567985,
+        "sha256": "657ef1fc186d2e704c1b209b149e8f1620c38ed0e619088c89f84b67d23c21a0"
+      }
+    ]
+  },
+  "cloudanalyzer-core": {
+    "module": "cloudanalyzer_core._core",
+    "file": "_core.abi3.so",
+    "bytes": 8395800,
+    "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+  }
+}

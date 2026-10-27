@@ -1,0 +1,26 @@
+{
+  "scripts/compare_nclt_odometry.py": {
+    "bytes": 9269,
+    "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+  },
+  "scripts/evaluate_nclt_imu_pilot.py": {
+    "bytes": 9455,
+    "sha256": "1f6e9c7dcb73d0f4de69b7cd3540d74c3f081c98b7c0fc79ee1fe45c0b1ffd72"
+  },
+  "scripts/nclt_body_frames.py": {
+    "bytes": 2204,
+    "sha256": "3d872dbf06ac8efe46c2eb19250c8e9e58c7c18f34aad7919332a5a6d4ff0659"
+  },
+  "scripts/pilot_nclt_imu_window.py": {
+    "bytes": 13836,
+    "sha256": "1e581e7f5129c229b4fff2ea53798214dc5468bdfd99f478bee79420603fab43"
+  },
+  "benchmarks/slam/nclt-imu-pilot/verify.py": {
+    "bytes": 5859,
+    "sha256": "e0c26573e7cab2097deff5eb09e86d249353855d6972b9461214f252d1e75716"
+  },
+  "rust/crates/ca-core/src/odometry.rs": {
+    "bytes": 79175,
+    "sha256": "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f"
+  }
+}

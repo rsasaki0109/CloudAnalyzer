@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import heapq
-import json
 from pathlib import Path
 
 from ca.glim_preflight import inspect_glim_bag, imu_gap_limit_ns
 from ca.mapping_import import _space
-from ca.mapping_job import _artifact
+from ca.mapping_job import _artifact, _save
 
 
 def prepare_glim_recording(lidar: str, imu: str, out: str, points_topic: str, imu_topic: str, *, max_imu_gap_s: float = .05) -> dict:
@@ -58,7 +57,8 @@ def prepare_glim_recording(lidar: str, imu: str, out: str, points_topic: str, im
                   'message_counts': [0, 0], 'calibration_verified': False,
                   'scope': 'Selected channels only; CDR payloads, log/header/publish timestamps, sequences and channel metadata preserved. No resampling, axis conversion, synchronization, deskew or calibration. Other channels, attachments and file metadata are not copied. Basic preflight success is not GLIM readiness.'}
         receipt = root/'preparation.json'
-        receipt.write_text(json.dumps(report, indent=2))
+        _save(receipt, report)
+        stage = 'recording_write'
         try:
             with output.open('xb') as stream:
                 writer = Writer(stream, compression=CompressionType.ZSTD)
@@ -74,15 +74,19 @@ def prepare_glim_recording(lidar: str, imu: str, out: str, points_topic: str, im
                     writer.add_message(ids[index], message.log_time, message.data, message.publish_time, message.sequence)
                     report['message_counts'][index] += 1
                 writer.finish()
+            stage = 'input_verification'
             if inputs != [_artifact(path) for path in paths]:
                 raise ValueError('input changed during recording preparation')
+            stage = 'output_verification'
             report['output'] = _artifact(output)
+            stage = 'input_preflight'
             report['preflight'] = inspect_glim_bag(str(output), points_topic, imu_topic, max_imu_gap_s=max_imu_gap_s)
             report['status'] = report['preflight']['status']
-        except Exception as error:
-            report['status'] = 'preparation_failed'
-            report['error'] = str(error)
+        except (Exception, KeyboardInterrupt) as error:
+            report['status'] = 'interrupted' if isinstance(error, KeyboardInterrupt) else 'preparation_failed'
+            report['failure_stage'] = stage
+            report['error'] = str(error) or 'Recording preparation interrupted'
             raise
         finally:
-            receipt.write_text(json.dumps(report, indent=2))
+            _save(receipt, report)
     return report

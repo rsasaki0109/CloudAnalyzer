@@ -228,6 +228,56 @@ def test_command_completes_before_timeout(tmp_path):
     assert scorecard(str(root))['wall_time_seconds'] is not None
 
 
+@pytest.mark.parametrize('failure', ['serialization', 'fsync', 'publish', 'interrupt'])
+def test_failed_receipt_save_leaves_no_partial_json(tmp_path, monkeypatch, failure):
+    from ca import mapping_measure
+    def fail(*args, **kwargs):
+        if failure == 'interrupt':
+            raise KeyboardInterrupt()
+        raise OSError('fixture save failure')
+    result = {'status': 'process_succeeded'}
+    if failure == 'serialization':
+        result['invalid'] = float('nan')
+    elif failure == 'publish':
+        monkeypatch.setattr(mapping_measure.os, 'link', fail)
+    else:
+        monkeypatch.setattr(mapping_measure.os, 'fsync', fail)
+    with pytest.raises((ValueError, OSError, KeyboardInterrupt)):
+        mapping_measure._save_receipt(tmp_path, result)
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('existing', ['file', 'symlink'])
+def test_receipt_publication_never_replaces_existing_target(tmp_path, existing):
+    from ca import mapping_measure
+    target = tmp_path/'measurement.json'
+    if existing == 'file':
+        target.write_text('child-owned receipt')
+    else:
+        target.symlink_to(tmp_path/'missing')
+    with pytest.raises(FileExistsError):
+        mapping_measure._save_receipt(tmp_path, {'status': 'process_succeeded'})
+    if existing == 'file':
+        assert target.read_text() == 'child-owned receipt'
+    else:
+        assert target.is_symlink() and not (tmp_path/'missing').exists()
+    assert list(tmp_path.iterdir()) == [target]
+
+
+def test_receipt_is_complete_before_publication(tmp_path, monkeypatch):
+    from ca import mapping_measure
+    original_link = mapping_measure.os.link
+    result = {'status': 'process_succeeded', 'command': ['path with spaces', '日本語']}
+    def publish(source, target):
+        assert not target.exists()
+        assert json.loads(source.read_text(encoding='utf-8')) == result
+        original_link(source, target)
+    monkeypatch.setattr(mapping_measure.os, 'link', publish)
+    mapping_measure._save_receipt(tmp_path, result)
+    assert json.loads((tmp_path/'measurement.json').read_text()) == result
+    assert list(tmp_path.iterdir()) == [tmp_path/'measurement.json']
+
+
 def test_cli_timeout_returns_nonzero_and_records_limit(tmp_path):
     import subprocess
     root = tmp_path/'cli-timeout'

@@ -16,6 +16,12 @@ The wrapper does not append the run directory to the child command: pass the
 same directory explicitly if the child requires it. Existing output directories
 are rejected. The child creates its normal output; the wrapper saves
 `measurement.json` afterward, even if the child fails to create the directory.
+The receipt is written and flushed to a temporary file before it is published
+atomically. A write failure leaves no partially written `measurement.json`, and
+an existing receipt (including one created by the child) is never overwritten.
+Publication requires hard-link support on the output filesystem; an unsupported
+filesystem returns an error. Abrupt process termination may leave a hidden
+`.measurement-*.tmp` file. This is not a guarantee of durability after power loss.
 
 `--interval` controls process-tree RSS sampling (0.01–1 second, default 0.05).
 `--timeout` accepts positive finite seconds; omitted means unlimited. The limit

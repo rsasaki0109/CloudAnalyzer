@@ -11,12 +11,32 @@ import platform
 import signal
 import stat
 import subprocess
+import tempfile
 import time
 
 SCHEMA = 'cloudanalyzer.mapping_measurement.v1'
 PROTOCOL = 'process-tree-rss-sampled-v1'
 MAX_OUTPUT_ENTRIES = 100_000
 STOP_TIMEOUT_SECONDS = 5
+
+
+def _save_receipt(root: Path, result: dict) -> None:
+    """Publish complete JSON exclusively, without replacing a child's receipt."""
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=root,
+                                         prefix='.measurement-', suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+            json.dump(result, stream, indent=2, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # A same-directory hard link publishes atomically and fails if the target
+        # already exists (including a dangling symlink). Unlike replace(), it
+        # cannot overwrite a receipt created while the command was running.
+        os.link(temporary, root / 'measurement.json')
+    finally:
+        if temporary is not None:
+            temporary.unlink()
 
 
 def _stop_process(process: subprocess.Popen) -> tuple[int | None, str | None]:
@@ -157,8 +177,7 @@ def measure(command: list[str], run_dir: str, interval: float = .05, *, timeout:
         'scope': 'Wall time covers process launch through observed exit, excluding final hashing and output inventory. RSS is the observed sum of parent/descendant RSS samples, may double-count shared pages and miss short-lived peaks/processes. Output size excludes this report, symlinks and external inputs; it is not peak disk use. Process success is not map quality or generation completion.',
     }
     root.mkdir(parents=True, exist_ok=True)
-    with (root / 'measurement.json').open('x') as stream:
-        json.dump(result, stream, indent=2, allow_nan=False)
+    _save_receipt(root, result)
     return result
 
 

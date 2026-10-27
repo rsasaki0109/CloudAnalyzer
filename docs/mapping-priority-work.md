@@ -425,3 +425,12 @@ unchanged without shell interpretation. Tests exercise actual child argument
 receipt, failures, timeout, invalid options and existing-output preservation.
 See [command documentation](commands/mapping-measure.md), including inherited
 child logs and the machine-readable receipt file.
+
+### Atomic measurement receipt publication
+
+Measurement receipts now use a flushed same-directory temporary file and an
+exclusive hard link, so readers see complete JSON and child-created receipts
+cannot be replaced. Save failures and handled interruptions remove temporary
+files. Regression coverage checks partial serialization, flush/publication
+failures, interruption, existing files and dangling symlinks. Filesystems without
+hard-link support fail explicitly; abrupt termination may leave a temporary file.

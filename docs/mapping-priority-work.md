@@ -487,3 +487,11 @@ excluded by incompatible comparison conditions remain omitted and are explained
 by `performance_comparison.reasons`, avoiding misleading missing-value reports.
 Tests cover generation and performance fields, each missing side, zero values,
 ineligible comparisons and main-CLI JSON output.
+
+### Explain rejected measurement bindings
+
+`measurement_binding_reasons` now identifies unsupported receipt schemas or
+protocols, missing/mismatched run/job hashes and symlinked metadata. Multiple
+failures are reported together. Unbound receipt metrics and process diagnostics
+remain excluded. Tests cover invalid identity types, each binding condition,
+multiple CLI reasons and successfully bound process-failure receipts.

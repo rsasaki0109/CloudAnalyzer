@@ -33,6 +33,11 @@ escaped duplicates), `NaN`, `Infinity` and floating-point overflow such as `1e99
 are rejected. Invalid optional measurements produce `invalid_report` while
 preserving the generation summary; invalid required run/job metadata stops the
 command. Nonnegative integer metrics retain their exact integer values.
+Source/layout identities and present diagnostic sections must be objects;
+`history`, when present, must be an array of objects. Invalid structures return
+an error naming the field instead of producing misleading action counts. Missing
+or null output/diagnostic sections are supported for incomplete runs and leave
+their metrics unknown. Missing history retains the default count of zero.
 
 Exit 0 means the summary/comparison was produced, including summaries of failed
 runs or invalid optional measurements. Missing/invalid required metadata or an

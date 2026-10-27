@@ -443,3 +443,12 @@ optional receipts retain the generation summary with `invalid_report`; required
 run/job metadata fails explicitly. Large integer metrics no longer pass through
 an overflowing float conversion. CLI regression tests cover both failure paths
 and verify that saved evidence remains unchanged.
+
+### Scorecard metadata structure validation
+
+Validate source/layout and diagnostic containers before reading their fields,
+and require saved history to be an array of objects before counting actions.
+Malformed structures now produce field-specific errors rather than internal
+exceptions or character/key counts. Missing/null diagnostic sections remain
+supported for partial runs. Regression tests cover falsey invalid containers,
+malformed history, unchanged evidence and unavailable diagnosis.

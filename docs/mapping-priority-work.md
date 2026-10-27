@@ -434,3 +434,12 @@ cannot be replaced. Save failures and handled interruptions remove temporary
 files. Regression coverage checks partial serialization, flush/publication
 failures, interruption, existing files and dangling symlinks. Filesystems without
 hard-link support fail explicitly; abrupt termination may leave a temporary file.
+
+### Unambiguous scorecard metadata
+
+Scorecards reject duplicate JSON keys and nonfinite numbers at every nesting
+level, including escaped duplicate keys and floating-point overflow. Invalid
+optional receipts retain the generation summary with `invalid_report`; required
+run/job metadata fails explicitly. Large integer metrics no longer pass through
+an overflowing float conversion. CLI regression tests cover both failure paths
+and verify that saved evidence remains unchanged.

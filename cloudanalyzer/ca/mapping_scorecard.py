@@ -19,8 +19,26 @@ def _read(path: Path) -> dict:
         raw = stream.read(MAX_METADATA_BYTES + 1)
     if len(raw) > MAX_METADATA_BYTES:
         raise ValueError(f"metadata exceeds 32 MiB: {path.name}")
+    def unique_object(pairs):
+        result = {}
+        for key, item in pairs:
+            if key in result:
+                raise ValueError('metadata contains a duplicate object key')
+            result[key] = item
+        return result
+
+    def invalid_constant(token):
+        raise ValueError('metadata contains a nonfinite JSON number')
+
+    def finite_float(token):
+        result = float(token)
+        if not math.isfinite(result):
+            raise ValueError('metadata contains a nonfinite JSON number')
+        return result
+
     try:
-        value = json.loads(raw)
+        value = json.loads(raw, object_pairs_hook=unique_object,
+                           parse_constant=invalid_constant, parse_float=finite_float)
     except RecursionError as error:
         raise ValueError("metadata nesting exceeds parser limits") from error
     if not isinstance(value, dict):
@@ -55,7 +73,9 @@ def scorecard(directory: str) -> dict:
     diagnosis = output.get('diagnosis') or {}
     holds, extent = diagnosis.get('review_holds', {}), diagnosis.get('extent', {})
     def number(value):
-        return value if type(value) in (int, float) and math.isfinite(value) and value >= 0 else None
+        if type(value) is int:
+            return value if value >= 0 else None
+        return value if type(value) is float and math.isfinite(value) and value >= 0 else None
     identity = {'source_sha256': digest(source), 'layout_sha256': digest(layout)}
     from ca.mapping_measure import SCHEMA, PROTOCOL, file_hash
     measured = {}

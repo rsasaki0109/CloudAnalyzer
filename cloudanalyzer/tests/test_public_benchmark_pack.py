@@ -192,6 +192,75 @@ def _synthetic_source_points() -> np.ndarray:
     return np.asarray(points, dtype=float)
 
 
+def test_local_bunny_archive_builds_offline_and_records_exact_identity(tmp_path, monkeypatch):
+    import hashlib
+    import tarfile
+    import public_benchmark_assets as assets
+    mesh_path = tmp_path/'mesh.ply'
+    assets.o3d.io.write_triangle_mesh(str(mesh_path), assets.o3d.geometry.TriangleMesh.create_sphere(resolution=20))
+    archive = tmp_path/'local.tar.gz'
+    _bunny_archive(archive, [(assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, mesh_path.read_bytes())])
+    raw = archive.read_bytes()
+    def forbid(*args, **kwargs):
+        pytest.fail('local archive mode attempted a download')
+    monkeypatch.setattr(builder, 'download_bunny_mesh', forbid)
+    monkeypatch.setattr(urllib.request, 'urlopen', forbid)
+    output = tmp_path/'pack'
+    result = build_public_benchmark_pack(output, bunny_archive=archive)
+    assert result['source'] == 'local-bunny-archive'
+    manifest = json.loads((output/'manifest.json').read_text())
+    assert manifest['source_archive'] == {'sha256':hashlib.sha256(raw).hexdigest(), 'bytes':len(raw),
+                                          'origin':'local', 'authenticity_verified':False}
+    assert archive.read_bytes() == raw
+    assert 'authenticity' in (output/'ATTRIBUTION.md').read_text()
+    assert '--bunny-archive' in (output/'README.md').read_text()
+    for entry in manifest['configs']:
+        rerun = run_check_suite(load_check_suite(str(output/entry['config_path'])))
+        assert rerun['summary']['passed'] == entry['expected_pass']
+
+
+@pytest.mark.parametrize('case', ['inside_output', 'synthetic', 'custom', 'missing', 'symlink', 'oversize', 'invalid'])
+def test_invalid_local_archive_preserves_existing_output(tmp_path, monkeypatch, case):
+    import public_benchmark_assets as assets
+    output = tmp_path/'pack'; output.mkdir()
+    sentinel = output/'keep'; sentinel.write_text('keep')
+    archive = tmp_path/'local.tar.gz'; archive.write_bytes(b'invalid archive')
+    options = {}
+    if case == 'inside_output':
+        archive = sentinel
+    elif case == 'synthetic':
+        options['fixture'] = 'synthetic'
+    elif case == 'custom':
+        options['source_points'] = _synthetic_source_points()
+    elif case == 'missing':
+        archive = tmp_path/'missing'
+    elif case == 'symlink':
+        link = tmp_path/'link'; link.symlink_to(archive); archive = link
+    elif case == 'oversize':
+        monkeypatch.setattr(assets, 'MAX_LOCAL_BUNNY_ARCHIVE_BYTES', 1)
+    import tarfile
+    with pytest.raises((ValueError, tarfile.TarError)):
+        build_public_benchmark_pack(output, bunny_archive=archive, **options)
+    assert sentinel.read_text() == 'keep'
+
+
+def test_cli_forwards_local_archive_and_rejects_synthetic(monkeypatch):
+    calls = []
+    def capture(output_dir, **options):
+        assert output_dir == Path('benchmarks/public/local-bunny')
+        calls.append(options)
+        return {'output_dir':str(output_dir), 'pack_name':'test', 'source':'local-bunny-archive', 'manifest':{'configs':[]}}
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
+    monkeypatch.setattr(sys, 'argv', ['build', '--bunny-archive', 'local.tar.gz'])
+    builder.main()
+    assert calls == [{'fixture':'stanford-bunny', 'bunny_archive':Path('local.tar.gz')}]
+    monkeypatch.setattr(sys, 'argv', ['build', '--fixture', 'synthetic', '--bunny-archive', 'local.tar.gz'])
+    with pytest.raises(SystemExit) as error:
+        builder.main()
+    assert error.value.code == 2
+    assert len(calls) == 1
+
+
 class TestPublicBenchmarkPack:
     def test_synthetic_builder_runs_offline_and_detects_regressions(self, tmp_path: Path, monkeypatch):
         output_dir = tmp_path / "public-pack"

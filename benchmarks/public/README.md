@@ -22,6 +22,20 @@ Stanford Bunny のダウンロードはソケット通信に30秒のタイムア
 重複・リンク・欠落を拒否する。アーカイブの項目数は最大10,000件。
 他の項目はディスクへ展開せず、メッシュの内容は変更しない。
 
+取得済みのアーカイブを使う場合はネットワーク不要で生成できる:
+
+```bash
+python scripts/build_public_benchmark_pack.py --bunny-archive /data/bunny.tar.gz --output benchmarks/public/local-bunny
+```
+
+出力指定を省略した場合の保存先は `benchmarks/public/local-bunny`。
+入力は出力ディレクトリ外の通常ファイル（最大128 MiB）に限る。シンボリックリンク、
+`--fixture synthetic` やAPIの `source_points` との併用は拒否する。
+読み込んだバイト列のSHA-256とサイズを `manifest.json` の `source_archive` に保存し、
+sourceを `local-bunny-archive` として直接ダウンロードと区別する。
+ハッシュは内容の識別用で、公式配布物との一致を保証するものではない。
+既存の出力ディレクトリは生成時に置き換えられるため、入力アーカイブをその中に置かないこと。
+
 生成される pack には以下が含まれる:
 
 - `baselines/` reference artifact

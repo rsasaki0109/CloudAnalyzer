@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import hashlib
 import http.client
 import shutil
 import tarfile
@@ -21,6 +22,7 @@ BUNNY_SOURCE_PAGE = "https://graphics.stanford.edu/data/3Dscanrep/"
 BUNNY_MESH_MEMBER = "bunny/reconstruction/bun_zipper.ply"
 MAX_BUNNY_MESH_BYTES = 64 * 1024**2
 MAX_BUNNY_ARCHIVE_ENTRIES = 10_000
+MAX_LOCAL_BUNNY_ARCHIVE_BYTES = 128 * 1024**2
 HDL_LOCALIZATION_MAP_URL = (
     "https://raw.githubusercontent.com/koide3/hdl_localization/master/data/map.pcd"
 )
@@ -98,6 +100,28 @@ def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
         if len(mesh.vertices) == 0:
             raise RuntimeError("failed to load Stanford Bunny mesh")
         return mesh
+
+
+def load_local_bunny_mesh(path: Path) -> tuple[o3d.geometry.TriangleMesh, dict]:
+    """Load a bounded local archive snapshot and identify exactly those bytes."""
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_LOCAL_BUNNY_ARCHIVE_BYTES:
+        raise ValueError('Local Bunny archive must be a regular file of at most 128 MiB')
+    with path.open('rb') as source:
+        raw = source.read(MAX_LOCAL_BUNNY_ARCHIVE_BYTES + 1)
+    if len(raw) > MAX_LOCAL_BUNNY_ARCHIVE_BYTES:
+        raise ValueError('Local Bunny archive exceeds 128 MiB')
+    identity = {'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw),
+                'origin': 'local', 'authenticity_verified': False}
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        archive = root/'bunny.tar.gz'
+        archive.write_bytes(raw)
+        mesh_path = root/'bun_zipper.ply'
+        _extract_bunny_mesh(archive, mesh_path)
+        mesh = o3d.io.read_triangle_mesh(str(mesh_path))
+        if len(mesh.vertices) == 0:
+            raise RuntimeError('failed to load local Bunny mesh')
+        return mesh, identity
 
 
 def download_hdl_localization_map(download_dir: Path) -> Path:

@@ -171,6 +171,40 @@ def test_large_integer_metrics_do_not_overflow_float_conversion(measured_run):
     json.dumps(card, allow_nan=False)
 
 
+@pytest.mark.parametrize('reverse', [False, True])
+def test_cli_comparison_preserves_other_metrics_on_delta_overflow(measured_run, reverse):
+    from ca.mapping_measure import file_hash
+    from typer.testing import CliRunner
+    from cloudanalyzer_cli.main import app
+    root, report = measured_run
+    baseline = root/'baseline'; baseline.mkdir()
+    for name in ('run.json', 'job.json'):
+        (baseline/name).write_bytes((root/name).read_bytes())
+    huge = 10**400
+    old_time, new_time = (huge, 1.5) if reverse else (1.5, huge)
+    (baseline/'measurement.json').write_text(json.dumps({**report, 'wall_time_seconds':old_time,
+        'run_sha256':file_hash(baseline/'run.json'), 'job_sha256':file_hash(baseline/'job.json')}))
+    (root/'measurement.json').write_text(json.dumps({**report, 'wall_time_seconds':new_time,
+        'logical_output_bytes':2048}))
+    result = CliRunner().invoke(app, ['mapping-scorecard', str(root), '--baseline', str(baseline)])
+    assert result.exit_code == 0, result.output
+    comparison = json.loads(result.stdout)
+    assert comparison['before']['wall_time_seconds'] == old_time
+    assert comparison['after']['wall_time_seconds'] == new_time
+    assert comparison['delta']['wall_time_seconds'] is None
+    assert comparison['delta']['logical_output_bytes'] == 1024
+    assert comparison['delta_errors'] == {'wall_time_seconds':'Difference exceeds the finite floating-point range.'}
+    assert comparison['performance_comparison']['eligible']
+
+
+def test_large_integer_deltas_remain_exact(measured_run):
+    card = save_card(measured_run, logical_output_bytes=10**400)
+    other = {**card, 'logical_output_bytes':10**400 + 1}
+    assert compare(card, other)['delta']['logical_output_bytes'] == 1
+    assert compare(other, card)['delta']['logical_output_bytes'] == -1
+    assert compare(card, other)['delta_errors'] == {}
+
+
 def test_explicit_metadata_nesting_boundary(tmp_path):
     from ca.mapping_scorecard import _read
     path = tmp_path/'metadata.json'

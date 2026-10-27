@@ -162,9 +162,25 @@ def compare(before: dict, after: dict) -> dict:
         reasons.append('Sampling intervals differ.')
     if not reasons:
         keys += ['wall_time_seconds', 'sampled_peak_tree_rss_bytes', 'logical_output_bytes']
+    delta: dict[str, int | float | None] = {}
+    delta_errors = {}
+    for key in keys:
+        left, right = before[key], after[key]
+        if left is None or right is None:
+            delta[key] = None
+            continue
+        try:
+            difference = right - left
+            if type(difference) is float and not math.isfinite(difference):
+                raise OverflowError('nonfinite difference')
+        except OverflowError:
+            delta[key] = None
+            delta_errors[key] = 'Difference exceeds the finite floating-point range.'
+        else:
+            delta[key] = difference
     return {'before': before, 'after': after,
             'performance_comparison': {'eligible': not reasons, 'reasons': reasons},
-            'delta': {key: after[key] - before[key] if before[key] is not None and after[key] is not None else None for key in keys}}
+            'delta': delta, 'delta_errors': delta_errors}
 
 
 def main():

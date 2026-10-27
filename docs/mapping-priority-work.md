@@ -391,3 +391,17 @@ intervals. Two missing generation stages are no longer treated as an agreement.
 Generation metrics remain available when performance comparison is unavailable;
 individual unavailable performance values stay null even in eligible comparisons.
 Eligibility does not establish identical hardware, system load or accuracy.
+
+### Optional command timeout for measurements
+
+Use `python -m ca.mapping_measure --run-dir runs/new --timeout 600 -- COMMAND`
+to stop a still-running command after the configured elapsed duration. The option
+is positive finite seconds; omitting it preserves unlimited execution. Receipts
+record `timeout_seconds` and `timed_out`, and the CLI exits nonzero. Timed-out
+measurements do not supply successful performance comparisons.
+
+The monotonic deadline is checked between memory samples; sleeps are shortened
+near the deadline. Process creation or a blocking monitoring call can delay its
+observation, and bounded termination waits add up to ten seconds afterward.
+This is not a strict wall-clock deadline. Cleanup errors remain explicit and the
+existing process-group/descendant limitations still apply.

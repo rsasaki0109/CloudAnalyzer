@@ -370,3 +370,14 @@ A contradictory success receipt with a measurement/cleanup error does not supply
 performance metrics. An output-size error suppresses size and its delta while
 retaining independently available timing/memory metrics. Recorded process status
 is preserved; diagnostics do not turn a failed run into successful evidence.
+
+### Damaged optional measurement reports
+
+Scorecards keep valid generation summaries available when `measurement.json` is
+malformed, unreadable, oversized or too deeply nested. Such records report
+`measurement_status: invalid_report` and a bounded `measurement_report_error`;
+performance values and bound measurement diagnostics stay null. No report is
+rewritten. Required run/job metadata still fails explicitly when invalid.
+Metadata reads are bounded to 32 MiB even if the file grows after its size check.
+Metadata nesting is limited to 128 container levels independently of the Python
+JSON parser, with the root object counted as level one.

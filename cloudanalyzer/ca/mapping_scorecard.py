@@ -8,12 +8,35 @@ import math
 from pathlib import Path
 
 
+MAX_METADATA_BYTES = 32 * 1024**2
+MAX_METADATA_DEPTH = 128
+
+
 def _read(path: Path) -> dict:
-    if path.stat().st_size > 32 * 1024**2:
+    if path.stat().st_size > MAX_METADATA_BYTES:
         raise ValueError(f"metadata exceeds 32 MiB: {path.name}")
-    value = json.loads(path.read_text())
+    with path.open('rb') as stream:
+        raw = stream.read(MAX_METADATA_BYTES + 1)
+    if len(raw) > MAX_METADATA_BYTES:
+        raise ValueError(f"metadata exceeds 32 MiB: {path.name}")
+    try:
+        value = json.loads(raw)
+    except RecursionError as error:
+        raise ValueError("metadata nesting exceeds parser limits") from error
     if not isinstance(value, dict):
         raise ValueError("metadata must be an object")
+    # Bound nesting independently of the Python JSON parser's recursion policy.
+    stack = [iter(value.values())]
+    while stack:
+        try:
+            item = next(stack[-1])
+        except StopIteration:
+            stack.pop()
+            continue
+        if isinstance(item, (dict, list)):
+            if len(stack) >= MAX_METADATA_DEPTH:
+                raise ValueError('metadata nesting exceeds 128 levels')
+            stack.append(iter(item.values() if isinstance(item, dict) else item))
     return value
 
 
@@ -38,9 +61,15 @@ def scorecard(directory: str) -> dict:
     measured = {}
     diagnostics: dict = {'exit_code': None, 'error': None, 'cleanup_error': None, 'output_size_error': None}
     measurement_status = 'unavailable'
+    measurement_report_error = None
     if (root / 'measurement.json').is_file():
-        report = _read(root / 'measurement.json')
-        if (report.get('schema') == SCHEMA and report.get('protocol') == PROTOCOL
+        try:
+            report = _read(root / 'measurement.json')
+        except (OSError, ValueError) as error:
+            report = None
+            measurement_status = 'invalid_report'
+            measurement_report_error = str(error)[:4096]
+        if report is not None and (report.get('schema') == SCHEMA and report.get('protocol') == PROTOCOL
                 and report.get('run_sha256') == file_hash(root / 'run.json')
                 and report.get('job_sha256') == file_hash(root / 'job.json')):
             measurement_status = report.get('status', 'unavailable')
@@ -53,7 +82,7 @@ def scorecard(directory: str) -> dict:
                     and report.get('error') is None and report.get('cleanup_error') is None
                     and interval is not None and .01 <= interval <= 1):
                 measured = report
-        else:
+        elif report is not None:
             measurement_status = 'stale_or_unsupported'
     return {'schema': 'cloudanalyzer.mapping_scorecard.v1', 'identity': identity,
             'run_sha256': hashlib.sha256((root / 'run.json').read_bytes()).hexdigest(),
@@ -66,6 +95,7 @@ def scorecard(directory: str) -> dict:
             'sampled_peak_tree_rss_bytes': number(measured.get('sampled_peak_tree_rss_bytes')),
             'logical_output_bytes': number(measured.get('logical_output_bytes')) if measured.get('output_size_error') is None else None,
             'measurement_status': measurement_status,
+            'measurement_report_error': measurement_report_error,
             'measurement_diagnostics': diagnostics,
             'measurement_protocol': measured.get('protocol'),
             'measurement_context': {key: measured.get(key) for key in ('command', 'script_sha256', 'platform', 'rss_samples', 'unavailable_process_reads')},

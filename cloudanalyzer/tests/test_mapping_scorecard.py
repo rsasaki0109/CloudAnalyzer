@@ -72,3 +72,61 @@ def test_diagnostic_text_is_bounded_and_invalid_types_are_omitted(measured_run):
     assert len(card['measurement_diagnostics']['error']) == 4096
     assert card['measurement_diagnostics']['exit_code'] is None
     assert card['measurement_diagnostics']['cleanup_error'] is None
+
+
+@pytest.mark.parametrize('raw', [b'{truncated', b'[]', b'{"x":"\xff"}',
+    b'{"x":' + b'['*2000 + b'0' + b']'*2000 + b'}'], ids=['truncated', 'array', 'encoding', 'nesting'])
+def test_invalid_optional_measurement_preserves_generation_summary(measured_run, raw):
+    root, _ = measured_run
+    path = root/'measurement.json'; path.write_bytes(raw)
+    card = scorecard(str(root))
+    assert card['status'] == 'finished'
+    assert card['identity']['source_sha256'] == 'a'*64
+    assert card['measurement_status'] == 'invalid_report'
+    assert card['measurement_report_error']
+    assert card['wall_time_seconds'] is None
+    assert all(value is None for value in card['measurement_diagnostics'].values())
+    assert 'wall_time_seconds' not in compare(card, card)['delta']
+    assert path.read_bytes() == raw
+
+
+def test_unreadable_optional_measurement_retains_reason(measured_run, monkeypatch):
+    from pathlib import Path
+    root, _ = measured_run; path = root/'measurement.json'; path.write_text('{}')
+    original = Path.open
+    def read(self, *args, **kwargs):
+        if self == path:
+            raise PermissionError('fixture unreadable measurement')
+        return original(self, *args, **kwargs)
+    monkeypatch.setattr(Path, 'open', read)
+    card = scorecard(str(root))
+    assert card['measurement_status'] == 'invalid_report'
+    assert 'unreadable measurement' in card['measurement_report_error']
+    assert card['status'] == 'finished'
+
+
+def test_oversized_optional_measurement_is_unavailable(measured_run, monkeypatch):
+    from ca import mapping_scorecard
+    root, _ = measured_run
+    monkeypatch.setattr(mapping_scorecard, 'MAX_METADATA_BYTES', 1024)
+    (root/'measurement.json').write_bytes(b' '*1025)
+    card = scorecard(str(root))
+    assert card['measurement_status'] == 'invalid_report'
+    assert 'exceeds' in card['measurement_report_error']
+
+
+def test_invalid_required_run_still_fails(measured_run):
+    root, _ = measured_run
+    (root/'run.json').write_text('{broken')
+    with pytest.raises(ValueError):
+        scorecard(str(root))
+
+
+def test_explicit_metadata_nesting_boundary(tmp_path):
+    from ca.mapping_scorecard import _read
+    path = tmp_path/'metadata.json'
+    path.write_text('{"x":' + '['*127 + '0' + ']'*127 + '}')
+    assert 'x' in _read(path)
+    path.write_text('{"x":' + '['*128 + '0' + ']'*128 + '}')
+    with pytest.raises(ValueError, match='128 levels'):
+        _read(path)

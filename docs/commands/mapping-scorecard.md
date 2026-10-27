@@ -26,6 +26,12 @@ becomes `null`, with a reason in `delta_errors`. Other deltas and both original
 scorecards remain available. Integer-only differences remain exact. Comparison
 eligibility describes the recorded conditions, not whether every delta can be
 computed; check individual values and `delta_errors` as well.
+For a delta with missing input values, `delta_errors` identifies whether the
+baseline, current run or both lack that value. A recorded zero is a valid value,
+not missing evidence. Performance fields excluded by comparison conditions are
+omitted from both `delta` and `delta_errors`; their reason appears in
+`performance_comparison.reasons`. Missing-value explanations do not mean the
+underlying mapping command failed.
 
 Missing, stale or damaged optional measurement evidence leaves generation
 summaries available. Unavailable metrics are `null`; `measurement_status`,

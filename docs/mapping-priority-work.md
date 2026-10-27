@@ -478,3 +478,12 @@ whole comparison. The affected delta is null with a field-specific `delta_errors
 entry; other deltas and the original scorecards remain available. Integer-only
 differences remain exact. CLI tests exercise both subtraction directions and
 verify an independent metric is still compared.
+
+### Explain unavailable comparison values
+
+Null deltas now identify whether the baseline, current run or both lack the
+required value in `delta_errors`. Zero remains a valid value. Performance fields
+excluded by incompatible comparison conditions remain omitted and are explained
+by `performance_comparison.reasons`, avoiding misleading missing-value reports.
+Tests cover generation and performance fields, each missing side, zero values,
+ineligible comparisons and main-CLI JSON output.

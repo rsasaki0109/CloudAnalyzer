@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 MAX_METADATA_BYTES = 32 * 1024**2
+MAX_METADATA_DEPTH = 128
 
 
 def _read(path: Path) -> dict:
@@ -24,6 +25,18 @@ def _read(path: Path) -> dict:
         raise ValueError("metadata nesting exceeds parser limits") from error
     if not isinstance(value, dict):
         raise ValueError("metadata must be an object")
+    # Bound nesting independently of the Python JSON parser's recursion policy.
+    stack = [iter(value.values())]
+    while stack:
+        try:
+            item = next(stack[-1])
+        except StopIteration:
+            stack.pop()
+            continue
+        if isinstance(item, (dict, list)):
+            if len(stack) >= MAX_METADATA_DEPTH:
+                raise ValueError('metadata nesting exceeds 128 levels')
+            stack.append(iter(item.values() if isinstance(item, dict) else item))
     return value
 
 

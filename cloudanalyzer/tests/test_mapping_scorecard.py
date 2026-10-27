@@ -75,7 +75,7 @@ def test_diagnostic_text_is_bounded_and_invalid_types_are_omitted(measured_run):
 
 
 @pytest.mark.parametrize('raw', [b'{truncated', b'[]', b'{"x":"\xff"}',
-    b'{"x":' + b'['*2000 + b'0' + b']'*2000 + b'}'])
+    b'{"x":' + b'['*2000 + b'0' + b']'*2000 + b'}'], ids=['truncated', 'array', 'encoding', 'nesting'])
 def test_invalid_optional_measurement_preserves_generation_summary(measured_run, raw):
     root, _ = measured_run
     path = root/'measurement.json'; path.write_bytes(raw)
@@ -120,3 +120,13 @@ def test_invalid_required_run_still_fails(measured_run):
     (root/'run.json').write_text('{broken')
     with pytest.raises(ValueError):
         scorecard(str(root))
+
+
+def test_explicit_metadata_nesting_boundary(tmp_path):
+    from ca.mapping_scorecard import _read
+    path = tmp_path/'metadata.json'
+    path.write_text('{"x":' + '['*127 + '0' + ']'*127 + '}')
+    assert 'x' in _read(path)
+    path.write_text('{"x":' + '['*128 + '0' + ']'*128 + '}')
+    with pytest.raises(ValueError, match='128 levels'):
+        _read(path)

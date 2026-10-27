@@ -379,3 +379,5 @@ malformed, unreadable, oversized or too deeply nested. Such records report
 performance values and bound measurement diagnostics stay null. No report is
 rewritten. Required run/job metadata still fails explicitly when invalid.
 Metadata reads are bounded to 32 MiB even if the file grows after its size check.
+Metadata nesting is limited to 128 container levels independently of the Python
+JSON parser, with the root object counted as level one.

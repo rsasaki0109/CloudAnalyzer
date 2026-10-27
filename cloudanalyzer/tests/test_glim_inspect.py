@@ -180,3 +180,13 @@ def test_single_pass_inventory_still_detects_identity_changes(saved, change):
     assert result['input_inventory_status'] == 'changed_or_missing'
     assert result['verified_file_count'] == 3
     assert any('inventory:' in issue for issue in result['issues'])
+
+
+def test_duplicate_receipt_status_rejected_before_input_access(saved, monkeypatch):
+    from ca import glim_inspect
+    root, _, _ = saved
+    path = root/'glim-run.json'
+    path.write_text(path.read_text().replace('{', '{"status":"failed",', 1))
+    monkeypatch.setattr(glim_inspect, '_artifact', lambda *a: pytest.fail('input read'))
+    with pytest.raises(ValueError, match='duplicate object key'):
+        inspect_glim_run(str(root))

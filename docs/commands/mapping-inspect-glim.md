@@ -13,6 +13,11 @@ complete recorded configuration inventory, including file names. A recorded
 trajectory is checked at `dump/traj_lidar.txt` against its hash and the shared
 bounded TUM validator. It never follows commands or launches subprocesses.
 
+Inspection and `mapping-prepare-glim --run-report` share a strict receipt reader:
+duplicate JSON keys (including nested or escaped duplicates), NaN/Infinity and
+floating-point overflow are rejected. Excessive nesting is reported as an invalid
+receipt. Valid receipt bytes are retained exactly; no normalization is performed.
+
 The JSON result separates current file integrity from historical execution:
 
 - `status`: `recorded_files_match` or `changed_or_missing`.

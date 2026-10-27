@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path, PurePosixPath
 import re
 
 from ca.mapping_import import inspect_tum_trajectory
 from ca.mapping_job import _artifact
 from ca.glim_run import inventory
+from ca.glim_receipt import read_glim_receipt
 
 
 def _identity(value):
@@ -23,15 +23,7 @@ def _identity(value):
 def inspect_glim_run(directory: str) -> dict:
     root = Path(directory).resolve()
     receipt = root/'glim-run.json'
-    if receipt.is_symlink() or not receipt.is_file() or not 0 < receipt.stat().st_size <= 4 * 1024**2:
-        raise ValueError('GLIM run report must be a regular file of at most 4 MiB')
-    with receipt.open('rb') as stream:
-        raw = stream.read(4 * 1024**2 + 1)
-    if len(raw) > 4 * 1024**2:
-        raise ValueError('GLIM run report exceeds 4 MiB')
-    report = json.loads(raw)
-    if not isinstance(report, dict) or report.get('schema') != 'cloudanalyzer.glim_run.v1':
-        raise ValueError('unsupported GLIM run report')
+    raw, report = read_glim_receipt(receipt)
     inputs = report.get('inputs')
     if not isinstance(inputs, dict):
         raise ValueError('missing GLIM input inventory')

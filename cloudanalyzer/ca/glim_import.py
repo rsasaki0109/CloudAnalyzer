@@ -9,6 +9,7 @@ import tempfile
 from typing import Any
 
 from ca import mapping_job as jobs
+from ca.glim_receipt import read_glim_receipt
 from ca.mapping_import import MAX_MAP_BYTES, MAX_TRAJECTORY_BYTES, _provenance, _space, inspect_slam_inputs
 
 SCHEMA = 'cloudanalyzer.glim_export.v1'
@@ -16,16 +17,7 @@ KEY = 'cloudanalyzer_glim_export'
 
 
 def _execution_report(path: str, trajectory: dict[str, Any]) -> tuple[bytes, dict[str, Any]]:
-    report_path = Path(path)
-    if report_path.is_symlink() or not report_path.is_file() or not 0 < report_path.stat().st_size <= 4 * 1024**2:
-        raise ValueError('GLIM run report must be a regular file of at most 4 MiB')
-    with report_path.open('rb') as stream:
-        raw = stream.read(4 * 1024**2 + 1)
-    if len(raw) > 4 * 1024**2:
-        raise ValueError('GLIM run report exceeds 4 MiB')
-    report = json.loads(raw)
-    if not isinstance(report, dict) or report.get('schema') != 'cloudanalyzer.glim_run.v1':
-        raise ValueError('unsupported GLIM run report')
+    raw, report = read_glim_receipt(Path(path))
     if (report.get('status') != 'process_succeeded' or type(report.get('exit_code')) is not int
             or report['exit_code'] != 0 or report.get('inputs_unchanged') is not True
             or report.get('configuration_copy_matches') is not True):

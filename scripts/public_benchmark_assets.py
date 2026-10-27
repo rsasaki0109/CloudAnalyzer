@@ -102,16 +102,25 @@ def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
         return mesh
 
 
-def load_local_bunny_mesh(path: Path) -> tuple[o3d.geometry.TriangleMesh, dict]:
+def load_local_bunny_mesh(path: Path, *, expected_sha256: str | None = None) -> tuple[o3d.geometry.TriangleMesh, dict]:
     """Load a bounded local archive snapshot and identify exactly those bytes."""
+    if expected_sha256 is not None:
+        if len(expected_sha256) != 64 or any(c not in '0123456789abcdefABCDEF' for c in expected_sha256):
+            raise ValueError('Expected Bunny SHA-256 must contain exactly 64 hexadecimal characters')
+        expected_sha256 = expected_sha256.lower()
     if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_LOCAL_BUNNY_ARCHIVE_BYTES:
         raise ValueError('Local Bunny archive must be a regular file of at most 128 MiB')
     with path.open('rb') as source:
         raw = source.read(MAX_LOCAL_BUNNY_ARCHIVE_BYTES + 1)
     if len(raw) > MAX_LOCAL_BUNNY_ARCHIVE_BYTES:
         raise ValueError('Local Bunny archive exceeds 128 MiB')
-    identity = {'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw),
+    actual_sha256 = hashlib.sha256(raw).hexdigest()
+    if expected_sha256 is not None and actual_sha256 != expected_sha256:
+        raise ValueError(f'Bunny archive SHA-256 mismatch: expected {expected_sha256}, got {actual_sha256}')
+    identity = {'sha256': actual_sha256, 'bytes': len(raw),
                 'origin': 'local', 'authenticity_verified': False}
+    if expected_sha256 is not None:
+        identity['expected_sha256'] = expected_sha256
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)
         archive = root/'bunny.tar.gz'

@@ -386,12 +386,15 @@ def build_public_benchmark_pack(
     seed: int = 7,
     fixture: str = "stanford-bunny",
     bunny_archive: Path | None = None,
+    bunny_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Build a public benchmark pack in the target directory."""
     if fixture not in {"stanford-bunny", "synthetic"}:
         raise ValueError(f"Unknown fixture: {fixture}")
     if source_points is not None and fixture != "stanford-bunny":
         raise ValueError("source_points cannot be combined with a synthetic fixture")
+    if bunny_sha256 is not None and bunny_archive is None:
+        raise ValueError('bunny_sha256 requires bunny_archive')
     if bunny_archive is not None:
         if fixture != 'stanford-bunny' or source_points is not None:
             raise ValueError('bunny_archive cannot be combined with synthetic or source_points')
@@ -406,7 +409,7 @@ def build_public_benchmark_pack(
             source_label = "synthetic-smoke"
         else:
             if bunny_archive is not None:
-                mesh, archive_identity = load_local_bunny_mesh(bunny_archive)
+                mesh, archive_identity = load_local_bunny_mesh(bunny_archive, expected_sha256=bunny_sha256)
             else:
                 mesh = download_bunny_mesh()
             source_points = np.asarray(mesh.vertices, dtype=float)
@@ -499,6 +502,7 @@ def main() -> None:
         help="Output directory (default under benchmarks/public: stanford-bunny-mini, self-qa-synthetic or local-bunny)",
     )
     parser.add_argument('--bunny-archive', type=Path, help='Use a local Bunny tar.gz without downloading; must be outside output')
+    parser.add_argument('--bunny-sha256', help='Require this SHA-256 for --bunny-archive before generating output')
     args = parser.parse_args()
 
     default_pack = "self-qa-synthetic" if args.fixture == "synthetic" else "stanford-bunny-mini"
@@ -507,7 +511,11 @@ def main() -> None:
     output_dir = Path(args.output) if args.output else Path("benchmarks/public") / default_pack
     if args.bunny_archive is not None and args.fixture != 'stanford-bunny':
         parser.error('--bunny-archive cannot be combined with --fixture synthetic')
+    if args.bunny_sha256 is not None and args.bunny_archive is None:
+        parser.error('--bunny-sha256 requires --bunny-archive')
     options = {'bunny_archive': args.bunny_archive} if args.bunny_archive is not None else {}
+    if args.bunny_sha256 is not None:
+        options['bunny_sha256'] = args.bunny_sha256
     result = build_public_benchmark_pack(output_dir, fixture=args.fixture, **options)
     print(f"Generated:    {result['output_dir']}")
     print(f"Pack:         {result['pack_name']}")

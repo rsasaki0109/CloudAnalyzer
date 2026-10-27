@@ -495,3 +495,12 @@ protocols, missing/mismatched run/job hashes and symlinked metadata. Multiple
 failures are reported together. Unbound receipt metrics and process diagnostics
 remain excluded. Tests cover invalid identity types, each binding condition,
 multiple CLI reasons and successfully bound process-failure receipts.
+
+### Preserve fast child exit results
+
+A child that disappears before memory-monitor attachment no longer becomes a
+measurement failure when its exit is confirmed by the subprocess handle. Keep
+its exit result and elapsed time, while recording an unavailable read and null
+RSS peak. An unconfirmed exit still follows monitor-failure cleanup. Regression
+tests deterministically exercise successful/failed real children exiting during
+monitor setup, plus a missing monitor for a still-running child.

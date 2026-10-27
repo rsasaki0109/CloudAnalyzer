@@ -10,6 +10,15 @@ CloudAnalyzer の `mapping / localization / perception` QA を、誰でも再生
 python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
 ```
 
+`--seed` で生成する摂動の乱数シードを指定できる（0以上の整数、既定値7）。
+`manifest.json` の `generation` にシード・乱数生成器名・NumPyバージョンを記録する。
+再生成には同じ入力、シード、コードと依存ライブラリを使うこと。シードだけでは異なる
+環境間の完全一致を保証しない。例えばオフラインの合成データは次のように生成する:
+
+```bash
+python scripts/build_public_benchmark_pack.py --fixture synthetic --seed 19 --output /tmp/seed-19-pack
+```
+
 Stanford Bunny のダウンロードはソケット通信に30秒のタイムアウトを設定し、
 一時的な通信障害、HTTP 408/429/5xx、Content-Length より短い取得結果を最大3回まで試行する。
 再試行前には1秒、2秒待ち、部分アーカイブを破棄して先頭から取得する。

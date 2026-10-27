@@ -126,3 +126,20 @@ export function laneCoreSnapshotText(evidence: LaneCoreSnapshot | null): string 
     ? `Saved core support: ${evidence.supported} / ${evidence.total} changed cores${evidence.supported === 0 ? " · box overlap only" : ""}. ${settings}`
     : `Saved core support unavailable: ${evidence.reason}. ${settings}`;
 }
+
+/** Reattach only an unchanged snapshot; preserve the user's task decision and timestamps. */
+export function resumeLaneTask(saved: SurveyLaneTask, current: SurveyLaneTask): SurveyLaneTask {
+  if (saved.staleReason || current.staleReason) throw new Error("Historical source changes cannot resume a lane task");
+  const a = saved.comparison.identity, b = current.comparison.identity;
+  if (!a || !b || a.algorithm !== b.algorithm || a.digest !== b.digest)
+    throw new Error("The comparison content does not match the saved task");
+  if (!saved.mapSha256 || saved.mapSha256 !== current.mapSha256)
+    throw new Error("The map content does not match the saved task");
+  const canonical = (value: unknown): unknown => Array.isArray(value) ? value.map(canonical)
+    : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, canonical(v)])) : value;
+  for (const key of ["candidate", "lane", "overlap", "coreSupport"] as const) {
+    if (JSON.stringify(canonical(saved[key])) !== JSON.stringify(canonical(current[key])))
+      throw new Error(`Saved ${key} evidence differs; the task remains locked`);
+  }
+  return structuredClone(saved);
+}

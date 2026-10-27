@@ -641,3 +641,43 @@ test("recording saves unavailable evidence explicitly and rejects a map replaced
   await expect(page.locator('#status')).toContainText('Could not record lane task');
   await expect(page.locator('#pg-lane-task-list li')).toHaveCount(0);
 });
+
+test('project lane tasks resume only after matching current evidence and retain saved decisions', async ({ page }) => {
+  await setupLaneTasks(page);
+  await recordFirstLaneTask(page);
+  await page.locator('#pg-lane-task-state').selectOption('deferred');
+  await page.locator('#pg-lane-task-note').fill('Resume this saved decision');
+  await page.locator('#pg-lane-task-save').click();
+  const original = await saved(page, '#pg-lane-task-export');
+  const project = await saved(page, '#project-save');
+  await page.reload();
+  const poses = Array.from({ length: 4 }, (_, i) => `1 0 0 ${i * .1} 0 1 0 0 0 0 1 0\n`).join('');
+  await page.locator('#file-input').setInputFiles([
+    input('project.cloudanalyzer.json', Buffer.from(JSON.stringify(project))),
+    input('survey.kitti', Buffer.from(poses)),
+    ...Array.from({ length: 4 }, (_, i) => input(`${String(i).padStart(6, '0')}.ply`, scan(i < 2 ? 0 : .8, i * .1))),
+  ]);
+  await expect(page.locator('#status')).toContainText('Project restored');
+  await expect(page.locator('#pg-lane-task-state')).toBeDisabled();
+  await page.locator('#pg-split').fill('2');
+  await page.locator('#pg-parts').click();
+  await expect(page.locator('#pg-change-export')).toBeEnabled();
+  if (!(await page.locator('#pg-review-archive').evaluate(el => (el as HTMLDetailsElement).open))) await page.locator('#pg-review-archive > summary').click();
+  await expect(page.locator('#pg-review-resume')).toBeEnabled({timeout:1000});
+  await page.locator('#pg-review-resume').click();
+  await page.locator('#pg-change-list button').first().click();
+  await page.locator('#pg-change-lanes summary').click();
+  await page.locator('#pg-change-lane-frame').check();
+  await page.locator('#pg-change-lane-z').fill('2');
+  await page.getByRole('button', { name: 'Resume saved task for lane 101', exact: true }).click();
+  await expect(page.locator('#status')).toContainText('evidence differs');
+  await expect(page.locator('#pg-lane-task-state')).toBeDisabled();
+  await page.locator('#pg-change-lane-z').fill('1');
+  await page.getByRole('button', { name: 'Resume saved task for lane 101', exact: true }).click();
+  await expect(page.locator('#status')).toContainText('Resumed task');
+  await expect(page.locator('#pg-lane-task-state')).toBeEnabled();
+  expect((await saved(page, '#pg-lane-task-export')).tasks).toEqual(original.tasks);
+  await page.locator('#pg-lane-task-note').fill('Continued review');
+  await page.locator('#pg-lane-task-save').click();
+  expect((await saved(page, '#pg-lane-task-export')).tasks[0].note).toBe('Continued review');
+});

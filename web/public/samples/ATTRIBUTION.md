@@ -27,3 +27,12 @@ roll and pitch at 10 Hz, made by `scripts/make_nclt_bag.py` (keyframes 2520–27
 - License: [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/), contents under the
   [Database Contents License](https://opendatacommons.org/licenses/dbcl/1-0/); this derived database
   is offered under the same terms.
+
+The NCLT MCAP schemas have been repaired to include complete standard ROS2
+PointCloud2 and Imu definitions. All 1,934 April and 1,935 June message payloads,
+timestamps and sequences are unchanged. The container SHA-256 values change;
+previous benchmark manifests identify the earlier containers. The generator
+now includes schemas; `scripts/repair_nclt_mcap_schemas.py OLD NEW` repairs older
+schema-empty copies without overwriting the source (requires mcap, zstandard,
+rosbags). These demos contain orientation-derived IMU data with angular velocity
+and linear acceleration marked unavailable, not raw inertial benchmark data.

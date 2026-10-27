@@ -11,7 +11,10 @@ meet the fixed minimum lane width and defer the rest, then draft once.
 Optional trailing `FROM:TO` station ranges are deferred as well. When the lane
 builder names intervals with ambiguous Lanelet2 boundary directions, those
 intervals are deferred and the draft repeated. The summary is printed and saved as
-`e2e-result.json` in the new run directory.
+`e2e-result.json` in the new run directory. The run is finished with the audited
+draft (or no HD candidate on failure). A missing audited draft exits with code 2.
+Wrap this script with `python -m ca.mapping_measure --run-dir OUT -- ...` to
+measure process wall time, sampled RSS and output size.
 """
 
 import json
@@ -33,7 +36,7 @@ def main() -> None:
               "reason": "Fixed unverified one-lane hypothesis for an end-to-end coverage comparison",
               "lanes": [{"direction": "forward", "kind": "driving", "one_way": True, "fraction": 1.0,
                          "minimum_width_m": width}]}
-    start = time.time()
+    start = time.perf_counter()
     run = start_mapping_run(source, out, layout)
     if run["status"] != "needs_agent":
         raise SystemExit(f"run did not start: {run['status']}")
@@ -86,19 +89,24 @@ def main() -> None:
             interval = (segment["sections"][i]["station_m"], segment["sections"][j]["station_m"])
             deferred.append(interval)
             retried.append(list(interval))
+    candidate_id = draft.get("diagnosis", {}).get("candidate_id") if draft.get("status") == "audited_draft" else None
+    act({"type": "finish", "candidate_id": candidate_id},
+        "Retain the scripted generation result with all unresolved quality and semantic holds")
     summary = {
-        "source": source, "minimum_width_m": width, "deferred_ranges": deferred,
+        "source": source, "minimum_width_m": width, "finished_candidate_id": candidate_id, "deferred_ranges": deferred,
         "ambiguous_direction_deferrals": retried,
         "corridor": {k: proposal[k] for k in ("trajectory_length_m", "trajectory_covered_station_length_m",
                                                "without_candidate_station_length_m")},
         "candidates": len(ids),
         "included_m": sum(d["to_m"] - d["from_m"] for d in decisions if d["action"] == "include"),
         "draft_status": draft.get("status"), "draft_error": draft.get("error"),
-        "extent": (draft.get("diagnosis") or {}).get("extent"), "seconds": round(time.time() - start, 1),
+        "extent": (draft.get("diagnosis") or {}).get("extent"), "seconds": round(time.perf_counter() - start, 1),
     }
     with open(f"{out}/e2e-result.json", "w") as f:
         json.dump({"summary": summary, "draft": draft}, f, indent=1, default=str)
     print(json.dumps(summary, default=str))
+    if candidate_id is None:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

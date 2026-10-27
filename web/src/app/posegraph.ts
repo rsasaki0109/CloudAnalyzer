@@ -1740,6 +1740,10 @@ export const compareParts = (): Promise<void> =>
     const ids = state.nodeIds;
     const before = addEntry(await poseGraphMap(voxel, false, false, first, `before_${ids[split]}`));
     const after = addEntry(await poseGraphMap(voxel, false, false, second, `from_${ids[split]}`));
+    // Restored worker inputs can retain file extensions; comparison identity uses
+    // the saved graph display name consistently across original and restored runs.
+    before.cloud.name = `${graph!.name}_map_before_${ids[split]}`;
+    after.cloud.name = `${graph!.name}_map_from_${ids[split]}`;
     record({ label: "the two maps", added: [before, after] });
     hideEntry(before);
     renderList();
@@ -1747,6 +1751,7 @@ export const compareParts = (): Promise<void> =>
       $<HTMLInputElement>(id).value = value;
     }
     const result = await runM3c2(after, before);
+    result.cloud.name = `${after.cloud.name}_m3c2`;
     // A symmetric range at the 98th percentile of the changes (at least half
     // a metre), so a moved car stands out rather than a few extreme cores.
     const sizes = Float32Array.from(result.c2c!.distances.filter(Number.isFinite), Math.abs).sort();

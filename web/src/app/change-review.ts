@@ -1,3 +1,4 @@
+import { projectChanged } from "../project-change";
 /** Review one frozen two-pass comparison without moving the camera between views. */
 import * as THREE from "three";
 import { CHANGE_DECISIONS, CHANGE_NOTE_LIMIT, changeCandidates, changeDecisionCounts, changeReviewScope,
@@ -51,6 +52,7 @@ export async function startChangeReview(context: ComparisonContext, state: PoseG
     if (entry) { entry.visible = false; viewer.setVisible(source.id, false); }
   }
   review = next;
+  projectChanged();
   evidence = frozen;
   selected = page = 0;
   resetLaneAssociations();
@@ -195,6 +197,7 @@ function saveDecision(refreshList = false): void {
   if (!review || busy || review.staleReason || !review.candidates[selected]) return;
   try {
     setChangeDecision(review.candidates[selected], decision.value, note.value);
+    projectChanged();
     refreshLaneTasks();
     renderSummary();
     if (refreshList) { renderCandidateList(); renderSelection(); renderControls(); }
@@ -293,6 +296,7 @@ archiveInput.onchange = async () => {
     if (token !== archiveGeneration) return;
     const next = parseSurveyReview(JSON.parse(contents));
     archive = next; archivePage = 0;
+    projectChanged();
     $("pg-review-name").textContent = file.name;
     $("pg-review-result").hidden = false;
     renderArchive();
@@ -303,6 +307,7 @@ $("pg-review-resume").onclick = () => {
   if (busy || !review || !archive) return;
   try {
     review.candidates = resumeSurveyDecisions(review, archive);
+    projectChanged();
     renderReview();
     setStatus("Saved survey decisions resumed for the matching comparison.");
   } catch (err) { setStatus(`Could not resume survey decisions: ${errorText(err)}`, true); }
@@ -362,7 +367,7 @@ function renderLaneAssociations(): void {
       };
       const record = document.createElement("button");
       record.className = "link"; record.textContent = `Record lane ${id}`; record.disabled = busy;
-      record.onclick = () => {
+      const commitLane = (resume: boolean) => {
         const comparison = review, lane = map.lanes.find(lane => lane.id === id);
         if (!comparison || !lane) return;
         const version = JSON.stringify(candidate);
@@ -373,15 +378,19 @@ function renderLaneAssociations(): void {
           Number(xy.value) === result.xyMargin && Number(z.value) === result.zMargin;
         void recordSurveyLaneTask(comparison, candidate, lane, { xyMargin: result.xyMargin, zMargin: result.zMargin,
           checked: result.checked, invalid: result.invalid, limited: result.limited, total: result.total }, map.revision, canCommit, current,
-          () => captureLaneCoreSnapshot(entries.get(comparison.sources.difference.id)?.cloud, candidate, lane, result.zMargin));
+          () => captureLaneCoreSnapshot(entries.get(comparison.sources.difference.id)?.cloud, candidate, lane, result.zMargin), resume);
       };
+      record.onclick = () => commitLane(false);
+      const resume = document.createElement("button");
+      resume.className = "link"; resume.textContent = `Resume saved task for lane ${id}`; resume.disabled = busy;
+      resume.onclick = () => commitLane(true);
       const support = document.createElement("span"); support.className = "meta";
       support.dataset.coreLane = String(id); support.dataset.coreStatus = "pending";
       support.textContent = "Counting original changed cores…";
       const show = document.createElement("button"); show.className = "link";
       show.textContent = `Show changed cores for lane ${id}`; show.disabled = true; show.dataset.coreReady = "false";
       bindings.push({lane:id,label:support,button:show});
-      li.append(button, record, support, show); return li;
+      li.append(button, record, resume, support, show); return li;
     }));
     const source = review && entries.get(review.sources.difference.id);
     if (review && source && bindings.length) {
@@ -404,3 +413,21 @@ for (const id of ["pg-change-lane-xy", "pg-change-lane-z"]) {
   $<HTMLInputElement>(id).oninput = renderLaneAssociations;
 }
 vectorMapChanged.add(() => { invalidateLaneTasks("The HD map changed; saved lane IDs are historical."); resetLaneAssociations(); renderLaneAssociations(); });
+
+/** Preserve evidence; reconnect only through the existing exact-content resume gate. */
+export function captureSurveyReview(): unknown | undefined {
+  const saved = review ?? archive;
+  return saved ? structuredClone({ ...saved, exportedAt: new Date().toISOString(), counts: changeDecisionCounts(saved.candidates) }) : undefined;
+}
+export function restoreSurveyReview(value: unknown | undefined): void {
+  const next = value === undefined ? null : parseSurveyReview(value);
+  archiveGeneration++;
+  review = null; evidence = null; archive = next; archivePage = 0;
+  resetLaneAssociations();
+  $("pg-changes").hidden = true;
+  $("pg-review-result").hidden = !archive;
+  $("pg-review-list").replaceChildren();
+  $("pg-review-name").textContent = "Project survey review";
+  if (archive) renderArchive();
+  renderArchiveControls();
+}

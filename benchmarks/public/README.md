@@ -10,6 +10,13 @@ CloudAnalyzer の `mapping / localization / perception` QA を、誰でも再生
 python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
 ```
 
+Stanford Bunny のダウンロードはソケット通信に30秒のタイムアウトを設定し、
+一時的な通信障害、HTTP 408/429/5xx、Content-Length より短い取得結果を最大3回まで試行する。
+再試行前には1秒、2秒待ち、部分アーカイブを破棄して先頭から取得する。
+404などの恒久的なHTTPエラーやローカルの書き込み失敗は再試行しない。
+タイムアウトは処理全体の期限ではなく、配布元が利用できなければ生成は失敗する。
+別データへの自動置き換えは行わない。
+
 生成される pack には以下が含まれる:
 
 - `baselines/` reference artifact

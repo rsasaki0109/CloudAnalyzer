@@ -22,6 +22,99 @@ from build_public_benchmark_pack import build_public_benchmark_pack  # noqa: E40
 from ca.core import load_check_suite, run_check_suite  # noqa: E402
 
 
+@pytest.mark.parametrize('failure', ['timeout', 'http503', 'truncated', 'reset'])
+def test_bunny_download_retries_transient_failures_without_partial_data(tmp_path, monkeypatch, failure):
+    import io
+    import urllib.error
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {'Content-Length':'8'}
+    calls, delays = [], []
+    def open_url(url, *, timeout):
+        calls.append((url, timeout))
+        if len(calls) == 1:
+            if failure == 'timeout':
+                raise urllib.error.URLError(TimeoutError('fixture timeout'))
+            if failure == 'http503':
+                raise urllib.error.HTTPError(url, 503, 'unavailable', {}, None)
+            if failure == 'reset':
+                raise ConnectionResetError('fixture connection reset')
+            return Response(b'partial')
+        return Response(b'complete')
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    monkeypatch.setattr(assets.time, 'sleep', delays.append)
+    path = tmp_path/'bunny.tar.gz'
+    assets._download_bunny_archive(path)
+    assert path.read_bytes() == b'complete'
+    assert calls == [(assets.BUNNY_ARCHIVE_URL, 30)] * 2
+    assert delays == [1]
+
+
+def test_bunny_download_exhaustion_removes_partial_archive(tmp_path, monkeypatch):
+    import io
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {'Content-Length':'100'}
+    calls, delays = [], []
+    def open_url(url, *, timeout):
+        calls.append(timeout)
+        return Response(b'partial')
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    monkeypatch.setattr(assets.time, 'sleep', delays.append)
+    path = tmp_path/'bunny.tar.gz'
+    with pytest.raises(RuntimeError, match='after 3 attempts'):
+        assets._download_bunny_archive(path)
+    assert calls == [30, 30, 30]
+    assert delays == [1, 2]
+    assert not path.exists()
+
+
+def test_bunny_http404_is_not_retried(tmp_path, monkeypatch):
+    import urllib.error
+    import public_benchmark_assets as assets
+    def open_url(url, *, timeout):
+        raise urllib.error.HTTPError(url, 404, 'missing', {}, None)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('permanent error retried'))
+    with pytest.raises(urllib.error.HTTPError) as error:
+        assets._download_bunny_archive(tmp_path/'bunny.tar.gz')
+    assert error.value.code == 404
+
+
+def test_bunny_local_write_failure_is_not_retried(tmp_path, monkeypatch):
+    import io
+    import public_benchmark_assets as assets
+    def fail_copy(*args):
+        raise PermissionError('fixture disk error')
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: io.BytesIO(b'data'))
+    monkeypatch.setattr(assets.shutil, 'copyfileobj', fail_copy)
+    monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('local failure retried'))
+    with pytest.raises(PermissionError, match='disk error'):
+        assets._download_bunny_archive(tmp_path/'bunny.tar.gz')
+
+
+def test_bunny_mesh_download_uses_retrying_transport(tmp_path, monkeypatch):
+    import io
+    import tarfile
+    import public_benchmark_assets as assets
+    mesh_path = tmp_path/'fixture.ply'
+    assets.o3d.io.write_triangle_mesh(str(mesh_path), assets.o3d.geometry.TriangleMesh.create_box())
+    archive_bytes = io.BytesIO()
+    with tarfile.open(fileobj=archive_bytes, mode='w:gz') as archive:
+        archive.add(mesh_path, arcname='bunny/reconstruction/bun_zipper.ply')
+    payload = archive_bytes.getvalue()
+    class Response(io.BytesIO):
+        headers = {'Content-Length':str(len(payload))}
+    calls = []
+    def open_url(url, *, timeout):
+        calls.append((url, timeout))
+        return Response(payload)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    mesh = assets.download_bunny_mesh()
+    assert len(mesh.vertices) == 8
+    assert calls == [(assets.BUNNY_ARCHIVE_URL, 30)]
+
+
 def _synthetic_source_points() -> np.ndarray:
     """Create a deterministic nontrivial 3D shape for offline tests."""
     angles = np.linspace(0.0, 2.0 * np.pi, 80, endpoint=False)

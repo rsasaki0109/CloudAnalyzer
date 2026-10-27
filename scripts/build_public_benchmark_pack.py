@@ -159,7 +159,7 @@ def _write_check_config(path: Path, content: str) -> None:
     path.write_text(content.strip() + "\n", encoding="utf-8")
 
 
-def _write_pack_readme(output_dir: Path, *, source_label: str) -> None:
+def _write_pack_readme(output_dir: Path, *, source_label: str, seed: int = 7) -> None:
     """Write benchmark pack usage docs."""
     lines = [
         "# Public Benchmark Pack",
@@ -183,7 +183,7 @@ def _write_pack_readme(output_dir: Path, *, source_label: str) -> None:
     ]
     if source_label == "local-bunny-archive":
         lines += ["Source geometry came from a caller-supplied Bunny archive; authenticity was not verified.",
-                  "Regenerate with `--bunny-archive /path/to/bunny.tar.gz`; see manifest source_archive for its identity.",
+                  f"Regenerate with `--bunny-archive /path/to/bunny.tar.gz --seed {seed}`; see manifest source_archive for its identity.",
                   f"Expected source: {BUNNY_SOURCE_PAGE}"]
     elif source_label == "custom":
         lines += ["Source geometry was supplied by the caller through `source_points`."]
@@ -193,7 +193,7 @@ def _write_pack_readme(output_dir: Path, *, source_label: str) -> None:
             "Regenerate this fixture with:",
             "",
             "```bash",
-            f"python scripts/build_public_benchmark_pack.py --fixture {fixture}",
+            f"python scripts/build_public_benchmark_pack.py --fixture {fixture} --seed {seed}",
             "```",
             "",
         ]
@@ -389,6 +389,8 @@ def build_public_benchmark_pack(
     bunny_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Build a public benchmark pack in the target directory."""
+    if type(seed) is not int or seed < 0:
+        raise ValueError('seed must be a nonnegative integer')
     if fixture not in {"stanford-bunny", "synthetic"}:
         raise ValueError(f"Unknown fixture: {fixture}")
     if source_points is not None and fixture != "stanford-bunny":
@@ -459,7 +461,7 @@ def build_public_benchmark_pack(
 
     manifest_entries = _build_configs(output_dir)
     manifest = _write_manifest(output_dir, manifest_entries, source_label=source_label)
-    _write_pack_readme(output_dir, source_label=source_label)
+    _write_pack_readme(output_dir, source_label=source_label, seed=seed)
     _write_attribution(output_dir, source_label=source_label)
 
     summaries: list[dict[str, Any]] = []
@@ -478,6 +480,8 @@ def build_public_benchmark_pack(
         )
 
     manifest["configs"] = summaries
+    manifest['generation'] = {'seed': seed, 'bit_generator': type(rng.bit_generator).__name__,
+                              'numpy_version': np.__version__}
     if archive_identity is not None:
         manifest['source_archive'] = archive_identity
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -503,7 +507,10 @@ def main() -> None:
     )
     parser.add_argument('--bunny-archive', type=Path, help='Use a local Bunny tar.gz without downloading; must be outside output')
     parser.add_argument('--bunny-sha256', help='Require this SHA-256 for --bunny-archive before generating output')
+    parser.add_argument('--seed', type=int, default=7, help='Nonnegative random seed for generated perturbations (default: 7)')
     args = parser.parse_args()
+    if args.seed < 0:
+        parser.error('--seed must be a nonnegative integer')
 
     default_pack = "self-qa-synthetic" if args.fixture == "synthetic" else "stanford-bunny-mini"
     if args.bunny_archive is not None:
@@ -516,7 +523,7 @@ def main() -> None:
     options = {'bunny_archive': args.bunny_archive} if args.bunny_archive is not None else {}
     if args.bunny_sha256 is not None:
         options['bunny_sha256'] = args.bunny_sha256
-    result = build_public_benchmark_pack(output_dir, fixture=args.fixture, **options)
+    result = build_public_benchmark_pack(output_dir, fixture=args.fixture, seed=args.seed, **options)
     print(f"Generated:    {result['output_dir']}")
     print(f"Pack:         {result['pack_name']}")
     print(f"Source:       {result['source']}")

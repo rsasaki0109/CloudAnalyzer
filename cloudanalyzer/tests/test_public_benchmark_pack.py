@@ -293,7 +293,7 @@ def test_cli_forwards_local_archive_and_rejects_synthetic(monkeypatch):
     monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
     monkeypatch.setattr(sys, 'argv', ['build', '--bunny-archive', 'local.tar.gz'])
     builder.main()
-    assert calls == [{'fixture':'stanford-bunny', 'bunny_archive':Path('local.tar.gz')}]
+    assert calls == [{'fixture':'stanford-bunny', 'seed':7, 'bunny_archive':Path('local.tar.gz')}]
     monkeypatch.setattr(sys, 'argv', ['build', '--fixture', 'synthetic', '--bunny-archive', 'local.tar.gz'])
     with pytest.raises(SystemExit) as error:
         builder.main()
@@ -332,7 +332,7 @@ def test_cli_forwards_expected_bunny_digest(monkeypatch):
     monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
     monkeypatch.setattr(sys, 'argv', ['build', '--bunny-archive', 'local.tar.gz', '--bunny-sha256', 'a'*64])
     builder.main()
-    assert calls == [{'fixture':'stanford-bunny', 'bunny_archive':Path('local.tar.gz'), 'bunny_sha256':'a'*64}]
+    assert calls == [{'fixture':'stanford-bunny', 'seed':7, 'bunny_archive':Path('local.tar.gz'), 'bunny_sha256':'a'*64}]
 
 
 class TestPublicBenchmarkPack:
@@ -417,6 +417,52 @@ def test_synthetic_source_is_small_finite_and_deterministic():
     np.testing.assert_array_equal(points, builder._synthetic_smoke_points())
 
 
+def test_seed_reproduces_generated_artifacts_and_is_recorded(tmp_path):
+    def generate(name, seed):
+        root = tmp_path/name
+        result = build_public_benchmark_pack(root, fixture='synthetic', seed=seed)
+        generation = result['manifest']['generation']
+        assert generation == {'seed':seed, 'bit_generator':'PCG64', 'numpy_version':np.__version__}
+        assert json.loads((root/'manifest.json').read_text())['generation'] == generation
+        assert f'--seed {seed}' in (root/'README.md').read_text()
+        return {str(path.relative_to(root)):path.read_bytes()
+                for folder in ('baselines', 'outputs') for path in (root/folder).iterdir()}
+    first = generate('first', 19)
+    assert generate('repeat', 19) == first
+    changed = generate('changed', 20)
+    assert changed['baselines/perception_ref.pcd'] == first['baselines/perception_ref.pcd']
+    assert changed['outputs/perception_pass.pcd'] != first['outputs/perception_pass.pcd']
+
+
+@pytest.mark.parametrize('seed', [-1, True, 1.5, '7', None])
+def test_invalid_seed_preserves_output_and_does_not_download(tmp_path, monkeypatch, seed):
+    sentinel = tmp_path/'keep'; sentinel.write_text('keep')
+    monkeypatch.setattr(builder, 'download_bunny_mesh', lambda: pytest.fail('invalid seed triggered download'))
+    with pytest.raises(ValueError, match='seed must be a nonnegative integer'):
+        build_public_benchmark_pack(tmp_path, seed=seed)
+    assert sentinel.read_text() == 'keep'
+
+
+@pytest.mark.parametrize('seed', [0, 19])
+def test_cli_forwards_seed(monkeypatch, seed):
+    calls = []
+    def capture(output_dir, **options):
+        calls.append(options)
+        return {'output_dir':str(output_dir), 'pack_name':'test', 'source':'synthetic-smoke', 'manifest':{'configs':[]}}
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
+    monkeypatch.setattr(sys, 'argv', ['build', '--fixture', 'synthetic', '--seed', str(seed)])
+    builder.main()
+    assert calls == [{'fixture':'synthetic', 'seed':seed}]
+
+
+def test_cli_rejects_negative_seed_before_build(monkeypatch):
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', lambda *a, **k: pytest.fail('invalid seed reached builder'))
+    monkeypatch.setattr(sys, 'argv', ['build', '--seed', '-1'])
+    with pytest.raises(SystemExit) as error:
+        builder.main()
+    assert error.value.code == 2
+
+
 def test_default_download_failure_is_not_replaced_by_synthetic(tmp_path: Path, monkeypatch):
     output_dir = tmp_path / "existing"
     output_dir.mkdir()
@@ -474,7 +520,8 @@ def test_invalid_source_selection_preserves_existing_output(tmp_path: Path, fixt
 def test_cli_selects_fixture_and_separate_default_output(monkeypatch, capsys, arguments, fixture, output):
     calls = []
 
-    def capture_build(output_dir, *, fixture):
+    def capture_build(output_dir, *, fixture, seed):
+        assert seed == 7
         calls.append((output_dir, fixture))
         return {"output_dir": str(output_dir), "pack_name": "test", "source": fixture, "manifest": {"configs": []}}
 

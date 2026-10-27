@@ -7,6 +7,8 @@ import pytest
 
 from ca import glim_run as runner
 
+IMAGE_ID = "sha256:" + "a" * 64
+
 
 @pytest.fixture
 def inputs(tmp_path, monkeypatch):
@@ -15,7 +17,7 @@ def inputs(tmp_path, monkeypatch):
     (config/'config.json').write_text('{}')
     (config/'config_ros.json').write_text(json.dumps({'glim_ros':{'points_topic':'/points','imu_topic':'/raw'}}))
     out = tmp_path/'run'
-    monkeypatch.setattr(runner.subprocess, 'check_output', lambda *a, **k: 'sha256:fixture\n')
+    monkeypatch.setattr(runner.subprocess, 'check_output', lambda *a, **k: IMAGE_ID + '\n')
     monkeypatch.setattr(runner, '_space', lambda *a: None)
     return bag, config, out
 
@@ -31,7 +33,7 @@ def test_run_records_failure_and_success(inputs, monkeypatch, mode, expected):
             return subprocess.CompletedProcess(command, 0)
         assert '--network=none' in command
         assert 'auto_quit:=true' in command
-        assert command[command.index('ros2') - 1] == 'sha256:fixture'
+        assert command[command.index('ros2') - 1] == IMAGE_ID
         kwargs['stdout'].write(b'process log\n')
         if mode == 'timeout':
             raise subprocess.TimeoutExpired(command, 1)
@@ -239,7 +241,7 @@ def test_config_change_during_image_lookup_stops_before_container(inputs,monkeyp
     bag,config,out=inputs
     def lookup(*args,**kwargs):
         (config/'config_ros.json').write_text('{}')
-        return 'sha256:fixture'
+        return IMAGE_ID
     monkeypatch.setattr(runner.subprocess,'check_output',lookup)
     monkeypatch.setattr(runner.subprocess,'run',lambda *a,**kw:pytest.fail('container started'))
     result=runner.run_glim(str(bag),str(config),str(out),'test')
@@ -261,7 +263,7 @@ def test_configuration_copy_failure_is_terminal_and_does_not_launch(inputs,monke
     assert result['status']==('interrupted' if interrupted else 'preparation_failed')
     assert result['failure_stage']=='configuration_copy'
     assert result['command']==[]
-    assert result['image_id']=='sha256:fixture'
+    assert result['image_id']==IMAGE_ID
     assert json.loads((out/'glim-run.json').read_text())==result
 
 
@@ -307,3 +309,25 @@ def test_receipt_replacement_failure_keeps_previous_json(inputs,monkeypatch):
     with pytest.raises(OSError,match='replacement failed'):
         runner._save(receipt,{'status':'process_failed'})
     assert json.loads(receipt.read_text())=={'status':'running'}
+
+
+@pytest.mark.parametrize('identity', [
+    '', 'test:latest', 'sha256:', 'sha256:fixture',
+    'sha256:' + 'a' * 63, 'sha256:' + 'a' * 65,
+    'sha256:' + 'g' * 64, 'sha256:' + 'A' * 64,
+    IMAGE_ID + '\n' + IMAGE_ID, IMAGE_ID + ' extra',
+])
+def test_invalid_image_identity_stops_before_copy_or_launch(inputs, monkeypatch, identity):
+    bag, config, out = inputs
+    monkeypatch.setattr(runner.subprocess, 'check_output', lambda *a, **k: identity)
+    monkeypatch.setattr(runner.shutil, 'copytree', lambda *a, **k: pytest.fail('configuration copied'))
+    monkeypatch.setattr(runner.subprocess, 'run', lambda *a, **k: pytest.fail('container launched'))
+    result = runner.run_glim(str(bag), str(config), str(out), 'test:local')
+    assert result['status'] == 'runtime_unavailable'
+    assert result['failure_stage'] == 'image_lookup'
+    assert result['image_id'] is None
+    assert result['command'] == []
+    assert 'immutable image ID' in result['error']
+    assert not (out/'config').exists()
+    assert not (out/'dump').exists()
+    assert json.loads((out/'glim-run.json').read_text()) == result

@@ -125,7 +125,11 @@ integrity separately from the original execution outcome.
 
 ## Preparation failures and interrupted runs
 
-Docker image lookup has a separate 30-second timeout. A timeout or lookup failure
+Docker image lookup has a separate 30-second timeout. Its result must be exactly
+`sha256:` followed by 64 lowercase hexadecimal digits (after trimming surrounding
+whitespace), matching the export/import identity requirement. Malformed or
+multiple returned IDs stop as `runtime_unavailable` before configuration copy
+or container launch, with the lookup failure retained in the run receipt. A timeout or lookup failure
 is `runtime_unavailable`; interruption is `interrupted`. Both retain
 `failure_stage: image_lookup`. Configuration-copy, copy-verification or dump
 directory preparation errors return `preparation_failed` (or `interrupted`)

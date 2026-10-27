@@ -296,3 +296,12 @@ tree first. It rejects special files and directory symlinks before hashing or
 copying and propagates directory access errors. Tests cover FIFO rejection before
 Docker/output creation, symlinks, socket/device stat types, directory-count limits,
 stable nested-file ordering and unreadable traversal.
+
+
+### Consistent immutable GLIM image identities
+
+The runner now requires a complete Docker SHA-256 image ID, matching the import
+and portable-review checks. Malformed, truncated, nonhex or multiple IDs retain
+an image-lookup failure receipt before configuration copy or container launch.
+Orchestration fixtures now use a complete synthetic image ID; they remain mock
+contract tests, not evidence of actual GLIM execution.

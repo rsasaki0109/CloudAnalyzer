@@ -4,6 +4,7 @@ from __future__ import annotations
 import math
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import subprocess
@@ -107,7 +108,7 @@ def run_glim(bag: str, config: str, out: str, image: str, timeout: float = 3600,
            {'DOCKER_HOST', 'DOCKER_CONTEXT', 'DOCKER_TLS', 'DOCKER_TLS_VERIFY', 'DOCKER_CERT_PATH'}}
     try:
         identity = subprocess.check_output(docker + ['image', 'inspect', '--format', '{{.Id}}', image], env=env, text=True, timeout=30).strip()
-        if not identity.startswith('sha256:'):
+        if not re.fullmatch(r'sha256:[0-9a-f]{64}', identity):
             raise ValueError('Docker did not return an immutable image ID')
     except (OSError, subprocess.SubprocessError, ValueError, KeyboardInterrupt) as error:
         report.update(status='interrupted' if isinstance(error, KeyboardInterrupt) else 'runtime_unavailable',

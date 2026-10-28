@@ -1,0 +1,122 @@
+[
+  {
+    "session": "2012-04-29",
+    "repeat": 0,
+    "arm": "baseline",
+    "file": "2012-04-29-0-baseline.json",
+    "registration_seconds": 17.907652172,
+    "wall_seconds": 18.102170005993685,
+    "iterations": 12998,
+    "frames": 236
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 0,
+    "arm": "candidate",
+    "file": "2012-04-29-0-candidate.json",
+    "registration_seconds": 17.15688272,
+    "wall_seconds": 17.347221655014437,
+    "iterations": 12998,
+    "frames": 236
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 1,
+    "arm": "candidate",
+    "file": "2012-04-29-1-candidate.json",
+    "registration_seconds": 17.725140888,
+    "wall_seconds": 17.92052037999383,
+    "iterations": 12998,
+    "frames": 236
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 1,
+    "arm": "baseline",
+    "file": "2012-04-29-1-baseline.json",
+    "registration_seconds": 17.840493822,
+    "wall_seconds": 18.07653823099099,
+    "iterations": 12998,
+    "frames": 236
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 2,
+    "arm": "baseline",
+    "file": "2012-04-29-2-baseline.json",
+    "registration_seconds": 17.979986311,
+    "wall_seconds": 18.198389744997257,
+    "iterations": 12998,
+    "frames": 236
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 2,
+    "arm": "candidate",
+    "file": "2012-04-29-2-candidate.json",
+    "registration_seconds": 17.264520872,
+    "wall_seconds": 17.47114157100441,
+    "iterations": 12998,
+    "frames": 236
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 0,
+    "arm": "baseline",
+    "file": "2012-06-15-0-baseline.json",
+    "registration_seconds": 20.768536578,
+    "wall_seconds": 21.024580297002103,
+    "iterations": 14788,
+    "frames": 238
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 0,
+    "arm": "candidate",
+    "file": "2012-06-15-0-candidate.json",
+    "registration_seconds": 19.697203892,
+    "wall_seconds": 19.912837526004296,
+    "iterations": 14788,
+    "frames": 238
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 1,
+    "arm": "candidate",
+    "file": "2012-06-15-1-candidate.json",
+    "registration_seconds": 19.462099578,
+    "wall_seconds": 19.68213709301199,
+    "iterations": 14788,
+    "frames": 238
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 1,
+    "arm": "baseline",
+    "file": "2012-06-15-1-baseline.json",
+    "registration_seconds": 19.707665054,
+    "wall_seconds": 19.91204803599976,
+    "iterations": 14788,
+    "frames": 238
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 2,
+    "arm": "baseline",
+    "file": "2012-06-15-2-baseline.json",
+    "registration_seconds": 19.130983365,
+    "wall_seconds": 19.34110190998763,
+    "iterations": 14788,
+    "frames": 238
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 2,
+    "arm": "candidate",
+    "file": "2012-06-15-2-candidate.json",
+    "registration_seconds": 18.614770644,
+    "wall_seconds": 18.811328957992373,
+    "iterations": 14788,
+    "frames": 238
+  }
+]

@@ -623,10 +623,15 @@ impl LocalMap {
                     [0.0, 1.0, 0.0, -q[2], 0.0, q[0]],
                     [0.0, 0.0, 1.0, q[1], -q[0], 0.0],
                 ];
-                for (row, r) in rows.iter().zip(r) {
-                    for i in 0..6 {
+                // Each Jacobian row has only three structurally nonzero entries.
+                // Preserve the row order and both matrix triangles: skipping zero
+                // terms avoids 81 of the 108 products per correspondence without
+                // changing the accumulation order of the remaining terms.
+                for ((row, r), indices) in rows.iter().zip(r).zip([[0, 4, 5], [1, 3, 5], [2, 3, 4]])
+                {
+                    for i in indices {
                         jtr[i] -= w * row[i] * r;
-                        for j in 0..6 {
+                        for j in indices {
                             jtj[i][j] += w * row[i] * row[j];
                         }
                     }
@@ -1045,6 +1050,60 @@ impl Odometry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sparse_equations_match_dense_jacobian_reference() {
+        let points: Vec<_> = (0..80)
+            .map(|i| {
+                [
+                    (i % 7) as f64 * 0.3 - 1.,
+                    (i % 11) as f64 * 0.2 - 1.,
+                    (i % 13) as f64 * 0.1 - 0.5,
+                ]
+            })
+            .collect();
+        let mut map = LocalMap::new(1., 20);
+        map.insert(&points);
+        let source: Vec<_> = points
+            .iter()
+            .map(|p| [p[0] + 0.02, p[1] - 0.03, p[2] + 0.01])
+            .collect();
+        for center in [[0.; 3], [0.5, -2., 3.]] {
+            for threshold in [0.0001, 0.04, 9.] {
+                let kernel = 0.7;
+                let (actual_h, actual_b) =
+                    map.normal_equations(&source, &Rigid::IDENTITY, center, threshold, kernel);
+                let mut h = [[0.; 6]; 6];
+                let mut b = [0.; 6];
+                for world in &source {
+                    let Some((target, distance)) = map.nearest(world) else {
+                        continue;
+                    };
+                    if distance > threshold {
+                        continue;
+                    }
+                    let q: [f64; 3] = std::array::from_fn(|i| world[i] - center[i]);
+                    let residual: [f64; 3] = std::array::from_fn(|i| world[i] - target[i]);
+                    let w = kernel * kernel / (kernel + distance).powi(2);
+                    let jacobian = [
+                        [1., 0., 0., 0., q[2], -q[1]],
+                        [0., 1., 0., -q[2], 0., q[0]],
+                        [0., 0., 1., q[1], -q[0], 0.],
+                    ];
+                    for (row, residual) in jacobian.iter().zip(residual) {
+                        for i in 0..6 {
+                            b[i] -= w * row[i] * residual;
+                            for j in 0..6 {
+                                h[i][j] += w * row[i] * row[j];
+                            }
+                        }
+                    }
+                }
+                assert_eq!(actual_h, h);
+                assert_eq!(actual_b, b);
+            }
+        }
+    }
 
     // Exhaust all 27 cells in the same center-first order, without bounds.
     // This checks target choice and distance bits independently of pruning.

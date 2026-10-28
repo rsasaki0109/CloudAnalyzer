@@ -1,0 +1,182 @@
+[
+  {
+    "session": "2012-04-29",
+    "repeat": 0,
+    "gain": 1.0,
+    "file": "2012-04-29-0-1.0.json.gz",
+    "sha256": "e07bfd9a88cd6e2aff44caedf00c7abe83cbce6abcc3ac3d6a8cdacd87598d70",
+    "frames": 236,
+    "wall_seconds": 17.444563302007737,
+    "registration_seconds": 17.16184276,
+    "iterations": 12998,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 235
+    }
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 0,
+    "gain": 1.5,
+    "file": "2012-04-29-0-1.5.json.gz",
+    "sha256": "65320fa27f1e643884e3f25b0bfc4a2278cbcdb42d98623ae2d05305771263d5",
+    "frames": 236,
+    "wall_seconds": 12.297059625998372,
+    "registration_seconds": 12.050375566,
+    "iterations": 8991,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 235
+    }
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 1,
+    "gain": 1.5,
+    "file": "2012-04-29-1-1.5.json.gz",
+    "sha256": "41192bfbfc05e623eb2100dcf79efd3b530b8f76fda3f04dfd194ea7b5ad9ead",
+    "frames": 236,
+    "wall_seconds": 11.703118774981704,
+    "registration_seconds": 11.490974202,
+    "iterations": 8991,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 235
+    }
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 1,
+    "gain": 1.0,
+    "file": "2012-04-29-1-1.0.json.gz",
+    "sha256": "c4dece3d3969ef2a5d8141bb85ec0ad009bfc9f1fb3867a3d6193aab813c51a1",
+    "frames": 236,
+    "wall_seconds": 16.813020731991855,
+    "registration_seconds": 16.554965365,
+    "iterations": 12998,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 235
+    }
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 2,
+    "gain": 1.0,
+    "file": "2012-04-29-2-1.0.json.gz",
+    "sha256": "2f8ad9ed56beb8ccc9786ba7b153ebe5fc19715dc78cbe9059672e7edb3d3e03",
+    "frames": 236,
+    "wall_seconds": 17.968550629011588,
+    "registration_seconds": 17.697147402,
+    "iterations": 12998,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 235
+    }
+  },
+  {
+    "session": "2012-04-29",
+    "repeat": 2,
+    "gain": 1.5,
+    "file": "2012-04-29-2-1.5.json.gz",
+    "sha256": "68646cf1b5b0254659b2cfef8ddaf1d1fad6a87df9618c5813e1f4ddff8aada3",
+    "frames": 236,
+    "wall_seconds": 11.547109403007198,
+    "registration_seconds": 11.287706621,
+    "iterations": 8991,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 235
+    }
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 0,
+    "gain": 1.0,
+    "file": "2012-06-15-0-1.0.json.gz",
+    "sha256": "685e114a557813f70f4fa918274cb90699d41c6e539fb4fd7698be7691b5042e",
+    "frames": 238,
+    "wall_seconds": 19.16911362099927,
+    "registration_seconds": 18.891102139,
+    "iterations": 14788,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 237
+    }
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 0,
+    "gain": 1.5,
+    "file": "2012-06-15-0-1.5.json.gz",
+    "sha256": "7235cd4978be03c6471f67b4f2d44e2934f311f978b1e77401ea0888c975d7da",
+    "frames": 238,
+    "wall_seconds": 13.651631881017238,
+    "registration_seconds": 13.387088238,
+    "iterations": 10368,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 237
+    }
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 1,
+    "gain": 1.5,
+    "file": "2012-06-15-1-1.5.json.gz",
+    "sha256": "8850769e5b787ee5481a01fc289f2957d0fb16f4b401cf214205a0fb45e6628c",
+    "frames": 238,
+    "wall_seconds": 12.957586600008653,
+    "registration_seconds": 12.68373891,
+    "iterations": 10368,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 237
+    }
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 1,
+    "gain": 1.0,
+    "file": "2012-06-15-1-1.0.json.gz",
+    "sha256": "3359855669bf148998ef8036da7a3af1357e3be4b38d6efe2708174022b6213c",
+    "frames": 238,
+    "wall_seconds": 17.86985539298621,
+    "registration_seconds": 17.620839853,
+    "iterations": 14788,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 237
+    }
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 2,
+    "gain": 1.0,
+    "file": "2012-06-15-2-1.0.json.gz",
+    "sha256": "535476650f41b2645d4fc555a89c60f52faa48255c83485052427ae7bd9a8e5d",
+    "frames": 238,
+    "wall_seconds": 18.76936881901929,
+    "registration_seconds": 18.508621168,
+    "iterations": 14788,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 237
+    }
+  },
+  {
+    "session": "2012-06-15",
+    "repeat": 2,
+    "gain": 1.5,
+    "file": "2012-06-15-2-1.5.json.gz",
+    "sha256": "e9cac1f402af3ebd0bcdce88e00fe689e80a2a169ab41d85620e8d0820ab74f5",
+    "frames": 238,
+    "wall_seconds": 12.59923780101235,
+    "registration_seconds": 12.348001984,
+    "iterations": 10368,
+    "terminations": {
+      "empty_map": 1,
+      "converged": 237
+    }
+  }
+]

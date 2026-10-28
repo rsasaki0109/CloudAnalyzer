@@ -1,0 +1,11 @@
+{
+  "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+  "visible_cpus": 5,
+  "cpu_max": "400000 100000",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "rustc": "1.99.0 (b940084d7 2026-09-28)",
+  "cargo": "1.99.0 (5f94df478 2026-08-27)",
+  "rayon_num_threads": 1,
+  "base_commit": "c031ac4468686ee4a47ae430884016f5f3ff68c4",
+  "protocol_commit": "5cce95c"
+}

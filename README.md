@@ -195,6 +195,9 @@ npm run dev
 [`web/`](web/) — TypeScript / three.js app · [`rust/`](rust/) — Rust core / WASM / Python bindings ·
 [`cloudanalyzer/`](cloudanalyzer/) — Python CLI
 
+All documentation is indexed in [docs/](docs/README.md), which also shows a
+[lighter checkout](docs/README.md#lighter-checkouts) without the benchmark evidence.
+
 Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`.
 Lint: `ruff check ca/ cloudanalyzer_cli/ tests/` in `cloudanalyzer/`, `npm run lint` in `web/`.
 Media: `npm run media` after `npm run build` in `web/`.

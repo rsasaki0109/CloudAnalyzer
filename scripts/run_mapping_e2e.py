@@ -18,6 +18,9 @@ CloudAnalyzer itself still ranks nothing and the outputs remain drafts that need
 review. The script writes ``summary.json`` with the inputs, timings, peak
 memory, disk use, decisions, outputs, quality evidence and invariant checks,
 plus a ``mapping-scorecard`` per case, and exits 1 when a check fails.
+It also splits every unresolved station metre by reason: the run's own source
+reasons, and for intervals the client deferred, the furthest preview check any
+available candidate reached (see ``REJECTIONS``).
 
     python scripts/run_mapping_e2e.py --out /tmp/mapping-e2e            # april and june
     python scripts/run_mapping_e2e.py --case april --out /tmp/mapping-e2e
@@ -83,30 +86,90 @@ def _tree_bytes(root: Path) -> int:
     return sum(p.stat().st_size for p in root.rglob("*") if p.is_file() and not p.is_symlink())
 
 
-def accepted_intervals(observation: dict[str, Any]) -> list[tuple[float, float]]:
-    """Intervals of one inspected candidate that every run preview accepts."""
-    width = observation["layout_width_preview"]
-    direction = observation["layout_direction_preview"]
+# Why the reference client rejects a width-preview interval, in check order.
+REJECTIONS = (
+    "narrower_than_layout",       # no interpolated range meets the layout width
+    "path_outside_profile",       # the recorded path leaves a section of the range
+    "direction_unresolved",       # the native direction preview did not pass
+    "sections_not_previewed",     # the range extends past a truncated section preview
+    "surface_level_unsupported",  # a section has no supported path level
+)
+LOST_TO_OVERLAP = "overlapping_interval_chosen"  # accepted, but a longer overlap won
+
+
+def rejection(observation: dict[str, Any], interval: dict[str, Any]) -> str | None:
+    """The first check that rejects ``interval`` of ``observation``, or None if accepted."""
+    start, stop = interval["from_m"], interval["to_m"]
+    if stop <= start:
+        return "narrower_than_layout"
+    if not interval.get("path_contained_at_all_sections"):
+        return "path_outside_profile"
     passed = {
         (round(r["from_m"], 6), round(r["to_m"], 6))
-        for r in direction.get("ranges", [])
+        for r in observation["layout_direction_preview"].get("ranges", [])
         if r.get("direction_checks_passed") and not r.get("issues_limited")
     }
+    if (round(start, 6), round(stop, 6)) not in passed:
+        return "direction_unresolved"
     sections = observation["sections"]
     last_station = max((s["station_m"] for s in sections), default=float("-inf"))
-    accepted = []
-    for interval in width.get("interpolated_ranges", []):
-        start, stop = interval["from_m"], interval["to_m"]
-        if stop <= start or not interval.get("path_contained_at_all_sections"):
-            continue
-        if (round(start, 6), round(stop, 6)) not in passed:
-            continue
-        if observation.get("section_preview_limited") and last_station < stop:
-            continue  # sections beyond the preview were not observed here
-        covered = [s for s in sections if start <= s["station_m"] <= stop]
-        if covered and all(s["path_level_supported"] for s in covered):
-            accepted.append((start, stop))
-    return accepted
+    if observation.get("section_preview_limited") and last_station < stop:
+        return "sections_not_previewed"
+    covered = [s for s in sections if start <= s["station_m"] <= stop]
+    if not covered or not all(s["path_level_supported"] for s in covered):
+        return "surface_level_unsupported"
+    return None
+
+
+def accepted_intervals(observation: dict[str, Any]) -> list[tuple[float, float]]:
+    """Intervals of one inspected candidate that every run preview accepts."""
+    return [(r["from_m"], r["to_m"])
+            for r in observation["layout_width_preview"].get("interpolated_ranges", [])
+            if rejection(observation, r) is None]
+
+
+def disposition_breakdown(disposition: list[dict[str, Any]],
+                          observations: dict[int, dict[str, Any]]) -> dict[str, Any]:
+    """Station metres by outcome, with a reason for every unresolved metre.
+
+    ``source_deferred`` keeps the run's own source reasons. For intervals the
+    reference client deferred although candidates existed, the reason is the
+    furthest check any available candidate's covering width range reached.
+    """
+    order = REJECTIONS + (LOST_TO_OVERLAP,)
+    included = 0.0
+    source: dict[str, float] = {}
+    client: dict[str, float] = {}
+    other: dict[str, float] = {}
+    for row in disposition:
+        start, stop = row["from_m"], row["to_m"]
+        length = stop - start
+        if row["status"] == "included_geometry":
+            included += length
+        elif row["status"] == "source_deferred":
+            key = "+".join(sorted(row.get("source_reasons") or [])) or "unspecified"
+            source[key] = source.get(key, 0.0) + length
+        elif row["status"] == "agent_deferred":
+            best = -1
+            for cid in row.get("available_candidate_ids") or []:
+                observation = observations.get(cid)
+                if observation is None:
+                    continue
+                best = max(best, 0)
+                for interval in observation["layout_width_preview"].get("interpolated_ranges", []):
+                    if interval["from_m"] <= start + 1e-6 and interval["to_m"] >= stop - 1e-6:
+                        why = rejection(observation, interval)
+                        best = max(best, len(order) - 1 if why is None else order.index(why))
+            key = order[best] if best >= 0 else "no_inspected_candidate"
+            client[key] = client.get(key, 0.0) + length
+        else:
+            other[row["status"]] = other.get(row["status"], 0.0) + length
+
+    def rounded(values: dict[str, float]) -> dict[str, float]:
+        return {k: round(v, 3) for k, v in sorted(values.items(), key=lambda kv: (-kv[1], kv[0]))}
+
+    return {"included_m": round(included, 3), "source_deferred_m": rounded(source),
+            "client_deferred_m": rounded(client), "other_m": rounded(other)}
 
 
 def choose(observations: dict[int, dict[str, Any]]) -> list[tuple[int, float, float]]:
@@ -123,7 +186,7 @@ def choose(observations: dict[int, dict[str, Any]]) -> list[tuple[int, float, fl
     return sorted(chosen, key=lambda c: c[1])
 
 
-def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[str, Any]:
+def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: bool = False) -> dict[str, Any]:
     from ca import mapping_run as mr
     from ca.mapping_scorecard import format_text, scorecard
 
@@ -140,6 +203,15 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
     timings["start_s"] = time.monotonic() - tick
     if state["status"] != "needs_agent":
         raise RuntimeError(f"{name}: mapping run did not reach the agent loop: {state['status']}")
+    if refine:
+        tick = time.monotonic()
+        revision = mr.inspect_mapping_run(str(job))["revision"]
+        refined = mr.advance_mapping_run(
+            str(job), {"type": "refine", "association": "trajectory_containing"},
+            "Reference client re-extracts trajectory-containing bands once before inspecting.", revision)
+        timings["refine_s"] = time.monotonic() - tick
+        if refined["status"] != "needs_agent":
+            raise RuntimeError(f"{name}: refinement did not return to the agent loop: {refined['status']}")
 
     tick = time.monotonic()
     offered: list[int] = []
@@ -185,6 +257,12 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
     output = finished.get("output") or {}
     artifacts = output.get("artifacts") or {}
 
+    geometry_reports = sorted(job.glob("geometry-*/report.json"))
+    breakdown = None
+    if geometry_reports:
+        geometry = json.loads(geometry_reports[-1].read_text(encoding="utf-8"))
+        breakdown = disposition_breakdown(geometry.get("station_disposition", []), observations)
+
     card = scorecard(str(job))
     (out / name / "scorecard.json").write_text(json.dumps(card, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     (out / name / "scorecard.txt").write_text(format_text(card), encoding="utf-8")
@@ -209,6 +287,7 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
     extent = diagnosis.get("extent") or {}
     return {
         "case": name,
+        "association": "trajectory_containing" if refine else "all_supported_bands",
         "inputs": {"recording": _file(recording), "layout": _file(layout_path)},
         "pointcloud": {k: state["pointcloud"].get(k) for k in ("options", "status") if k in state["pointcloud"]},
         "timings_s": {k: round(v, 2) for k, v in timings.items()},
@@ -232,6 +311,7 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
             "routes": (diagnosis.get("routes") or {}).get("after"),
             "editable_audit_samples": ((diagnosis.get("editable") or {}).get("sample_totals")),
             "pointcloud_quality_status": diagnosis.get("pointcloud_quality_status"),
+            "station_disposition": breakdown,
         },
         "checks": checks,
         "passed": all(checks.values()),
@@ -241,6 +321,8 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate both maps from bundled recordings with no operator.")
     parser.add_argument("--out", type=Path, required=True, help="New output directory")
+    parser.add_argument("--refine", action="store_true",
+                        help="Refine once with association=trajectory_containing before inspecting")
     parser.add_argument("--case", choices=sorted(CASES), action="append",
                         help="Case to run (repeatable; default: all)")
     args = parser.parse_args(argv)
@@ -250,7 +332,8 @@ def main(argv: list[str] | None = None) -> int:
 
     import cloudanalyzer_core  # noqa: F401 -- fail early without the native core
 
-    results = [run_case(n, REPO_ROOT / CASES[n]["recording"], REPO_ROOT / CASES[n]["layout"], out) for n in names]
+    results = [run_case(n, REPO_ROOT / CASES[n]["recording"], REPO_ROOT / CASES[n]["layout"], out, args.refine)
+               for n in names]
     summary = {
         "schema": "cloudanalyzer.mapping_e2e.v1",
         "runtime": {"python": platform.python_version(), "platform": platform.platform(),
@@ -267,6 +350,12 @@ def main(argv: list[str] | None = None) -> int:
               f"{client['included_intervals']} intervals ({client['included_station_m']} m), "
               f"retained {extent.get('retained_fraction', 0):.1%} of {extent.get('trajectory_length_m', 0):.1f} m | "
               f"{r['timings_s']['total_s']} s")
+        breakdown = r["quality"]["station_disposition"]
+        if breakdown:
+            def parts(values: dict[str, float]) -> str:
+                return ", ".join(f"{k} {v:g} m" for k, v in values.items()) or "none"
+            print(f"  unresolved: source [{parts(breakdown['source_deferred_m'])}]; "
+                  f"reference client [{parts(breakdown['client_deferred_m'])}]")
     print(f"peak RSS {summary['runtime']['peak_rss_mib']} MiB; summary: {out / 'summary.json'}")
     return 0 if summary["passed"] else 1
 

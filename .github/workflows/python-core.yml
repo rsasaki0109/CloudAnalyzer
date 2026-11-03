@@ -182,7 +182,9 @@ jobs:
           ../rust/crates/ca-py/tests
 
       - name: Generate both maps from bundled recordings without an operator
-        run: python scripts/run_mapping_e2e.py --out mapping-e2e
+        run: |
+          python scripts/run_mapping_e2e.py --out mapping-e2e/all-supported-bands
+          python scripts/run_mapping_e2e.py --refine --out mapping-e2e/trajectory-containing
 
       - name: Upload mapping E2E summary
         if: always()
@@ -190,9 +192,9 @@ jobs:
         with:
           name: mapping-e2e
           path: |
-            mapping-e2e/summary.json
-            mapping-e2e/*/scorecard.*
-            mapping-e2e/*/job/candidate-*/lanelet2_map.osm
+            mapping-e2e/*/summary.json
+            mapping-e2e/*/*/scorecard.*
+            mapping-e2e/*/*/job/candidate-*/lanelet2_map.osm
           if-no-files-found: warn
 
   publish:

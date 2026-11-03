@@ -63,3 +63,51 @@ def test_overlaps_resolved_longest_first_with_deterministic_ties():
 
     tied = {7: _observation(0.0, 4.0, level=(True,) * 3), 5: _observation(2.0, 6.0, level=(True,) * 4)}
     assert e2e.choose(tied) == [(5, 2.0, 6.0)]
+
+
+def test_rejection_reports_the_first_failing_check_in_order():
+    width = lambda obs: obs["layout_width_preview"]["interpolated_ranges"][0]  # noqa: E731
+    assert e2e.rejection(_observation(), width(_observation())) is None
+    obs = _observation(contained=False, direction=False)
+    assert e2e.rejection(obs, width(obs)) == "path_outside_profile"
+    obs = _observation(direction=False, level=(True, False, True, True))
+    assert e2e.rejection(obs, width(obs)) == "direction_unresolved"
+    obs = _observation(stop=8.0, preview_limited=True)
+    assert e2e.rejection(obs, width(obs)) == "sections_not_previewed"
+    obs = _observation(level=(True, False, True, True))
+    assert e2e.rejection(obs, width(obs)) == "surface_level_unsupported"
+
+
+def _row(start, stop, status, candidates=(), reasons=()):
+    return {"from_m": start, "to_m": stop, "status": status,
+            "available_candidate_ids": list(candidates), "source_reasons": list(reasons)}
+
+
+def test_breakdown_explains_every_unresolved_metre():
+    observations = {
+        1: _observation(0.0, 6.0),                        # accepted
+        2: _observation(0.0, 6.0, direction=False),       # reaches the direction check
+        3: _observation(0.0, 6.0, contained=False),       # fails earlier, at the path
+    }
+    observations[4] = _observation(0.0, 6.0)
+    observations[4]["layout_width_preview"]["interpolated_ranges"] = []  # never wide enough
+    disposition = [
+        _row(0.0, 2.0, "included_geometry", [1]),
+        _row(2.0, 4.0, "agent_deferred", [2, 3]),         # furthest check wins: direction
+        _row(4.0, 6.0, "agent_deferred", [1]),            # accepted but not chosen here
+        _row(6.0, 8.0, "agent_deferred", [4]),
+        _row(8.0, 10.0, "agent_deferred", []),
+        _row(10.0, 14.0, "source_deferred", [], ["branching_bands"]),
+        _row(14.0, 15.0, "source_deferred", [], ["missing_ground_anchor", "branching_bands"]),
+    ]
+    breakdown = e2e.disposition_breakdown(disposition, observations)
+    assert breakdown == {
+        "included_m": 2.0,
+        "source_deferred_m": {"branching_bands": 4.0, "branching_bands+missing_ground_anchor": 1.0},
+        "client_deferred_m": {"direction_unresolved": 2.0, "narrower_than_layout": 2.0,
+                              "no_inspected_candidate": 2.0, "overlapping_interval_chosen": 2.0},
+        "other_m": {},
+    }
+    total = breakdown["included_m"] + sum(breakdown["source_deferred_m"].values()) \
+        + sum(breakdown["client_deferred_m"].values())
+    assert total == 15.0

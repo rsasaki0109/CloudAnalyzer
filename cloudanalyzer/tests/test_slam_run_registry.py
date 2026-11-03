@@ -229,7 +229,6 @@ def test_cli_resolves_driver_via_registry(tmp_path) -> None:
     import json
     import subprocess
     import sys
-    from pathlib import Path
 
     # Use the bundled synthetic straight-line dataset via the experiment
     # slice helper rather than spinning up our own fixture.
@@ -272,7 +271,6 @@ def test_cli_unknown_driver_fails_cleanly(tmp_path) -> None:
 
     import subprocess
     import sys
-    from pathlib import Path
 
     input_dir = tmp_path / "input"
     input_dir.mkdir()

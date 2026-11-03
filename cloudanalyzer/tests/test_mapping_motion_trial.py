@@ -11,7 +11,7 @@ from ca.posegraph_fix import read_trajectory
 from ca.mapping_trajectory import evaluate_mapping_trajectory
 from ca.mapping_trajectory_review import compare_mapping_motion_trials
 from cloudanalyzer_cli.main import app
-from tests.test_mapping_trajectory import fixture, PROVENANCE, _localized_report  # Shared real native graph/motion fixture.
+from tests.test_mapping_trajectory import fixture, PROVENANCE, _localized_report  # Shared real native graph/motion fixture.  # noqa: F401
 
 
 @pytest.fixture

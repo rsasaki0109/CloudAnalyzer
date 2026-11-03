@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import open3d as o3d
-import pytest
 
 from ca.report import make_run_batch_summary, save_run_batch_report
 from ca.run_evaluate import evaluate_run_batch

@@ -7,10 +7,10 @@ import pytest
 from ca import mapping_job as jobs, mapping_run as runs
 from ca.mapping_plan_apply import apply_supported_hd_plan
 from tests.test_mapping_hd_plan import plan
-from tests.test_mapping_hd_repair import hd_only_run
+from tests.test_mapping_hd_repair import hd_only_run  # noqa: F401 (pytest fixture)
 from tests.test_mapping_job import (
-    job_backend,
-    unused_frame_run,
+    job_backend,  # noqa: F401 (pytest fixture)
+    unused_frame_run,  # noqa: F401 (pytest fixture)
     _attach_lane_native,
     _advance,
     _run_layout,

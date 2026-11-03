@@ -59,6 +59,9 @@ jobs:
       - name: Type check
         run: python -m mypy ca/ cloudanalyzer_cli/
 
+      - name: Lint
+        run: python -m ruff check ca/ cloudanalyzer_cli/ tests/
+
       - name: Run tests
         run: xvfb-run python -m pytest tests/ -v
 

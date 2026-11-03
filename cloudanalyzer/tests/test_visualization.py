@@ -1,7 +1,6 @@
 """Tests for ca.visualization module."""
 
 import numpy as np
-import open3d as o3d
 import pytest
 
 from ca.visualization import colorize, save_snapshot

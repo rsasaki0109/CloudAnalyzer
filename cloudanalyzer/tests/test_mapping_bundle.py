@@ -13,8 +13,8 @@ from typer.testing import CliRunner
 
 from ca import mapping_bundle as bundles, mapping_job as jobs, mapping_run as runs
 from cloudanalyzer_cli.main import app
-from tests.test_mapping_job import job_backend, unused_frame_run, _advance, _patch_pairs
-from tests.test_mapping_hd_repair import hd_only_run, child_run, draft
+from tests.test_mapping_job import job_backend, unused_frame_run, _advance, _patch_pairs  # noqa: F401 (pytest fixture)
+from tests.test_mapping_hd_repair import hd_only_run, child_run, draft  # noqa: F401 (pytest fixture)
 
 
 @pytest.fixture

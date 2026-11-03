@@ -17,9 +17,9 @@ from ca import (
     mapping_job as jobs,
     mapping_run as runs,
 )
-from tests.test_mapping_job import job_backend, unused_frame_run
-from tests.test_mapping_hd_repair import hd_only_run
-from tests.test_mapping_bundle import finished, _mutate
+from tests.test_mapping_job import job_backend, unused_frame_run  # noqa: F401 (pytest fixture)
+from tests.test_mapping_hd_repair import hd_only_run  # noqa: F401 (pytest fixture)
+from tests.test_mapping_bundle import finished, _mutate  # noqa: F401 (pytest fixture)
 
 
 def _canonical(path, count, attributes=False):

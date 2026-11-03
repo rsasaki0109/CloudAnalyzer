@@ -1,0 +1,63 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "files": {
+    "includes": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "media/**",
+      "scripts/**",
+      "experiments/**",
+      "*.config.ts",
+      "!src/wasm",
+      "!**/*.json"
+    ]
+  },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  // Bug-focused rules only. Style rules stay off, and suspicious rules that
+  // flag deliberate patterns in this code base are disabled below.
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "none",
+      "correctness": {
+        "preset": "recommended",
+        // Flags benchmark scripts' own describe() helpers, not Playwright.
+        "usePlaywrightValidDescribeCallback": "off"
+      },
+      "suspicious": {
+        "preset": "recommended",
+        "noAssignInExpressions": "off",
+        // Name and note validation rejects control characters with such regexes.
+        "noControlCharactersInRegex": "off",
+        // CSS fallbacks such as `height: 100vh; height: 100dvh;`.
+        "noDuplicateProperties": "off",
+        "noExplicitAny": "off",
+        "noImplicitAnyLet": "off",
+        // Local escape() helpers shadow the legacy global of the same name.
+        "noShadowRestrictedNames": "off",
+        // Expression-bodied forEach callbacks, e.g. forEach((v, a) => buf.writeFloatLE(...)).
+        "useIterableCallbackReturn": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Benchmark drivers and experiments are measured sources whose bytes
+      // are recorded by benchmark packets; leave them unchanged.
+      "includes": ["scripts/benchmark-*.mjs", "experiments/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noUnusedImports": "off", "noUnusedVariables": "off" }
+        }
+      }
+    },
+    {
+      // These throw from `finally` on purpose: a WebGPU error scope popped
+      // there is the real cause of the failure and replaces the JS error.
+      "includes": ["src/gpu-candidates.ts", "experiments/shared-gpu-c2c/driver.ts"],
+      "linter": { "rules": { "correctness": { "noUnsafeFinally": "off" } } }
+    }
+  ]
+}

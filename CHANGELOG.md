@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Lint in CI: ruff for the Python package (`ruff check ca/ cloudanalyzer_cli/ tests/`)
+  and Biome for the web app (`npm run lint`). Both use bug-focused rules only:
+  unused or undefined names, unsafe `finally`, suspicious comparisons and similar.
+  Unused imports, unused variables and an unused helper were removed.
 - `scripts/preserve_source_history.py` keeps source versions that frozen
   benchmark packets still reference. It copies each changed file's referenced
   base version into `benchmarks/source-history`; `--check` reports what would

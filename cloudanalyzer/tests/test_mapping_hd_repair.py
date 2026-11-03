@@ -7,8 +7,8 @@ from copy import deepcopy
 import pytest
 from ca import mapping_job as jobs, mapping_run as runs
 from tests.test_mapping_job import (
-    job_backend,
-    unused_frame_run,
+    job_backend,  # noqa: F401 (pytest fixture)
+    unused_frame_run,  # noqa: F401 (pytest fixture)
     _corridor_report,
     _run_layout,
     _advance,

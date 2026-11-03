@@ -1,7 +1,6 @@
 """CloudAnalyzer CLI entry point."""
 
 import json
-import sys
 import zipfile
 from dataclasses import replace
 from pathlib import Path
@@ -719,7 +718,7 @@ def info_cmd(
         typer.echo(json.dumps(info, indent=2))
     elif info.get("kind") == "rosbag":
         typer.echo(f"File:      {info['path']}")
-        typer.echo(f"Kind:      ROS bag / MCAP")
+        typer.echo("Kind:      ROS bag / MCAP")
         typer.echo(f"Messages:  {info['message_count']}")
         typer.echo(f"Duration:  {info['duration_ns'] / 1e9:.3f} s")
         typer.echo("Topics:")

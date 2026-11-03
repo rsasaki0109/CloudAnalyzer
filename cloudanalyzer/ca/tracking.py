@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
-from ca.object_eval import BoxSequence, frame_map, greedy_match_boxes, has_yaw, load_box_sequence, ordered_frame_ids, sequence_counts
+from ca.object_eval import frame_map, greedy_match_boxes, has_yaw, load_box_sequence, ordered_frame_ids, sequence_counts
 
 
 def _quality_gate(

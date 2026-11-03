@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from ca import mapping_job as jobs, mapping_run as runs, mapping_map_points as points
-from tests.test_mapping_import import external_pair, job_backend, _partial_external_draft
+from tests.test_mapping_import import external_pair, job_backend, _partial_external_draft  # noqa: F401 (pytest fixture)
 
 
 @pytest.fixture

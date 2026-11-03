@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/"scripts"))
-import audit_flatwall_gicp_registration as registration
 import gicp_transported_reference as rematched
 import gicp_transported_fixed_reference as fixed
 

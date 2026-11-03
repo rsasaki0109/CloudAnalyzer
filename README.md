@@ -196,6 +196,7 @@ npm run dev
 [`cloudanalyzer/`](cloudanalyzer/) — Python CLI
 
 Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`.
+Lint: `ruff check ca/ cloudanalyzer_cli/ tests/` in `cloudanalyzer/`, `npm run lint` in `web/`.
 Media: `npm run media` after `npm run build` in `web/`.
 
 ## License

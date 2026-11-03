@@ -8,8 +8,8 @@ import pytest
 from ca import mapping_append as appends, mapping_connections as connections, mapping_job as jobs, mapping_run as runs
 from ca.mapping_bundle import export_mapping_run, inspect_mapping_bundle
 from ca.mapping_patch import _preserved
-from tests.test_mapping_job import job_backend, _attach_lane_native, _corridor_report, _run_layout
-from tests.test_mapping_import import external_pair
+from tests.test_mapping_job import job_backend, _attach_lane_native, _corridor_report, _run_layout  # noqa: F401 (pytest fixture)
+from tests.test_mapping_import import external_pair  # noqa: F401 (pytest fixture)
 
 
 def _read(path):

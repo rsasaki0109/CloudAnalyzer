@@ -148,7 +148,6 @@ def _collect_artifacts(summary: Mapping[str, Any]) -> list[BundleArtifact]:
                 continue
             archive = _safe_archive_name(check_id or "unknown", source)
             # Disambiguate collisions (same file name in two checks).
-            base_archive = archive
             counter = 1
             while archive in seen_archive_names:
                 stem = source.stem

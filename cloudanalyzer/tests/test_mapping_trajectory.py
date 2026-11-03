@@ -167,7 +167,7 @@ def test_local_review_rejects_invalid_paging_without_reading_inputs(field, value
 
 @pytest.mark.parametrize("change", ["schema", "ids", "times", "errors", "position", "global_change", "missing"])
 def test_local_review_rejects_inconsistent_report_even_with_updated_digest(fixture, change):
-    artifact = _run(fixture)["report"]
+    _run(fixture)
     out = fixture[2]
     report = json.loads(out.read_text())
     if change == "schema":

@@ -1,6 +1,5 @@
 """Statistical outlier removal module."""
 
-import open3d as o3d
 
 from ca.io import load_point_cloud, save_point_cloud
 

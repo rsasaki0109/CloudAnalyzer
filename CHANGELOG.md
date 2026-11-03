@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The `ca` CLI is split from one 5,784-line `cloudanalyzer_cli/main.py` into
+  `_app.py` (app and shared helpers) and twelve command modules under
+  `cloudanalyzer_cli/commands/` (largest 898 lines). Commands, options and
+  `--help` output are unchanged, including command order; `main.py` keeps the
+  `ca` entry point and `python -m cloudanalyzer_cli.main`.
 - `docs/README.md` indexes all 200 documentation pages by category, with the
   experiment and performance records collapsed, and explains a lighter
   checkout without `benchmarks/` (about 160 MB instead of 570 MB). It is

@@ -3,10 +3,10 @@ name: Web
 on:
   push:
     branches: [main]
-    paths: ["rust/**", "web/**", ".github/workflows/web.yml"]
+    paths: ["rust/**", "web/**", "benchmarks/source-history/**", ".github/workflows/web.yml"]
   pull_request:
     branches: [main]
-    paths: ["rust/**", "web/**", ".github/workflows/web.yml"]
+    paths: ["rust/**", "web/**", "benchmarks/source-history/**", ".github/workflows/web.yml"]
 
 jobs:
   rust:

@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `scripts/preserve_source_history.py` keeps source versions that frozen
+  benchmark packets still reference. It copies each changed file's referenced
+  base version into `benchmarks/source-history`; `--check` reports what would
+  be lost. The Test workflow runs the check on every push and pull request.
+
+### Fixed
+
+- Web packet tests pass again: the `odometry.rs` version measured by the GPU and
+  WASM packets is retained in `benchmarks/source-history` after #408 changed it.
+- The Public Benchmark Pack workflow caches the Stanford Bunny archive. When the
+  host is unreachable and nothing is cached, it warns and validates the pack
+  pipeline with the offline synthetic fixture instead of failing.
+
 ## [0.6.0] - 2026-10-23
 
 ### Release highlights

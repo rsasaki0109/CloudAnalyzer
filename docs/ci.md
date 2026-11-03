@@ -15,6 +15,15 @@ The Web workflow runs `npm run lint` ([Biome](https://biomejs.dev/), correctness
 suspicious rules in `web/biome.jsonc`) before building WASM. Benchmark drivers
 and experiments keep their recorded bytes, so unused-name rules are off there.
 
+### Unattended mapping flow
+
+The Python core workflow builds the native core and runs
+[`scripts/run_mapping_e2e.py`](commands/mapping-run.md#check-the-whole-flow-without-an-operator):
+both bundled NCLT recordings go from raw MCAP to a point map, trajectory and
+Lanelet2 draft through the mapping-run loop, driven by a deterministic reference
+client. It fails when an invariant breaks and uploads `summary.json`, the
+scorecards and the Lanelet2 maps as the `mapping-e2e` artifact.
+
 ### MapEval parity smoke
 
 The Test workflow also runs the dependency-light

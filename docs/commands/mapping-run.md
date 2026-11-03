@@ -17,6 +17,44 @@ For saved run summaries and compatible before/after comparisons, use
 [`ca mapping-scorecard`](mapping-scorecard.md). It reads existing evidence without
 starting a new mapping attempt.
 
+## Check the whole flow without an operator
+
+`scripts/run_mapping_e2e.py` runs this loop end to end on the two bundled NCLT
+excerpts (`web/public/samples/nclt-2012-04-29.mcap` and `nclt-2012-06-15.mcap`)
+with the layouts of the [calling-agent runs](../../benchmarks/vector-map/nclt-agent-run/README.md).
+A deterministic **reference client** stands in for the calling agent:
+
+1. it inspects every offered candidate;
+2. it includes each interval that the run's own previews accept: the
+   `layout_width_preview` interpolated range meets the layout width with the
+   recorded path inside every section, the native `layout_direction_preview`
+   passed and every section has a supported path level;
+3. it resolves overlaps longest first, defers everything else, drafts once and
+   finishes with the audited draft.
+
+~~~sh
+pip install ./rust/crates/ca-py      # native core
+python scripts/run_mapping_e2e.py --out /tmp/mapping-e2e
+~~~
+
+Each case writes the job, `scorecard.json`/`scorecard.txt` and an entry in
+`summary.json`: input hashes, timings per stage, peak memory, disk use,
+decision counts (no human interventions), output hashes, extent and audit
+evidence, and invariant checks. The script exits 1 when a check fails: every
+candidate inspected, at least one interval included, an audited draft, both
+maps written with matching hashes, editable and reopened audits equal, and
+`deployment_ready` still false. Extent is recorded, not gated; more exported
+length is not an accuracy result.
+
+The reference client is a reproducible test driver, not an adoption policy.
+Its choices are not the calling agent's and are not tuned for coverage. In a
+local 4-core measurement each case took about 27 s in total and the
+process peaked near 450 MiB.
+Within one environment the point map, trajectory, graph, Lanelet2 map and
+audits are byte-identical across runs; only paths embedded in reports differ.
+The Python core workflow runs it on every change to the mapping modules and
+uploads the summary, scorecards and Lanelet2 maps.
+
 ## Ask the agent to run
 
 ### Start from an external SLAM map

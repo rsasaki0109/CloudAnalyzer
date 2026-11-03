@@ -89,8 +89,8 @@ jobs:
       run:
         working-directory: rust/crates/ca-py
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - uses: dtolnay/rust-toolchain@stable
@@ -109,7 +109,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: PyO3/maturin-action@v1
         with:
           working-directory: rust/crates/ca-py
@@ -117,7 +117,7 @@ jobs:
           # abi3: one wheel per platform covers Python >= 3.10.
           args: --release --out dist
           manylinux: auto
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-${{ matrix.os }}
           path: rust/crates/ca-py/dist
@@ -125,13 +125,13 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: PyO3/maturin-action@v1
         with:
           working-directory: rust/crates/ca-py
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sdist
           path: rust/crates/ca-py/dist
@@ -140,11 +140,11 @@ jobs:
     needs: wheels
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.10"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: wheels-ubuntu-latest
           path: dist
@@ -184,7 +184,7 @@ jobs:
       name: pypi-core
       url: https://pypi.org/project/cloudanalyzer-core/
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: "{wheels-*,sdist}"
           merge-multiple: true

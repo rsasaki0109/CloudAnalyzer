@@ -132,14 +132,14 @@ jobs:
 
       - name: Download summary artifact
         if: ${{ inputs.summary_artifact != '' }}
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.summary_artifact }}
           path: /tmp/cloudanalyzer-pr-comment-summary
 
       - name: Download baseline summary artifact
         if: ${{ inputs.baseline_summary_artifact != '' }}
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.baseline_summary_artifact }}
           path: /tmp/cloudanalyzer-pr-comment-baseline

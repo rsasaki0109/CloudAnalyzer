@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- CI workflows use GitHub Actions releases that run on Node.js 24, one major
+  version per action: `checkout@v6`, `setup-python@v6`, `setup-node@v5`,
+  `cache@v5`, `upload-artifact@v6`, `download-artifact@v7` and the Pages
+  actions (`configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`).
+  This removes the Node.js 20 deprecation warnings.
+
 ### Added
 
 - Lint in CI: ruff for the Python package (`ruff check ca/ cloudanalyzer_cli/ tests/`)

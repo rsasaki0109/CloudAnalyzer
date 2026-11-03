@@ -133,7 +133,7 @@ jobs:
   shared-gpu-c2c:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -151,7 +151,7 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: wasm-pack,wasm-bindgen-cli@0.2.129
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -192,7 +192,7 @@ jobs:
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-fresh-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh
           node scripts/benchmark-shared-gpu-c2c.mjs --output shared-gpu-c2c-overlap-smoke.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --threads 2 --warmups 0 --repeats 1 --gpu disabled --jobs fresh --overlap compare
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: shared-gpu-c2c-smoke

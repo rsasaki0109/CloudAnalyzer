@@ -7,14 +7,14 @@ from pathlib import Path
 import pytest
 from ca import mapping_job as jobs, mapping_run as runs
 from tests.test_mapping_job import (
-    job_backend,
-    unused_frame_run,
+    job_backend,  # noqa: F401 (pytest fixture)
+    unused_frame_run,  # noqa: F401 (pytest fixture)
     _advance,
     _patch_pairs,
     _attach_lane_native,
     _run_layout,
 )
-from tests.test_mapping_hd_repair import hd_only_run, child_run
+from tests.test_mapping_hd_repair import hd_only_run, child_run  # noqa: F401 (pytest fixture)
 
 
 def plan(root, offset=0):

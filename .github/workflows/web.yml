@@ -50,6 +50,7 @@ jobs:
         working-directory: web
         run: |
           npm ci
+          npm run lint
           npm run wasm
           npm run build
           npm run test:unit

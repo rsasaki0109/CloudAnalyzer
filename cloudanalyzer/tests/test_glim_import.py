@@ -7,8 +7,8 @@ from typer.testing import CliRunner
 
 from ca import glim_import as adapter, mapping_import, mapping_run as runs
 from cloudanalyzer_cli.main import app
-from tests.test_mapping_import import external_pair
-from tests.test_mapping_job import job_backend, _attach_lane_native, _run_layout
+from tests.test_mapping_import import external_pair  # noqa: F401 (pytest fixture)
+from tests.test_mapping_job import job_backend, _attach_lane_native, _run_layout  # noqa: F401 (pytest fixture)
 
 
 @pytest.fixture

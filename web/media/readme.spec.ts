@@ -202,32 +202,6 @@ async function framesWhile(page: Page, prefix: string, ms: number, during: Promi
   await during;
 }
 
-/** Where node A's yellow marker is on screen (see the pose graph panel), or the view centre. */
-async function markerA(page: Page): Promise<{ x: number; y: number }> {
-  const box = (await canvas(page).boundingBox())!;
-  const shot = (await canvas(page).screenshot()).toString("base64");
-  const found = await page.evaluate(async (png) => {
-    const image = new Image();
-    image.src = `data:image/png;base64,${png}`;
-    await image.decode();
-    const c = document.createElement("canvas");
-    [c.width, c.height] = [image.width, image.height];
-    const g = c.getContext("2d")!;
-    g.drawImage(image, 0, 0);
-    const { data } = g.getImageData(0, 0, c.width, c.height);
-    let [sx, sy, n] = [0, 0, 0];
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i] > 240 && data[i + 1] > 215 && data[i + 1] < 250 && data[i + 2] < 90) {
-        sx += (i / 4) % c.width;
-        sy += Math.floor(i / 4 / c.width);
-        n++;
-      }
-    }
-    return n ? { x: sx / n / c.width, y: sy / n / c.height } : null;
-  }, shot);
-  return found ? { x: box.x + found.x * box.width, y: box.y + found.y * box.height } : { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-}
-
 test("pose graph: LiDAR odometry of a real drive replayed", async ({ page }) => {
   test.skip(!PANDASET, "set PANDASET_DIR (scripts/fetch_pandaset.py)");
   test.setTimeout(900_000);

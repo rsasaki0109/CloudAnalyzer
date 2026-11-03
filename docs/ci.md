@@ -5,10 +5,15 @@
 Every push to `main` runs:
 
 1. **mypy** type check on `ca/` and `cli/`
-2. **pytest** with `xvfb-run` (for Open3D offscreen rendering)
-3. **Asset sync checks** for `docs/demo/perception/`, `benchmarks/slam/synthetic-figure8/`, and `benchmarks/3dgs/synthetic-room/` — each generator is re-run and `git diff --exit-code` enforces no drift between the script and the checked-in bytes
+2. **ruff** lint on `ca/`, `cloudanalyzer_cli/` and `tests/` with the bug-focused rules in `cloudanalyzer/pyproject.toml` (pyflakes, bugbear, pylint errors; no style rules)
+3. **pytest** with `xvfb-run` (for Open3D offscreen rendering)
+4. **Asset sync checks** for `docs/demo/perception/`, `benchmarks/slam/synthetic-figure8/`, and `benchmarks/3dgs/synthetic-room/` — each generator is re-run and `git diff --exit-code` enforces no drift between the script and the checked-in bytes
 
 See `.github/workflows/test.yml`.
+
+The Web workflow runs `npm run lint` ([Biome](https://biomejs.dev/), correctness and
+suspicious rules in `web/biome.jsonc`) before building WASM. Benchmark drivers
+and experiments keep their recorded bytes, so unused-name rules are off there.
 
 ### MapEval parity smoke
 

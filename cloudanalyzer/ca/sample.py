@@ -1,7 +1,6 @@
 """Random point sampling module."""
 
 import numpy as np
-import open3d as o3d
 
 from ca.io import load_point_cloud, save_point_cloud
 

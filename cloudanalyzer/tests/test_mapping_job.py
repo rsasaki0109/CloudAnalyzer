@@ -1468,7 +1468,7 @@ def test_density_retry_failure_preserves_baseline_and_reservation(density_run, m
 
 
 def test_density_retry_completed_stage_resumes_without_duplicate_allocation(density_run, monkeypatch):
-    from ca import mapping_run as runs, mapping_retry as retry
+    from ca import mapping_retry as retry
     root = density_run
     _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})
     original = retry.retry

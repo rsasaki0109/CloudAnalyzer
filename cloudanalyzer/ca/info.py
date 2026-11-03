@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import open3d as o3d
 
 from ca.core.bag_ingest import inspect_bag, is_bag_path
 from ca.io import load_point_cloud

@@ -1,0 +1,30 @@
+{
+  "name": "cloudanalyzer-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "wasm": "wasm-pack build ../rust/crates/ca-wasm --target web --release --out-dir ../../../web/src/wasm --no-pack",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test:unit": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:map-geometry": "node --experimental-strip-types --test tests/vectormap-geometry.test.mjs",
+    "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs",
+    "media:vectormap": "playwright test --config playwright.media.config.ts vector-map.spec.ts && node scripts/vector-map-gif.mjs",
+    "media:intersection": "playwright test --config playwright.media.config.ts vector-map-intersection.spec.ts && node scripts/vector-map-intersection-gif.mjs",
+    "media:hard-intersection": "playwright test --config playwright.media.config.ts vector-map-hard-intersection.spec.ts && node scripts/vector-map-hard-intersection-gif.mjs",
+    "media:supported-intersection": "playwright test --config playwright.media.config.ts vector-map-supported-intersection.spec.ts && node scripts/vector-map-supported-intersection-gif.mjs"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/three": "^0.186.0",
+    "@webgpu/types": "^0.1.74",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  }
+}

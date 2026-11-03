@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 
 from ca import mapping_import as imports, mapping_job as jobs, mapping_run as runs
 from cloudanalyzer_cli.main import app
-from tests.test_mapping_job import job_backend, _attach_lane_native, _run_layout
+from tests.test_mapping_job import job_backend, _attach_lane_native, _run_layout  # noqa: F401 (pytest fixture)
 
 
 @pytest.fixture

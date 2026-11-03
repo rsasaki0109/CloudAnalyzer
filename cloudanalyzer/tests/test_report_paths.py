@@ -1,6 +1,5 @@
 """Tests for portable public report path helpers."""
 
-from pathlib import Path
 
 from ca.report_paths import make_paths_portable
 

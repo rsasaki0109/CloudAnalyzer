@@ -7,7 +7,7 @@ import threading
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import open3d as o3d

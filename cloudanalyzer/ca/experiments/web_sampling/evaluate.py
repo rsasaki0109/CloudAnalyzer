@@ -406,7 +406,6 @@ def render_experiments_markdown(report: dict) -> str:
 
 def render_decision_section(report: dict) -> str:
     """Render the decision section for point-cloud web reduction."""
-    selected = report["strategy_summaries"][0]
     rejected = report["strategy_summaries"][1:]
     selected_name = report["decision"]["selected_experiment"]
     stabilized_name = report["decision"]["stabilized_core_strategy"]

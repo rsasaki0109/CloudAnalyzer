@@ -285,7 +285,7 @@ def dreamsim_distance(rendered: np.ndarray, reference: np.ndarray) -> float:
         model, preprocess = load_dreamsim(pretrained=True, device=device)
         model.eval()
         cache[key] = (model, preprocess)
-        setattr(dreamsim_distance, "_cache", cache)
+        setattr(dreamsim_distance, "_cache", cache)  # noqa: B010 -- mypy rejects attributes on functions
     model, preprocess = cache[key]
 
     def prepare(image: np.ndarray) -> Any:

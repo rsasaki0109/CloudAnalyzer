@@ -16,7 +16,6 @@ def view(paths: list[str]) -> None:
         pcd = load_point_cloud(path)
         if not pcd.has_colors():
             # Assign a distinct color per cloud
-            import numpy as np
             palette = [
                 [0.2, 0.6, 1.0],
                 [1.0, 0.4, 0.2],

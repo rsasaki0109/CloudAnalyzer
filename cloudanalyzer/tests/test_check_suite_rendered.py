@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from textwrap import dedent
 from unittest.mock import patch

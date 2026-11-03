@@ -7,6 +7,23 @@ on:
     branches: [main]
 
 jobs:
+  source-history:
+    # Fails in seconds when a change overwrites a source version that a frozen
+    # benchmark packet still references, before the slower packet tests do.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The pushed commit or PR merge commit plus its first parent.
+          fetch-depth: 2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check retained benchmark sources
+        run: python scripts/preserve_source_history.py --check --base HEAD^1
+
   test:
     runs-on: ubuntu-latest
     defaults:

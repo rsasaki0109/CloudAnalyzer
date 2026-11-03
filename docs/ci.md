@@ -20,6 +20,33 @@ compatibility lane, JSON schema, and explicit `not_run` external status. A
 1M/10M wall-clock values a cross-runner gate. Labeled benchmark runners use the
 same scripts for 1M and 10M points and retain their JSON reports as evidence.
 
+### Retained benchmark sources
+
+Frozen benchmark packets record the normalized SHA-256 of every source file they
+measured, and their tests resolve older versions through
+[`benchmarks/source-history/`](../benchmarks/source-history/manifest.json).
+When you change a file whose current version a packet references, keep that
+version before merging:
+
+```bash
+python scripts/preserve_source_history.py --base origin/main
+```
+
+The script compares the base with the working tree, copies each changed file's
+referenced base version into `benchmarks/source-history/<sha256>/` and records
+its origin commit and blob in the manifest. Unreferenced files are ignored.
+The `source-history` job in the Test workflow runs it with
+`--check --base HEAD^1` and fails within seconds when a version would be lost.
+
+## Public Benchmark Pack
+
+`.github/workflows/public-benchmark-pack.yml` builds the Stanford Bunny pack and
+checks that `suite-pass` passes and `suite-regression` fails with the expected
+check IDs. The archive is cached under a fixed key after the first successful
+download. If `graphics.stanford.edu` is unreachable and nothing is cached, the
+run emits a warning and validates the same pipeline with the offline synthetic
+fixture; the Bunny pack itself is then not verified in that run.
+
 ## Self QA (dogfood)
 
 Every internal pull request also runs `.github/workflows/self-qa.yml`. It builds the gitignored `benchmarks/public/self-qa-synthetic` pack with `--fixture synthetic`, then runs the bundled **[cloudanalyzer-action](https://github.com/rsasaki0109/cloudanalyzer-action)** against `suite-pass.cloudanalyzer.yaml`. The action runs `ca check`, posts (or idempotently updates) a PR comment marked `cloudanalyzer-self-qa`, uploads QA artifacts, and fails the job when the gate fails.

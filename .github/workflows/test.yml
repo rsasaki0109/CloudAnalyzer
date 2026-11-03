@@ -24,6 +24,16 @@ jobs:
       - name: Check retained benchmark sources
         run: python scripts/preserve_source_history.py --check --base HEAD^1
 
+  docs-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Check docs/README.md lists every page
+        run: python scripts/build_docs_index.py --check
+
   test:
     runs-on: ubuntu-latest
     defaults:
@@ -60,7 +70,11 @@ jobs:
         run: python -m mypy ca/ cloudanalyzer_cli/
 
       - name: Lint
-        run: python -m ruff check ca/ cloudanalyzer_cli/ tests/
+        run: |
+          python -m ruff check ca/ cloudanalyzer_cli/ tests/
+          # Syntax (for Python 3.10) and undefined names only: many scripts are
+          # measured sources whose bytes benchmark packets record.
+          python -m ruff check --select E9,F821 ../scripts
 
       - name: Run tests
         run: xvfb-run python -m pytest tests/ -v

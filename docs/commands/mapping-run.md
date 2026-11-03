@@ -56,6 +56,16 @@ candidate's covering width range reached: `narrower_than_layout`,
 but a longer overlapping interval won. Attribution uses the run's 2 m
 disposition intervals.
 
+`--refine` first takes the run's one `refine` action with
+`association=trajectory_containing`, then inspects the new candidates. The
+breakdown motivated it: on 2026-11-03 branching source bands (70 m) and paths
+outside candidate profiles (64 m) explained most unresolved metres on the two
+drives. With it, the same client retained 96.1% and 94.9% (from 61.5% and 63.6%)
+in 4 and 7 pieces (from 11 and 16). Low-quantile source support rose from 59/65%
+to 72/71%, ground-consensus support stayed near 100%, and review-held traces rose
+from 0/1 to 2/3. This compares the run's own evidence, not independent accuracy.
+The Python core workflow runs both modes.
+
 The reference client is a reproducible test driver, not an adoption policy.
 Its choices are not the calling agent's and are not tuned for coverage. In a
 local 4-core measurement each case took about 27 s in total and the

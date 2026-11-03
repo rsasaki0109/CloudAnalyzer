@@ -31,6 +31,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   first preview check that rejected the best available candidate. On the
   bundled drives, branching source bands (70 m) and paths outside the
   candidate profiles (64 m) account for most of what is left.
+- `run_mapping_e2e.py --refine` takes the run's `trajectory_containing`
+  refinement before inspecting. On the bundled drives the reference client
+  then retains 96.1% and 94.9% instead of 61.5% and 63.6%, in fewer pieces and
+  with higher low-quantile source support; CI runs both modes.
 - `scripts/run_mapping_e2e.py` generates both maps from the bundled NCLT
   recordings with no operator. A deterministic reference client drives the
   mapping-run loop using only the run's own width, path, direction and surface

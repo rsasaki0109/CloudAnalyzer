@@ -186,7 +186,7 @@ def choose(observations: dict[int, dict[str, Any]]) -> list[tuple[int, float, fl
     return sorted(chosen, key=lambda c: c[1])
 
 
-def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[str, Any]:
+def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: bool = False) -> dict[str, Any]:
     from ca import mapping_run as mr
     from ca.mapping_scorecard import format_text, scorecard
 
@@ -203,6 +203,15 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
     timings["start_s"] = time.monotonic() - tick
     if state["status"] != "needs_agent":
         raise RuntimeError(f"{name}: mapping run did not reach the agent loop: {state['status']}")
+    if refine:
+        tick = time.monotonic()
+        revision = mr.inspect_mapping_run(str(job))["revision"]
+        refined = mr.advance_mapping_run(
+            str(job), {"type": "refine", "association": "trajectory_containing"},
+            "Reference client re-extracts trajectory-containing bands once before inspecting.", revision)
+        timings["refine_s"] = time.monotonic() - tick
+        if refined["status"] != "needs_agent":
+            raise RuntimeError(f"{name}: refinement did not return to the agent loop: {refined['status']}")
 
     tick = time.monotonic()
     offered: list[int] = []
@@ -278,6 +287,7 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
     extent = diagnosis.get("extent") or {}
     return {
         "case": name,
+        "association": "trajectory_containing" if refine else "all_supported_bands",
         "inputs": {"recording": _file(recording), "layout": _file(layout_path)},
         "pointcloud": {k: state["pointcloud"].get(k) for k in ("options", "status") if k in state["pointcloud"]},
         "timings_s": {k: round(v, 2) for k, v in timings.items()},
@@ -311,6 +321,8 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path) -> dict[s
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate both maps from bundled recordings with no operator.")
     parser.add_argument("--out", type=Path, required=True, help="New output directory")
+    parser.add_argument("--refine", action="store_true",
+                        help="Refine once with association=trajectory_containing before inspecting")
     parser.add_argument("--case", choices=sorted(CASES), action="append",
                         help="Case to run (repeatable; default: all)")
     args = parser.parse_args(argv)
@@ -320,7 +332,8 @@ def main(argv: list[str] | None = None) -> int:
 
     import cloudanalyzer_core  # noqa: F401 -- fail early without the native core
 
-    results = [run_case(n, REPO_ROOT / CASES[n]["recording"], REPO_ROOT / CASES[n]["layout"], out) for n in names]
+    results = [run_case(n, REPO_ROOT / CASES[n]["recording"], REPO_ROOT / CASES[n]["layout"], out, args.refine)
+               for n in names]
     summary = {
         "schema": "cloudanalyzer.mapping_e2e.v1",
         "runtime": {"python": platform.python_version(), "platform": platform.platform(),

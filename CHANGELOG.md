@@ -26,6 +26,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- The mapping E2E summary attributes every unresolved station metre: the run's
+  own source reasons, and for intervals the reference client deferred, the
+  first preview check that rejected the best available candidate. On the
+  bundled drives, branching source bands (70 m) and paths outside the
+  candidate profiles (64 m) account for most of what is left.
 - `scripts/run_mapping_e2e.py` generates both maps from the bundled NCLT
   recordings with no operator. A deterministic reference client drives the
   mapping-run loop using only the run's own width, path, direction and surface

@@ -46,6 +46,16 @@ maps written with matching hashes, editable and reopened audits equal, and
 `deployment_ready` still false. Extent is recorded, not gated; more exported
 length is not an accuracy result.
 
+`quality.station_disposition` accounts for every station metre of the input
+trajectory: `included_m`, `source_deferred_m` by the run's source reasons, and
+`client_deferred_m` for intervals the client deferred although candidates
+existed. Each of those is attributed to the furthest check any available
+candidate's covering width range reached: `narrower_than_layout`,
+`path_outside_profile`, `direction_unresolved`, `sections_not_previewed`,
+`surface_level_unsupported`, or `overlapping_interval_chosen` when it passed
+but a longer overlapping interval won. Attribution uses the run's 2 m
+disposition intervals.
+
 The reference client is a reproducible test driver, not an adoption policy.
 Its choices are not the calling agent's and are not tuned for coverage. In a
 local 4-core measurement each case took about 27 s in total and the

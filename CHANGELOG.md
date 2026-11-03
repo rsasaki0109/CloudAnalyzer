@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `scripts/run_mapping_e2e.py` generates both maps from the bundled NCLT
+  recordings with no operator. A deterministic reference client drives the
+  mapping-run loop using only the run's own width, path, direction and surface
+  previews. It records inputs, timings, peak memory, disk use, decisions,
+  outputs and audit evidence in `summary.json` plus a scorecard per case, and
+  fails on broken invariants. The Python core workflow runs it on mapping
+  changes.
 - Lint in CI: ruff for the Python package (`ruff check ca/ cloudanalyzer_cli/ tests/`)
   and Biome for the web app (`npm run lint`). Both use bug-focused rules only:
   unused or undefined names, unsafe `finally`, suspicious comparisons and similar.

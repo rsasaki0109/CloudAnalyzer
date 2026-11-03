@@ -90,7 +90,8 @@ def render(docs: Path = DOCS) -> str:
             continue
         lines = [f"- [{_title(p)}]({p.name})" for p in entries]
         if collapsed:
-            parts.append(f"## {title}\n\n<details>\n<summary>{len(entries)} page{"s" if len(entries) != 1 else ""}</summary>\n\n"
+            count = f"{len(entries)} page" + ("s" if len(entries) != 1 else "")
+            parts.append(f"## {title}\n\n<details>\n<summary>{count}</summary>\n\n"
                          + "\n".join(lines) + "\n\n</details>\n")
         else:
             parts.append(f"## {title}\n\n" + "\n".join(lines) + "\n")

@@ -70,7 +70,11 @@ jobs:
         run: python -m mypy ca/ cloudanalyzer_cli/
 
       - name: Lint
-        run: python -m ruff check ca/ cloudanalyzer_cli/ tests/
+        run: |
+          python -m ruff check ca/ cloudanalyzer_cli/ tests/
+          # Syntax (for Python 3.10) and undefined names only: many scripts are
+          # measured sources whose bytes benchmark packets record.
+          python -m ruff check --select E9,F821 ../scripts
 
       - name: Run tests
         run: xvfb-run python -m pytest tests/ -v

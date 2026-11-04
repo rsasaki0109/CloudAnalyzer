@@ -183,8 +183,8 @@ jobs:
 
       - name: Generate both maps from bundled recordings without an operator
         run: |
-          python scripts/run_mapping_e2e.py --out mapping-e2e/all-supported-bands
-          python scripts/run_mapping_e2e.py --refine --out mapping-e2e/trajectory-containing
+          python scripts/run_mapping_e2e.py --out mapping-e2e/trajectory-containing
+          python scripts/run_mapping_e2e.py --association all_supported_bands --out mapping-e2e/all-supported-bands
 
       - name: Upload mapping E2E summary
         if: always()

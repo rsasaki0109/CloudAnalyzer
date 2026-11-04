@@ -3,8 +3,11 @@
 
 For each case this starts a mapping run from the raw recording and a fixed
 layout hypothesis, then drives the run with a deterministic *reference client*
-through the same actions a calling agent uses (inspect, draft, finish):
+through the same actions a calling agent uses (refine, inspect, draft, finish):
 
+0. refine once with ``association=trajectory_containing``, the run's own remedy
+   for off-path bands that fragment the route (``--association
+   all_supported_bands`` keeps the original proposal instead);
 1. inspect every offered corridor candidate;
 2. include each candidate interval that the run's own previews accept:
    ``layout_width_preview`` interpolated ranges that meet the layout width and
@@ -20,10 +23,13 @@ memory, disk use, decisions, outputs, quality evidence and invariant checks,
 plus a ``mapping-scorecard`` per case, and exits 1 when a check fails.
 It also splits every unresolved station metre by reason: the run's own source
 reasons, and for intervals the client deferred, the furthest preview check any
-available candidate reached (see ``REJECTIONS``).
+available candidate reached (see ``REJECTIONS``), and records the draft's
+review holds: held traces and every sample where source ground lies below a
+trace, with its location.
 
     python scripts/run_mapping_e2e.py --out /tmp/mapping-e2e            # april and june
     python scripts/run_mapping_e2e.py --case april --out /tmp/mapping-e2e
+    python scripts/run_mapping_e2e.py --association all_supported_bands --out /tmp/mapping-e2e-unrefined
 
 Requires the native core (``pip install ./rust/crates/ca-py``).
 """
@@ -54,6 +60,7 @@ CASES = {
     },
 }
 INSPECT_BATCH = 8
+ASSOCIATIONS = ("trajectory_containing", "all_supported_bands")
 INCLUDE_REASON = (
     "Reference client: the run's width preview meets the layout width with the recorded path "
     "inside every section, the native direction preview passed and every section has a supported "
@@ -186,7 +193,38 @@ def choose(observations: dict[int, dict[str, Any]]) -> list[tuple[int, float, fl
     return sorted(chosen, key=lambda c: c[1])
 
 
-def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: bool = False) -> dict[str, Any]:
+def review_hold_summary(diagnosis: dict[str, Any]) -> dict[str, Any] | None:
+    """Held traces and below-trace samples from an audited draft's review holds."""
+    holds = diagnosis.get("review_holds")
+    if not holds:
+        return None
+    traces = holds.get("traces", [])
+    held = [
+        {"lane": t["lane"], "trace": t["trace"],
+         "low_quantile_fraction": round(t["low_quantile"]["fraction"], 4),
+         "ground_consensus_fraction": round(t["ground_consensus"]["fraction"], 4),
+         "ground_consensus_mismatches": t["ground_consensus"]["height_mismatches"]}
+        for t in traces if t.get("status") == "held"
+    ]
+    samples = [
+        {"estimator": s["estimator"], "lane": s["lane"], "trace": s["trace"],
+         "lane_station_m": round(s["lane_station_m"], 3), "xyz": [round(v, 3) for v in s["xyz"]],
+         "below_trace_m": round(s["below_trace_m"], 3)}
+        for s in holds.get("below_trace_samples", [])
+    ]
+    return {
+        "traces_total": holds.get("traces_total", len(traces)),
+        "held_traces_total": len(held),
+        "unexplained_traces_total": holds.get("unexplained_traces_total"),
+        "ground_estimators_disagree": holds.get("ground_estimators_disagree"),
+        "held": held,
+        "below_trace_samples_total": holds.get("below_trace_samples_total", len(samples)),
+        "below_trace_samples": samples,
+    }
+
+
+def run_case(name: str, recording: Path, layout_path: Path, out: Path,
+             association: str = "trajectory_containing") -> dict[str, Any]:
     from ca import mapping_run as mr
     from ca.mapping_scorecard import format_text, scorecard
 
@@ -203,7 +241,7 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: b
     timings["start_s"] = time.monotonic() - tick
     if state["status"] != "needs_agent":
         raise RuntimeError(f"{name}: mapping run did not reach the agent loop: {state['status']}")
-    if refine:
+    if association == "trajectory_containing":
         tick = time.monotonic()
         revision = mr.inspect_mapping_run(str(job))["revision"]
         refined = mr.advance_mapping_run(
@@ -287,7 +325,7 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: b
     extent = diagnosis.get("extent") or {}
     return {
         "case": name,
-        "association": "trajectory_containing" if refine else "all_supported_bands",
+        "association": association,
         "inputs": {"recording": _file(recording), "layout": _file(layout_path)},
         "pointcloud": {k: state["pointcloud"].get(k) for k in ("options", "status") if k in state["pointcloud"]},
         "timings_s": {k: round(v, 2) for k, v in timings.items()},
@@ -312,6 +350,7 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: b
             "editable_audit_samples": ((diagnosis.get("editable") or {}).get("sample_totals")),
             "pointcloud_quality_status": diagnosis.get("pointcloud_quality_status"),
             "station_disposition": breakdown,
+            "review_holds": review_hold_summary(diagnosis),
         },
         "checks": checks,
         "passed": all(checks.values()),
@@ -321,8 +360,9 @@ def run_case(name: str, recording: Path, layout_path: Path, out: Path, refine: b
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate both maps from bundled recordings with no operator.")
     parser.add_argument("--out", type=Path, required=True, help="New output directory")
-    parser.add_argument("--refine", action="store_true",
-                        help="Refine once with association=trajectory_containing before inspecting")
+    parser.add_argument("--association", choices=ASSOCIATIONS, default=ASSOCIATIONS[0],
+                        help="trajectory_containing (default) refines once before inspecting; "
+                             "all_supported_bands keeps the original proposal")
     parser.add_argument("--case", choices=sorted(CASES), action="append",
                         help="Case to run (repeatable; default: all)")
     args = parser.parse_args(argv)
@@ -332,7 +372,7 @@ def main(argv: list[str] | None = None) -> int:
 
     import cloudanalyzer_core  # noqa: F401 -- fail early without the native core
 
-    results = [run_case(n, REPO_ROOT / CASES[n]["recording"], REPO_ROOT / CASES[n]["layout"], out, args.refine)
+    results = [run_case(n, REPO_ROOT / CASES[n]["recording"], REPO_ROOT / CASES[n]["layout"], out, args.association)
                for n in names]
     summary = {
         "schema": "cloudanalyzer.mapping_e2e.v1",
@@ -354,6 +394,11 @@ def main(argv: list[str] | None = None) -> int:
         if breakdown:
             def parts(values: dict[str, float]) -> str:
                 return ", ".join(f"{k} {v:g} m" for k, v in values.items()) or "none"
+            holds = r["quality"]["review_holds"]
+            if holds:
+                worst = max((s["below_trace_m"] for s in holds["below_trace_samples"]), default=0)
+                print(f"  review holds: {holds['held_traces_total']}/{holds['traces_total']} traces held; "
+                      f"{holds['below_trace_samples_total']} below-trace samples (max {worst:.2f} m)")
             print(f"  unresolved: source [{parts(breakdown['source_deferred_m'])}]; "
                   f"reference client [{parts(breakdown['client_deferred_m'])}]")
     print(f"peak RSS {summary['runtime']['peak_rss_mib']} MiB; summary: {out / 'summary.json'}")

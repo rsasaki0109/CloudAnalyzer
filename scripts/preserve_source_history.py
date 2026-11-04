@@ -28,7 +28,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterator, Mapping
 
 HISTORY_DIR = "benchmarks/source-history"
 MANIFEST_NAME = "manifest.json"
@@ -104,16 +104,29 @@ def _pairs(node: Any) -> Iterator[tuple[str, str]]:
             stack.extend(item)
 
 
-def referenced_hashes(root: Path, paths: Iterable[str]) -> dict[str, set[str]]:
-    """Map each of ``paths`` to the hashes benchmark JSON records for it."""
-    wanted = set(paths)
-    needles = [p.encode("utf-8") for p in wanted]
+def referenced_hashes(root: Path, candidates: Mapping[str, str]) -> dict[str, set[str]]:
+    """Map each candidate path to the hashes benchmark JSON records for it.
+
+    ``candidates`` maps a path to the digest of its base version. A hash counts
+    when JSON pairs it with the path, or when the base digest appears anywhere:
+    some packets name a measured file by its role (``"core": <sha256>``) rather
+    than its path, and an exact SHA-256 match can only mean that version.
+    """
+    wanted = set(candidates)
+    path_needles = [p.encode("utf-8") for p in wanted]
+    digest_needles = {path: digest.encode("ascii") for path, digest in candidates.items()}
     found: dict[str, set[str]] = {p: set() for p in wanted}
-    if not needles:
+    if not wanted:
         return found
+    manifest = root / HISTORY_DIR / MANIFEST_NAME
     for json_path in sorted((root / "benchmarks").rglob("*.json")):
+        if json_path == manifest:
+            continue
         raw = json_path.read_bytes()
-        if not any(needle in raw for needle in needles):
+        for path, needle in digest_needles.items():
+            if needle in raw:
+                found[path].add(candidates[path])
+        if not any(needle in raw for needle in path_needles):
             continue
         try:
             document = json.loads(raw)
@@ -133,32 +146,25 @@ def load_manifest(root: Path) -> dict[str, Any]:
     return manifest
 
 
-def _archived_hashes(root: Path, suffixes: set[str]) -> set[str]:
-    """Normalized hashes of every retained file under ``benchmarks/``."""
-    hashes: set[str] = set()
-    for path in (root / "benchmarks").rglob("*"):
-        if path.suffix in suffixes and path.is_file() and not path.is_symlink():
-            hashes.add(normalized_sha256(path.read_bytes()))
-    return hashes
-
-
 def find_missing(root: Path, base: str) -> list[dict[str, str]]:
-    """Referenced base versions of changed files that nothing retains."""
+    """Referenced base versions of changed files that the manifest does not retain.
+
+    Only a manifest entry counts: packet tests resolve a version through the
+    manifest or their own aliases, never by searching for an identical copy.
+    """
     candidates: dict[str, tuple[str, bytes]] = {}
     for path in changed_paths(root, base):
         data = base_bytes(root, base, path)
         if data is not None:
             candidates[path] = (normalized_sha256(data), data)
-    references = referenced_hashes(root, candidates)
+    references = referenced_hashes(root, {p: c[0] for p, c in candidates.items()})
     needed = {p: c for p, c in candidates.items() if c[0] in references[p]}
     if not needed:
         return []
     sources = load_manifest(root)["sources"]
-    archived = _archived_hashes(root, {Path(p).suffix for p in needed})
     missing = []
     for path, (digest, _) in sorted(needed.items()):
-        retained = sources.get(digest, {}).get("original") == path
-        if not retained and digest not in archived:
+        if sources.get(digest, {}).get("original") != path:
             missing.append({"path": path, "sha256": digest})
     return missing
 

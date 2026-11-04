@@ -8,6 +8,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The unit tests of the five largest `ca-core` sources move into their own
+  files: `pose_graph.rs` (2,773 lines to 1,949), `kdtree.rs` (2,770 to 1,660),
+  `mesh.rs` (2,741 to 1,291), `odometry.rs` (2,126 to 1,051) and `bag.rs`
+  (2,010 to 1,413). The tests now live in `src/<module>/tests.rs`, with the
+  same 531 test names. Production code is unchanged. Benchmark packets that
+  measured these files still resolve them. All five measured versions are
+  retained in `benchmarks/source-history`, and the flat-wall target-balance
+  and balance-dynamics packets alias four of them to their executed-source
+  copies.
+- `scripts/preserve_source_history.py` matches what packet tests resolve:
+  - It also finds versions a packet records by role rather than path, such
+    as `"core": <sha256>`: an exact SHA-256 match anywhere in a benchmark JSON
+    now counts as a reference.
+  - Only a manifest entry counts as retained. An identical copy elsewhere
+    under `benchmarks/` no longer does, because the web packet tests look
+    versions up in the manifest.
 - The web worker's request handler is split by domain. `handle()` in
   `web/src/worker.ts` (227 lines, was 1,129) keeps the workspace, pool and
   vector-map requests and dispatches the rest to `web/src/worker/`

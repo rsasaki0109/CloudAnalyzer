@@ -105,7 +105,11 @@
     "benchmarks/slam/flatwall-target-balance/flatwall_02/last-pose/gyro-0.1875/default-replay-trajectory.npz": "d441f5f0400254e846d23d50d8a3017d407589ea6813f4c407baceea2012622a",
     "benchmarks/slam/flatwall-target-balance/estimates-receipt.json": "8d62eb9fc5f31d4e32446124c8aca7575d1d605366adb47e02dc739daf269d49",
     "benchmarks/slam/flatwall-target-balance/comparison.json": "14987d61233a75279f4c19099c34e54d8ef1a17ef2ace36cd96b98ce3087bd86",
-    "benchmarks/slam/executed-source/corridors-82f8e9aa.rs": "82f8e9aa16eb1f9e76c4fb21db6c48423afbb66ac9ac21ebb00fb53a6d8f84d8"
+    "benchmarks/slam/executed-source/corridors-82f8e9aa.rs": "82f8e9aa16eb1f9e76c4fb21db6c48423afbb66ac9ac21ebb00fb53a6d8f84d8",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/bag.rs": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799"
   },
   "normalized_native_sources_sha256": {
     "rust/Cargo.lock": "d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12",
@@ -204,6 +208,10 @@
   "native_source_aliases": {
     "rust/crates/ca-core/src/distance.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/distance.rs",
     "rust/crates/ca-core/src/vector_map/corridors.rs": "benchmarks/slam/executed-source/corridors-82f8e9aa.rs",
-    "rust/crates/ca-core/src/volume.rs": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs"
+    "rust/crates/ca-core/src/volume.rs": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs",
+    "rust/crates/ca-core/src/bag.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/bag.rs",
+    "rust/crates/ca-core/src/kdtree.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/kdtree.rs",
+    "rust/crates/ca-core/src/mesh.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/mesh.rs",
+    "rust/crates/ca-core/src/pose_graph.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/pose_graph.rs"
   }
 }

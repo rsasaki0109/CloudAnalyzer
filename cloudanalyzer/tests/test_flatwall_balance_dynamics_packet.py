@@ -115,7 +115,14 @@ def test_changed_executed_source_is_detected_even_after_resigning_packet_files(t
         packet.verify(target)
 
 
-@pytest.mark.parametrize('name', ['rust/crates/ca-core/src/vector_map/corridors.rs', 'rust/crates/ca-core/src/volume.rs'])
+@pytest.mark.parametrize('name', [
+    'rust/crates/ca-core/src/vector_map/corridors.rs',
+    'rust/crates/ca-core/src/volume.rs',
+    'rust/crates/ca-core/src/bag.rs',
+    'rust/crates/ca-core/src/kdtree.rs',
+    'rust/crates/ca-core/src/mesh.rs',
+    'rust/crates/ca-core/src/pose_graph.rs',
+])
 def test_development_corridor_source_can_change_but_resigned_executed_source_cannot(tmp_path, name):
     target = copy_packet(tmp_path)
     manifest = packet.read(target/'manifest.json')

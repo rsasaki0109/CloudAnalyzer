@@ -143,11 +143,6 @@ impl IcpPrepared {
     }
 }
 
-/// Run the heavy kernels once on a small synthetic cloud. Browsers first
-/// run WebAssembly with a baseline compiler and optimize a function only
-/// after it has been busy, and never in the middle of a call; one long call
-/// on a large cloud would run unoptimized from start to end. Calling this
-/// when the page is idle gets the optimized code compiled beforehand.
 /// The rigid motion taking picked `moving` points onto their `reference`
 /// points (flat xyz triples, pair i in both): the row-major 4x4 matrix, the
 /// RMS, then each pair's residual distance.

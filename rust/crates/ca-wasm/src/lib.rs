@@ -60,6 +60,11 @@ const NODE_STRIDE: usize = 15;
 // reads this file for the flag.
 const USE_MESH_BORROWED_QUERIES: bool = false;
 
+/// Run the heavy kernels once on a small synthetic cloud. Browsers first
+/// run WebAssembly with a baseline compiler and optimize a function only
+/// after it has been busy, and never in the middle of a call; one long call
+/// on a large cloud would run unoptimized from start to end. Calling this
+/// when the page is idle gets the optimized code compiled beforehand.
 #[wasm_bindgen(js_name = warmUp)]
 pub fn warm_up() {
     let n = 60_000;

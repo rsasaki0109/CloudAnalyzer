@@ -98,6 +98,9 @@ perceptual = [
 [tool.setuptools]
 include-package-data = false
 
+[tool.setuptools.package-data]
+ca = ["web_viewer.html"]
+
 [tool.setuptools.dynamic]
 version = {attr = "ca.__version__"}
 

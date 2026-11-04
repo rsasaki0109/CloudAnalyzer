@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- `ca/report.py` (4,724 lines) is split into `ca/reports/` with one module per
+  report kind (largest 1,038 lines). `ca/report.py` stays as a facade that
+  re-exports all 50 names, so `from ca.report import ...` and path-based source
+  lists keep working; every moved definition's AST is unchanged.
 - The `ca` CLI is split from one 5,784-line `cloudanalyzer_cli/main.py` into
   `_app.py` (app and shared helpers) and twelve command modules under
   `cloudanalyzer_cli/commands/` (largest 898 lines). Commands, options and

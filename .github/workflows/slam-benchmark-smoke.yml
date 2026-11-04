@@ -12,6 +12,7 @@ on:
       - "cloudanalyzer/ca/benchmark.py"
       - "cloudanalyzer/ca/run_evaluate.py"
       - "cloudanalyzer/ca/report.py"
+      - "cloudanalyzer/ca/reports/**"
       - "cloudanalyzer/cloudanalyzer_cli/**"
       - "cloudanalyzer/tests/test_docs_golden_path.py"
   pull_request:
@@ -25,6 +26,7 @@ on:
       - "cloudanalyzer/ca/benchmark.py"
       - "cloudanalyzer/ca/run_evaluate.py"
       - "cloudanalyzer/ca/report.py"
+      - "cloudanalyzer/ca/reports/**"
       - "cloudanalyzer/cloudanalyzer_cli/**"
       - "cloudanalyzer/tests/test_docs_golden_path.py"
   workflow_dispatch:

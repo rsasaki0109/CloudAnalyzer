@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The Web workflow runs its end-to-end tests in three parallel shards
+  (`playwright test --shard=i/3`). One job took about 30 minutes. Each shard
+  builds the app and starts with the boot check. Lint, unit tests and the
+  `cloudanalyzer-web` artifact run in the first shard only, and failure traces
+  are uploaded per shard.
 - The unit tests of the five largest `ca-core` sources move into their own
   files: `pose_graph.rs` (2,773 lines to 1,949), `kdtree.rs` (2,770 to 1,660),
   `mesh.rs` (2,741 to 1,291), `odometry.rs` (2,126 to 1,051) and `bag.rs`

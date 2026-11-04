@@ -29,7 +29,14 @@ jobs:
       - run: cargo test -p ca-core --features "parallel sqlite"
 
   web:
+    # e2e is split across three runners (about 30 minutes in one job). Each
+    # shard builds the app; lint, unit tests and the build artifact run once.
+    name: web (e2e ${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -50,21 +57,26 @@ jobs:
         working-directory: web
         run: |
           npm ci
-          npm run lint
           npm run wasm
           npm run build
+      - name: Lint and unit tests
+        if: matrix.shard == 1
+        working-directory: web
+        run: |
+          npm run lint
           npm run test:unit
       - name: End-to-end tests
         working-directory: web
         run: |
           npx playwright install --with-deps chromium
-          npm run test:e2e
+          npm run test:e2e -- --shard=${{ matrix.shard }}/3
       - uses: actions/upload-artifact@v6
         if: failure()
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.shard }}
           path: web/test-results
       - uses: actions/upload-artifact@v6
+        if: matrix.shard == 1
         with:
           name: cloudanalyzer-web
           path: web/dist

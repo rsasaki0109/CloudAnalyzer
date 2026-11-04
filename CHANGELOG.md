@@ -14,8 +14,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (2,010 to 1,413). The tests now live in `src/<module>/tests.rs`, with the
   same 531 test names. Production code is unchanged. Benchmark packets that
   measured these files still resolve them: `odometry.rs` is retained in
-  `benchmarks/source-history`, and the flat-wall target-balance packet points
-  the other four at its existing executed-source copies.
+  `benchmarks/source-history`, and the flat-wall target-balance and
+  balance-dynamics packets point the other four at existing executed-source
+  copies.
 - `scripts/preserve_source_history.py` also finds versions that a packet
   records by role rather than path, such as `"core": <sha256>`. An exact
   SHA-256 match anywhere in a benchmark JSON now counts as a reference.

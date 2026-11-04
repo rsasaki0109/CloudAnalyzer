@@ -6,10 +6,10 @@ import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeome
 import { $ } from "./dom";
 import { globalShift, listChanged, viewer } from "./state";
 import { appendDashedPairs, crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
+import type { RoadBuildFailure } from "./road-build-failure";
 import { resampleLaneCurve as resample } from "../lane-surface-overlap";
 import {
   boundaryVertexPoint,
-  buildFailure,
   chosenRelationCandidate,
   confirmedCandidates,
   crosswalkCandidate,
@@ -17,20 +17,17 @@ import {
   discardedCandidates,
   discoveryCandidate,
   discoveryPreview,
-  drag,
   drawBoundaryEvidence,
-  editingFeature,
-  editingVertices,
   featurePoints,
   junctionPreview,
   junctionSelection,
   type LaneView,
   type MapView,
   relationCandidateGeometry,
+  type RelationProposal,
   relationSelection,
   signalPreview,
-  sketch,
-  sourceProblems,
+  type SourceProblem,
   type XYZ,
 } from "./vectormap";
 
@@ -57,9 +54,24 @@ export let selected: number | null = null;
 export function setSelected(value: typeof selected): void { selected = value; }
 export let busy = false;
 export function setBusy(value: typeof busy): void { busy = value; }
+export let buildFailure: {failure: RoadBuildFailure; cloud: number; trajectory: number | null; path: XYZ[] | null} | null = null;
+export function setBuildFailure(value: typeof buildFailure): void { buildFailure = value; }
 
+export let sourceProblems: SourceProblem[] = [];
+export function setSourceProblems(value: typeof sourceProblems): void { sourceProblems = value; }
 export let sourceProblemSelected: number | null = null;
 export function setSourceProblemSelected(value: typeof sourceProblemSelected): void { sourceProblemSelected = value; }
+
+export let relationPreview: RelationProposal | null = null;
+export function setRelationPreview(value: typeof relationPreview): void { relationPreview = value; }
+export let relationCandidate: string | null = null;
+export function setRelationCandidate(value: typeof relationCandidate): void { relationCandidate = value; }
+export let relationRevision = 0;
+export function setRelationRevision(value: typeof relationRevision): void { relationRevision = value; }
+
+/** Points clicked so far while drawing a road (original coordinates). */
+export let sketch: XYZ[] = [];
+export function setSketch(value: typeof sketch): void { sketch = value; }
 
 export const group = new THREE.Group();
 group.name = "vector-map";
@@ -127,11 +139,21 @@ const labelLayer = $("vm-labels");
 const legend = $("vm-legend");
 const mapLabels: { element: HTMLElement; point: XYZ; priority: number }[] = [];
 const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, transparent: true, depthTest: false });
-
+let editingVertices = false;
+export function setEditingVertices(value: typeof editingVertices): void { editingVertices = value; }
+export let editingFeature = false;
+export function setEditingFeature(value: typeof editingFeature): void { editingFeature = value; }
+export let featureDrag: { before: MapView; index: number; point: XYZ; offset: [number, number]; start: [number, number]; moved: boolean } | null = null;
+export function setFeatureDrag(value: typeof featureDrag): void { featureDrag = value; }
 export let activeBoundary: number | null = null;
 export function setActiveBoundary(value: typeof activeBoundary): void { activeBoundary = value; }
 export let boundaryVertex: { boundary: number; index: number } | null = null;
 export function setBoundaryVertex(value: typeof boundaryVertex): void { boundaryVertex = value; }
+export let drag: {
+  before: MapView; boundary: number; index: number; point: XYZ;
+  offset: [number, number]; start: [number, number]; moved: boolean;
+} | null = null;
+export function setDrag(value: typeof drag): void { drag = value; }
 
 function clearGroup(): void {
   for (const child of [...group.children]) {

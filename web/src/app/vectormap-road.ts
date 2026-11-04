@@ -23,13 +23,12 @@ import {
   roadBuildOptions,
   sameWayGroup,
   setBusy,
+  setSketch,
   showBuildFailure,
+  sketch,
   takeView,
   type XYZ,
 } from "./vectormap";
-
-/** Points clicked so far while drawing a road (original coordinates). */
-export let sketch: XYZ[] = [];
 
 // Draw road: click points along the road, double-click or Enter to build it.
 
@@ -68,7 +67,7 @@ async function buildRoad(): Promise<void> {
   if ($<HTMLInputElement>("vm-refine-sketch").checked && !checkRoadSearchMargin()) return;
   const cloud = Number(cloudInput.value);
   clearBuildFailure(); const revision = buildFailureRevision, pathRevision = buildSketchRevision;
-  sketch = [];
+  setSketch([]);
   draw();
   if (!$<HTMLInputElement>("vm-refine-sketch").checked) {
     if (await apply([roadCommand(reference)], "Road built")) setTool(null);
@@ -84,7 +83,7 @@ async function buildRoad(): Promise<void> {
   } catch (err) {
     // Setting changes invalidate the diagnostic, but preserve the traced path.
     // Source changes, new picks and leaving the tool cancel its restoration.
-    if (pathRevision === buildSketchRevision) sketch = reference;
+    if (pathRevision === buildSketchRevision) setSketch(reference);
     setStatus(`Could not fit the drawn road: ${showBuildFailure(err, revision, cloud, null, reference)}`); draw();
   }
   finally { setBusy(false); buildInputs(); }
@@ -126,7 +125,7 @@ const roadTool: Tool = {
   enter() {
     roadSelections.cancel();
     clearBuildFailure();
-    sketch = [];
+    setSketch([]);
     $("vm-road").setAttribute("aria-pressed", "true");
     draw();
     renderHint();
@@ -134,7 +133,7 @@ const roadTool: Tool = {
   exit() {
     roadSelections.cancel();
     clearBuildFailure();
-    sketch = [];
+    setSketch([]);
     $("vm-road").setAttribute("aria-pressed", "false");
     draw();
     renderHint();

@@ -10,24 +10,19 @@ import {
   boundaryVertex,
   busy,
   clearJunctionPreview,
+  drag,
   draw,
   hint,
   type LaneView,
-  type MapView,
   renderHint,
   setActiveBoundary,
   setBoundaryVertex,
+  setDrag,
+  setEditingVertices,
   setView,
   view,
   type XYZ,
 } from "./vectormap";
-
-export let editingVertices = false;
-
-export let drag: {
-  before: MapView; boundary: number; index: number; point: XYZ;
-  offset: [number, number]; start: [number, number]; moved: boolean;
-} | null = null;
 
 /** Boundary IDs, rather than lane-side copies, keep shared/reversed sides together. */
 function previewBoundary(): void {
@@ -139,10 +134,10 @@ export const vertexTool: Tool = {
       hint.textContent = `Boundary ${hit.boundary}, vertex ${hit.index + 1}: edit height in the panel; use a top or oblique view to drag in XY.`;
       return true;
     }
-    drag = {
+    setDrag({
       before: structuredClone(view), ...hit, start: [x, y], moved: false,
       offset: [hit.point[0] - shift[0] - ground.x, hit.point[1] - shift[1] - ground.y],
-    };
+    });
     setActiveBoundary(hit.boundary);
     boundaryInputs();
     hint.textContent = `Boundary ${hit.boundary}, vertex ${hit.index + 1}: drag to move; Escape cancels.`;
@@ -166,7 +161,7 @@ export const vertexTool: Tool = {
     const finished = drag;
     if (!finished) return;
     const points = view.boundaries.find((b) => b.id === finished.boundary)!.points;
-    drag = null;
+    setDrag(null);
     setView(finished.before);
     renderBoundaryVertex();
     draw();
@@ -174,10 +169,10 @@ export const vertexTool: Tool = {
     hint.textContent = "Select a yellow vertex to edit height, or drag in XY keeping Z. Shared lanes update together. Escape leaves editing.";
   },
   pointerCancel() {
-    if (drag) { setView(drag.before); drag = null; renderBoundaryVertex(); draw(); }
+    if (drag) { setView(drag.before); setDrag(null); renderBoundaryVertex(); draw(); }
   },
   enter() {
-    editingVertices = true;
+    setEditingVertices(true);
     clearJunctionPreview();
     $("vm-vertices").setAttribute("aria-pressed", "true");
     setActiveBoundary(boundaryVertex?.boundary ?? null);
@@ -186,7 +181,7 @@ export const vertexTool: Tool = {
   },
   exit() {
     vertexTool.pointerCancel!();
-    editingVertices = false;
+    setEditingVertices(false);
     setActiveBoundary(null);
     $("vm-vertices").setAttribute("aria-pressed", "false");
     renderHint();

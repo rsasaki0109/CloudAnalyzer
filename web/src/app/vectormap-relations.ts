@@ -11,23 +11,25 @@ import {
   type EquipmentRule,
   featureDrag,
   junctionInputs,
+  relationCandidate,
   type RelationCandidate,
+  relationPreview,
   type RelationProposal,
+  relationRevision,
   setBusy,
+  setRelationCandidate,
+  setRelationPreview,
+  setRelationRevision,
   takeView,
   view,
   type XYZ,
 } from "./vectormap";
 
-let relationPreview: RelationProposal | null = null;
-let relationCandidate: string | null = null;
-let relationRevision = 0;
-
 export function chosenRelationCandidate(): RelationCandidate | undefined {
   return relationPreview && relationPreview.rule_id === relationSelection()?.id ? relationPreview.candidates.find(c=>c.key===relationCandidate) : undefined;
 }
 export function clearRelationPreview(): void {
-  relationRevision++; relationPreview = null; relationCandidate = null;
+  setRelationRevision(relationRevision + 1); setRelationPreview(null); setRelationCandidate(null);
   $("vm-relation-candidates").replaceChildren(); $("vm-relation-proposal-report").textContent = "";
   relationInputs();
 }
@@ -52,7 +54,7 @@ function renderRelationPreview(): void {
     radio.type="radio"; radio.name="relation-candidate"; radio.value=c.key; radio.checked=c.key===relationCandidate;
     const context=c.road_context === "same_lane" ? "same road lanes" : c.road_context === "connected_lanes" ? "connected road lanes" : "road context unavailable";
     label.append(radio, `${c.target_kind.replaceAll("_"," ")} ${c.target_id}: ${c.eligible?"draft candidate":"held"}${c.already_linked?" (already linked)":""}; ${c.distance_m===null?"distance unavailable":`${fmt(c.distance_m)} m`}; ${c.axis_degrees===null?"orientation unavailable":`${fmt(c.axis_degrees)}° axis difference`}; ${context}. ${c.reasons.join(" ")}`);
-    radio.onchange=()=>{relationCandidate=c.key;relationInputs();focusRelationCandidate();draw();};
+    radio.onchange=()=>{setRelationCandidate(c.key);relationInputs();focusRelationCandidate();draw();};
     $("vm-relation-candidates").append(label);
   }
   relationInputs(); draw();
@@ -70,7 +72,7 @@ $("vm-relation-preview").onclick=async()=>{
   try {
     const proposal=await vectorMap<RelationProposal>("relations-preview",{id:rule.id});
     if(revision!==relationRevision||relationSelection()?.id!==rule.id)throw new Error("Map or equipment changed; preview again.");
-    relationPreview=proposal;renderRelationPreview();
+    setRelationPreview(proposal);renderRelationPreview();
     setStatus(`Rule ${rule.id}: ${proposal.eligible_count} supported draft targets. Inspect and select a candidate explicitly; no map changes.`);
   } catch(err){clearRelationPreview();setStatus(`Target preview failed: ${errorText(err)}`);}
   finally {setBusy(false);junctionInputs();}

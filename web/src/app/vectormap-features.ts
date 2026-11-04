@@ -12,19 +12,19 @@ import {
   clearSignalPreview,
   draw,
   type Edited,
+  editingFeature,
+  featureDrag,
   hint,
   junctionInputs,
-  type MapView,
   renderHint,
   setBusy,
+  setEditingFeature,
+  setFeatureDrag,
   setView,
   takeView,
   view,
   type XYZ,
 } from "./vectormap";
-
-export let editingFeature = false;
-export let featureDrag: { before: MapView; index: number; point: XYZ; offset: [number, number]; start: [number, number]; moved: boolean } | null = null;
 
 function featureSelection(): { kind: "crosswalk" | "signal" | "stop_line"; id: number } | null {
   const [kind, id] = $<HTMLSelectElement>("vm-feature").value.split(":");
@@ -118,7 +118,7 @@ const featureTool: Tool = {
     if (hit < 0) return false;
     const point = [...featurePoints()[hit]] as XYZ;
     const ground = viewer.groundPoint(x,y,point[2]-shift[2]); if (!ground) return false;
-    featureDrag = { before: structuredClone(view), index: hit, point, start:[x,y], moved:false, offset:[point[0]-shift[0]-ground.x,point[1]-shift[1]-ground.y] };
+    setFeatureDrag({ before: structuredClone(view), index: hit, point, start:[x,y], moved:false, offset:[point[0]-shift[0]-ground.x,point[1]-shift[1]-ground.y] });
     $<HTMLSelectElement>("vm-feature-vertex").value = String(hit); renderFeatureVertex(); featureInputs();
     return true;
   },
@@ -131,11 +131,11 @@ const featureTool: Tool = {
   },
   async pointerUp(x,y) {
     featureTool.pointerMove!(x,y); const d = featureDrag; if (!d) return;
-    const points = structuredClone(featurePoints()); featureDrag = null; setView(d.before); renderFeatureFields(); draw();
+    const points = structuredClone(featurePoints()); setFeatureDrag(null); setView(d.before); renderFeatureFields(); draw();
     if (d.moved) await editFeature(points);
   },
-  pointerCancel() { if (featureDrag) { setView(featureDrag.before); featureDrag = null; renderFeatureFields(); draw(); } },
-  enter() { editingFeature = true; clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); $("vm-feature-drag").setAttribute("aria-pressed","true"); hint.textContent = "Drag a yellow feature vertex; Z is kept. Escape cancels. Review observed paint, lamps and lane associations after editing."; draw(); },
-  exit() { featureTool.pointerCancel!(); editingFeature = false; $("vm-feature-drag").setAttribute("aria-pressed","false"); renderHint(); draw(); },
+  pointerCancel() { if (featureDrag) { setView(featureDrag.before); setFeatureDrag(null); renderFeatureFields(); draw(); } },
+  enter() { setEditingFeature(true); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); $("vm-feature-drag").setAttribute("aria-pressed","true"); hint.textContent = "Drag a yellow feature vertex; Z is kept. Escape cancels. Review observed paint, lamps and lane associations after editing."; draw(); },
+  exit() { featureTool.pointerCancel!(); setEditingFeature(false); $("vm-feature-drag").setAttribute("aria-pressed","false"); renderHint(); draw(); },
 };
 $("vm-feature-drag").onclick = () => { if (!busy && featureSelection()) toggleTool(featureTool); };

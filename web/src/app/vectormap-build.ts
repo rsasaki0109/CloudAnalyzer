@@ -6,8 +6,9 @@ import { $, errorText, fmt, setStatus } from "./dom";
 import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer } from "./state";
 import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { setTool } from "./tools";
-import { parseRoadBuildFailure, type RoadBuildFailure } from "./road-build-failure";
+import { parseRoadBuildFailure } from "./road-build-failure";
 import {
+  buildFailure,
   type BuildReport,
   busy,
   clearCrosswalkPreview,
@@ -24,6 +25,7 @@ import {
   type PaintBudgetInfo,
   reviewSourceChanged,
   runDiscovery,
+  setBuildFailure,
   setBusy,
   sketch,
   takeView,
@@ -31,7 +33,6 @@ import {
   type XYZ,
 } from "./vectormap";
 
-export let buildFailure: {failure: RoadBuildFailure; cloud: number; trajectory: number | null; path: XYZ[] | null} | null = null;
 export let buildFailureRevision = 0;
 export let buildSketchRevision = 0;
 
@@ -66,7 +67,7 @@ buildInputs();
 export function clearBuildFailure(): void {
   buildFailureRevision++;
   buildSketchRevision++;
-  buildFailure = null;
+  setBuildFailure(null);
   $("vm-build-failure").hidden = true;
   $("vm-failure-stale").hidden = true;
 }
@@ -82,7 +83,7 @@ export function showBuildFailure(err: unknown, revision: number, cloud: number, 
   const text = errorText(err), failure = parseRoadBuildFailure(text);
   if (!failure) return text;
   if (revision !== buildFailureRevision || !entries.has(cloud)) return failure.message;
-  buildFailure = {failure, cloud, trajectory, path};
+  setBuildFailure({failure, cloud, trajectory, path});
   const d = failure.diagnostic;
   buildButton.closest('details')!.open = true;
   $("vm-build-failure").hidden = false;

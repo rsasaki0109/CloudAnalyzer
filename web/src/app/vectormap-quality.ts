@@ -17,16 +17,15 @@ import {
   selectLane,
   setActiveBoundary,
   setBusy,
+  setSourceProblems,
   setSourceProblemSelected,
   type SourceCurveSupport,
-  type SourceProblem,
+  sourceProblems,
   sourceProblemSelected,
   type SourceQualityReport,
   vertexTool,
   view,
 } from "./vectormap";
-
-export let sourceProblems: SourceProblem[] = [];
 
 export let lowSupport = new Set<number>();
 
@@ -34,7 +33,7 @@ let qualityRevision = 0;
 export function clearQuality(): void {
   qualityRevision++;
   lowSupport = new Set();
-  sourceProblems = []; setSourceProblemSelected(null);
+  setSourceProblems([]); setSourceProblemSelected(null);
   $("vm-quality-locations").hidden = true;
   $<HTMLSelectElement>("vm-quality-problem").replaceChildren(new Option("Choose a problem interval", ""));
   sourceProblemInputs();
@@ -60,7 +59,7 @@ $("vm-quality-check").onclick = async () => {
 function renderSourceQuality(report: SourceQualityReport, prefix = ""): void {
   $("vm-quality-report").textContent = prefix + `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
   lowSupport = new Set([...report.low_support_lanes, ...report.omitted_lanes, ...report.malformed_lanes]);
-  sourceProblems = report.problems;
+  setSourceProblems(report.problems);
   $("vm-quality-locations").hidden = !sourceProblems.length && !report.problems_limited;
   $("vm-quality-location-summary").textContent = `${sourceProblems.length} problem intervals shown at checked sample locations.` +
     (report.problems_limited ? " Location preview limited; further failed samples are not displayed. Coverage figures include all checked samples." : "");

@@ -8,6 +8,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Three more large source files are split without changing behaviour:
+  - `ca/web.py` loads the viewer page from `ca/web_viewer.html`, a real HTML
+    file shipped as package data, instead of a 1,786-line string (981 lines
+    left; the page is unchanged).
+  - `rust/crates/ca-wasm/src/lib.rs` (3,400 lines) becomes an index of 13
+    feature modules (`cloud`, `volume`, `raster`, `stream`, `lod`, `icp`,
+    `distance`, `mesh`, `knn`, `merge`, `readers`, `segmentation`,
+    `trajectory`). The release wasm export section is byte-identical and the
+    wasm-bindgen descriptions are the same, so the JS API is unchanged.
+  - `web/src/worker.ts` (2,611 lines) keeps the request handler and message
+    loop (1,129 lines). Item bookkeeping, index builds, pooled distances, k-NN
+    jobs, file readers, shapes, trajectories and pose graphs move to
+    `web/src/worker/`. The worker is still a single bundle.
+- `warmUp` in the WASM bindings has its own doc comment. Its paragraph was
+  attached to `alignPairs`, so the generated typings described the wrong
+  function.
 - `ca/report.py` (4,724 lines) is split into `ca/reports/` with one module per
   report kind (largest 1,038 lines). `ca/report.py` stays as a facade that
   re-exports all 50 names, so `from ca.report import ...` and path-based source

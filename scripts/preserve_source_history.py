@@ -28,7 +28,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterator, Mapping
 
 HISTORY_DIR = "benchmarks/source-history"
 MANIFEST_NAME = "manifest.json"
@@ -104,16 +104,29 @@ def _pairs(node: Any) -> Iterator[tuple[str, str]]:
             stack.extend(item)
 
 
-def referenced_hashes(root: Path, paths: Iterable[str]) -> dict[str, set[str]]:
-    """Map each of ``paths`` to the hashes benchmark JSON records for it."""
-    wanted = set(paths)
-    needles = [p.encode("utf-8") for p in wanted]
+def referenced_hashes(root: Path, candidates: Mapping[str, str]) -> dict[str, set[str]]:
+    """Map each candidate path to the hashes benchmark JSON records for it.
+
+    ``candidates`` maps a path to the digest of its base version. A hash counts
+    when JSON pairs it with the path, or when the base digest appears anywhere:
+    some packets name a measured file by its role (``"core": <sha256>``) rather
+    than its path, and an exact SHA-256 match can only mean that version.
+    """
+    wanted = set(candidates)
+    path_needles = [p.encode("utf-8") for p in wanted]
+    digest_needles = {path: digest.encode("ascii") for path, digest in candidates.items()}
     found: dict[str, set[str]] = {p: set() for p in wanted}
-    if not needles:
+    if not wanted:
         return found
+    manifest = root / HISTORY_DIR / MANIFEST_NAME
     for json_path in sorted((root / "benchmarks").rglob("*.json")):
+        if json_path == manifest:
+            continue
         raw = json_path.read_bytes()
-        if not any(needle in raw for needle in needles):
+        for path, needle in digest_needles.items():
+            if needle in raw:
+                found[path].add(candidates[path])
+        if not any(needle in raw for needle in path_needles):
             continue
         try:
             document = json.loads(raw)
@@ -149,7 +162,7 @@ def find_missing(root: Path, base: str) -> list[dict[str, str]]:
         data = base_bytes(root, base, path)
         if data is not None:
             candidates[path] = (normalized_sha256(data), data)
-    references = referenced_hashes(root, candidates)
+    references = referenced_hashes(root, {p: c[0] for p, c in candidates.items()})
     needed = {p: c for p, c in candidates.items() if c[0] in references[p]}
     if not needed:
         return []

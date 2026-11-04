@@ -101,6 +101,20 @@ def test_object_references_and_deleted_files_are_detected(repo: Path) -> None:
     ]
 
 
+def test_hash_recorded_under_a_role_name_is_detected(repo: Path) -> None:
+    # Some packets name the measured file by role, not path: {"core": <sha256>}.
+    free = b"fn free() {}\n"
+    identities = {"binary": "0" * 64, "core": history.normalized_sha256(free)}
+    (repo / "benchmarks/packet/identities.json").write_text(json.dumps(identities), encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "identities")
+    (repo / "rust/src/free.rs").write_bytes(b"fn changed() {}\n")
+
+    assert history.find_missing(repo, "HEAD") == [
+        {"path": "rust/src/free.rs", "sha256": history.normalized_sha256(free)},
+    ]
+
+
 def test_unreferenced_and_new_files_are_ignored(repo: Path) -> None:
     (repo / "rust/src/free.rs").write_bytes(b"fn changed() {}\n")
     (repo / "rust/src/new.rs").write_bytes(b"fn new() {}\n")

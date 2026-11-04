@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The unit tests of the five largest `ca-core` sources move into their own
+  files: `pose_graph.rs` (2,773 lines to 1,949), `kdtree.rs` (2,770 to 1,660),
+  `mesh.rs` (2,741 to 1,291), `odometry.rs` (2,126 to 1,051) and `bag.rs`
+  (2,010 to 1,413). The tests now live in `src/<module>/tests.rs`, with the
+  same 531 test names. Production code is unchanged. Benchmark packets that
+  measured these files still resolve them: `odometry.rs` is retained in
+  `benchmarks/source-history`, and the flat-wall target-balance packet points
+  the other four at its existing executed-source copies.
+- `scripts/preserve_source_history.py` also finds versions that a packet
+  records by role rather than path, such as `"core": <sha256>`. An exact
+  SHA-256 match anywhere in a benchmark JSON now counts as a reference.
 - The vector map panel (`web/src/app/vectormap.ts`, 2,515 lines) is split into
   17 `vectormap-*.ts` modules: types, the shared scene and state, each panel
   (junction, signal, crosswalk, discovery, build, reviews, quality, relations,

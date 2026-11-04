@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The vector map panel (`web/src/app/vectormap.ts`, 2,515 lines) is split into
+  17 `vectormap-*.ts` modules: types, the shared scene and state, each panel
+  (junction, signal, crosswalk, discovery, build, reviews, quality, relations,
+  features, boundary), edits, lanes, road and files (largest 474 lines).
+  `vectormap.ts` loads the panel's dependencies and then re-exports the
+  modules in their old source order. The modules import each other's names
+  from it, so top-level code still runs in that order: the bundled module
+  order is unchanged. Each module-level variable moves to the module that
+  assigns it, unless other modules assign it too or code that runs while the
+  panel loads reads it before that module. Those 18 (`busy`, `view`, `sketch`
+  and others) stay where they were and are changed through setters.
 - Three more large source files are split without changing behaviour:
   - `ca/web.py` loads the viewer page from `ca/web_viewer.html`, a real HTML
     file shipped as package data, instead of a 1,786-line string (981 lines

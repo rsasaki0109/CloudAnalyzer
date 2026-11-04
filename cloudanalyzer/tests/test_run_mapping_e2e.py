@@ -111,3 +111,26 @@ def test_breakdown_explains_every_unresolved_metre():
     total = breakdown["included_m"] + sum(breakdown["source_deferred_m"].values()) \
         + sum(breakdown["client_deferred_m"].values())
     assert total == 15.0
+
+
+def test_review_hold_summary_keeps_held_traces_and_floating_samples():
+    def trace(lane, side, status, consensus_mismatches=0):
+        return {"lane": lane, "trace": side, "status": status,
+                "low_quantile": {"fraction": 0.8, "holds": ["below_support_threshold"]},
+                "ground_consensus": {"fraction": 0.99, "holds": [], "height_mismatches": consensus_mismatches}}
+    diagnosis = {"review_holds": {
+        "traces": [trace(3, "left", "held", 1), trace(3, "center", "explained_by_returns_above")],
+        "traces_total": 2, "unexplained_traces_total": 1, "ground_estimators_disagree": True,
+        "below_trace_samples": [{"estimator": "ground_consensus", "lane": 3, "trace": "left",
+                                 "lane_station_m": 165.89252, "xyz": [2.63758, -72.7398, -2.74145],
+                                 "source_height_m": -3.118, "below_trace_m": 0.37671}],
+        "below_trace_samples_total": 1,
+    }}
+    summary = e2e.review_hold_summary(diagnosis)
+    assert summary["traces_total"] == 2 and summary["held_traces_total"] == 1
+    assert summary["held"] == [{"lane": 3, "trace": "left", "low_quantile_fraction": 0.8,
+                                "ground_consensus_fraction": 0.99, "ground_consensus_mismatches": 1}]
+    assert summary["below_trace_samples"] == [{"estimator": "ground_consensus", "lane": 3, "trace": "left",
+                                               "lane_station_m": 165.893, "xyz": [2.638, -72.74, -2.741],
+                                               "below_trace_m": 0.377}]
+    assert e2e.review_hold_summary({}) is None

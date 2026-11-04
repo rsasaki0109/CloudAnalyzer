@@ -12,6 +12,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   report kind (largest 1,038 lines). `ca/report.py` stays as a facade that
   re-exports all 50 names, so `from ca.report import ...` and path-based source
   lists keep working; every moved definition's AST is unchanged.
+- The mapping E2E reference client refines with `trajectory_containing` by
+  default (`--association all_supported_bands` keeps the original proposal and
+  replaces `--refine`). Its summary records review holds: held traces and every
+  below-trace sample with its location. On the bundled drives the refined holds
+  are single ground-consensus samples beside local low pockets; the surrounding
+  surface lies within about 0.2 m of the traces.
 - The `ca` CLI is split from one 5,784-line `cloudanalyzer_cli/main.py` into
   `_app.py` (app and shared helpers) and twelve command modules under
   `cloudanalyzer_cli/commands/` (largest 898 lines). Commands, options and
@@ -35,7 +41,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   first preview check that rejected the best available candidate. On the
   bundled drives, branching source bands (70 m) and paths outside the
   candidate profiles (64 m) account for most of what is left.
-- `run_mapping_e2e.py --refine` takes the run's `trajectory_containing`
+- The mapping E2E reference client can take the run's `trajectory_containing`
   refinement before inspecting. On the bundled drives the reference client
   then retains 96.1% and 94.9% instead of 61.5% and 63.6%, in fewer pieces and
   with higher low-quantile source support; CI runs both modes.

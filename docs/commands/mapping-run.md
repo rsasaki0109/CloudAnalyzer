@@ -56,15 +56,26 @@ candidate's covering width range reached: `narrower_than_layout`,
 but a longer overlapping interval won. Attribution uses the run's 2 m
 disposition intervals.
 
-`--refine` first takes the run's one `refine` action with
-`association=trajectory_containing`, then inspects the new candidates. The
-breakdown motivated it: on 2026-11-03 branching source bands (70 m) and paths
-outside candidate profiles (64 m) explained most unresolved metres on the two
-drives. With it, the same client retained 96.1% and 94.9% (from 61.5% and 63.6%)
-in 4 and 7 pieces (from 11 and 16). Low-quantile source support rose from 59/65%
-to 72/71%, ground-consensus support stayed near 100%, and review-held traces rose
-from 0/1 to 2/3. This compares the run's own evidence, not independent accuracy.
-The Python core workflow runs both modes.
+By default the client first takes the run's one `refine` action with
+`association=trajectory_containing`, then inspects the new candidates;
+`--association all_supported_bands` keeps the original proposal. The breakdown
+motivated this: on 2026-11-03 branching source bands (70 m) and paths outside
+candidate profiles (64 m) explained most unresolved metres on the two drives.
+With the refinement the same client retained 96.1% and 94.9% (from 61.5% and
+63.6%) in 4 and 7 pieces (from 11 and 16). Low-quantile source support rose from
+59/65% to 72/71%, ground-consensus support stayed near 100%, and held traces
+rose from 0/1 to 2/3. This compares the run's own evidence, not independent
+accuracy. The Python core workflow runs both associations.
+
+`quality.review_holds` lists held traces and every sample where source ground
+lies below a trace, with its station and position. On 2026-11-04 each refined
+drive's holds came from single ground-consensus samples: two traces floated
+0.38 m (April, lane station 165.9 m) and 0.58 m (June, 77.1 m) above a local
+low pocket beside the lane, while the surrounding surface lay within about
+0.2 m of the trace; the other held traces each had one consensus shortfall
+above the trace. Without refinement, April shows the same 0.38 m sample within
+6 cm of that position, so the refinement did not introduce it. They stay review
+locations rather than accepted geometry.
 
 The reference client is a reproducible test driver, not an adoption policy.
 Its choices are not the calling agent's and are not tuned for coverage. In a

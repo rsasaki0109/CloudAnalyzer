@@ -146,17 +146,12 @@ def load_manifest(root: Path) -> dict[str, Any]:
     return manifest
 
 
-def _archived_hashes(root: Path, suffixes: set[str]) -> set[str]:
-    """Normalized hashes of every retained file under ``benchmarks/``."""
-    hashes: set[str] = set()
-    for path in (root / "benchmarks").rglob("*"):
-        if path.suffix in suffixes and path.is_file() and not path.is_symlink():
-            hashes.add(normalized_sha256(path.read_bytes()))
-    return hashes
-
-
 def find_missing(root: Path, base: str) -> list[dict[str, str]]:
-    """Referenced base versions of changed files that nothing retains."""
+    """Referenced base versions of changed files that the manifest does not retain.
+
+    Only a manifest entry counts: packet tests resolve a version through the
+    manifest or their own aliases, never by searching for an identical copy.
+    """
     candidates: dict[str, tuple[str, bytes]] = {}
     for path in changed_paths(root, base):
         data = base_bytes(root, base, path)
@@ -167,11 +162,9 @@ def find_missing(root: Path, base: str) -> list[dict[str, str]]:
     if not needed:
         return []
     sources = load_manifest(root)["sources"]
-    archived = _archived_hashes(root, {Path(p).suffix for p in needed})
     missing = []
     for path, (digest, _) in sorted(needed.items()):
-        retained = sources.get(digest, {}).get("original") == path
-        if not retained and digest not in archived:
+        if sources.get(digest, {}).get("original") != path:
             missing.append({"path": path, "sha256": digest})
     return missing
 

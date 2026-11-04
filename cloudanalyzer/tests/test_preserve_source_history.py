@@ -123,13 +123,16 @@ def test_unreferenced_and_new_files_are_ignored(repo: Path) -> None:
     assert history.find_missing(repo, "HEAD") == []
 
 
-def test_existing_archived_copy_counts_as_retained(repo: Path) -> None:
+def test_identical_copy_elsewhere_does_not_count_as_retained(repo: Path) -> None:
+    # Packet tests look a version up in the manifest, not by searching for copies.
     archive = repo / "benchmarks/packet/executed-source/core.rs"
     archive.parent.mkdir()
     archive.write_bytes(MEASURED.replace(b"\r\n", b"\n"))
     (repo / "rust/src/core.rs").write_bytes(b"fn faster() {}\n")
 
-    assert history.find_missing(repo, "HEAD") == []
+    assert history.find_missing(repo, "HEAD") == [
+        {"path": "rust/src/core.rs", "sha256": history.normalized_sha256(MEASURED)},
+    ]
 
 
 def test_existing_manifest_entries_are_kept(repo: Path) -> None:

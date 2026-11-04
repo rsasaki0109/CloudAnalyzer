@@ -127,6 +127,30 @@
       "archived": "benchmarks/source-history/36e2d8e2040e9dd335999fc5ef29c7fcb2f8d25c815a8d2ca2d1255318f8e417/odometry.rs",
       "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
       "originGitBlob": "7382395f4b21188610ab9ca61e2e1baa13675ed3"
+    },
+    "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27": {
+      "original": "rust/crates/ca-core/src/bag.rs",
+      "archived": "benchmarks/source-history/ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27/bag.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "a508ea77b9cf9d4569206e8a7fa42fa5ba85e257"
+    },
+    "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3": {
+      "original": "rust/crates/ca-core/src/kdtree.rs",
+      "archived": "benchmarks/source-history/bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3/kdtree.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "d7dcfeba08526916f90ead8e80bcc4ee5ee4d2db"
+    },
+    "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855": {
+      "original": "rust/crates/ca-core/src/mesh.rs",
+      "archived": "benchmarks/source-history/292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855/mesh.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "9f683e760d44bcab17b8ed1fffff0e6e91457f95"
+    },
+    "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799": {
+      "original": "rust/crates/ca-core/src/pose_graph.rs",
+      "archived": "benchmarks/source-history/e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799/pose_graph.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "b1eba1277179145680c026e3b9ff4452aa6b083b"
     }
   }
 }

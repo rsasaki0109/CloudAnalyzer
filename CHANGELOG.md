@@ -63,6 +63,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Web e2e runs start with a boot check (`web/e2e/boot.setup.ts`). It loads the
+  app, waits for the vector map's "No map yet." status, which needs the page,
+  the worker and the WebAssembly core, and fails on any page error. Every
+  other test depends on it, so an app that cannot start fails the run in
+  about a minute and lists its page errors. Before, each test timed out on
+  its own, and one such run took over an hour. `--no-deps` skips the check
+  when running a single spec locally.
 - The mapping E2E summary attributes every unresolved station metre: the run's
   own source reasons, and for intervals the reference client deferred, the
   first preview check that rejected the best available candidate. On the
@@ -90,6 +97,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `test_hard_intersection.py` no longer fails on machines with less than
+  6 GiB free. The preparation test stubs the free-space guard, as the
+  download tests already did, and a new test covers the guard itself.
 - Web packet tests pass again: the `odometry.rs` version measured by the GPU and
   WASM packets is retained in `benchmarks/source-history` after #408 changed it.
 - The Public Benchmark Pack workflow caches the Stanford Bunny archive. When the

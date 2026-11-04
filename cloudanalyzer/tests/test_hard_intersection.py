@@ -176,6 +176,8 @@ def test_prepare_retains_exact_attributes_clears_semantics_and_ignores_reference
     # A deliberately invalid reference must never be read during preparation.
     (tmp_path / "reference.osm").write_text("not XML")
     monkeypatch.setattr(prep, "CHUNK", 2)
+    # The 6 GiB guard would otherwise depend on the machine running the test.
+    monkeypatch.setattr(prep.shutil, "disk_usage", lambda _: SimpleNamespace(free=10 * 1024**3))
     result = prep.prepare(source, drives, tmp_path / "out")
     retained = laspy.read(tmp_path / "out/geometry.las")
     np.testing.assert_array_equal(retained.X, cloud.X[[0, 2, 4]])
@@ -186,6 +188,13 @@ def test_prepare_retains_exact_attributes_clears_semantics_and_ignores_reference
     assert source.read_bytes() == before
     with pytest.raises(FileExistsError):
         prep.prepare(source, drives, tmp_path / "out")
+
+
+def test_low_disk_prepare_fails_before_writing(tmp_path, monkeypatch):
+    monkeypatch.setattr(prep.shutil, "disk_usage", lambda _: SimpleNamespace(free=1))
+    with pytest.raises(ValueError, match="6 GiB"):
+        prep.prepare(tmp_path / "raw.las", tmp_path / "drives", tmp_path / "out")
+    assert not (tmp_path / "out").exists()
 
 
 def test_tile_ownership_half_open_has_no_boundary_duplicates():

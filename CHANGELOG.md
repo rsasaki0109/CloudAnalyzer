@@ -24,6 +24,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Only a manifest entry counts as retained. An identical copy elsewhere
     under `benchmarks/` no longer does, because the web packet tests look
     versions up in the manifest.
+- The web worker's request handler is split by domain. `handle()` in
+  `web/src/worker.ts` (227 lines, was 1,129) keeps the workspace, pool and
+  vector-map requests and dispatches the rest to `web/src/worker/`
+  `pose-graph-requests.ts`, `cloud-requests.ts`, `processing-requests.ts` and
+  `analysis-requests.ts`. Each module lists its request kinds once, and
+  TypeScript checks that every kind is handled. The 70 cases moved verbatim.
 - The vector map panel (`web/src/app/vectormap.ts`, 2,515 lines) is split into
   17 `vectormap-*.ts` modules: types, the shared scene and state, each panel
   (junction, signal, crosswalk, discovery, build, reviews, quality, relations,

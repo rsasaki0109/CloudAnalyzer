@@ -26,7 +26,8 @@ cloudanalyzer/
 │   ├── metrics.py          # NN distance, summarize, threshold
 │   ├── evaluate.py         # F1, Chamfer, Hausdorff, AUC, plot
 │   ├── visualization.py    # Colorize, snapshot
-│   ├── report.py           # JSON / Markdown / HTML report generation
+│   ├── report.py           # Report API facade (JSON / Markdown / HTML)
+│   ├── reports/            # One module per report kind (batch, trajectory, run, ...)
 │   ├── compare.py          # Full compare pipeline
 │   ├── diff.py             # Quick diff (no registration)
 │   ├── info.py             # Point cloud metadata

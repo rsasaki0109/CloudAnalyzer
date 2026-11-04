@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- `ca/report.py` (4,724 lines) is split into `ca/reports/` with one module per
+  report kind (largest 1,038 lines). `ca/report.py` stays as a facade that
+  re-exports all 50 names, so `from ca.report import ...` and path-based source
+  lists keep working; every moved definition's AST is unchanged.
 - The mapping E2E reference client refines with `trajectory_containing` by
   default (`--association all_supported_bands` keeps the original proposal and
   replaces `--refine`). Its summary records review holds: held traces and every

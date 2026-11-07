@@ -14,7 +14,6 @@ from typer.testing import CliRunner
 from ca.benchmark import (
     GATE_KEYS,
     REPORT_BUNDLE_SCHEMA_VERSION,
-    BenchmarkSuite,
     evaluate_benchmark_run,
     load_benchmark_suite,
     materialize_suite,
@@ -522,7 +521,6 @@ def _make_kitti_pose_file(tmp_path: Path, n_poses: int = 30) -> Path:
 
 def test_kitti_pose_conversion_round_trip(tmp_path: Path) -> None:
     """KITTI 12-float → TUM conversion preserves translations and rotation magnitude."""
-    import numpy as np
 
     module = _load_kitti_mini_module()
     poses_path = _make_kitti_pose_file(tmp_path, n_poses=10)

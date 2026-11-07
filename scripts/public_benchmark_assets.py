@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import math
+import hashlib
+import http.client
 import shutil
 import tarfile
 import tempfile
+import time
 import zipfile
 import urllib.request
+import urllib.error
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +19,11 @@ import open3d as o3d
 
 BUNNY_ARCHIVE_URL = "https://graphics.stanford.edu/pub/3Dscanrep/bunny.tar.gz"
 BUNNY_SOURCE_PAGE = "https://graphics.stanford.edu/data/3Dscanrep/"
+BUNNY_MESH_MEMBER = "bunny/reconstruction/bun_zipper.ply"
+MAX_BUNNY_MESH_BYTES = 64 * 1024**2
+MAX_BUNNY_ARCHIVE_ENTRIES = 10_000
+MAX_LOCAL_BUNNY_ARCHIVE_BYTES = 128 * 1024**2
+MAX_BUNNY_DOWNLOAD_BYTES = 128 * 1024**2
 HDL_LOCALIZATION_MAP_URL = (
     "https://raw.githubusercontent.com/koide3/hdl_localization/master/data/map.pcd"
 )
@@ -34,19 +43,111 @@ RELLIS_LABEL_CONFIG_URL = (
 RELLIS_EXAMPLE_ARCHIVE_NAME = "rellis_lidar_example.zip"
 
 
+def _download_bunny_archive(path: Path) -> None:
+    """Retry transient transport failures without reusing partial archives."""
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(BUNNY_ARCHIVE_URL, timeout=30) as response:
+                length = response.headers.get('Content-Length')
+                expected = int(length) if length is not None else None
+                if expected is not None and expected < 0:
+                    raise ValueError('Stanford Bunny response has a negative Content-Length')
+                if expected is not None and expected > MAX_BUNNY_DOWNLOAD_BYTES:
+                    raise ValueError('Stanford Bunny download exceeds 128 MiB')
+                with path.open('wb') as output:
+                    received = 0
+                    while True:
+                        block = response.read(min(1024**2, MAX_BUNNY_DOWNLOAD_BYTES - received + 1))
+                        if not block:
+                            break
+                        received += len(block)
+                        if received > MAX_BUNNY_DOWNLOAD_BYTES:
+                            raise ValueError('Stanford Bunny download exceeds 128 MiB')
+                        output.write(block)
+                    if expected is not None and received < expected:
+                        raise http.client.IncompleteRead(b'', expected - received)
+            return
+        except ValueError:
+            path.unlink(missing_ok=True)
+            raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.IncompleteRead) as error:
+            path.unlink(missing_ok=True)
+            if isinstance(error, urllib.error.HTTPError):
+                retryable = error.code in (408, 429) or 500 <= error.code < 600
+                error.close()
+                if not retryable:
+                    raise
+            if attempt == 3:
+                raise RuntimeError(f'Failed to download Stanford Bunny after 3 attempts: {BUNNY_ARCHIVE_URL}') from error
+            time.sleep(attempt)
+
+
+def _extract_bunny_mesh(archive_path: Path, mesh_path: Path) -> None:
+    """Copy only the expected regular mesh, never archive-controlled paths."""
+    with tarfile.open(archive_path, 'r:gz') as archive:
+        selected = None
+        for count, member in enumerate(archive, start=1):
+            if count > MAX_BUNNY_ARCHIVE_ENTRIES:
+                raise RuntimeError('Stanford Bunny archive has too many entries')
+            if member.name != BUNNY_MESH_MEMBER:
+                continue
+            if selected is not None:
+                raise RuntimeError('Stanford Bunny archive contains duplicate mesh entries')
+            if not member.isfile() or not 0 < member.size <= MAX_BUNNY_MESH_BYTES:
+                raise RuntimeError('Stanford Bunny mesh must be a regular file of at most 64 MiB')
+            selected = member
+        if selected is None:
+            raise RuntimeError('Stanford Bunny archive is missing the expected mesh')
+        source = archive.extractfile(selected)
+        if source is None:
+            raise RuntimeError('Cannot read Stanford Bunny mesh')
+        with source, mesh_path.open('xb') as output:
+            shutil.copyfileobj(source, output)
+
+
 def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
     """Download and return the Stanford Bunny mesh."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)
         archive_path = root / "bunny.tar.gz"
-        urllib.request.urlretrieve(BUNNY_ARCHIVE_URL, archive_path)
-        with tarfile.open(archive_path, "r:gz") as archive:
-            archive.extractall(root)
-        mesh_path = root / "bunny" / "reconstruction" / "bun_zipper.ply"
+        _download_bunny_archive(archive_path)
+        mesh_path = root / "bun_zipper.ply"
+        _extract_bunny_mesh(archive_path, mesh_path)
         mesh = o3d.io.read_triangle_mesh(str(mesh_path))
         if len(mesh.vertices) == 0:
             raise RuntimeError("failed to load Stanford Bunny mesh")
         return mesh
+
+
+def load_local_bunny_mesh(path: Path, *, expected_sha256: str | None = None) -> tuple[o3d.geometry.TriangleMesh, dict]:
+    """Load a bounded local archive snapshot and identify exactly those bytes."""
+    if expected_sha256 is not None:
+        if len(expected_sha256) != 64 or any(c not in '0123456789abcdefABCDEF' for c in expected_sha256):
+            raise ValueError('Expected Bunny SHA-256 must contain exactly 64 hexadecimal characters')
+        expected_sha256 = expected_sha256.lower()
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_LOCAL_BUNNY_ARCHIVE_BYTES:
+        raise ValueError('Local Bunny archive must be a regular file of at most 128 MiB')
+    with path.open('rb') as source:
+        raw = source.read(MAX_LOCAL_BUNNY_ARCHIVE_BYTES + 1)
+    if len(raw) > MAX_LOCAL_BUNNY_ARCHIVE_BYTES:
+        raise ValueError('Local Bunny archive exceeds 128 MiB')
+    actual_sha256 = hashlib.sha256(raw).hexdigest()
+    if expected_sha256 is not None and actual_sha256 != expected_sha256:
+        raise ValueError(f'Bunny archive SHA-256 mismatch: expected {expected_sha256}, got {actual_sha256}')
+    identity = {'sha256': actual_sha256, 'bytes': len(raw),
+                'origin': 'local', 'authenticity_verified': False}
+    if expected_sha256 is not None:
+        identity['expected_sha256'] = expected_sha256
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        archive = root/'bunny.tar.gz'
+        archive.write_bytes(raw)
+        mesh_path = root/'bun_zipper.ply'
+        _extract_bunny_mesh(archive, mesh_path)
+        mesh = o3d.io.read_triangle_mesh(str(mesh_path))
+        if len(mesh.vertices) == 0:
+            raise RuntimeError('failed to load local Bunny mesh')
+        return mesh, identity
 
 
 def download_hdl_localization_map(download_dir: Path) -> Path:

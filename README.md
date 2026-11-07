@@ -82,6 +82,11 @@ shared boundaries with Undo. Export Autoware Lanelet2 with
 
 Remove passing traffic, join surveys and inspect changes with M3C2.
 Score maps against a reference with accuracy, completeness, F1 and Chamfer.
+[Review two-pass changes](docs/survey-change-review.md) with alignment diagnostics,
+fixed-camera before/after views and saved human judgments that can be reopened
+and resumed against matching comparison contents. Inspect overlapping Lanelet2
+lanes after confirming a shared coordinate frame, and save selected lanes as
+human follow-up tasks with source snapshots.
 
 <p align="center">
   <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/dynamic.gif" alt="A real San Francisco street: the ghost trails the traffic left in the lanes turn red and leave the map" width="720"></a><br>
@@ -190,7 +195,11 @@ npm run dev
 [`web/`](web/) — TypeScript / three.js app · [`rust/`](rust/) — Rust core / WASM / Python bindings ·
 [`cloudanalyzer/`](cloudanalyzer/) — Python CLI
 
+All documentation is indexed in [docs/](docs/README.md), which also shows a
+[lighter checkout](docs/README.md#lighter-checkouts) without the benchmark evidence.
+
 Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`.
+Lint: `ruff check ca/ cloudanalyzer_cli/ tests/` in `cloudanalyzer/`, `npm run lint` in `web/`.
 Media: `npm run media` after `npm run build` in `web/`.
 
 ## License

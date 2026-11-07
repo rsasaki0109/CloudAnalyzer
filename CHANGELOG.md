@@ -6,6 +6,133 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The Web workflow runs its end-to-end tests in three parallel shards
+  (`playwright test --shard=i/3`). One job took about 30 minutes. Each shard
+  builds the app and starts with the boot check. Lint, unit tests and the
+  `cloudanalyzer-web` artifact run in the first shard only, and failure traces
+  are uploaded per shard.
+- The unit tests of the five largest `ca-core` sources move into their own
+  files: `pose_graph.rs` (2,773 lines to 1,949), `kdtree.rs` (2,770 to 1,660),
+  `mesh.rs` (2,741 to 1,291), `odometry.rs` (2,126 to 1,051) and `bag.rs`
+  (2,010 to 1,413). The tests now live in `src/<module>/tests.rs`, with the
+  same 531 test names. Production code is unchanged. Benchmark packets that
+  measured these files still resolve them. All five measured versions are
+  retained in `benchmarks/source-history`, and the flat-wall target-balance
+  and balance-dynamics packets alias four of them to their executed-source
+  copies.
+- `scripts/preserve_source_history.py` matches what packet tests resolve:
+  - It also finds versions a packet records by role rather than path, such
+    as `"core": <sha256>`: an exact SHA-256 match anywhere in a benchmark JSON
+    now counts as a reference.
+  - Only a manifest entry counts as retained. An identical copy elsewhere
+    under `benchmarks/` no longer does, because the web packet tests look
+    versions up in the manifest.
+- The web worker's request handler is split by domain. `handle()` in
+  `web/src/worker.ts` (227 lines, was 1,129) keeps the workspace, pool and
+  vector-map requests and dispatches the rest to `web/src/worker/`
+  `pose-graph-requests.ts`, `cloud-requests.ts`, `processing-requests.ts` and
+  `analysis-requests.ts`. Each module lists its request kinds once, and
+  TypeScript checks that every kind is handled. The 70 cases moved verbatim.
+- The vector map panel (`web/src/app/vectormap.ts`, 2,515 lines) is split into
+  17 `vectormap-*.ts` modules: types, the shared scene and state, each panel
+  (junction, signal, crosswalk, discovery, build, reviews, quality, relations,
+  features, boundary), edits, lanes, road and files (largest 474 lines).
+  `vectormap.ts` loads the panel's dependencies and then re-exports the
+  modules in their old source order. The modules import each other's names
+  from it, so top-level code still runs in that order: the bundled module
+  order is unchanged. Each module-level variable moves to the module that
+  assigns it, unless other modules assign it too or code that runs while the
+  panel loads reads it before that module. Those 18 (`busy`, `view`, `sketch`
+  and others) stay where they were and are changed through setters.
+- Three more large source files are split without changing behaviour:
+  - `ca/web.py` loads the viewer page from `ca/web_viewer.html`, a real HTML
+    file shipped as package data, instead of a 1,786-line string (981 lines
+    left; the page is unchanged).
+  - `rust/crates/ca-wasm/src/lib.rs` (3,400 lines) becomes an index of 13
+    feature modules (`cloud`, `volume`, `raster`, `stream`, `lod`, `icp`,
+    `distance`, `mesh`, `knn`, `merge`, `readers`, `segmentation`,
+    `trajectory`). The release wasm export section is byte-identical and the
+    wasm-bindgen descriptions are the same, so the JS API is unchanged.
+  - `web/src/worker.ts` (2,611 lines) keeps the request handler and message
+    loop (1,129 lines). Item bookkeeping, index builds, pooled distances, k-NN
+    jobs, file readers, shapes, trajectories and pose graphs move to
+    `web/src/worker/`. The worker is still a single bundle.
+- `warmUp` in the WASM bindings has its own doc comment. Its paragraph was
+  attached to `alignPairs`, so the generated typings described the wrong
+  function.
+- `ca/report.py` (4,724 lines) is split into `ca/reports/` with one module per
+  report kind (largest 1,038 lines). `ca/report.py` stays as a facade that
+  re-exports all 50 names, so `from ca.report import ...` and path-based source
+  lists keep working; every moved definition's AST is unchanged.
+- The mapping E2E reference client refines with `trajectory_containing` by
+  default (`--association all_supported_bands` keeps the original proposal and
+  replaces `--refine`). Its summary records review holds: held traces and every
+  below-trace sample with its location. On the bundled drives the refined holds
+  are single ground-consensus samples beside local low pockets; the surrounding
+  surface lies within about 0.2 m of the traces.
+- The `ca` CLI is split from one 5,784-line `cloudanalyzer_cli/main.py` into
+  `_app.py` (app and shared helpers) and twelve command modules under
+  `cloudanalyzer_cli/commands/` (largest 898 lines). Commands, options and
+  `--help` output are unchanged, including command order; `main.py` keeps the
+  `ca` entry point and `python -m cloudanalyzer_cli.main`.
+- `docs/README.md` indexes all 200 documentation pages by category, with the
+  experiment and performance records collapsed, and explains a lighter
+  checkout without `benchmarks/` (about 160 MB instead of 570 MB). It is
+  generated by `scripts/build_docs_index.py`, and the Test workflow checks
+  that it is current. Pages keep their paths, so existing links still work.
+- CI workflows use GitHub Actions releases that run on Node.js 24, one major
+  version per action: `checkout@v6`, `setup-python@v6`, `setup-node@v5`,
+  `cache@v5`, `upload-artifact@v6`, `download-artifact@v7` and the Pages
+  actions (`configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`).
+  This removes the Node.js 20 deprecation warnings.
+
+### Added
+
+- Web e2e runs start with a boot check (`web/e2e/boot.setup.ts`). It loads the
+  app, waits for the vector map's "No map yet." status, which needs the page,
+  the worker and the WebAssembly core, and fails on any page error. Every
+  other test depends on it, so an app that cannot start fails the run in
+  about a minute and lists its page errors. Before, each test timed out on
+  its own, and one such run took over an hour. `--no-deps` skips the check
+  when running a single spec locally.
+- The mapping E2E summary attributes every unresolved station metre: the run's
+  own source reasons, and for intervals the reference client deferred, the
+  first preview check that rejected the best available candidate. On the
+  bundled drives, branching source bands (70 m) and paths outside the
+  candidate profiles (64 m) account for most of what is left.
+- The mapping E2E reference client can take the run's `trajectory_containing`
+  refinement before inspecting. On the bundled drives the reference client
+  then retains 96.1% and 94.9% instead of 61.5% and 63.6%, in fewer pieces and
+  with higher low-quantile source support; CI runs both modes.
+- `scripts/run_mapping_e2e.py` generates both maps from the bundled NCLT
+  recordings with no operator. A deterministic reference client drives the
+  mapping-run loop using only the run's own width, path, direction and surface
+  previews. It records inputs, timings, peak memory, disk use, decisions,
+  outputs and audit evidence in `summary.json` plus a scorecard per case, and
+  fails on broken invariants. The Python core workflow runs it on mapping
+  changes.
+- Lint in CI: ruff for the Python package (`ruff check ca/ cloudanalyzer_cli/ tests/`)
+  and Biome for the web app (`npm run lint`). Both use bug-focused rules only:
+  unused or undefined names, unsafe `finally`, suspicious comparisons and similar.
+  Unused imports, unused variables and an unused helper were removed.
+- `scripts/preserve_source_history.py` keeps source versions that frozen
+  benchmark packets still reference. It copies each changed file's referenced
+  base version into `benchmarks/source-history`; `--check` reports what would
+  be lost. The Test workflow runs the check on every push and pull request.
+
+### Fixed
+
+- `test_hard_intersection.py` no longer fails on machines with less than
+  6 GiB free. The preparation test stubs the free-space guard, as the
+  download tests already did, and a new test covers the guard itself.
+- Web packet tests pass again: the `odometry.rs` version measured by the GPU and
+  WASM packets is retained in `benchmarks/source-history` after #408 changed it.
+- The Public Benchmark Pack workflow caches the Stanford Bunny archive. When the
+  host is unreachable and nothing is cached, it warns and validates the pack
+  pipeline with the offline synthetic fixture instead of failing.
+
 ## [0.6.0] - 2026-10-23
 
 ### Release highlights

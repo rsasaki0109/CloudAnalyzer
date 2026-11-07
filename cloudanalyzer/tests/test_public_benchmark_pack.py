@@ -22,6 +22,196 @@ from build_public_benchmark_pack import build_public_benchmark_pack  # noqa: E40
 from ca.core import load_check_suite, run_check_suite  # noqa: E402
 
 
+@pytest.mark.parametrize('failure', ['timeout', 'http503', 'truncated', 'reset'])
+def test_bunny_download_retries_transient_failures_without_partial_data(tmp_path, monkeypatch, failure):
+    import io
+    import urllib.error
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {'Content-Length':'8'}
+    calls, delays = [], []
+    def open_url(url, *, timeout):
+        calls.append((url, timeout))
+        if len(calls) == 1:
+            if failure == 'timeout':
+                raise urllib.error.URLError(TimeoutError('fixture timeout'))
+            if failure == 'http503':
+                raise urllib.error.HTTPError(url, 503, 'unavailable', {}, None)
+            if failure == 'reset':
+                raise ConnectionResetError('fixture connection reset')
+            return Response(b'partial')
+        return Response(b'complete')
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    monkeypatch.setattr(assets.time, 'sleep', delays.append)
+    path = tmp_path/'bunny.tar.gz'
+    assets._download_bunny_archive(path)
+    assert path.read_bytes() == b'complete'
+    assert calls == [(assets.BUNNY_ARCHIVE_URL, 30)] * 2
+    assert delays == [1]
+
+
+def test_bunny_download_exhaustion_removes_partial_archive(tmp_path, monkeypatch):
+    import io
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {'Content-Length':'100'}
+    calls, delays = [], []
+    def open_url(url, *, timeout):
+        calls.append(timeout)
+        return Response(b'partial')
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    monkeypatch.setattr(assets.time, 'sleep', delays.append)
+    path = tmp_path/'bunny.tar.gz'
+    with pytest.raises(RuntimeError, match='after 3 attempts'):
+        assets._download_bunny_archive(path)
+    assert calls == [30, 30, 30]
+    assert delays == [1, 2]
+    assert not path.exists()
+
+
+def test_bunny_http404_is_not_retried(tmp_path, monkeypatch):
+    import urllib.error
+    import public_benchmark_assets as assets
+    def open_url(url, *, timeout):
+        raise urllib.error.HTTPError(url, 404, 'missing', {}, None)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('permanent error retried'))
+    with pytest.raises(urllib.error.HTTPError) as error:
+        assets._download_bunny_archive(tmp_path/'bunny.tar.gz')
+    assert error.value.code == 404
+
+
+def test_bunny_local_write_failure_is_not_retried(tmp_path, monkeypatch):
+    import io
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {}
+    def fail_open(*args, **kwargs):
+        raise PermissionError('fixture disk error')
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: Response(b'data'))
+    monkeypatch.setattr(Path, 'open', fail_open)
+    monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('local failure retried'))
+    with pytest.raises(PermissionError, match='disk error'):
+        assets._download_bunny_archive(tmp_path/'bunny.tar.gz')
+
+
+@pytest.mark.parametrize('length', ['9', None, '1', '-1', 'invalid'])
+def test_download_limit_or_invalid_length_stops_without_retry(tmp_path, monkeypatch, length):
+    import io
+    import public_benchmark_assets as assets
+    reads = []
+    class Response(io.BytesIO):
+        headers = {} if length is None else {'Content-Length':length}
+        def read(self, size=-1):
+            reads.append(size)
+            return super().read(size)
+    monkeypatch.setattr(assets, 'MAX_BUNNY_DOWNLOAD_BYTES', 8)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: Response(b'x'*100))
+    monkeypatch.setattr(assets.time, 'sleep', lambda _: pytest.fail('invalid response retried'))
+    path = tmp_path/'bunny.tar.gz'
+    with pytest.raises(ValueError):
+        assets._download_bunny_archive(path)
+    assert not path.exists()
+    assert reads == ([9] if length in (None, '1') else [])
+
+
+@pytest.mark.parametrize('length', [None, '8'])
+def test_download_accepts_exact_size_limit(tmp_path, monkeypatch, length):
+    import io
+    import public_benchmark_assets as assets
+    class Response(io.BytesIO):
+        headers = {} if length is None else {'Content-Length':length}
+    monkeypatch.setattr(assets, 'MAX_BUNNY_DOWNLOAD_BYTES', 8)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', lambda *a, **k: Response(b'12345678'))
+    path = tmp_path/'bunny.tar.gz'
+    assets._download_bunny_archive(path)
+    assert path.read_bytes() == b'12345678'
+
+
+def test_bunny_mesh_download_uses_retrying_transport(tmp_path, monkeypatch):
+    import io
+    import tarfile
+    import public_benchmark_assets as assets
+    mesh_path = tmp_path/'fixture.ply'
+    assets.o3d.io.write_triangle_mesh(str(mesh_path), assets.o3d.geometry.TriangleMesh.create_box())
+    archive_bytes = io.BytesIO()
+    with tarfile.open(fileobj=archive_bytes, mode='w:gz') as archive:
+        archive.add(mesh_path, arcname='bunny/reconstruction/bun_zipper.ply')
+    payload = archive_bytes.getvalue()
+    class Response(io.BytesIO):
+        headers = {'Content-Length':str(len(payload))}
+    calls = []
+    def open_url(url, *, timeout):
+        calls.append((url, timeout))
+        return Response(payload)
+    monkeypatch.setattr(assets.urllib.request, 'urlopen', open_url)
+    mesh = assets.download_bunny_mesh()
+    assert len(mesh.vertices) == 8
+    assert calls == [(assets.BUNNY_ARCHIVE_URL, 30)]
+
+
+def _bunny_archive(path, members):
+    import io
+    import tarfile
+    with tarfile.open(path, 'w:gz') as archive:
+        for name, kind, payload in members:
+            info = tarfile.TarInfo(name)
+            info.type = kind
+            if kind == tarfile.REGTYPE:
+                info.size = len(payload)
+                archive.addfile(info, io.BytesIO(payload))
+            else:
+                info.linkname = 'target.ply'
+                archive.addfile(info)
+
+
+def test_bunny_extraction_ignores_archive_paths_and_preserves_mesh_bytes(tmp_path):
+    import tarfile
+    import public_benchmark_assets as assets
+    archive = tmp_path/'input.tar.gz'
+    output_dir = tmp_path/'output'; output_dir.mkdir()
+    outside = tmp_path/'outside'; outside.write_bytes(b'original')
+    _bunny_archive(archive, [
+        ('../outside', tarfile.REGTYPE, b'overwrite'),
+        (str(outside), tarfile.REGTYPE, b'overwrite'),
+        ('unused-link', tarfile.SYMTYPE, b''),
+        (assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, b'exact mesh bytes'),
+    ])
+    target = output_dir/'mesh.ply'
+    assets._extract_bunny_mesh(archive, target)
+    assert target.read_bytes() == b'exact mesh bytes'
+    assert outside.read_bytes() == b'original'
+    assert list(output_dir.iterdir()) == [target]
+
+
+@pytest.mark.parametrize('case', ['missing', 'duplicate', 'symlink', 'hardlink', 'directory', 'empty', 'oversize', 'entries'])
+def test_bunny_extraction_rejects_invalid_mesh_without_output(tmp_path, monkeypatch, case):
+    import tarfile
+    import public_benchmark_assets as assets
+    entry = (assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, b'mesh')
+    members = [entry]
+    if case == 'missing':
+        members = [('other.ply', tarfile.REGTYPE, b'mesh')]
+    elif case == 'duplicate':
+        members = [entry, entry]
+    elif case in ('symlink', 'hardlink', 'directory'):
+        kind = {'symlink':tarfile.SYMTYPE, 'hardlink':tarfile.LNKTYPE, 'directory':tarfile.DIRTYPE}[case]
+        members = [(assets.BUNNY_MESH_MEMBER, kind, b'')]
+    elif case == 'empty':
+        members = [(assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, b'')]
+    elif case == 'oversize':
+        monkeypatch.setattr(assets, 'MAX_BUNNY_MESH_BYTES', 3)
+    else:
+        monkeypatch.setattr(assets, 'MAX_BUNNY_ARCHIVE_ENTRIES', 1)
+        members += [('other.ply', tarfile.REGTYPE, b'other')]
+    archive = tmp_path/'input.tar.gz'
+    _bunny_archive(archive, members)
+    target = tmp_path/'mesh.ply'
+    with pytest.raises(RuntimeError, match='Stanford Bunny'):
+        assets._extract_bunny_mesh(archive, target)
+    assert not target.exists()
+
+
 def _synthetic_source_points() -> np.ndarray:
     """Create a deterministic nontrivial 3D shape for offline tests."""
     angles = np.linspace(0.0, 2.0 * np.pi, 80, endpoint=False)
@@ -35,6 +225,114 @@ def _synthetic_source_points() -> np.ndarray:
             y = radius * wobble * np.sin(angle)
             points.append([x, y, z + (0.04 * np.sin(angle * 2.0))])
     return np.asarray(points, dtype=float)
+
+
+@pytest.mark.parametrize('verify_digest', [False, True])
+def test_local_bunny_archive_builds_offline_and_records_exact_identity(tmp_path, monkeypatch, verify_digest):
+    import hashlib
+    import tarfile
+    import public_benchmark_assets as assets
+    mesh_path = tmp_path/'mesh.ply'
+    assets.o3d.io.write_triangle_mesh(str(mesh_path), assets.o3d.geometry.TriangleMesh.create_sphere(resolution=20))
+    archive = tmp_path/'local.tar.gz'
+    _bunny_archive(archive, [(assets.BUNNY_MESH_MEMBER, tarfile.REGTYPE, mesh_path.read_bytes())])
+    raw = archive.read_bytes()
+    def forbid(*args, **kwargs):
+        pytest.fail('local archive mode attempted a download')
+    monkeypatch.setattr(builder, 'download_bunny_mesh', forbid)
+    monkeypatch.setattr(urllib.request, 'urlopen', forbid)
+    output = tmp_path/'pack'
+    digest = hashlib.sha256(raw).hexdigest()
+    result = build_public_benchmark_pack(output, bunny_archive=archive,
+                                         bunny_sha256=digest.upper() if verify_digest else None)
+    assert result['source'] == 'local-bunny-archive'
+    manifest = json.loads((output/'manifest.json').read_text())
+    expected_identity = {'sha256':digest, 'bytes':len(raw), 'origin':'local', 'authenticity_verified':False}
+    if verify_digest:
+        expected_identity['expected_sha256'] = digest
+    assert manifest['source_archive'] == expected_identity
+    assert archive.read_bytes() == raw
+    assert 'authenticity' in (output/'ATTRIBUTION.md').read_text()
+    assert '--bunny-archive' in (output/'README.md').read_text()
+    for entry in manifest['configs']:
+        rerun = run_check_suite(load_check_suite(str(output/entry['config_path'])))
+        assert rerun['summary']['passed'] == entry['expected_pass']
+
+
+@pytest.mark.parametrize('case', ['inside_output', 'synthetic', 'custom', 'missing', 'symlink', 'oversize', 'invalid'])
+def test_invalid_local_archive_preserves_existing_output(tmp_path, monkeypatch, case):
+    import public_benchmark_assets as assets
+    output = tmp_path/'pack'; output.mkdir()
+    sentinel = output/'keep'; sentinel.write_text('keep')
+    archive = tmp_path/'local.tar.gz'; archive.write_bytes(b'invalid archive')
+    options = {}
+    if case == 'inside_output':
+        archive = sentinel
+    elif case == 'synthetic':
+        options['fixture'] = 'synthetic'
+    elif case == 'custom':
+        options['source_points'] = _synthetic_source_points()
+    elif case == 'missing':
+        archive = tmp_path/'missing'
+    elif case == 'symlink':
+        link = tmp_path/'link'; link.symlink_to(archive); archive = link
+    elif case == 'oversize':
+        monkeypatch.setattr(assets, 'MAX_LOCAL_BUNNY_ARCHIVE_BYTES', 1)
+    import tarfile
+    with pytest.raises((ValueError, tarfile.TarError)):
+        build_public_benchmark_pack(output, bunny_archive=archive, **options)
+    assert sentinel.read_text() == 'keep'
+
+
+def test_cli_forwards_local_archive_and_rejects_synthetic(monkeypatch):
+    calls = []
+    def capture(output_dir, **options):
+        assert output_dir == Path('benchmarks/public/local-bunny')
+        calls.append(options)
+        return {'output_dir':str(output_dir), 'pack_name':'test', 'source':'local-bunny-archive', 'manifest':{'configs':[]}}
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
+    monkeypatch.setattr(sys, 'argv', ['build', '--bunny-archive', 'local.tar.gz'])
+    builder.main()
+    assert calls == [{'fixture':'stanford-bunny', 'seed':7, 'bunny_archive':Path('local.tar.gz')}]
+    monkeypatch.setattr(sys, 'argv', ['build', '--fixture', 'synthetic', '--bunny-archive', 'local.tar.gz'])
+    with pytest.raises(SystemExit) as error:
+        builder.main()
+    assert error.value.code == 2
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize('digest', ['0'*64, '', 'g'*64, 'a'*63, 'a'*65])
+def test_bunny_digest_failure_precedes_extraction_and_output_changes(tmp_path, monkeypatch, digest):
+    import public_benchmark_assets as assets
+    archive = tmp_path/'input.tar.gz'; archive.write_bytes(b'not even an archive')
+    output = tmp_path/'pack'; output.mkdir()
+    sentinel = output/'keep'; sentinel.write_text('keep')
+    monkeypatch.setattr(assets, '_extract_bunny_mesh', lambda *args: pytest.fail('unverified archive extracted'))
+    with pytest.raises(ValueError, match='SHA-256'):
+        build_public_benchmark_pack(output, bunny_archive=archive, bunny_sha256=digest)
+    assert sentinel.read_text() == 'keep'
+
+
+def test_digest_without_archive_never_downloads(tmp_path, monkeypatch):
+    monkeypatch.setattr(builder, 'download_bunny_mesh', lambda: pytest.fail('unexpected download'))
+    with pytest.raises(ValueError, match='requires bunny_archive'):
+        build_public_benchmark_pack(tmp_path/'output', bunny_sha256='a'*64)
+    assert not (tmp_path/'output').exists()
+    monkeypatch.setattr(sys, 'argv', ['build', '--bunny-sha256', 'a'*64])
+    with pytest.raises(SystemExit) as error:
+        builder.main()
+    assert error.value.code == 2
+
+
+def test_cli_forwards_expected_bunny_digest(monkeypatch):
+    calls = []
+    def capture(output_dir, **options):
+        calls.append(options)
+        return {'output_dir':str(output_dir), 'pack_name':'test', 'source':'local-bunny-archive', 'manifest':{'configs':[]}}
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
+    monkeypatch.setattr(sys, 'argv', ['build', '--bunny-archive', 'local.tar.gz', '--bunny-sha256', 'a'*64])
+    builder.main()
+    assert calls == [{'fixture':'stanford-bunny', 'seed':7, 'bunny_archive':Path('local.tar.gz'), 'bunny_sha256':'a'*64}]
 
 
 class TestPublicBenchmarkPack:
@@ -119,6 +417,52 @@ def test_synthetic_source_is_small_finite_and_deterministic():
     np.testing.assert_array_equal(points, builder._synthetic_smoke_points())
 
 
+def test_seed_reproduces_generated_artifacts_and_is_recorded(tmp_path):
+    def generate(name, seed):
+        root = tmp_path/name
+        result = build_public_benchmark_pack(root, fixture='synthetic', seed=seed)
+        generation = result['manifest']['generation']
+        assert generation == {'seed':seed, 'bit_generator':'PCG64', 'numpy_version':np.__version__}
+        assert json.loads((root/'manifest.json').read_text())['generation'] == generation
+        assert f'--seed {seed}' in (root/'README.md').read_text()
+        return {str(path.relative_to(root)):path.read_bytes()
+                for folder in ('baselines', 'outputs') for path in (root/folder).iterdir()}
+    first = generate('first', 19)
+    assert generate('repeat', 19) == first
+    changed = generate('changed', 20)
+    assert changed['baselines/perception_ref.pcd'] == first['baselines/perception_ref.pcd']
+    assert changed['outputs/perception_pass.pcd'] != first['outputs/perception_pass.pcd']
+
+
+@pytest.mark.parametrize('seed', [-1, True, 1.5, '7', None])
+def test_invalid_seed_preserves_output_and_does_not_download(tmp_path, monkeypatch, seed):
+    sentinel = tmp_path/'keep'; sentinel.write_text('keep')
+    monkeypatch.setattr(builder, 'download_bunny_mesh', lambda: pytest.fail('invalid seed triggered download'))
+    with pytest.raises(ValueError, match='seed must be a nonnegative integer'):
+        build_public_benchmark_pack(tmp_path, seed=seed)
+    assert sentinel.read_text() == 'keep'
+
+
+@pytest.mark.parametrize('seed', [0, 19])
+def test_cli_forwards_seed(monkeypatch, seed):
+    calls = []
+    def capture(output_dir, **options):
+        calls.append(options)
+        return {'output_dir':str(output_dir), 'pack_name':'test', 'source':'synthetic-smoke', 'manifest':{'configs':[]}}
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', capture)
+    monkeypatch.setattr(sys, 'argv', ['build', '--fixture', 'synthetic', '--seed', str(seed)])
+    builder.main()
+    assert calls == [{'fixture':'synthetic', 'seed':seed}]
+
+
+def test_cli_rejects_negative_seed_before_build(monkeypatch):
+    monkeypatch.setattr(builder, 'build_public_benchmark_pack', lambda *a, **k: pytest.fail('invalid seed reached builder'))
+    monkeypatch.setattr(sys, 'argv', ['build', '--seed', '-1'])
+    with pytest.raises(SystemExit) as error:
+        builder.main()
+    assert error.value.code == 2
+
+
 def test_default_download_failure_is_not_replaced_by_synthetic(tmp_path: Path, monkeypatch):
     output_dir = tmp_path / "existing"
     output_dir.mkdir()
@@ -176,7 +520,8 @@ def test_invalid_source_selection_preserves_existing_output(tmp_path: Path, fixt
 def test_cli_selects_fixture_and_separate_default_output(monkeypatch, capsys, arguments, fixture, output):
     calls = []
 
-    def capture_build(output_dir, *, fixture):
+    def capture_build(output_dir, *, fixture, seed):
+        assert seed == 7
         calls.append((output_dir, fixture))
         return {"output_dir": str(output_dir), "pack_name": "test", "source": fixture, "manifest": {"configs": []}}
 

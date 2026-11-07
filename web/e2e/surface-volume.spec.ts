@@ -19,7 +19,7 @@ async function setup(page:Page){
   await expect(page.locator('#cloud-list > li')).toHaveCount(2);await expect(page.locator('#task')).toBeHidden();
   await page.locator('#coverage-source').selectOption({label:'after-ground.ply'});
   await page.locator('#coverage-reference').selectOption({label:'before-ground.ply'});
-  await page.locator('#volume-panel summary').click();await page.locator('#volume-fill').check();
+  await page.locator('#volume-options > summary').click();await page.locator('#volume-fill').check();
   await page.locator('#coverage-volume').click();await expect(page.locator('#volume-fill')).not.toBeChecked();
   await page.locator('#volume-cell').fill('1');
   await page.evaluate(()=>{
@@ -98,4 +98,72 @@ test('cancelled or changed in-flight volume requests release unpublished clouds 
   await expect(page.locator('#cloud-list > li')).toHaveCount(2);expect(await page.evaluate(()=>(window as any).unpublishedRemovals)).toBe(2);
   await page.evaluate(()=>(window as any).volumeAction='none');await page.locator('#volume-cell').fill('1');await run(page);
   expect((await volumeJson(page)).settings.cell).toBe(1);expect(errors).toEqual([]);
+});
+
+async function area(page:Page,bounds:number[]) {
+  await page.locator('#volume-area-options').evaluate((el:HTMLDetailsElement)=>{el.open=true;});
+  await page.locator('#volume-area-enabled').check();
+  for(const [i,name] of ['min-x','min-y','max-x','max-y'].entries()) await page.locator(`#volume-area-${name}`).fill(String(bounds[i]));
+}
+test('world XY volume area selects closed cell centers, exports exact scoped cells and distinguishes missing from outside',async({page})=>{
+  await setup(page);await area(page,[1001,1999.5,1002,2001.5]);await run(page);
+  const json=await volumeJson(page);
+  expect(json.settings.region).toEqual([1001,1999.5,1002,2001.5]);
+  expect(json.result).toMatchObject({added:0,removed:1,net:-1,matchedCells:3,totalCells:4,uncomparedCells:1});
+  expect(json.reviewArea.outsideCells).toBe(2);
+  expect(json.reviewArea.selection).toContain('no fractional clipping');
+  expect(json.before.loadedPoints).toBe(6);expect(json.after.loadedPoints).toBe(5);
+  const d=page.waitForEvent('download');await page.locator('#volume-csv').click();
+  const rows=(await text(await d)).trim().split('\n').slice(1).map(row=>row.split(',').map(Number));
+  expect(rows).toHaveLength(3);expect(rows.every(row=>row[1]>=1001&&row[1]<=1002)).toBe(true);
+  expect(rows.reduce((sum,row)=>sum+row[4],0)).toBe(-1);
+  expect((await report(page)).sections.volume.notes.join(' ')).toContain('2 grid cells outside');
+  await page.locator('#volume-area-max-x').fill('1001.1');
+  await expect(page.locator('#volume-exports')).toBeHidden();expect((await report(page)).sections.volume).toBeUndefined();
+  await page.locator('#volume-area-enabled').uncheck();await run(page);
+  expect((await volumeJson(page)).result).toMatchObject({added:2,removed:1,totalCells:6});
+  expect((await volumeJson(page)).reviewArea).toBeNull();
+});
+test('review area copies between volume and distance without computation and invalid or empty bounds do not imply surveyed coverage',async({page})=>{
+  await setup(page);await area(page,[1000,2000,1001,2001]);
+  await page.locator('#volume-send-distance-area').click();
+  await expect(page.locator('#regions-overlap-enabled')).toBeChecked();
+  expect(await page.locator('#regions-overlap-max-x').inputValue()).toBe('1001');
+  expect(await page.evaluate(()=>(window as any).volumeCalls)).toBe(0);
+  await page.getByText('Locate distance discrepancies',{exact:true}).click();
+  await page.getByText('Expected overlap area',{exact:true}).click();
+  await page.locator('#regions-overlap-max-x').fill('1002');
+  await page.locator('#volume-use-distance-area').click();
+  expect(await page.locator('#volume-area-max-x').inputValue()).toBe('1002');
+  await run(page);expect((await volumeJson(page)).reviewArea.bounds).toEqual([1000,2000,1002,2001]);
+  await page.locator('#volume-area-min-x').fill('');await page.locator('#volume-run').click();
+  await expect(page.locator('#status')).toContainText('all four volume review bounds');
+  await expect(page.locator('#volume-exports')).toBeHidden();
+  expect(await page.evaluate(()=>(window as any).volumeCalls)).toBe(1);
+  await area(page,[10,10,11,11]);await run(page);
+  const empty=await volumeJson(page);
+  expect(empty.result).toMatchObject({added:0,removed:0,matchedCells:0,totalCells:0,uncomparedCells:0});
+  expect(empty.reviewArea.outsideCells).toBe(6);
+  expect((await report(page)).sections.volume.metrics.coverage).toBeUndefined();
+  await expect(page.locator('#volume-stats')).toContainText('unavailable');
+  await expect(page.locator('#volume-scope')).toContainText('zero totals do not establish zero surface change');
+  await expect(page.locator('#volume-mesh')).toBeDisabled();
+  await expect(page.locator('#cloud-list > li')).toHaveCount(3); // Only the earlier successful compared cloud.
+});
+test('changing an in-flight review rectangle discards the staged volume instead of publishing stale area totals',async({page})=>{
+  await setup(page);await area(page,[999,1999,1003,2002]);
+  await page.evaluate(()=>{
+    const send=Worker.prototype.postMessage;
+    Worker.prototype.postMessage=function(message:any,...rest:any[]){
+      if(message?.req?.kind==='volume'){
+        const input=document.getElementById('volume-area-max-x') as HTMLInputElement;
+        input.value='1001';input.dispatchEvent(new Event('input'));
+      }
+      return (send as any).call(this,message,...rest);
+    };
+  });
+  await page.locator('#volume-run').click();await expect(page.locator('#status')).toContainText('inputs/settings changed');
+  await expect(page.locator('#task')).toBeHidden();await expect(page.locator('#volume-exports')).toBeHidden();
+  await expect(page.locator('#cloud-list > li')).toHaveCount(2);
+  expect((await report(page)).sections.volume).toBeUndefined();
 });

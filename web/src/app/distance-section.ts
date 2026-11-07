@@ -14,7 +14,14 @@ interface Snapshot { entry: Entry; cloud: Entry["cloud"]; name: string }
 interface Context {
   source: Snapshot; reference: Snapshot; regionRank: number; cellRank: number;
   bounds: readonly number[]; overlap: ExpectedOverlap | null; isCurrent: () => boolean;
+  height?: HeightSectionEvidence;
 }
+export interface HeightSectionEvidence {
+  cell: { index: number; x: number; y: number; before: number; after: number; difference: number };
+  label: string; threshold: number; coordinateUnit: string; cellSize: number;
+  heightMode: string; fillEmpty: boolean; supportMode: string; maskSha256?: string;
+}
+export const heightSectionScope = "Context section of the selected Before/After point clouds, regardless of visibility. All finite loaded display-coordinate f32 records plus their original shifts inside a closed XY band; no additional sampling. These coordinates may round differently from the f64 raster heights used for screening. The band is not clipped to the parent review bounds, common mask or exceedance cells. Loaded preview/thinning applies; no full-density claim, nearest-point correspondence, registration or physical-cause/accuracy guarantee.";
 type Result = { source: SectionSeries; reference: SectionSeries };
 const axis = $<HTMLSelectElement>("regions-section-axis"), length = $<HTMLInputElement>("regions-section-length"), width = $<HTMLInputElement>("regions-section-width");
 const panel = $("regions-section-plot"), canvas = $<HTMLCanvasElement>("regions-section-canvas");
@@ -25,16 +32,18 @@ let overlay: THREE.LineSegments | null = null;
 function valid(c: Context): boolean {
   return c.isCurrent() && [c.source, c.reference].every(s => entries.get(s.cloud.id) === s.entry && s.entry.cloud === s.cloud);
 }
-export function clearDistanceSection(): void {
+function clearSection(): void {
   const had = last !== null, pending = cancelPending !== null; generation++; last = null; context = null; cancelPending?.(); panel.hidden = true;
   if (overlay) { viewer.scene.remove(overlay); overlay.geometry.dispose(); (overlay.material as THREE.Material).dispose(); overlay = null; }
   if (had) distanceChanged.emit();
   if (had || pending) setStatus("Section comparison cleared; compare a cell to inspect the current inputs/settings.");
 }
+export function clearDistanceSection(): void { if (!context?.height) clearSection(); }
+export function clearHeightSection(): void { if (context?.height) clearSection(); }
 for (const input of [axis, length, width]) input.addEventListener(input === axis ? "change" : "input", clearDistanceSection);
-$("regions-section-close").onclick = clearDistanceSection;
-listChanged.add(() => { if (context && !valid(context)) clearDistanceSection(); });
-pointsInvalidated.add(id => { if (context && [context.source.cloud.id, context.reference.cloud.id].includes(id)) clearDistanceSection(); });
+$("regions-section-close").onclick = clearSection;
+listChanged.add(() => { if (context && !valid(context)) clearSection(); });
+pointsInvalidated.add(id => { if (context && [context.source.cloud.id, context.reference.cloud.id].includes(id)) clearSection(); });
 function compute(c: Context, settings: SectionSettings, signal: AbortSignal): Promise<Result> {
   const a = c.source.cloud.positions.slice(), b = c.reference.cloud.positions.slice();
   const worker = new Worker(new URL("../distance-section-worker.ts", import.meta.url), { type: "module" });
@@ -50,25 +59,32 @@ function compute(c: Context, settings: SectionSettings, signal: AbortSignal): Pr
   });
 }
 export async function inspectDistanceSection(c: Context): Promise<void> {
-  if (running || taskActive() || workerBusy() || !valid(c)) return;
   const settings: SectionSettings = { axis: axis.value as "x" | "y", center: [c.bounds[0] + (c.bounds[3] - c.bounds[0]) / 2, c.bounds[1] + (c.bounds[4] - c.bounds[1]) / 2],
     length: Number(length.value), width: Number(width.value) };
+  return inspectSection(c, settings);
+}
+export async function inspectHeightSection(c: Omit<Context, "regionRank" | "cellRank"> & { height: HeightSectionEvidence }, settings: SectionSettings): Promise<void> {
+  return inspectSection({ ...c, regionRank: 0, cellRank: c.height.cell.index }, settings);
+}
+async function inspectSection(c: Context, settings: SectionSettings): Promise<void> {
+  if (running || taskActive() || workerBusy() || !valid(c)) return;
   try {
+    if ([c.source, c.reference].some(s => s.cloud.kind !== "cloud")) throw new Error("Point sections require two loaded point clouds");
     validateSection(settings);
     if (c.source.cloud.positions.byteLength + c.reference.cloud.positions.byteLength > SECTION_INPUT_BYTES) throw new Error("Section input exceeds 64 MiB combined XYZ; crop a smaller pair");
   } catch (error) { setStatus(errorText(error), true); return; }
-  clearDistanceSection(); context = c; const token = generation, signal = startTask(); running = true;
+  clearSection(); context = c; const token = generation, signal = startTask(); running = true;
   axis.disabled = length.disabled = width.disabled = true;
   try {
     setStatus("Comparing source/reference section using all loaded points within the band…");
     const result = await compute(c, settings, signal); signal.throwIfAborted();
     if (token !== generation || !valid(c)) throw new Error("Section inputs/settings changed; compare the cell again");
     last = { context: c, settings, result }; panel.hidden = false;
-    $("regions-section-title").textContent = `Region ${c.regionRank}, cell ${c.cellRank} · ${settings.axis.toUpperCase()} section · length ${fmt(settings.length)}, width ${fmt(settings.width)}`;
-    $("regions-section-summary").textContent = `Orange: ${c.source.name} (${result.source.selectedPoints.toLocaleString()}); blue: ${c.reference.name} (${result.reference.selectedPoints.toLocaleString()}). Invalid loaded positions: ${result.source.invalidPoints}/${result.reference.invalidPoints}. All band points shown, including points below the distance threshold. Empty series indicate no loaded points in this band, not confirmed missing map data. Axes use cloud units; automatic height scale unless 1:1 is checked.`;
+    $("regions-section-title").textContent = `${c.height ? `${c.height.label}, grid cell ${c.height.cell.index}` : `Region ${c.regionRank}, cell ${c.cellRank}`} · ${settings.axis.toUpperCase()} section · length ${fmt(settings.length)}, width ${fmt(settings.width)}`;
+    $("regions-section-summary").textContent = `Orange: ${c.height ? "After " : ""}${c.source.name} (${result.source.selectedPoints.toLocaleString()}); blue: ${c.height ? "Before " : ""}${c.reference.name} (${result.reference.selectedPoints.toLocaleString()}). Invalid loaded positions: ${result.source.invalidPoints}/${result.reference.invalidPoints}. All band points shown, including points below the ${c.height ? "height" : "distance"} threshold. Empty series indicate no loaded points in this band, not confirmed missing map data. Axes use ${c.height?.coordinateUnit ?? "cloud units"}; automatic height scale unless 1:1 is checked.` + (c.height ? ` ${heightSectionScope} Loaded After ${c.source.cloud.count}/${c.source.cloud.filePoints}, keep every ${c.source.cloud.keepEvery}, preview ${c.source.entry.origin.displayPreview === true}; Before ${c.reference.cloud.count}/${c.reference.cloud.filePoints}, keep every ${c.reference.cloud.keepEvery}, preview ${c.reference.entry.origin.displayPreview === true}.` : "");
     draw(); drawBand(c, settings, result); distanceChanged.emit();
     setStatus("Section comparison ready; original points from the selected pair only. No nearest-point height correspondence is inferred.");
-  } catch (error) { if (token === generation) { clearDistanceSection(); setStatus("Section comparison failed: " + (signal.aborted ? "Cancelled" : errorText(error)), true); } }
+  } catch (error) { if (token === generation) { clearSection(); setStatus("Section comparison failed: " + (signal.aborted ? "Cancelled" : errorText(error)), true); } }
   finally { running = false; axis.disabled = length.disabled = width.disabled = false; endTask(signal); }
 }
 function drawBand(c: Context, s: SectionSettings, result: Result): void {
@@ -117,6 +133,12 @@ $("regions-section-json").onclick=()=>{
   if(!last||!valid(last.context))return;
   const summarize=(s:SectionSeries)=>({points:s.points,finitePoints:s.finitePoints,invalidPoints:s.invalidPoints,selectedPoints:s.selectedPoints,zMin:s.zMin,zMax:s.zMax});
   const c=last.context;
+  if (c.height) {
+    download(new Blob([JSON.stringify({ schema: "cloudanalyzer.height_cell_section.v1", before: { ...describe(c.reference), ...summarize(last.result.reference) },
+      after: { ...describe(c.source), ...summarize(last.result.source) }, parent: c.height, parentReviewBounds: c.overlap,
+      settings: last.settings, scope: heightSectionScope }, null, 2)], { type: "application/json" }), "height-cell-section-summary.json");
+    return;
+  }
   download(new Blob([JSON.stringify({schema:"cloudanalyzer.distance_section.v1",source:{...describe(c.source),...summarize(last.result.source)},
     reference:{...describe(c.reference),...summarize(last.result.reference)},regionRank:c.regionRank,cellRank:c.cellRank,cellBounds:c.bounds,comparisonOverlap:c.overlap,settings:last.settings,
     scope:"All finite loaded points inside a closed straight XY band, including non-exceeding points; only the selected pair, irrespective of visibility. The context band is not clipped to comparisonOverlap. No sampling or nearest-point height correspondence; not a registration or missing-map accuracy score."},null,2)],{type:"application/json"}),"distance-section-summary.json");
@@ -125,11 +147,17 @@ $("regions-section-csv").onclick=()=>{
   if(!last||!valid(last.context))return;
   const rows=["cloud_role,cloud_id,distance_along,x,y,z"];
   for(const role of ["source","reference"] as const){const s=last.result[role],id=last.context[role].cloud.id;
-    for(let i=0;i<s.along.length;i++)rows.push([role,id,s.along[i],...s.positions.subarray(i*3,i*3+3)].join(","));}
-  download(new Blob([rows.join("\n")+"\n"],{type:"text/csv"}),"distance-section-points.csv");
+    for(let i=0;i<s.along.length;i++)rows.push([last.context.height ? (role === "source" ? "after" : "before") : role,id,s.along[i],...s.positions.subarray(i*3,i*3+3)].join(","));}
+  download(new Blob([rows.join("\n")+"\n"],{type:"text/csv"}),last.context.height ? "height-cell-section-points.csv" : "distance-section-points.csv");
 };
-addReportSection("distance-section",()=>last&&valid(last.context)?{title:`Section: ${last.context.source.name} / ${last.context.reference.name}`,
+addReportSection("distance-section",()=>last&&!last.context.height&&valid(last.context)?{title:`Section: ${last.context.source.name} / ${last.context.reference.name}`,
   metrics:{sourcePoints:{label:"Source points in section",value:last.result.source.selectedPoints},referencePoints:{label:"Reference points in section",value:last.result.reference.selectedPoints}},
   notes:[`Region ${last.context.regionRank}, cell ${last.context.cellRank}; ${last.settings.axis.toUpperCase()} length ${last.settings.length}, width ${last.settings.width}; all loaded band points, not just threshold exceedances.`,
     last.context.overlap ? `Parent comparison overlap XY [${last.context.overlap.join(", ")}]; the context band is not clipped to it.` : "Parent comparison uses the full loaded query cloud.",
     "Raw heights with no nearest-point correspondence. Empty bands, different sampling or different surfaces do not establish missing-map or registration accuracy."]}:null);
+addReportSection("height-cell-section", () => last?.context.height && valid(last.context) ? {
+  title: `Height cell section: ${last.context.height.label}`, metrics: {
+    beforePoints: { label: "Before loaded points in band", value: last.result.reference.selectedPoints },
+    afterPoints: { label: "After loaded points in band", value: last.result.source.selectedPoints },
+  }, notes: [heightSectionScope, JSON.stringify(last.context.height), `Section ${JSON.stringify(last.settings)}; parent bounds ${JSON.stringify(last.context.overlap)}.`],
+} : null);

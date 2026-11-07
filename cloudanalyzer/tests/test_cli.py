@@ -1448,7 +1448,7 @@ class TestCLI:
         assert data["tracking"]["id_switches"] == 1
 
     def test_web_heatmap_flag(self, tmp_path, identical_pcd, monkeypatch):
-        import cloudanalyzer_cli.main as cli_main
+        import cloudanalyzer_cli.commands.tiles_web as cli_main
 
         source = tmp_path / "source.pcd"
         target = tmp_path / "target.pcd"
@@ -1496,7 +1496,7 @@ class TestCLI:
         assert called["trajectory_path"] is None
 
     def test_web_trajectory_overlay_flags(self, tmp_path, identical_pcd, monkeypatch):
-        import cloudanalyzer_cli.main as cli_main
+        import cloudanalyzer_cli.commands.tiles_web as cli_main
         import open3d as o3d
 
         source = tmp_path / "source.pcd"
@@ -1568,7 +1568,7 @@ class TestCLI:
         assert called["trajectory_align_rigid"] is True
 
     def test_web_export_flags(self, tmp_path, identical_pcd, monkeypatch):
-        import cloudanalyzer_cli.main as cli_main
+        import cloudanalyzer_cli.commands.tiles_web as cli_main
         import open3d as o3d
 
         source = tmp_path / "source.pcd"
@@ -1647,7 +1647,7 @@ class TestCLI:
         assert "Viewer mode:  heatmap" in result.output
 
     def test_lidar_odometry_view_trajectory_only(self, tmp_path, monkeypatch):
-        import cloudanalyzer_cli.main as cli_main
+        import cloudanalyzer_cli.commands.tiles_web as cli_main
 
         trajectory = _write_csv_trajectory(
             tmp_path / "odom.csv",
@@ -1704,7 +1704,7 @@ class TestCLI:
         assert called["slam_debug_report_path"] == str(tmp_path / "slam_debug_report.json")
 
     def test_lidar_odometry_export_with_map_and_reference(self, tmp_path, identical_pcd, monkeypatch):
-        import cloudanalyzer_cli.main as cli_main
+        import cloudanalyzer_cli.commands.tiles_web as cli_main
         import open3d as o3d
 
         map_path = tmp_path / "map.pcd"

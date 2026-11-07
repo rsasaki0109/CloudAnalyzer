@@ -1,3 +1,7 @@
+import { mappingProducer, PRODUCER_BYTES } from "./mapping-producer.ts";
+import { PROPOSAL_BYTES, parseMappingLocations, type MappingLocations } from "./mapping-locations.ts";
+import { TRAJECTORY_BYTES, parseMappingTrajectory, unavailableTrajectory, type MappingTrajectory } from "./mapping-trajectory.ts";
+import { HISTORY_BYTES, parseMappingHistory, type MappingHistory } from "./mapping-history.ts";
 /** Verify a portable generated-map review ZIP before any browser map changes. */
 import type { SourceQualityReport } from "./app/vectormap";
 import { indexReviewZip, readReviewMember } from "./review-zip.ts";
@@ -8,6 +12,10 @@ const REQUIRED = ["map", "graph", "trajectory", "hd_map", "hd_editable_map", "hd
 type ObjectValue = Record<string, unknown>;
 interface Descriptor { path: string; sha256: string; bytes: number }
 export interface MappingReview {
+  producer: string[];
+  history: MappingHistory;
+  locations: MappingLocations;
+  trajectory: MappingTrajectory;
   preview: { sourceCount: number; previewCount: number; stride: number } | null;
   roles: Record<string, string>;
   members: Map<string, File>;
@@ -105,6 +113,10 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
   }
   const retain = new Set([preview ? roles.preview_map : roles.map, roles.hd_editable_map, roles.hd_source_audits]);
   const members = new Map<string, File>();
+  let locations: MappingLocations = {digest:"",candidates:new Map(),unavailable:"Source proposal is unavailable."};
+  let trajectory = unavailableTrajectory("Saved trajectory is unavailable.");
+  let history: MappingHistory = { steps: [], unavailable: "Saved decision history is unavailable." };
+  let imported: unknown, execution: unknown;
   let done = 0, total = header.byteLength;
   for (const artifact of files) {
     signal.throwIfAborted();
@@ -113,6 +125,35 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
     const data = await readReviewMember(file, member, signal);
     const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", data))].map(n => n.toString(16).padStart(2, "0")).join("");
     if (hash !== artifact.sha256) throw new Error(`Review artifact hash differs: ${artifact.path}`);
+    if (artifact.path === roles.slam_import || artifact.path === roles.glim_execution_report) {
+      let parsed: unknown = null;
+      if (data.byteLength <= PRODUCER_BYTES) {
+        try { parsed = JSON.parse(decoder.decode(data)); } catch { /* Unavailable evidence, maps remain usable. */ }
+      }
+      if (artifact.path === roles.slam_import) imported = parsed;
+      if (artifact.path === roles.glim_execution_report) execution = parsed;
+    }
+    if (artifact.path === roles.source_proposal) {
+      if (data.byteLength > PROPOSAL_BYTES) locations.unavailable = "Source proposal exceeds the 8 MiB display limit.";
+      else {
+        try { locations = parseMappingLocations(JSON.parse(decoder.decode(data)), artifact.sha256); }
+        catch { locations.unavailable = "Source proposal is not valid UTF-8 JSON."; }
+      }
+    }
+    if (artifact.path === roles.trajectory) {
+      if (data.byteLength > TRAJECTORY_BYTES) trajectory = unavailableTrajectory("Trajectory exceeds the 16 MiB display limit.");
+      else {
+        try { trajectory = parseMappingTrajectory(decoder.decode(data)); }
+        catch { trajectory = unavailableTrajectory("Saved trajectory is not valid UTF-8."); }
+      }
+    }
+    if (artifact.path === roles.decision_history) {
+      if (data.byteLength > HISTORY_BYTES) history = { steps: [], unavailable: "Saved history exceeds the 8 MiB display limit. Download the original package to inspect it." };
+      else {
+        try { history = parseMappingHistory(JSON.parse(decoder.decode(data))); }
+        catch { history = { steps: [], unavailable: "Saved history is not valid UTF-8 JSON." }; }
+      }
+    }
     if (retain.has(artifact.path)) members.set(artifact.path, new File([data], artifact.path.split("/").at(-1)!));
     total += data.byteLength;
     progress(++done, files.length);
@@ -131,5 +172,6 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
     const width = 24 + 4 * attributes.length;
     if (rawPreview!.record_size_bytes !== width || file.size !== size + preview.previewCount * width) throw new Error("Preview record bytes differ from manifest");
   }
-  return { preview, roles, members, attribution: typeof manifest.attribution === "string" ? manifest.attribution : "", review, verifiedFiles: files.length, uncompressedBytes: total };
+  const producer = mappingProducer(imported, execution, byPath.get(roles.source_trajectory), byPath.get(roles.glim_execution_report));
+  return { producer, locations, trajectory, history, preview, roles, members, attribution: typeof manifest.attribution === "string" ? manifest.attribution : "", review, verifiedFiles: files.length, uncompressedBytes: total };
 }

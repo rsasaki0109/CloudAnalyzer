@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from ca import mapping_connections as connections, mapping_job as jobs, mapping_run as runs
-from tests.test_mapping_job import _attach_lane_native, _corridor_report, _run_layout, job_backend
+from tests.test_mapping_job import _attach_lane_native, _corridor_report, _run_layout, job_backend  # noqa: F401 (pytest fixture)
 
 
 def _pieces(count=3):

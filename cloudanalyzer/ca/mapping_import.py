@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import io
 from pathlib import Path
 import platform
 import shutil
@@ -50,6 +52,59 @@ def _space(root: Path, output_budget: int) -> dict[str, Any]:
             "estimated_import_output_bytes": output_budget, "point_map_copied": False}
 
 
+def inspect_tum_trajectory(path: str | Path) -> dict[str, Any]:
+    """Validate a bounded TUM snapshot, regardless of the producer's extension."""
+    trajectory = Path(path)
+    if not trajectory.is_file() or not 0 < trajectory.stat().st_size <= MAX_TRAJECTORY_BYTES:
+        raise ValueError("TUM trajectory is missing, empty or exceeds its size limit")
+    with trajectory.open('rb') as stream:
+        raw = stream.read(MAX_TRAJECTORY_BYTES + 1)
+    if not raw or len(raw) > MAX_TRAJECTORY_BYTES:
+        raise ValueError("TUM trajectory is empty or exceeds its size limit")
+    rows = np.loadtxt(io.BytesIO(raw), ndmin=2)
+    if rows.ndim != 2 or rows.shape[1] != 8 or len(rows) < 2 or not np.isfinite(rows).all():
+        raise ValueError("TUM needs at least two finite timestamped poses with eight columns")
+    with np.errstate(over="ignore", invalid="ignore"):
+        norms = np.linalg.norm(rows[:, 4:], axis=1)
+        increasing = np.all(np.diff(rows[:, 0]) > 0)
+        path_length = float(np.linalg.norm(np.diff(rows[:, 1:4], axis=0), axis=1).sum())
+    if not increasing or not np.allclose(norms, 1., atol=1e-5, rtol=0):
+        raise ValueError("TUM timestamps must increase strictly and quaternions must be unit length")
+    if not np.isfinite(path_length):
+        raise ValueError("TUM path length must be finite")
+    return {"schema": "cloudanalyzer.tum_preflight.v1", "pose_rows": len(rows),
+            "first_timestamp": float(rows[0, 0]), "last_timestamp": float(rows[-1, 0]),
+            "path_length_m": path_length, "bytes": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(), "accuracy_verified": False}
+
+
+def inspect_slam_inputs(map_path: str, trajectory_path: str, provenance: dict[str, Any]) -> dict[str, Any]:
+    """Read-only preflight shared by import and external SLAM producers.
+
+    Validates representation, not common-frame truth or estimator accuracy.
+    Does not create a job or require the native mapping backend.
+    """
+    declared = _provenance(provenance)
+    cloud, trajectory = Path(map_path).resolve(), Path(trajectory_path).resolve()
+    if cloud.suffix.lower() != ".ply" or trajectory.suffix.lower() != ".tum":
+        raise ValueError("external mapping inputs must be a .ply map and a .tum trajectory")
+    for path, limit in [(cloud, MAX_MAP_BYTES), (trajectory, MAX_TRAJECTORY_BYTES)]:
+        if not path.is_file() or not 0 < path.stat().st_size <= limit:
+            raise ValueError(f"input is missing, empty or exceeds its import size limit: {path}")
+    trajectory_check = inspect_tum_trajectory(trajectory)
+    # Use the existing scan reader; retain the original PLY, including attributes.
+    points = load_frame(cloud)
+    if points.ndim != 2 or points.shape[1] != 3 or not len(points) or not np.isfinite(points).all():
+        raise ValueError("map must contain finite XYZ points")
+    count = len(points)
+    bounds = {"minimum": points.min(axis=0).tolist(), "maximum": points.max(axis=0).tolist()}
+    del points
+    return {"schema": "cloudanalyzer.slam_preflight.v1", "producer": declared,
+            "map_points": count, "map_bounds": bounds,
+            **{key: trajectory_check[key] for key in ("pose_rows", "first_timestamp", "last_timestamp", "path_length_m")}, "frame_alignment_verified": False,
+            "accuracy_verified": False}
+
+
 def import_mapping_job(
     map_path: str, trajectory_path: str, out_dir: str, provenance: dict[str, Any],
     max_attempts: int = 6, minimum_retained_fraction: float = .9,
@@ -80,25 +135,33 @@ def import_mapping_job(
             raise ValueError(f"input is missing, empty or exceeds its import size limit: {path}")
     storage = _space(root, 1024**2)
     inputs = {"map": jobs._artifact(cloud), "source_trajectory": jobs._artifact(trajectory)}
+    adapter = declared["configuration"].get("cloudanalyzer_glim_export")
+    if adapter is not None:
+        if not isinstance(adapter, dict) or adapter.get("schema") != "cloudanalyzer.glim_export.v1":
+            raise ValueError("invalid GLIM adapter provenance")
+        originals = adapter.get("inputs")
+        if not isinstance(originals, dict):
+            raise ValueError("missing GLIM export identities")
+        for original, current in [("map", "map"), ("trajectory", "source_trajectory")]:
+            ref = originals.get(original)
+            if not isinstance(ref, dict) or any(ref.get(key) != inputs[current][key] for key in ("sha256", "bytes")):
+                raise ValueError("GLIM export changed after preparation")
+    if adapter is not None and adapter.get('execution') is not None:
+        execution = adapter['execution']
+        if (not isinstance(execution, dict) or execution.get('schema') != 'cloudanalyzer.glim_execution_link.v1'
+                or execution.get('trajectory_sha256') != inputs['source_trajectory']['sha256']
+                or not isinstance(execution.get('report'), dict)):
+            raise ValueError('invalid GLIM execution link')
+        report = execution['report']
+        if set(report) != {'path', 'sha256', 'bytes'} or not isinstance(report['path'], str):
+            raise ValueError('invalid GLIM execution report identity')
+        jobs._verify(report)
+        inputs['glim_execution_report'] = report
+    preflight = inspect_slam_inputs(str(cloud), str(trajectory), declared)
     rows = np.loadtxt(trajectory, ndmin=2)
-    if rows.ndim != 2 or rows.shape[1] != 8 or len(rows) < 2 or not np.isfinite(rows).all():
-        raise ValueError("TUM needs at least two finite timestamped poses with eight columns")
-    norms = np.linalg.norm(rows[:, 4:], axis=1)
-    if not np.all(np.diff(rows[:, 0]) > 0) or not np.allclose(norms, 1., atol=1e-5, rtol=0):
-        raise ValueError("TUM timestamps must increase strictly and quaternions must be unit length")
     poses, _ = read_trajectory(trajectory)
-    if not np.isfinite(poses).all():
-        raise ValueError("TUM conversion produced nonfinite poses")
-    with np.errstate(over="ignore", invalid="ignore"):
-        path_length = float(np.linalg.norm(np.diff(poses[:, :3, 3], axis=0), axis=1).sum())
-    if not np.isfinite(path_length):
-        raise ValueError("TUM path length must be finite")
-    # Use the existing scan reader; retain the original PLY, including attributes.
-    points = load_frame(cloud)
-    if points.ndim != 2 or points.shape[1] != 3 or not len(points) or not np.isfinite(points).all():
-        raise ValueError("map must contain finite XYZ points")
-    count = len(points)
-    del points
+    norms = np.linalg.norm(rows[:, 4:], axis=1)
+    path_length, count = preflight["path_length_m"], preflight["map_points"]
     for artifact in inputs.values():
         jobs._verify(artifact)
     native = jobs._native()
@@ -106,7 +169,7 @@ def import_mapping_job(
     root.mkdir(parents=True, exist_ok=False)
     with jobs._locked(root):
         source = {"schema": SCHEMA, "inputs": inputs, "producer_declaration": declared,
-                  "alignment_applied": False, "coordinates_rescaled": False,
+                  "preflight": preflight, "alignment_applied": False, "coordinates_rescaled": False,
                   "timestamps_rebased": False, "graph_role": "pose_snapshot_without_constraints"}
         jobs._save(root / "slam-import.json", source)
         job: dict[str, Any] = {

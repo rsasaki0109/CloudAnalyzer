@@ -1,0 +1,1323 @@
+{
+  "schema": "cloudanalyzer.nclt_survey_workflow.v1",
+  "startedAt": "2026-10-24T08:30:54.828Z",
+  "stages": [
+    {
+      "name": "two_pass_comparison_ready",
+      "elapsedMs": 52871,
+      "candidates": 169
+    },
+    {
+      "name": "same_frame_map_draft_built",
+      "elapsedMs": 55614
+    },
+    {
+      "name": "follow_up_saved_without_map_or_graph_mutation",
+      "elapsedMs": 60879
+    },
+    {
+      "name": "task_archive_reopened",
+      "elapsedMs": 60960
+    }
+  ],
+  "scope": "Automated real-data workflow only. Draft lane layout is a configured hypothesis, not an independently surveyed map. Physical change labels, false positives, recall, manual search times and usability improvements are not measured.",
+  "sources": [
+    {
+      "name": "nclt-2012-04-29.mcap",
+      "bytes": 10054898,
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "data": "University of Michigan NCLT, 190-second thinned excerpt; ODbL/DBCL"
+    },
+    {
+      "name": "nclt-2012-06-15.mcap",
+      "bytes": 9387931,
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "data": "University of Michigan NCLT, 190-second thinned excerpt; ODbL/DBCL"
+    }
+  ],
+  "settings": {
+    "mapLayout": {
+      "forwardLanes": 1,
+      "backwardLanes": 0,
+      "widthM": 3.5,
+      "pieceLengthM": 50,
+      "speedKmh": 40,
+      "traffic": "right",
+      "semanticStatus": "unverified configured assumptions"
+    },
+    "overlap": {
+      "xyMarginM": 0,
+      "heightMarginM": 1
+    }
+  },
+  "groundTruth": {
+    "independentLanelet2": false,
+    "labeledChanges": false,
+    "manualParticipant": false
+  },
+  "comparison": {
+    "identity": {
+      "algorithm": "sha256-ply-graph-v1",
+      "digest": "9973214e5174da5b0eaa55245b809b93612a6da9914ab4addf886d00774f2d6d"
+    },
+    "context": {
+      "graph": "nclt-2012-04-29.mcap + nclt-2012-06-15.mcap",
+      "sessions": [
+        {
+          "name": "nclt-2012-04-29.mcap",
+          "first": 0,
+          "count": 199
+        },
+        {
+          "name": "nclt-2012-06-15.mcap",
+          "first": 199,
+          "count": 195
+        }
+      ],
+      "splitNode": 236,
+      "firstNodes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        17,
+        18,
+        19,
+        21,
+        23,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        49,
+        50,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        106,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        118,
+        120,
+        121,
+        122,
+        124,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        148,
+        149,
+        151,
+        152,
+        153,
+        154,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        180,
+        181,
+        182,
+        183,
+        185,
+        187,
+        188,
+        190,
+        191,
+        193,
+        194,
+        195,
+        196,
+        198,
+        200,
+        202,
+        204,
+        205,
+        206,
+        207,
+        209,
+        210,
+        211,
+        212,
+        214,
+        215,
+        216,
+        218,
+        220,
+        221,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        230,
+        231,
+        232,
+        234,
+        235
+      ],
+      "secondNodes": [
+        236,
+        237,
+        238,
+        240,
+        242,
+        243,
+        244,
+        245,
+        247,
+        248,
+        249,
+        250,
+        252,
+        254,
+        255,
+        256,
+        259,
+        261,
+        262,
+        263,
+        265,
+        266,
+        267,
+        269,
+        270,
+        271,
+        272,
+        273,
+        275,
+        276,
+        277,
+        278,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        300,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309,
+        311,
+        312,
+        313,
+        314,
+        315,
+        316,
+        317,
+        318,
+        319,
+        320,
+        321,
+        322,
+        323,
+        325,
+        326,
+        327,
+        328,
+        329,
+        331,
+        332,
+        333,
+        334,
+        335,
+        336,
+        338,
+        339,
+        340,
+        341,
+        343,
+        344,
+        345,
+        346,
+        347,
+        349,
+        350,
+        351,
+        352,
+        354,
+        356,
+        357,
+        358,
+        359,
+        360,
+        361,
+        362,
+        363,
+        364,
+        365,
+        366,
+        367,
+        368,
+        369,
+        370,
+        371,
+        372,
+        373,
+        374,
+        375,
+        376,
+        377,
+        378,
+        380,
+        381,
+        382,
+        383,
+        384,
+        386,
+        387,
+        389,
+        390,
+        391,
+        392,
+        393,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400,
+        401,
+        402,
+        403,
+        404,
+        405,
+        406,
+        407,
+        408,
+        409,
+        411,
+        412,
+        413,
+        414,
+        415,
+        416,
+        417,
+        418,
+        420,
+        421,
+        422,
+        424,
+        425,
+        427,
+        428,
+        429,
+        430,
+        432,
+        433,
+        435,
+        437,
+        438,
+        439,
+        440,
+        442,
+        443,
+        444,
+        445,
+        447,
+        448,
+        449,
+        450,
+        451,
+        453,
+        455,
+        457,
+        458,
+        460,
+        462,
+        463,
+        464,
+        465,
+        467,
+        468,
+        470,
+        472,
+        473
+      ],
+      "mapVoxel": 0.3,
+      "reach": 50,
+      "m3c2": {
+        "normalRadius": 1,
+        "projectionRadius": 0.5,
+        "maxDepth": 2,
+        "coreSpacing": 0.5
+      },
+      "clustering": {
+        "minChange": 0.3,
+        "link": 1,
+        "minPoints": 8
+      }
+    },
+    "diagnostics": {
+      "crossPartLoops": [
+        {
+          "from": 0,
+          "to": 236,
+          "weightedResidual": 0.9368344057832371
+        },
+        {
+          "from": 4,
+          "to": 240,
+          "weightedResidual": 0.5877760303476468
+        },
+        {
+          "from": 9,
+          "to": 245,
+          "weightedResidual": 0.534087868688544
+        },
+        {
+          "from": 15,
+          "to": 250,
+          "weightedResidual": 0.2596249732234689
+        },
+        {
+          "from": 27,
+          "to": 263,
+          "weightedResidual": 0.35998677345414504
+        },
+        {
+          "from": 33,
+          "to": 269,
+          "weightedResidual": 0.43670225300129745
+        },
+        {
+          "from": 44,
+          "to": 280,
+          "weightedResidual": 0.43426309734051144
+        },
+        {
+          "from": 49,
+          "to": 285,
+          "weightedResidual": 0.47933783494074633
+        },
+        {
+          "from": 54,
+          "to": 290,
+          "weightedResidual": 0.31562086852915017
+        },
+        {
+          "from": 59,
+          "to": 295,
+          "weightedResidual": 0.556063023670591
+        },
+        {
+          "from": 64,
+          "to": 300,
+          "weightedResidual": 0.3725383088258032
+        },
+        {
+          "from": 69,
+          "to": 305,
+          "weightedResidual": 0.42956116521789534
+        },
+        {
+          "from": 75,
+          "to": 311,
+          "weightedResidual": 0.6445582859905136
+        },
+        {
+          "from": 80,
+          "to": 316,
+          "weightedResidual": 0.4200584173563665
+        },
+        {
+          "from": 84,
+          "to": 321,
+          "weightedResidual": 0.2447580102734056
+        },
+        {
+          "from": 90,
+          "to": 326,
+          "weightedResidual": 0.43917044045178505
+        },
+        {
+          "from": 95,
+          "to": 331,
+          "weightedResidual": 0.14511787351889982
+        },
+        {
+          "from": 100,
+          "to": 336,
+          "weightedResidual": 0.2831589006614887
+        },
+        {
+          "from": 109,
+          "to": 346,
+          "weightedResidual": 0.19031143052340502
+        },
+        {
+          "from": 115,
+          "to": 351,
+          "weightedResidual": 0.2663506898019351
+        },
+        {
+          "from": 120,
+          "to": 356,
+          "weightedResidual": 0.4414059857806092
+        },
+        {
+          "from": 126,
+          "to": 361,
+          "weightedResidual": 0.20094549061902078
+        },
+        {
+          "from": 130,
+          "to": 366,
+          "weightedResidual": 0.4480367488720003
+        },
+        {
+          "from": 136,
+          "to": 371,
+          "weightedResidual": 0.4034702620088393
+        },
+        {
+          "from": 140,
+          "to": 376,
+          "weightedResidual": 0.28410786767793633
+        },
+        {
+          "from": 145,
+          "to": 381,
+          "weightedResidual": 0.3935663435617668
+        },
+        {
+          "from": 149,
+          "to": 386,
+          "weightedResidual": 0.3519298920090608
+        },
+        {
+          "from": 154,
+          "to": 391,
+          "weightedResidual": 0.8558537710372645
+        },
+        {
+          "from": 159,
+          "to": 396,
+          "weightedResidual": 0.5352713511693047
+        },
+        {
+          "from": 164,
+          "to": 401,
+          "weightedResidual": 0.2289262533530187
+        },
+        {
+          "from": 169,
+          "to": 406,
+          "weightedResidual": 0.3872420071034891
+        },
+        {
+          "from": 174,
+          "to": 411,
+          "weightedResidual": 0.2298870282108223
+        },
+        {
+          "from": 180,
+          "to": 416,
+          "weightedResidual": 0.39985783549036885
+        },
+        {
+          "from": 190,
+          "to": 427,
+          "weightedResidual": 0.6614088612239846
+        },
+        {
+          "from": 26,
+          "to": 443,
+          "weightedResidual": 0.4967797737769198
+        },
+        {
+          "from": 23,
+          "to": 448,
+          "weightedResidual": 0.5658437155824616
+        },
+        {
+          "from": 218,
+          "to": 453,
+          "weightedResidual": 0.3176140617815749
+        },
+        {
+          "from": 13,
+          "to": 458,
+          "weightedResidual": 1.2351739737310872
+        },
+        {
+          "from": 228,
+          "to": 464,
+          "weightedResidual": 0.5408433556811768
+        },
+        {
+          "from": 234,
+          "to": 470,
+          "weightedResidual": 0.20543314290479978
+        }
+      ],
+      "residualsAvailable": 40,
+      "weightedRms": 0.4862520338973448,
+      "weightedMax": 1.2351739737310872,
+      "corePoints": 163699,
+      "measured": 145113,
+      "unmeasured": 18586,
+      "measuredFraction": 0.886462348578794
+    },
+    "candidateCount": 169,
+    "largestCandidates": [
+      {
+        "rank": 1,
+        "points": 655,
+        "centroid": [
+          8.961525313413643,
+          -1.930510133261983,
+          -0.6808616462065152
+        ],
+        "bounds": [
+          3.0870025297825823,
+          -11.723647703012867,
+          -1.887256356294558,
+          14.308588909301248,
+          9.350022372650937,
+          1.6834331893944432
+        ],
+        "meanChange": 0.4731039169180488,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 2,
+        "points": 533,
+        "centroid": [
+          17.858742927802933,
+          -19.399384004482876,
+          -2.2139592736060876
+        ],
+        "bounds": [
+          11.696798341047671,
+          -26.53674411904578,
+          -2.7396895029613875,
+          23.996058799804885,
+          -13.500793919820921,
+          -1.3302043803904589
+        ],
+        "meanChange": -0.6963163948640584,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 3,
+        "points": 309,
+        "centroid": [
+          -18.134513879780794,
+          -82.73221173120156,
+          1.4109392508012308
+        ],
+        "bounds": [
+          -22.06753262552657,
+          -91.69757313908539,
+          -0.45639721068118566,
+          -15.560072143642163,
+          -77.34349183650507,
+          3.3909605365060647
+        ],
+        "meanChange": 0.4943614223049683,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 4,
+        "points": 158,
+        "centroid": [
+          11.480354969428038,
+          25.456687669694684,
+          7.80267212466407
+        ],
+        "bounds": [
+          7.114891970173449,
+          23.60015097726997,
+          5.44826320889325,
+          16.96195112679827,
+          27.5222723008497,
+          10.481520478520883
+        ],
+        "meanChange": 0.42702525854110696,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 5,
+        "points": 153,
+        "centroid": [
+          -4.035953660164394,
+          12.890652546571106,
+          1.8416405258476312
+        ],
+        "bounds": [
+          -6.216806769198308,
+          9.199012581575232,
+          0.7061332357635101,
+          -2.1094576714298654,
+          16.072293199728602,
+          2.947591093289781
+        ],
+        "meanChange": 0.4500058684863297,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 6,
+        "points": 146,
+        "centroid": [
+          4.995751593602149,
+          34.51356235388038,
+          3.9140338295015957
+        ],
+        "bounds": [
+          2.296106561136959,
+          30.11121133056733,
+          2.6871157940262442,
+          10.4060866494537,
+          38.91755130506769,
+          5.518233222115465
+        ],
+        "meanChange": -0.5770328165325401,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 7,
+        "points": 143,
+        "centroid": [
+          15.210453056904077,
+          -6.443588203969982,
+          -1.7135870285437846
+        ],
+        "bounds": [
+          13.378793138979486,
+          -9.626708495828524,
+          -2.9693822617492893,
+          17.44083030303778,
+          -3.702623881158207,
+          -0.954434663184005
+        ],
+        "meanChange": 0.8777759852526068,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 8,
+        "points": 118,
+        "centroid": [
+          -16.381978075864684,
+          -106.9126028054227,
+          4.802563568946251
+        ],
+        "bounds": [
+          -20.82828152668105,
+          -110.1691052377009,
+          3.95627018730547,
+          -10.132610182818802,
+          -102.88917858347503,
+          6.248652933289796
+        ],
+        "meanChange": -0.5878966147616757,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 9,
+        "points": 102,
+        "centroid": [
+          10.837078171725835,
+          25.5972712669003,
+          5.715442658031377
+        ],
+        "bounds": [
+          7.768990121454564,
+          23.813132668219694,
+          2.5332933439563967,
+          14.61696303850557,
+          28.216611753693115,
+          8.128604377529285
+        ],
+        "meanChange": -0.4764807960566352,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      },
+      {
+        "rank": 10,
+        "points": 95,
+        "centroid": [
+          -16.221404228732126,
+          -96.9227187963636,
+          10.354987252817715
+        ],
+        "bounds": [
+          -19.375817636004033,
+          -100.17590803901626,
+          8.912259096587075,
+          -13.117505468112416,
+          -93.9705265723377,
+          12.116313932096542
+        ],
+        "meanChange": 0.7025479426509453,
+        "decision": "unreviewed",
+        "note": "",
+        "updatedAt": null
+      }
+    ],
+    "initialReviewSha256": "3fca37e6ac6a2dac67736026bc1c77e8ff282afc64e51ec7b84b9c19f479c80a"
+  },
+  "resultPly": {
+    "bytes": 6711939,
+    "sha256": "915ed201b55d0f3ced5e5527619b0e92d77462ca468de2b9a747a14d2f298963"
+  },
+  "mapBuild": {
+    "millis": 268,
+    "status": "Draft roads added. Review the boundaries, lane directions and junctions before export.",
+    "report": "1 road stretches, 5 lanes, 243.1 m. Added 243.1 m; reused 0 m of existing lanes. Measured sources before fitting, left to right: 65%, 58%. Tracking changed 132 sources; fitted 254 vertices (maximum XY movement 0.5 m). Coverage-edge anchor candidates ignored: 0. 97 boundary vertices use the configured lane width rather than a detected feature. 226 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review. 91 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines. 132 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy. 254 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions. Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps. Draft map: verify lane counts, travel directions, junctions and boundary geometry before use.",
+    "lanes": 5
+  },
+  "sourceQuality": {
+    "summary": "5 lanes checked; 3 need source review; 0 omitted; 0 malformed. Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules.",
+    "failedLanes": [
+      "Lane 3: centre 84% (end support missing), left 79% (end support missing), right 78% (end support missing)",
+      "Lane 6: centre 21% (end support missing), left 4% (end support missing), right 4% (end support missing)",
+      "Lane 9: centre 60% (end support missing), left 54%, right 50% (end support missing)"
+    ]
+  },
+  "lanelet2": {
+    "bytes": 68356,
+    "sha256": "23b8f0e33b26ed1daf928f7046eef69b2822f8669370466ba7c0603e76404555",
+    "projector": "projector_type: Local\n",
+    "warnings": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)"
+  },
+  "associations": {
+    "candidateCount": 169,
+    "withOverlap": 18,
+    "unchecked": 0,
+    "selected": {
+      "rank": 1,
+      "ids": [
+        3,
+        15
+      ],
+      "checked": 5,
+      "invalid": 0,
+      "limited": 0,
+      "total": 5,
+      "xyMargin": 0,
+      "zMargin": 1
+    }
+  },
+  "task": {
+    "bytes": 8926,
+    "sha256": "b96799029935f2f140e4acf349b0804f29aee9c686663ac93ef34bdf755f4177",
+    "record": {
+      "id": 1,
+      "createdAt": "2026-10-24T08:31:54.534Z",
+      "updatedAt": "2026-10-24T08:31:54.924Z",
+      "status": "deferred",
+      "note": "Geometric overlap only. Verify source observations and registration before deciding whether this generated lane draft needs an update.",
+      "staleReason": null,
+      "comparison": {
+        "analyzedAt": "2026-10-24T08:31:47.027Z",
+        "graph": "nclt-2012-04-29.mcap + nclt-2012-06-15.mcap",
+        "identity": {
+          "algorithm": "sha256-ply-graph-v1",
+          "digest": "9973214e5174da5b0eaa55245b809b93612a6da9914ab4addf886d00774f2d6d"
+        }
+      },
+      "candidate": {
+        "rank": 1,
+        "points": 655,
+        "centroid": [
+          8.961525313413643,
+          -1.930510133261983,
+          -0.6808616462065152
+        ],
+        "bounds": [
+          3.0870025297825823,
+          -11.723647703012867,
+          -1.887256356294558,
+          14.308588909301248,
+          9.350022372650937,
+          1.6834331893944432
+        ],
+        "meanChange": 0.4731039169180488,
+        "decision": "deferred",
+        "note": "Real NCLT April/June data. Candidate remains unverified: registration error, observation differences and physical change require source review. Lane map is a generated hypothesis.",
+        "updatedAt": "2026-10-24T08:31:51.572Z"
+      },
+      "lane": {
+        "id": 3,
+        "left": [
+          [
+            -0.23147431722454842,
+            0.9329911545303982,
+            -0.1257452323087468
+          ],
+          [
+            2.071916514218099,
+            1.5509147393211913,
+            -0.16046370171277907
+          ],
+          [
+            3.1315146799640017,
+            2.1881626748381984,
+            -0.5674783828160262
+          ],
+          [
+            4.474616722704328,
+            3.323135120111511,
+            -0.7027127085659423
+          ],
+          [
+            5.656313083869579,
+            4.6620427552026085,
+            -0.8037888614023599
+          ],
+          [
+            6.951396242963107,
+            6.1052931012955804,
+            -0.9818414314153664
+          ],
+          [
+            8.466219740179119,
+            7.54408149397864,
+            -1.3488826431413115
+          ],
+          [
+            10.230340731071482,
+            8.791036620585464,
+            -1.484168494434348
+          ],
+          [
+            12.239630192975063,
+            9.654118622013915,
+            -1.692800562351614
+          ],
+          [
+            14.404889037630213,
+            9.870898259040016,
+            -1.8123137853735654
+          ],
+          [
+            16.403748763972082,
+            9.276481432187241,
+            -2.0992024765206745
+          ],
+          [
+            17.752053857580076,
+            7.733579296898,
+            -2.0691330912329313
+          ],
+          [
+            17.999786082979192,
+            5.718776912494746,
+            -2.1495240430892273
+          ],
+          [
+            17.64045226956111,
+            3.651553117552927,
+            -2.191793987474774
+          ],
+          [
+            16.958815494046114,
+            1.6596554303520725,
+            -2.1542821594923103
+          ],
+          [
+            16.11935141131266,
+            -0.17292694793181493,
+            -2.062464844578444
+          ],
+          [
+            15.153320534165607,
+            -1.9068505665665108,
+            -2.1340241619915834
+          ],
+          [
+            14.213487232624972,
+            -3.646709764695204,
+            -2.13683075847
+          ],
+          [
+            13.316131697044042,
+            -5.406654150976464,
+            -1.8828838343458856
+          ],
+          [
+            12.51439589602586,
+            -7.2056595283700435,
+            -1.9085931469939896
+          ],
+          [
+            11.752996809627923,
+            -9.035286989400316,
+            -1.8899753872766156
+          ],
+          [
+            11.004439492410214,
+            -10.893625889350792,
+            -1.930976279918759
+          ],
+          [
+            10.271360414334518,
+            -12.760768755042676,
+            -1.5999688292613596
+          ],
+          [
+            9.522984355922985,
+            -14.586227807127067,
+            1.6463540440560958
+          ],
+          [
+            8.806225895534523,
+            -16.378790915742314,
+            2.0396764876919495
+          ],
+          [
+            8.166305520429097,
+            -18.203836738164163,
+            2.5697002253113115
+          ],
+          [
+            7.605916571977933,
+            -20.117294717981164,
+            2.767638455717753
+          ],
+          [
+            7.330894900609412,
+            -21.092167588261162,
+            3.039289437508869
+          ]
+        ],
+        "right": [
+          [
+            0.42087321442434567,
+            -1.696391163153397,
+            -0.08252475277860971
+          ],
+          [
+            2.9304425629812174,
+            -1.033013107447226,
+            -0.4676513237981087
+          ],
+          [
+            4.5550494056462805,
+            -0.2352323234891979,
+            -0.6747281061642646
+          ],
+          [
+            6.376863442613112,
+            0.9647704006040718,
+            -0.8587043110937373
+          ],
+          [
+            8.003662477283694,
+            2.4350476893332753,
+            -0.9964930959016833
+          ],
+          [
+            9.438093787991125,
+            3.897980208861008,
+            -1.146114454225184
+          ],
+          [
+            10.634738069947453,
+            5.254581230049598,
+            -1.3060795243309704
+          ],
+          [
+            11.68662168714641,
+            6.4655651079701135,
+            -1.5143169213240137
+          ],
+          [
+            12.892635059657373,
+            7.389017411661801,
+            -1.5028515634743336
+          ],
+          [
+            14.266659637506494,
+            7.579514904190403,
+            -1.723335287005994
+          ],
+          [
+            15.189529618646533,
+            7.23582590896628,
+            -1.8443207270633741
+          ],
+          [
+            15.528033434927371,
+            6.802456407740622,
+            -1.7750299449588691
+          ],
+          [
+            15.57763219884216,
+            5.97947465460757,
+            -1.6726125313671412
+          ],
+          [
+            15.22459911866971,
+            4.568436818526927,
+            -1.6324888570663205
+          ],
+          [
+            14.486962785296953,
+            2.8946080707692974,
+            -1.8986735328104583
+          ],
+          [
+            13.616863013056864,
+            1.128526968261185,
+            -1.5654490313491711
+          ],
+          [
+            12.640517719908097,
+            -0.6289779092785234,
+            -1.8233954549097666
+          ],
+          [
+            11.53333662664531,
+            -2.3349918727562717,
+            -1.6167956698919461
+          ],
+          [
+            10.505685397299205,
+            -4.087912853592796,
+            -1.3775332214165381
+          ],
+          [
+            9.780432441021185,
+            -5.989127627083177,
+            -1.434835159349248
+          ],
+          [
+            9.137300183620258,
+            -7.906306347316654,
+            -1.5366231833123307
+          ],
+          [
+            8.355390727054973,
+            -9.738201970320915,
+            -1.5755160586820531
+          ],
+          [
+            7.447237121608614,
+            -11.511096411861216,
+            -1.5999688292613596
+          ],
+          [
+            6.501162475799746,
+            -13.299417453939125,
+            1.6463540440560958
+          ],
+          [
+            5.608915521418543,
+            -15.159700378369864,
+            2.0396764876919495
+          ],
+          [
+            4.855064496553234,
+            -17.07777868462227,
+            2.5697002253113115
+          ],
+          [
+            4.263562808543598,
+            -18.990414969096232,
+            2.767638455717753
+          ],
+          [
+            4.008123520675407,
+            -19.909619515196955,
+            3.039289437508869
+          ]
+        ]
+      },
+      "mapSha256": "1883b68e48e40a783eb2d39fdc9ec2c12d757097365ab2b8be156b34da1f98ce",
+      "overlap": {
+        "xyMargin": 0,
+        "zMargin": 1,
+        "checked": 5,
+        "invalid": 0,
+        "limited": 0,
+        "total": 5
+      }
+    }
+  },
+  "selection": {
+    "rank": 1,
+    "laneId": 3,
+    "candidate": {
+      "rank": 1,
+      "points": 655,
+      "centroid": [
+        8.961525313413643,
+        -1.930510133261983,
+        -0.6808616462065152
+      ],
+      "bounds": [
+        3.0870025297825823,
+        -11.723647703012867,
+        -1.887256356294558,
+        14.308588909301248,
+        9.350022372650937,
+        1.6834331893944432
+      ],
+      "meanChange": 0.4731039169180488,
+      "decision": "unreviewed",
+      "note": "",
+      "updatedAt": null
+    }
+  },
+  "outcome": "passed",
+  "browserErrors": [],
+  "totalMs": 60961
+}

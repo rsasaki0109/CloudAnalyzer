@@ -1,6 +1,5 @@
 """Core compare pipeline."""
 
-import numpy as np
 
 from ca.io import load_point_cloud
 from ca.log import logger

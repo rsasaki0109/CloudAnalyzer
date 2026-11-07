@@ -9,7 +9,7 @@ on:
       - "README.md"
       - "benchmarks/public/**"
       - "cloudanalyzer/ca/core/checks.py"
-      - "cloudanalyzer/cloudanalyzer_cli/main.py"
+      - "cloudanalyzer/cloudanalyzer_cli/**"
       - "cloudanalyzer/tests/test_check_suite.py"
       - "cloudanalyzer/tests/test_cli.py"
       - "cloudanalyzer/tests/test_public_benchmark_pack.py"
@@ -24,7 +24,7 @@ on:
       - "README.md"
       - "benchmarks/public/**"
       - "cloudanalyzer/ca/core/checks.py"
-      - "cloudanalyzer/cloudanalyzer_cli/main.py"
+      - "cloudanalyzer/cloudanalyzer_cli/**"
       - "cloudanalyzer/tests/test_check_suite.py"
       - "cloudanalyzer/tests/test_cli.py"
       - "cloudanalyzer/tests/test_public_benchmark_pack.py"
@@ -60,20 +60,61 @@ jobs:
       - name: Offline benchmark-pack unit test
         run: xvfb-run python -m pytest cloudanalyzer/tests/test_public_benchmark_pack.py -q
 
+      - name: Restore Stanford Bunny archive
+        id: bunny-cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.temp }}/bunny/bunny.tar.gz
+          key: stanford-bunny-archive-v1
+
+      - name: Fetch Stanford Bunny archive
+        id: bunny
+        env:
+          ARCHIVE: ${{ runner.temp }}/bunny/bunny.tar.gz
+          CACHE_HIT: ${{ steps.bunny-cache.outputs.cache-hit }}
+        run: |
+          mkdir -p "$(dirname "$ARCHIVE")"
+          if [ "$CACHE_HIT" != "true" ]; then
+            if ! curl -fsSL --retry 3 --retry-all-errors --retry-delay 5 \
+                --connect-timeout 30 --max-time 300 --max-filesize 134217728 \
+                -o "$ARCHIVE" https://graphics.stanford.edu/pub/3Dscanrep/bunny.tar.gz; then
+              rm -f "$ARCHIVE"
+            fi
+          fi
+          if [ -s "$ARCHIVE" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Stanford Bunny archive sha256: $(sha256sum "$ARCHIVE" | cut -d' ' -f1) (cache hit: ${CACHE_HIT:-false})" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Stanford Bunny unavailable::graphics.stanford.edu could not be reached and no cached archive exists. The pack pipeline is verified with the offline synthetic fixture instead; the Bunny pack itself is not verified in this run."
+            echo "Stanford Bunny archive unavailable: verified the offline synthetic fixture instead." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Build public benchmark pack
-        run: python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
+        env:
+          ARCHIVE: ${{ runner.temp }}/bunny/bunny.tar.gz
+          BUNNY_AVAILABLE: ${{ steps.bunny.outputs.available }}
+        run: |
+          if [ "$BUNNY_AVAILABLE" = "true" ]; then
+            pack=benchmarks/public/stanford-bunny-mini
+            xvfb-run python scripts/build_public_benchmark_pack.py --bunny-archive "$ARCHIVE" --output "$pack"
+          else
+            pack=benchmarks/public/self-qa-synthetic
+            xvfb-run python scripts/build_public_benchmark_pack.py --fixture synthetic --output "$pack"
+          fi
+          echo "PACK_DIR=$pack" >> "$GITHUB_ENV"
 
       - name: Validate suite-pass
         run: |
           xvfb-run ca check \
-            benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml \
+            "$PACK_DIR/configs/suite-pass.cloudanalyzer.yaml" \
             --output-json /tmp/suite-pass.json
 
       - name: Validate suite-regression
         run: |
           set +e
           xvfb-run ca check \
-            benchmarks/public/stanford-bunny-mini/configs/suite-regression.cloudanalyzer.yaml \
+            "$PACK_DIR/configs/suite-regression.cloudanalyzer.yaml" \
             --output-json /tmp/suite-regression.json
           status=$?
           set -e
@@ -86,9 +127,10 @@ jobs:
         run: |
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
 
-          pack_root = Path("benchmarks/public/stanford-bunny-mini")
+          pack_root = Path(os.environ["PACK_DIR"])
           manifest = json.loads((pack_root / "manifest.json").read_text(encoding="utf-8"))
           actual = {
               "suite-pass": json.loads(Path("/tmp/suite-pass.json").read_text(encoding="utf-8")),
@@ -116,5 +158,5 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: public-benchmark-pack
-          path: benchmarks/public/stanford-bunny-mini
+          path: ${{ env.PACK_DIR || 'benchmarks/public/stanford-bunny-mini' }}
           if-no-files-found: error

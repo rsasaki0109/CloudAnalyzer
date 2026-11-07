@@ -26,7 +26,8 @@ cloudanalyzer/
 │   ├── metrics.py          # NN distance, summarize, threshold
 │   ├── evaluate.py         # F1, Chamfer, Hausdorff, AUC, plot
 │   ├── visualization.py    # Colorize, snapshot
-│   ├── report.py           # JSON / Markdown / HTML report generation
+│   ├── report.py           # Report API facade (JSON / Markdown / HTML)
+│   ├── reports/            # One module per report kind (batch, trajectory, run, ...)
 │   ├── compare.py          # Full compare pipeline
 │   ├── diff.py             # Quick diff (no registration)
 │   ├── info.py             # Point cloud metadata
@@ -45,9 +46,10 @@ cloudanalyzer/
 │   ├── pipeline.py         # filter → downsample → evaluate
 │   ├── plot.py             # Multi-F1 comparison, 3D heatmap
 │   └── log.py              # Logging configuration
-├── cli/
-│   ├── __init__.py
-│   └── main.py             # Typer CLI
+├── cloudanalyzer_cli/
+│   ├── main.py             # `ca` entry point; imports command modules in help order
+│   ├── _app.py             # Typer app, sub-apps and shared helpers
+│   └── commands/           # One module per command group (mapping, vectormap, ...)
 ├── tests/                  # Core, CLI, process, and integration tests
 ├── pyproject.toml          # Package config, mypy, pytest
 └── setup.py                # Editable install shim

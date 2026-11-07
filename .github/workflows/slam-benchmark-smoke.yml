@@ -12,7 +12,8 @@ on:
       - "cloudanalyzer/ca/benchmark.py"
       - "cloudanalyzer/ca/run_evaluate.py"
       - "cloudanalyzer/ca/report.py"
-      - "cloudanalyzer/cloudanalyzer_cli/main.py"
+      - "cloudanalyzer/ca/reports/**"
+      - "cloudanalyzer/cloudanalyzer_cli/**"
       - "cloudanalyzer/tests/test_docs_golden_path.py"
   pull_request:
     branches: [main]
@@ -25,7 +26,8 @@ on:
       - "cloudanalyzer/ca/benchmark.py"
       - "cloudanalyzer/ca/run_evaluate.py"
       - "cloudanalyzer/ca/report.py"
-      - "cloudanalyzer/cloudanalyzer_cli/main.py"
+      - "cloudanalyzer/ca/reports/**"
+      - "cloudanalyzer/cloudanalyzer_cli/**"
       - "cloudanalyzer/tests/test_docs_golden_path.py"
   workflow_dispatch:
 

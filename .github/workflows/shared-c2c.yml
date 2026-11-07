@@ -16,6 +16,7 @@ on:
       - "web/tests/gpu-reference-preparation*.test.mjs"
       - "benchmarks/wasm-reference-preparation/**"
       - "web/src/worker.ts"
+      - "web/src/worker/**"
       - "web/src/pool.ts"
       - "web/src/cpu-c2c.ts"
       - "web/src/protocol.ts"
@@ -42,6 +43,7 @@ on:
       - "web/tests/gpu-reference-preparation*.test.mjs"
       - "benchmarks/wasm-reference-preparation/**"
       - "web/src/worker.ts"
+      - "web/src/worker/**"
       - "web/src/pool.ts"
       - "web/src/cpu-c2c.ts"
       - "web/src/protocol.ts"
@@ -61,7 +63,7 @@ jobs:
   shared-c2c:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -79,7 +81,7 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: wasm-pack,wasm-bindgen-cli@0.2.129
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -111,7 +113,7 @@ jobs:
           node --test tests/kdtree-collection*.test.mjs
           node scripts/build-kdtree-collection.mjs --output ../kdtree-collection-ci/build-info.json --out-dir ../kdtree-collection-ci
           node scripts/benchmark-kdtree-collection.mjs --output kdtree-collection-smoke.json --build-info ../kdtree-collection-ci/build-info.json --reference public/samples/lidar_reference.pcd --compared public/samples/lidar_candidate.pcd --warmups 0 --repeats 1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: shared-c2c-smoke

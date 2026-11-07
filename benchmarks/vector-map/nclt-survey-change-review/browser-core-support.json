@@ -1,0 +1,157 @@
+{
+  "protocol": "xy-lane-z-v1",
+  "comparisonIdentity": {
+    "algorithm": "sha256-ply-graph-v1",
+    "digest": "9973214e5174da5b0eaa55245b809b93612a6da9914ab4addf886d00774f2d6d"
+  },
+  "mapSha256": "1883b68e48e40a783eb2d39fdc9ec2c12d757097365ab2b8be156b34da1f98ce",
+  "pairCount": 24,
+  "zeroSupportPairs": 11,
+  "allMatchIndependent": true,
+  "pairs": [
+    {
+      "candidate": 1,
+      "lane": 3,
+      "supported": 77,
+      "total": 655
+    },
+    {
+      "candidate": 1,
+      "lane": 15,
+      "supported": 12,
+      "total": 655
+    },
+    {
+      "candidate": 7,
+      "lane": 3,
+      "supported": 0,
+      "total": 143
+    },
+    {
+      "candidate": 7,
+      "lane": 15,
+      "supported": 20,
+      "total": 143
+    },
+    {
+      "candidate": 25,
+      "lane": 9,
+      "supported": 0,
+      "total": 34
+    },
+    {
+      "candidate": 30,
+      "lane": 12,
+      "supported": 0,
+      "total": 31
+    },
+    {
+      "candidate": 41,
+      "lane": 3,
+      "supported": 7,
+      "total": 23
+    },
+    {
+      "candidate": 41,
+      "lane": 15,
+      "supported": 0,
+      "total": 23
+    },
+    {
+      "candidate": 42,
+      "lane": 12,
+      "supported": 5,
+      "total": 22
+    },
+    {
+      "candidate": 43,
+      "lane": 3,
+      "supported": 20,
+      "total": 21
+    },
+    {
+      "candidate": 48,
+      "lane": 12,
+      "supported": 3,
+      "total": 20
+    },
+    {
+      "candidate": 54,
+      "lane": 9,
+      "supported": 0,
+      "total": 19
+    },
+    {
+      "candidate": 70,
+      "lane": 6,
+      "supported": 0,
+      "total": 14
+    },
+    {
+      "candidate": 79,
+      "lane": 9,
+      "supported": 0,
+      "total": 13
+    },
+    {
+      "candidate": 87,
+      "lane": 12,
+      "supported": 0,
+      "total": 12
+    },
+    {
+      "candidate": 91,
+      "lane": 12,
+      "supported": 0,
+      "total": 12
+    },
+    {
+      "candidate": 92,
+      "lane": 3,
+      "supported": 0,
+      "total": 12
+    },
+    {
+      "candidate": 103,
+      "lane": 3,
+      "supported": 10,
+      "total": 11
+    },
+    {
+      "candidate": 103,
+      "lane": 15,
+      "supported": 9,
+      "total": 11
+    },
+    {
+      "candidate": 128,
+      "lane": 3,
+      "supported": 0,
+      "total": 9
+    },
+    {
+      "candidate": 134,
+      "lane": 3,
+      "supported": 9,
+      "total": 9
+    },
+    {
+      "candidate": 134,
+      "lane": 15,
+      "supported": 9,
+      "total": 9
+    },
+    {
+      "candidate": 147,
+      "lane": 3,
+      "supported": 8,
+      "total": 8
+    },
+    {
+      "candidate": 147,
+      "lane": 15,
+      "supported": 7,
+      "total": 8
+    }
+  ]
+}

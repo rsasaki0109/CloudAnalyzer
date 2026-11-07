@@ -76,3 +76,41 @@ test('a rehashed preview with inconsistent record count is rejected before deliv
   });
   await assert.rejects(read(bad),/PLY differs/);
 });
+
+
+test('verified decision history is summarized without retaining another large file', async () => {
+  const result = await read(packageFixture());
+  assert.equal(result.members.size, 3);
+  assert.equal(result.history.unavailable, null);
+  assert.deepEqual(result.history.steps.map(step => step.action), ['inspect', 'draft', 'finish']);
+  assert.equal(result.history.steps[1].decisions[0].action, 'defer');
+});
+
+
+test('verified trajectory is decoded for display without retaining its original file', async () => {
+  const result = await read(packageFixture());
+  assert.equal(result.members.size,3);
+  assert.equal(result.trajectory.unavailable,null);
+  assert.deepEqual(result.trajectory.positions,[[0,0,2],[10,0,2],[10,10,2]]);
+});
+
+test('optional external SLAM evidence is verified without requiring source paths', async () => {
+  const { createHash } = await import('node:crypto');
+  const addEvidence = data => {
+    for (const role of ['slam_import','source_trajectory','glim_execution_report']) {
+      const path=`files/${role}.json`, bytes=Buffer.from(JSON.stringify({source:'/unavailable/original',role}));
+      data.entries.push([path,bytes]);
+      data.manifest.roles[role]=path;
+      data.manifest.files.push({path,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
+    }
+  };
+  const result=await read(packageFixture(addEvidence));
+  assert.equal(result.verifiedFiles,13);
+  assert.equal(result.members.size,3);
+  assert.ok(result.roles.glim_execution_report);
+  const damaged=packageFixture(data=>{
+    addEvidence(data);
+    data.entries.find(([name])=>name===data.manifest.roles.glim_execution_report)[1]=Buffer.from('changed');
+  });
+  await assert.rejects(read(damaged),/hash differs|size differs/);
+});

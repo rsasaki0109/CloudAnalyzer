@@ -255,6 +255,12 @@ def _export(
             "decision_history": jobs._artifact(root / "run.json"),
             "owner_decision_history": jobs._artifact(owner / "run.json"),
         }
+        # Preserve external-estimator evidence when the delivered point map was
+        # imported. Do not pull unrelated raw logs or runtime binaries into ZIPs.
+        point_files = job["pointcloud"]["files"]
+        for role in ("slam_import", "source_trajectory", "glim_execution_report"):
+            if role in point_files:
+                artifacts[role] = point_files[role]
         preview = None
         if "endpoint_inputs" in candidate:
             native = job["runtime"]["native"]["extension"]

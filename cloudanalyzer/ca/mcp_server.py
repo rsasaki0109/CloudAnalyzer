@@ -13,7 +13,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations
 from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
 from ca.mapping_run import start_mapping_run, start_mapping_run_from_slam, inspect_mapping_run, advance_mapping_run

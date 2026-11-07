@@ -1,0 +1,43 @@
+{
+  "driver": "cloudanalyzer",
+  "session": "april",
+  "input": {
+    "name": "nclt-2012-04-29.mcap",
+    "bytes": 12568564,
+    "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+  },
+  "settings": {
+    "min_range_m": 1.5,
+    "max_range_m": 80.0,
+    "deskew": false,
+    "threads": 1,
+    "map_voxel_m": 1.0,
+    "map_points_per_voxel": 20
+  },
+  "implementation": {
+    "name": "_core.abi3.so",
+    "bytes": 8395800,
+    "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+  },
+  "script": {
+    "name": "compare_nclt_odometry.py",
+    "bytes": 9269,
+    "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+  },
+  "frames": 236,
+  "points": 1400069,
+  "frame_ids": [
+    "velodyne"
+  ],
+  "registration_seconds": 18.16568357485812,
+  "pipeline_seconds": 18.483219870002358,
+  "frame_p50_ms": 64.08282250049524,
+  "frame_p95_ms": 166.28034999666852,
+  "peak_process_rss_bytes": 139595776,
+  "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+  "poses": {
+    "name": "poses.npz",
+    "bytes": 25277,
+    "sha256": "9e40653972123f1fca8c5c7d0992ad65620962f8e9cfe3c52ccffb385928b02a"
+  }
+}

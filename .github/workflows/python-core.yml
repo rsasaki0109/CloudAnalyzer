@@ -40,6 +40,10 @@ on:
       - "cloudanalyzer/tests/test_mapping_job.py"
       - "cloudanalyzer/tests/test_copc_scale_benchmark.py"
       - "scripts/benchmark_copc_scale.py"
+      - "cloudanalyzer/ca/mapping_*.py"
+      - "scripts/run_mapping_e2e.py"
+      - "web/public/samples/nclt-*.mcap"
+      - "benchmarks/vector-map/nclt-agent-run/*/layout.json"
       - ".github/workflows/python-core.yml"
   pull_request:
     branches: [main]
@@ -79,6 +83,10 @@ on:
       - "cloudanalyzer/tests/test_mapping_job.py"
       - "cloudanalyzer/tests/test_copc_scale_benchmark.py"
       - "scripts/benchmark_copc_scale.py"
+      - "cloudanalyzer/ca/mapping_*.py"
+      - "scripts/run_mapping_e2e.py"
+      - "web/public/samples/nclt-*.mcap"
+      - "benchmarks/vector-map/nclt-agent-run/*/layout.json"
       - ".github/workflows/python-core.yml"
   workflow_dispatch:
 
@@ -89,8 +97,8 @@ jobs:
       run:
         working-directory: rust/crates/ca-py
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - uses: dtolnay/rust-toolchain@stable
@@ -109,7 +117,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: PyO3/maturin-action@v1
         with:
           working-directory: rust/crates/ca-py
@@ -117,7 +125,7 @@ jobs:
           # abi3: one wheel per platform covers Python >= 3.10.
           args: --release --out dist
           manylinux: auto
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: wheels-${{ matrix.os }}
           path: rust/crates/ca-py/dist
@@ -125,13 +133,13 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: PyO3/maturin-action@v1
         with:
           working-directory: rust/crates/ca-py
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sdist
           path: rust/crates/ca-py/dist
@@ -140,11 +148,11 @@ jobs:
     needs: wheels
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.10"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: wheels-ubuntu-latest
           path: dist
@@ -173,6 +181,22 @@ jobs:
           tests/test_compare_color_consumers.py tests/test_io_binary_xyz_ply.py
           ../rust/crates/ca-py/tests
 
+      - name: Generate both maps from bundled recordings without an operator
+        run: |
+          python scripts/run_mapping_e2e.py --out mapping-e2e/trajectory-containing
+          python scripts/run_mapping_e2e.py --association all_supported_bands --out mapping-e2e/all-supported-bands
+
+      - name: Upload mapping E2E summary
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: mapping-e2e
+          path: |
+            mapping-e2e/*/summary.json
+            mapping-e2e/*/*/scorecard.*
+            mapping-e2e/*/*/job/candidate-*/lanelet2_map.osm
+          if-no-files-found: warn
+
   publish:
     # Push a tag such as `core-v0.1.0` to publish to PyPI (trusted publishing).
     if: startsWith(github.ref, 'refs/tags/core-v')
@@ -184,7 +208,7 @@ jobs:
       name: pypi-core
       url: https://pypi.org/project/cloudanalyzer-core/
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: "{wheels-*,sdist}"
           merge-multiple: true

@@ -1,0 +1,1566 @@
+{
+  "protocol": {
+    "sessions": {
+      "april": "2012-04-29",
+      "june": "2012-06-15"
+    },
+    "drivers": [
+      "cloudanalyzer",
+      "kiss-icp",
+      "small-gicp"
+    ],
+    "repeats": 3,
+    "thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "RAYON_NUM_THREADS": "1"
+    },
+    "script": {
+      "name": "compare_nclt_odometry.py",
+      "bytes": 9269,
+      "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+    },
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "numpy": "2.2.6",
+    "scope": "Existing sparse, motion-compensated NCLT demo cohort; no held-out or SOTA claim",
+    "order": "cyclic driver order per repetition; April then June; separate process per run",
+    "accuracy": "Body-z-up reference interpolated from original archived NCLT rows; global SE3 position-fit ATE, consecutive SE3 RPE, no scale",
+    "timing": "registration loop separately from decode/setup/registration pipeline; no map export; all startup frames included",
+    "parameters": "Fixed before scoring; shared range crop; 1m map voxels; upstream/previous adapter convergence settings, not identical optimizers",
+    "reference_use": "Only after every estimator subprocess finishes; no truth supplied to estimation"
+  },
+  "runs": [
+    {
+      "driver": "cloudanalyzer",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "map_points_per_voxel": 20
+      },
+      "implementation": {
+        "name": "_core.abi3.so",
+        "bytes": 8395800,
+        "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 18.16568357485812,
+      "pipeline_seconds": 18.483219870002358,
+      "frame_p50_ms": 64.08282250049524,
+      "frame_p95_ms": 166.28034999666852,
+      "peak_process_rss_bytes": 139595776,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25277,
+        "sha256": "9e40653972123f1fca8c5c7d0992ad65620962f8e9cfe3c52ccffb385928b02a"
+      },
+      "repeat": 0,
+      "directory": "april-cloudanalyzer-0",
+      "subprocess_seconds": 18.727282114996342,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 0.16544994082922393,
+          "mean": 0.1467646068798086,
+          "max": 0.5224899873694198
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.16794437991751418,
+          "mean": 0.14391327789974737,
+          "max": 0.6156230123596587
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 2.0380929449942142,
+          "mean": 1.7455186434464391,
+          "max": 5.873833505974223
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.3432680534649298,
+          "mean": 0.3432680534649298,
+          "max": 0.3432680534649298
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "kiss-icp",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "upstream_config": {
+          "out_dir": "results",
+          "data": {
+            "max_range": 80.0,
+            "min_range": 1.5,
+            "deskew": false
+          },
+          "registration": {
+            "max_num_iterations": 500,
+            "convergence_criterion": 0.0001,
+            "max_num_threads": 1
+          },
+          "mapping": {
+            "voxel_size": 1.0,
+            "max_points_per_voxel": 20
+          },
+          "adaptive_threshold": {
+            "fixed_threshold": null,
+            "initial_threshold": 2.0,
+            "min_motion_th": 0.1
+          }
+        }
+      },
+      "implementation": {
+        "package": "kiss-icp",
+        "version": "1.2.3"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 64.24570764397504,
+      "pipeline_seconds": 64.67006676600431,
+      "frame_p50_ms": 246.6274549951777,
+      "frame_p95_ms": 541.6404002426134,
+      "peak_process_rss_bytes": 159907840,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25292,
+        "sha256": "ef02531505ddbb84fa7e04cdade72d01280b88ba54ed0ef66120352543752c6a"
+      },
+      "repeat": 0,
+      "directory": "april-kiss-icp-0",
+      "subprocess_seconds": 64.99613618799776,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 0.16765024078077037,
+          "mean": 0.14825777709818028,
+          "max": 0.5227476428916967
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.17272142840559593,
+          "mean": 0.14841724465251835,
+          "max": 0.6467524243742807
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 2.0358364627614494,
+          "mean": 1.7457368272864178,
+          "max": 5.868870759365125
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.4229674399295615,
+          "mean": 0.4229674399295615,
+          "max": 0.4229674399295615
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "small-gicp",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "downsampling_m": 0.5,
+        "correspondence_distance_m": 5.0,
+        "max_iterations": 30,
+        "map_retention": "all scans; unlike bounded local maps in the other arms"
+      },
+      "implementation": {
+        "package": "small-gicp",
+        "version": "1.0.0"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 8.099879683926702,
+      "pipeline_seconds": 8.379939876002027,
+      "frame_p50_ms": 32.71456150105223,
+      "frame_p95_ms": 54.008582257665694,
+      "peak_process_rss_bytes": 153096192,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25226,
+        "sha256": "6f74b3bc49eaad50d7995481e06f399edfa013fcebbf577d6aeea16f931dd596"
+      },
+      "repeat": 0,
+      "directory": "april-small-gicp-0",
+      "subprocess_seconds": 8.63989393299562,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 13.66544218437462,
+          "mean": 12.68068295132235,
+          "max": 21.220111090310926
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.981290583080284,
+          "mean": 0.5483713378887806,
+          "max": 3.6079009210380613
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 4.792244586209878,
+          "mean": 3.201558845397178,
+          "max": 18.74458068447088
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 29.4121786625597,
+          "mean": 29.4121786625597,
+          "max": 29.4121786625597
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "kiss-icp",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "upstream_config": {
+          "out_dir": "results",
+          "data": {
+            "max_range": 80.0,
+            "min_range": 1.5,
+            "deskew": false
+          },
+          "registration": {
+            "max_num_iterations": 500,
+            "convergence_criterion": 0.0001,
+            "max_num_threads": 1
+          },
+          "mapping": {
+            "voxel_size": 1.0,
+            "max_points_per_voxel": 20
+          },
+          "adaptive_threshold": {
+            "fixed_threshold": null,
+            "initial_threshold": 2.0,
+            "min_motion_th": 0.1
+          }
+        }
+      },
+      "implementation": {
+        "package": "kiss-icp",
+        "version": "1.2.3"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 66.70497316094406,
+      "pipeline_seconds": 67.05319637501088,
+      "frame_p50_ms": 257.8746999934083,
+      "frame_p95_ms": 543.5373992477253,
+      "peak_process_rss_bytes": 159928320,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25302,
+        "sha256": "8ec70887a303a1db7906e1b7d7bc6a9b6e4a1516724c491b2b574c66d900ca4c"
+      },
+      "repeat": 1,
+      "directory": "april-kiss-icp-1",
+      "subprocess_seconds": 67.36927457500133,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 0.16765024078077037,
+          "mean": 0.14825777709818028,
+          "max": 0.5227476428916967
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.17272142840559593,
+          "mean": 0.14841724465251835,
+          "max": 0.6467524243742807
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 2.0358364627614494,
+          "mean": 1.7457368272864178,
+          "max": 5.868870759365125
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.4229674399295615,
+          "mean": 0.4229674399295615,
+          "max": 0.4229674399295615
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "small-gicp",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "downsampling_m": 0.5,
+        "correspondence_distance_m": 5.0,
+        "max_iterations": 30,
+        "map_retention": "all scans; unlike bounded local maps in the other arms"
+      },
+      "implementation": {
+        "package": "small-gicp",
+        "version": "1.0.0"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 8.330029380973428,
+      "pipeline_seconds": 8.711092625002493,
+      "frame_p50_ms": 33.67003300081706,
+      "frame_p95_ms": 56.40293074975489,
+      "peak_process_rss_bytes": 153235456,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25232,
+        "sha256": "4ce0a7bd475131d8307e59adf6156bc1fa12af20faf431c77ce645b083d5a7a3"
+      },
+      "repeat": 1,
+      "directory": "april-small-gicp-1",
+      "subprocess_seconds": 8.988865063991398,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 13.66544218437462,
+          "mean": 12.68068295132235,
+          "max": 21.220111090310926
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.981290583080284,
+          "mean": 0.5483713378887806,
+          "max": 3.6079009210380613
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 4.792244586209878,
+          "mean": 3.201558845397178,
+          "max": 18.74458068447088
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 29.4121786625597,
+          "mean": 29.4121786625597,
+          "max": 29.4121786625597
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "cloudanalyzer",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "map_points_per_voxel": 20
+      },
+      "implementation": {
+        "name": "_core.abi3.so",
+        "bytes": 8395800,
+        "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 18.274331711028935,
+      "pipeline_seconds": 18.619138377005584,
+      "frame_p50_ms": 62.660849500389304,
+      "frame_p95_ms": 163.05487324279966,
+      "peak_process_rss_bytes": 139689984,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25278,
+        "sha256": "883f07a8d78129bdb036f7a9e8cf0b85a6543a4b6c752cd5ccd6f9c8f30df3b5"
+      },
+      "repeat": 1,
+      "directory": "april-cloudanalyzer-1",
+      "subprocess_seconds": 18.88336487399647,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 0.16544994082922393,
+          "mean": 0.1467646068798086,
+          "max": 0.5224899873694198
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.16794437991751418,
+          "mean": 0.14391327789974737,
+          "max": 0.6156230123596587
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 2.0380929449942142,
+          "mean": 1.7455186434464391,
+          "max": 5.873833505974223
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.3432680534649298,
+          "mean": 0.3432680534649298,
+          "max": 0.3432680534649298
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "small-gicp",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "downsampling_m": 0.5,
+        "correspondence_distance_m": 5.0,
+        "max_iterations": 30,
+        "map_retention": "all scans; unlike bounded local maps in the other arms"
+      },
+      "implementation": {
+        "package": "small-gicp",
+        "version": "1.0.0"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 8.359308639977826,
+      "pipeline_seconds": 8.686269163008546,
+      "frame_p50_ms": 33.9762365038041,
+      "frame_p95_ms": 57.38282525635441,
+      "peak_process_rss_bytes": 153231360,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25222,
+        "sha256": "de2b88cfd2b1c637fabedffc81ca11c599dba5ecae2d6bad2765ac6183273d49"
+      },
+      "repeat": 2,
+      "directory": "april-small-gicp-2",
+      "subprocess_seconds": 8.939887507993262,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 13.66544218437462,
+          "mean": 12.68068295132235,
+          "max": 21.220111090310926
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.981290583080284,
+          "mean": 0.5483713378887806,
+          "max": 3.6079009210380613
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 4.792244586209878,
+          "mean": 3.201558845397178,
+          "max": 18.74458068447088
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 29.4121786625597,
+          "mean": 29.4121786625597,
+          "max": 29.4121786625597
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "cloudanalyzer",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "map_points_per_voxel": 20
+      },
+      "implementation": {
+        "name": "_core.abi3.so",
+        "bytes": 8395800,
+        "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 18.020131932920776,
+      "pipeline_seconds": 18.3639986319904,
+      "frame_p50_ms": 62.95447149750544,
+      "frame_p95_ms": 163.19432900490938,
+      "peak_process_rss_bytes": 139476992,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25281,
+        "sha256": "ea831d0f023b20076009dc673c01b7503f46b73f46175849c17c608f659eaea9"
+      },
+      "repeat": 2,
+      "directory": "april-cloudanalyzer-2",
+      "subprocess_seconds": 18.55452110299666,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 0.16544994082922393,
+          "mean": 0.1467646068798086,
+          "max": 0.5224899873694198
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.16794437991751418,
+          "mean": 0.14391327789974737,
+          "max": 0.6156230123596587
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 2.0380929449942142,
+          "mean": 1.7455186434464391,
+          "max": 5.873833505974223
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.3432680534649298,
+          "mean": 0.3432680534649298,
+          "max": 0.3432680534649298
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "kiss-icp",
+      "session": "april",
+      "input": {
+        "name": "nclt-2012-04-29.mcap",
+        "bytes": 12568564,
+        "sha256": "d3c3e412a0b853c4954d10d8ec60c25ec36e2fcfa71605e4b900a6799eb9b39e"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "upstream_config": {
+          "out_dir": "results",
+          "data": {
+            "max_range": 80.0,
+            "min_range": 1.5,
+            "deskew": false
+          },
+          "registration": {
+            "max_num_iterations": 500,
+            "convergence_criterion": 0.0001,
+            "max_num_threads": 1
+          },
+          "mapping": {
+            "voxel_size": 1.0,
+            "max_points_per_voxel": 20
+          },
+          "adaptive_threshold": {
+            "fixed_threshold": null,
+            "initial_threshold": 2.0,
+            "min_motion_th": 0.1
+          }
+        }
+      },
+      "implementation": {
+        "package": "kiss-icp",
+        "version": "1.2.3"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 236,
+      "points": 1400069,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 63.06055636302335,
+      "pipeline_seconds": 63.423700932005886,
+      "frame_p50_ms": 236.83349000202725,
+      "frame_p95_ms": 517.2354027490655,
+      "peak_process_rss_bytes": 159916032,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25298,
+        "sha256": "1958f5a8ecdd3689177171beac5a31d7749cad6fbf710e47201a629f80b6a304"
+      },
+      "repeat": 2,
+      "directory": "april-kiss-icp-2",
+      "subprocess_seconds": 63.685762015986256,
+      "accuracy": {
+        "ate_m": {
+          "count": 236,
+          "rmse": 0.16765024078077037,
+          "mean": 0.14825777709818028,
+          "max": 0.5227476428916967
+        },
+        "rpe_translation_m": {
+          "count": 235,
+          "rmse": 0.17272142840559593,
+          "mean": 0.14841724465251835,
+          "max": 0.6467524243742807
+        },
+        "rpe_rotation_deg": {
+          "count": 235,
+          "rmse": 2.0358364627614494,
+          "mean": 1.7457368272864178,
+          "max": 5.868870759365125
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.4229674399295615,
+          "mean": 0.4229674399295615,
+          "max": 0.4229674399295615
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 64923,
+        "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+      },
+      "distance_m": 250.3039675111441
+    },
+    {
+      "driver": "cloudanalyzer",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "map_points_per_voxel": 20
+      },
+      "implementation": {
+        "name": "_core.abi3.so",
+        "bytes": 8395800,
+        "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 18.977524226007517,
+      "pipeline_seconds": 19.282327169014025,
+      "frame_p50_ms": 58.00860450108303,
+      "frame_p95_ms": 210.87518434796914,
+      "peak_process_rss_bytes": 132923392,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25510,
+        "sha256": "85a6177613ae1f770e7ec6cfcef0b422c8ab959b82c5b6648226c97fa430b5e2"
+      },
+      "repeat": 0,
+      "directory": "june-cloudanalyzer-0",
+      "subprocess_seconds": 19.57911211300234,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 0.15414176371107433,
+          "mean": 0.13712707839740865,
+          "max": 0.3391166530732754
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 0.14109964829389385,
+          "mean": 0.12365100845718952,
+          "max": 0.38267832608575386
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 1.730890901739515,
+          "mean": 1.5636152306389766,
+          "max": 3.49998139105325
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.36664272181645235,
+          "mean": 0.36664272181645235,
+          "max": 0.36664272181645235
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "kiss-icp",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "upstream_config": {
+          "out_dir": "results",
+          "data": {
+            "max_range": 80.0,
+            "min_range": 1.5,
+            "deskew": false
+          },
+          "registration": {
+            "max_num_iterations": 500,
+            "convergence_criterion": 0.0001,
+            "max_num_threads": 1
+          },
+          "mapping": {
+            "voxel_size": 1.0,
+            "max_points_per_voxel": 20
+          },
+          "adaptive_threshold": {
+            "fixed_threshold": null,
+            "initial_threshold": 2.0,
+            "min_motion_th": 0.1
+          }
+        }
+      },
+      "implementation": {
+        "package": "kiss-icp",
+        "version": "1.2.3"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 59.668201987835346,
+      "pipeline_seconds": 60.050936439001816,
+      "frame_p50_ms": 220.94252950046211,
+      "frame_p95_ms": 544.6490950969744,
+      "peak_process_rss_bytes": 152326144,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25523,
+        "sha256": "9b57aab136ae9b616ba1b476c2ec19d6d99ddc25c3c92646b42f4181debc77ce"
+      },
+      "repeat": 0,
+      "directory": "june-kiss-icp-0",
+      "subprocess_seconds": 60.383342229994014,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 0.15485530868228875,
+          "mean": 0.1386676958714681,
+          "max": 0.367374404200328
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 0.14201229310536037,
+          "mean": 0.12341135124358485,
+          "max": 0.38064250302007346
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 1.7320718110466327,
+          "mean": 1.5670303345424335,
+          "max": 3.4852014689203235
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.31116922925725204,
+          "mean": 0.31116922925725204,
+          "max": 0.31116922925725204
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "small-gicp",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "downsampling_m": 0.5,
+        "correspondence_distance_m": 5.0,
+        "max_iterations": 30,
+        "map_retention": "all scans; unlike bounded local maps in the other arms"
+      },
+      "implementation": {
+        "package": "small-gicp",
+        "version": "1.0.0"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 8.601598166889744,
+      "pipeline_seconds": 8.924947196006542,
+      "frame_p50_ms": 35.69841450371314,
+      "frame_p95_ms": 58.391040399146725,
+      "peak_process_rss_bytes": 145211392,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25480,
+        "sha256": "3402921ead878b4b5005a0770d209449c91edf9f877bc95e93ee73a5f6f6cbc8"
+      },
+      "repeat": 0,
+      "directory": "june-small-gicp-0",
+      "subprocess_seconds": 9.192874101005145,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 23.766319257254395,
+          "mean": 20.79934797250339,
+          "max": 58.367962899621844
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 1.065475578470936,
+          "mean": 0.7468053509197728,
+          "max": 3.302556825447489
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 5.862997115838697,
+          "mean": 4.294584769474112,
+          "max": 19.58344923689373
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 57.92175380048948,
+          "mean": 57.92175380048948,
+          "max": 57.92175380048948
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "kiss-icp",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "upstream_config": {
+          "out_dir": "results",
+          "data": {
+            "max_range": 80.0,
+            "min_range": 1.5,
+            "deskew": false
+          },
+          "registration": {
+            "max_num_iterations": 500,
+            "convergence_criterion": 0.0001,
+            "max_num_threads": 1
+          },
+          "mapping": {
+            "voxel_size": 1.0,
+            "max_points_per_voxel": 20
+          },
+          "adaptive_threshold": {
+            "fixed_threshold": null,
+            "initial_threshold": 2.0,
+            "min_motion_th": 0.1
+          }
+        }
+      },
+      "implementation": {
+        "package": "kiss-icp",
+        "version": "1.2.3"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 63.27922889406909,
+      "pipeline_seconds": 63.708094810994226,
+      "frame_p50_ms": 225.99394049757393,
+      "frame_p95_ms": 572.3478563952085,
+      "peak_process_rss_bytes": 152317952,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25530,
+        "sha256": "8d4433a314707441c17dd4fefbbc2d2aa79f094129d8ef4f61c27d6cca24f404"
+      },
+      "repeat": 1,
+      "directory": "june-kiss-icp-1",
+      "subprocess_seconds": 63.971181408007396,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 0.15485530868228875,
+          "mean": 0.1386676958714681,
+          "max": 0.367374404200328
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 0.14201229310536037,
+          "mean": 0.12341135124358485,
+          "max": 0.38064250302007346
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 1.7320718110466327,
+          "mean": 1.5670303345424335,
+          "max": 3.4852014689203235
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.31116922925725204,
+          "mean": 0.31116922925725204,
+          "max": 0.31116922925725204
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "small-gicp",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "downsampling_m": 0.5,
+        "correspondence_distance_m": 5.0,
+        "max_iterations": 30,
+        "map_retention": "all scans; unlike bounded local maps in the other arms"
+      },
+      "implementation": {
+        "package": "small-gicp",
+        "version": "1.0.0"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 8.83996305501205,
+      "pipeline_seconds": 9.078364619999775,
+      "frame_p50_ms": 36.04308649664745,
+      "frame_p95_ms": 58.88945544356829,
+      "peak_process_rss_bytes": 145272832,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25474,
+        "sha256": "6c3712f14f73f7f3e8237d54cbc6775fb22ebe1399b36251c0d102e08f3f4beb"
+      },
+      "repeat": 1,
+      "directory": "june-small-gicp-1",
+      "subprocess_seconds": 9.343473858010839,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 23.766319257254395,
+          "mean": 20.79934797250339,
+          "max": 58.367962899621844
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 1.065475578470936,
+          "mean": 0.7468053509197728,
+          "max": 3.302556825447489
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 5.862997115838697,
+          "mean": 4.294584769474112,
+          "max": 19.58344923689373
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 57.92175380048948,
+          "mean": 57.92175380048948,
+          "max": 57.92175380048948
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "cloudanalyzer",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "map_points_per_voxel": 20
+      },
+      "implementation": {
+        "name": "_core.abi3.so",
+        "bytes": 8395800,
+        "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 19.40359215794888,
+      "pipeline_seconds": 19.68613011301204,
+      "frame_p50_ms": 60.912868997547776,
+      "frame_p95_ms": 208.34648869131337,
+      "peak_process_rss_bytes": 132927488,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25503,
+        "sha256": "4c53873b2d3d9a42adc97c4aa6b95e157d5e927517c5ef8c57d0cedf4ca95add"
+      },
+      "repeat": 1,
+      "directory": "june-cloudanalyzer-1",
+      "subprocess_seconds": 19.92273104400374,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 0.15414176371107433,
+          "mean": 0.13712707839740865,
+          "max": 0.3391166530732754
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 0.14109964829389385,
+          "mean": 0.12365100845718952,
+          "max": 0.38267832608575386
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 1.730890901739515,
+          "mean": 1.5636152306389766,
+          "max": 3.49998139105325
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.36664272181645235,
+          "mean": 0.36664272181645235,
+          "max": 0.36664272181645235
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "small-gicp",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "downsampling_m": 0.5,
+        "correspondence_distance_m": 5.0,
+        "max_iterations": 30,
+        "map_retention": "all scans; unlike bounded local maps in the other arms"
+      },
+      "implementation": {
+        "package": "small-gicp",
+        "version": "1.0.0"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 8.564042191108456,
+      "pipeline_seconds": 8.844431345001794,
+      "frame_p50_ms": 35.379691995331086,
+      "frame_p95_ms": 57.831612550216946,
+      "peak_process_rss_bytes": 145240064,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25470,
+        "sha256": "b9d919cc7a2e127433702ed8ea1efb2964f5934f934f354843e619bb5de1e583"
+      },
+      "repeat": 2,
+      "directory": "june-small-gicp-2",
+      "subprocess_seconds": 9.092338413000107,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 23.766319257254395,
+          "mean": 20.79934797250339,
+          "max": 58.367962899621844
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 1.065475578470936,
+          "mean": 0.7468053509197728,
+          "max": 3.302556825447489
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 5.862997115838697,
+          "mean": 4.294584769474112,
+          "max": 19.58344923689373
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 57.92175380048948,
+          "mean": 57.92175380048948,
+          "max": 57.92175380048948
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "cloudanalyzer",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "map_voxel_m": 1.0,
+        "map_points_per_voxel": 20
+      },
+      "implementation": {
+        "name": "_core.abi3.so",
+        "bytes": 8395800,
+        "sha256": "57aff8aaabfcc4fbab8b20ef0b1990d7cf6a5e1cc2fad8ee6a661097f635ea5b"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 19.605293154992978,
+      "pipeline_seconds": 19.8613074360037,
+      "frame_p50_ms": 61.7553189949831,
+      "frame_p95_ms": 210.1587685450795,
+      "peak_process_rss_bytes": 132763648,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25507,
+        "sha256": "ab784145aeae47677a3a14b165f122240205aaf89ff8c707589cbd055af478bc"
+      },
+      "repeat": 2,
+      "directory": "june-cloudanalyzer-2",
+      "subprocess_seconds": 20.115989486002945,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 0.15414176371107433,
+          "mean": 0.13712707839740865,
+          "max": 0.3391166530732754
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 0.14109964829389385,
+          "mean": 0.12365100845718952,
+          "max": 0.38267832608575386
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 1.730890901739515,
+          "mean": 1.5636152306389766,
+          "max": 3.49998139105325
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.36664272181645235,
+          "mean": 0.36664272181645235,
+          "max": 0.36664272181645235
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    },
+    {
+      "driver": "kiss-icp",
+      "session": "june",
+      "input": {
+        "name": "nclt-2012-06-15.mcap",
+        "bytes": 11726449,
+        "sha256": "b2f17c1dfe3e0943b8160290eddd93d4ea39544a3ded9c7c9370aaaf8e0851ee"
+      },
+      "settings": {
+        "min_range_m": 1.5,
+        "max_range_m": 80.0,
+        "deskew": false,
+        "threads": 1,
+        "upstream_config": {
+          "out_dir": "results",
+          "data": {
+            "max_range": 80.0,
+            "min_range": 1.5,
+            "deskew": false
+          },
+          "registration": {
+            "max_num_iterations": 500,
+            "convergence_criterion": 0.0001,
+            "max_num_threads": 1
+          },
+          "mapping": {
+            "voxel_size": 1.0,
+            "max_points_per_voxel": 20
+          },
+          "adaptive_threshold": {
+            "fixed_threshold": null,
+            "initial_threshold": 2.0,
+            "min_motion_th": 0.1
+          }
+        }
+      },
+      "implementation": {
+        "package": "kiss-icp",
+        "version": "1.2.3"
+      },
+      "script": {
+        "name": "compare_nclt_odometry.py",
+        "bytes": 9269,
+        "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+      },
+      "frames": 238,
+      "points": 1311273,
+      "frame_ids": [
+        "velodyne"
+      ],
+      "registration_seconds": 61.86004246493394,
+      "pipeline_seconds": 62.24379678400874,
+      "frame_p50_ms": 223.38267799204914,
+      "frame_p95_ms": 564.2732809021252,
+      "peak_process_rss_bytes": 152317952,
+      "memory_scope": "Linux process high-water RSS including imports, decoded scans and maps; not incremental algorithm memory",
+      "poses": {
+        "name": "poses.npz",
+        "bytes": 25529,
+        "sha256": "705e962e2667b0871235dc0a22e7027343f8cb8467fbe29a9380925ca3827edc"
+      },
+      "repeat": 2,
+      "directory": "june-kiss-icp-2",
+      "subprocess_seconds": 62.53988239400496,
+      "accuracy": {
+        "ate_m": {
+          "count": 238,
+          "rmse": 0.15485530868228875,
+          "mean": 0.1386676958714681,
+          "max": 0.367374404200328
+        },
+        "rpe_translation_m": {
+          "count": 237,
+          "rmse": 0.14201229310536037,
+          "mean": 0.12341135124358485,
+          "max": 0.38064250302007346
+        },
+        "rpe_rotation_deg": {
+          "count": 237,
+          "rmse": 1.7320718110466327,
+          "mean": 1.5670303345424335,
+          "max": 3.4852014689203235
+        },
+        "endpoint_translation_m": {
+          "count": 1,
+          "rmse": 0.31116922925725204,
+          "mean": 0.31116922925725204,
+          "max": 0.31116922925725204
+        }
+      },
+      "reference": {
+        "name": "reference-raw-rows.csv",
+        "bytes": 65483,
+        "sha256": "31da7f1ee855e014ec30d7461ca01ff275b3be1a78c084c6703828b614b5fa32"
+      },
+      "distance_m": 252.94240284253513
+    }
+  ]
+}

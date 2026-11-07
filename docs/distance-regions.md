@@ -30,6 +30,11 @@ rectangle** and enter all four bounds in the clouds' original coordinates.
 Only finite query points inside that closed rectangle contribute to measured,
 unmeasured, exceeding and region counts. Both directions use the same physical
 rectangle, with each cloud's own coordinate shift. All heights are included.
+The volume panel's Review area can copy this rectangle explicitly in either
+direction without running either analysis. Volume selects full grid cells by
+their centers; distance review selects query points. The settings remain
+independent after copying. See [surface volume](surface-volume.md).
+
 The rectangle is supplied by the user; it does not establish that both surveys
 actually covered the area.
 
@@ -142,6 +147,13 @@ cancellation publishes no partial result. Combined pair XYZ must fit within
 64 MiB and each series within 50,000 selected points, otherwise shorten/narrow
 the section or crop the pair. No silent sampling or output truncation is used.
 
+Height-change screening can open this same plot from a screened raster cell,
+using its own Before/After pair and independent section settings. See
+[surface volume](surface-volume.md#compare-the-loaded-beforeafter-points-around-a-screened-cell)
+for its support/precision limits and separate JSON/QA schema. Opening either
+type replaces the previous plot; editing the other type's settings does not
+invalidate the current section.
+
 **Large distances are inspection candidates, not confirmed registration defects.**
 Scene changes, occlusion, sparse sampling and missing reference coverage can all
 produce them. This direction does not locate points missing from the source;
@@ -193,3 +205,119 @@ below the nearby surface; the plot keeps that raw height rather than assigning
 a height match or diagnosing its cause. The whole workflow still uses two C2C
 calls. Input file hashes are unchanged. This is an inspection example from
 partitions of one survey, without measured defect-classification accuracy.
+
+## Human review records for difference candidates
+
+Each listed region has **Unreviewed**, **Reviewed** or **Deferred** state and a
+comment (up to 2,000 characters). Edits immediately update that diagnosis's
+record and UTC update time; the list summarizes all three states. **Reviewed**
+means inspection completed. It does not classify the candidate as a confirmed
+map change, defect or missing object. A comment can describe observed evidence,
+uncertainty or the next inspection needed. State and comment are independent:
+notes alone leave an unreviewed candidate unreviewed.
+
+In a bidirectional comparison, each direction keeps its own decisions when
+switching the display. Fine-cell inspection and section viewing do not relabel
+regions or reset their review. **Save candidate reviews JSON** saves all active
+directions with source/reference runtime descriptors, loaded/preview/decimation
+scope, exact grouping/overlap settings, candidate metrics/bounds, analysis time
+and each decision/comment/update time. Existing region JSON also includes its
+review record. **Save candidate reviews CSV** lists direction, input IDs/names,
+rank, state, comment, time and geometry/metrics; keep the JSON beside it for
+settings and complete coverage context. Quoted CSV comments retain line breaks;
+formula-like text fields are prefixed with an apostrophe for spreadsheet use.
+JSON keeps the original text. QA JSON/HTML includes separate direction counts
+and each region's comments and bounds; HTML escapes comment markup.
+
+Decisions belong to the current analysis snapshots. Rerunning, even with
+identical settings and cached distances, starts unreviewed. Editing the
+threshold/grouping/minimum/overlap, changing the pair, replacing/translating or
+removing an input invalidates the associated records and QA sections. Region
+rank is never used to transfer a decision to new evidence. **Save review JSON
+before rerunning or leaving: project/workspace/browser recovery saves do not
+retain these session-only records.** Exported records are evidence archives;
+they are not imported or automatically applied to newly computed candidates.
+
+Only the listed eligible regions (up to 50 per direction) can be reviewed here.
+Unlisted eligible regions and below-minimum component points remain explicitly
+accounted for and outside the review. An empty list is not proof that all scene
+changes were inspected. Directions can describe the same physical feature and
+must not be summed as unique changes. Thresholds, sampling, survey alignment,
+occlusion and reference coverage still limit what the candidates mean. Synthetic
+checks exercise record binding/export/invalidation, not real-map classification
+accuracy.
+
+## Read archived review records
+
+Under **Archived candidate reviews**, open a previously exported **Save candidate
+reviews JSON** file. No point clouds are required. The viewer shows each
+historical direction's input descriptors, analysis time and conditions,
+measured/missing/invalid/outside support, listed/unlisted accounting, candidate
+world bounds, decisions, comments and update times. Expand **Inputs and analysis
+conditions** or a candidate summary to see the detailed fields. It is read-only and separate
+from live diagnoses and QA: opening or closing it never applies decisions,
+changes current clouds/camera, or recomputes distances. Recomputing live analysis
+does not remove the archive currently being viewed.
+
+**Save original JSON** downloads the original uploaded bytes. **Save archive
+CSV** uses the existing quoted/formula-safe review format; keep JSON alongside
+CSV for full context. **Save archive HTML** creates a standalone report, with
+literal escaped comments and no external resources. These exports describe a
+past file, not a current comparison. The viewer itself is session-only and is
+not stored in projects or browser recovery; retain the JSON file for reopening.
+
+Only `cloudanalyzer.distance_candidate_reviews.v1` is accepted, up to 2 MiB,
+one forward direction or a matching forward/reverse pair, and up to 50 listed
+candidates per direction. Validation checks enums, finite settings/geometry,
+canonical timestamps, loaded-point/count accounting, listed candidate metrics
+against their analysis records, direction pairing and review totals. Invalid or
+oversized files leave the previous archive intact. Closing while a new file is
+being read prevents the delayed file from reopening the viewer.
+
+These checks establish format/internal consistency only. They do not verify
+source-file contents, reviewer identity, timestamps against an external clock,
+coordinate frames or field accuracy. No decisions are imported into live
+analysis, matched by rank or filename, or included as current QA evidence.
+
+## Compare saved reviews of the same diagnosis
+
+Open archive **A** as above, then choose **Load archive B for comparison**.
+Both files use the existing review-archive validation and separate 2 MiB limits;
+no point clouds or distance recomputation are required. A and B describe file
+selection order, not inferred chronology. B may be an older export. The viewer
+does not authenticate the reviewer, timestamps or original source contents.
+
+Candidate decisions are compared only when a direction's entire canonical
+archived diagnosis metadata agrees: source/reference runtime descriptors,
+analysis timestamp, distance-reuse flag, all analysis settings/counts and the
+complete listed candidate geometry/metrics. The direction's review status,
+comment and decision-update timestamp may differ. This supports comparing two
+exports made before and after reviewing the **same analysis session**. A rerun
+has a new analysis time and is not matched, even if names, ranks or bounds agree.
+Metadata agreement does not prove identical point files or physical features.
+There is no spatial matching or import of decisions into another diagnosis.
+
+Each direction displays status/comment changes, timestamp-only changes and
+unchanged records, including A/B comments and update times. Status and comment
+change counts may overlap. Missing directions and different diagnoses display
+**Not comparable**, with reasons and no candidate transitions. Forward and
+reverse remain independent; counts must not be summed as unique map changes.
+Empty listed results have no transitions, and unlisted/below-minimum candidates
+remain outside this comparison. Reviewed is not a confirmed defect or change.
+
+**Save original B JSON** preserves uploaded bytes; original A remains available
+through **Save original JSON**. **Save comparison JSON** uses the separate
+`cloudanalyzer.candidate_review_comparison.v1` schema, containing normalized A/B
+archives, per-direction compatibility/reasons and candidate decision pairs.
+It is a comparison report, not a review archive accepted by the archive importer.
+**Save comparison CSV** includes all matched listed rows and explicit empty or
+incompatible direction rows, with blank candidate fields for the latter. Labels
+and comments are quoted/formula-safe. Keep JSON for full metadata. **Save
+comparison HTML** is a standalone, script-free offline report with literal
+escaped comments and an expandable complete JSON snapshot.
+
+Invalid B files retain the current valid comparison. Successfully replacing A
+clears B; invalid A files retain existing valid records. **Clear comparison**
+retains A. Closing A closes both; clearing/closing/replacing/superseding files
+also prevents pending reads from publishing stale results. The comparison is
+session-only, separate from projects, live decisions, clouds/camera and QA.

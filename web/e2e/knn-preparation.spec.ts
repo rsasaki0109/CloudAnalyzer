@@ -9,7 +9,7 @@ test("neighbourhood leases respect budgets, overlapping retirement, generations 
     planSor: () => { plans++; return { length: 2, indices: (j: number) => new Uint32Array([j, j + 2]), regions: () => new Float64Array([0]), points: () => new Float64Array(6), free() {} }; },
     workerGeneration: (lane: number) => generations[lane],
     runOn: (lane: number, s: any) => { jobs.add(`${lane}:${s.job}`); return Promise.resolve(bytes); },
-    runOnGeneration: (lane: number, generation: number, s: any) => {
+    runOnGeneration: (lane: number, generation: number, _s: any) => {
       if (generation !== generations[lane]) return Promise.reject(new Error("lost generation"));
       if (fail && lane === 0) return Promise.reject(new Error("failed search"));
       if (fail) return new Promise<Float32Array>(resolve => { finish = () => resolve(new Float32Array(3)); });

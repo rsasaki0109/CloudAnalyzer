@@ -13,9 +13,84 @@ make adoption decisions using a hidden ranking. No additional model API key is
 required by the MCP server. The output is a draft with recorded unresolved
 intervals and semantics, rather than a certified road network.
 
+For saved run summaries and compatible before/after comparisons, use
+[`ca mapping-scorecard`](mapping-scorecard.md). It reads existing evidence without
+starting a new mapping attempt.
+
+## Check the whole flow without an operator
+
+`scripts/run_mapping_e2e.py` runs this loop end to end on the two bundled NCLT
+excerpts (`web/public/samples/nclt-2012-04-29.mcap` and `nclt-2012-06-15.mcap`)
+with the layouts of the [calling-agent runs](../../benchmarks/vector-map/nclt-agent-run/README.md).
+A deterministic **reference client** stands in for the calling agent:
+
+1. it inspects every offered candidate;
+2. it includes each interval that the run's own previews accept: the
+   `layout_width_preview` interpolated range meets the layout width with the
+   recorded path inside every section, the native `layout_direction_preview`
+   passed and every section has a supported path level;
+3. it resolves overlaps longest first, defers everything else, drafts once and
+   finishes with the audited draft.
+
+~~~sh
+pip install ./rust/crates/ca-py      # native core
+python scripts/run_mapping_e2e.py --out /tmp/mapping-e2e
+~~~
+
+Each case writes the job, `scorecard.json`/`scorecard.txt` and an entry in
+`summary.json`: input hashes, timings per stage, peak memory, disk use,
+decision counts (no human interventions), output hashes, extent and audit
+evidence, and invariant checks. The script exits 1 when a check fails: every
+candidate inspected, at least one interval included, an audited draft, both
+maps written with matching hashes, editable and reopened audits equal, and
+`deployment_ready` still false. Extent is recorded, not gated; more exported
+length is not an accuracy result.
+
+`quality.station_disposition` accounts for every station metre of the input
+trajectory: `included_m`, `source_deferred_m` by the run's source reasons, and
+`client_deferred_m` for intervals the client deferred although candidates
+existed. Each of those is attributed to the furthest check any available
+candidate's covering width range reached: `narrower_than_layout`,
+`path_outside_profile`, `direction_unresolved`, `sections_not_previewed`,
+`surface_level_unsupported`, or `overlapping_interval_chosen` when it passed
+but a longer overlapping interval won. Attribution uses the run's 2 m
+disposition intervals.
+
+By default the client first takes the run's one `refine` action with
+`association=trajectory_containing`, then inspects the new candidates;
+`--association all_supported_bands` keeps the original proposal. The breakdown
+motivated this: on 2026-11-03 branching source bands (70 m) and paths outside
+candidate profiles (64 m) explained most unresolved metres on the two drives.
+With the refinement the same client retained 96.1% and 94.9% (from 61.5% and
+63.6%) in 4 and 7 pieces (from 11 and 16). Low-quantile source support rose from
+59/65% to 72/71%, ground-consensus support stayed near 100%, and held traces
+rose from 0/1 to 2/3. This compares the run's own evidence, not independent
+accuracy. The Python core workflow runs both associations.
+
+`quality.review_holds` lists held traces and every sample where source ground
+lies below a trace, with its station and position. On 2026-11-04 each refined
+drive's holds came from single ground-consensus samples: two traces floated
+0.38 m (April, lane station 165.9 m) and 0.58 m (June, 77.1 m) above a local
+low pocket beside the lane, while the surrounding surface lay within about
+0.2 m of the trace; the other held traces each had one consensus shortfall
+above the trace. Without refinement, April shows the same 0.38 m sample within
+6 cm of that position, so the refinement did not introduce it. They stay review
+locations rather than accepted geometry.
+
+The reference client is a reproducible test driver, not an adoption policy.
+Its choices are not the calling agent's and are not tuned for coverage. In a
+local 4-core measurement each case took about 27 s in total and the
+process peaked near 450 MiB.
+Within one environment the point map, trajectory, graph, Lanelet2 map and
+audits are byte-identical across runs; only paths embedded in reports differ.
+The Python core workflow runs it on every change to the mapping modules and
+uploads the summary, scorecards and Lanelet2 maps.
+
 ## Ask the agent to run
 
 ### Start from an external SLAM map
+
+For GLIM global LiDAR dumps, first use [mapping-prepare-glim](mapping-prepare-glim.md) to prepare the documented `traj_lidar.txt` and PLY pair without changing their coordinates or timestamps.
 
 If SLAM has already produced a PLY map and TUM trajectory, use
 the CLI command below, or the MCP tool
@@ -338,6 +413,32 @@ final checks/comparisons and root/owner decision records. Duplicate files are
 stored once. `manifest.json` identifies each role with a relative member path,
 SHA-256 and byte count; `review` keeps the output diagnosis and adoption decision.
 Read the full audits for problem locations omitted from the compact diagnosis.
+
+For external SLAM imports, the ZIP also carries `slam_import` (the producer
+declaration and input preflight) and `source_trajectory` (the original TUM
+bytes). If preparation linked a GLIM execution report, it is included as
+`glim_execution_report`. These optional roles are hashed and verified like
+other members, in both full and preview packages. Existing packages without
+them remain readable. Original paths inside these evidence files remain
+historical provenance; the manifest roles locate the included files without
+accessing those paths. The browser verifies this evidence and keeps it in the
+downloadable original archive. Its Original SLAM producer panel shows declared
+backend/version and, when source/import/run identities agree, the recorded GLIM
+image ID and trajectory match. It also distinguishes recorded input-preflight
+success, explicitly unrequested diagnostics and older reports without diagnostic
+records. A diagnostic pass is shown only when its input hash matches the run's
+single-file input inventory and its saved gap policy/results are consistent.
+The panel shows diagnostic topics, gap limit/maximum and warning count. When a
+saved configuration-topic check also agrees with these topics and both config
+file identities match the run inventory, it shows the recorded configuration
+match. Older diagnostics without that check show “not recorded”. This is a local
+record consistency check, not a fresh read of configuration files or validation
+of calibration, scaling, offsets or module compatibility. Inconsistent optional
+diagnostics or configuration evidence show an unavailable notice while maps
+remain usable.
+It does not execute report contents. A matching local execution record does not establish estimator accuracy
+or prove that the PLY was exported from the same optimized state.
+
 
 Use `inspect_mapping_bundle(bundle_path)` on the receiving machine to check every
 member before opening the map. It needs neither the original directories/logs

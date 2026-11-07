@@ -1,6 +1,5 @@
 """Tests for ca.registration module."""
 
-import numpy as np
 import pytest
 
 from ca.registration import register, register_detailed, SUPPORTED_METHODS

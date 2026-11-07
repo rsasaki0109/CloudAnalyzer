@@ -11,7 +11,6 @@ import time
 
 import numpy as np
 import open3d as o3d
-import pytest
 
 from ca.experiments.map_evaluate.nn_thresholds import _min_distances_kdtree
 from ca.stats import compute_stats

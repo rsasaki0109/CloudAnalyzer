@@ -610,7 +610,7 @@ def load_representation(
         points = np.asarray(pcd.points, dtype=np.float64)
         if opacity_threshold is not None:
             applied.append(
-                f"opacity_threshold ignored (representation=point-cloud)"
+                "opacity_threshold ignored (representation=point-cloud)"
             )
     else:  # pragma: no cover — guarded above
         raise ValueError(f"Unhandled representation: {chosen}")

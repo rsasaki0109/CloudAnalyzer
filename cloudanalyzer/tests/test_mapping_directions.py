@@ -11,7 +11,7 @@ import pytest
 from ca.mapping_geometry import preview_lane_directions, preview_layout_width, verify_lane_roundtrip
 from ca import mapping_job as jobs, mapping_run as runs
 from tests.test_mapping_centerlines import LEFT, RIGHT
-from tests.test_mapping_job import job_backend, _run_layout
+from tests.test_mapping_job import job_backend, _run_layout  # noqa: F401 (pytest fixture)
 from tests.test_mapping_layout_width import _candidate, _proposal
 
 native = pytest.importorskip("cloudanalyzer_core")

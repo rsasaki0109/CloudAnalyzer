@@ -264,7 +264,11 @@
     "benchmarks/slam/executed-source/ca-py-vector-map-e9c06155.rs": "e9c06155aa46555e4a2c63b5b9e9cbcb9bf3135bc25d6eb732f31c3f9c0c4b4f",
     "benchmarks/slam/executed-source/ca-py-package-init-3ebd6319.py": "3ebd63190251c5902ce36b38991b5d7af02a8b5617d27c64dad5a59e518ea159",
     "benchmarks/slam/executed-source/ca-py-core-acc3d904.pyi": "acc3d904eac9b0adb7cf13d20e8cfa142c7035c692991c7c21ca917629e74fc4",
-    "benchmarks/wasm-query-export/executed-source/pr338/rust/crates/ca-wasm/src/gpu_c2c.rs": "819a9554a3dce1ffaaed1ca5948bee4066a2bfe40edf419794f4f79effbd7fdd"
+    "benchmarks/wasm-query-export/executed-source/pr338/rust/crates/ca-wasm/src/gpu_c2c.rs": "819a9554a3dce1ffaaed1ca5948bee4066a2bfe40edf419794f4f79effbd7fdd",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/bag.rs": "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/kdtree.rs": "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/mesh.rs": "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855",
+    "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/pose_graph.rs": "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799"
   },
   "checkout_sources_sha256": {
     "scripts/audit_flatwall_target_balance.py": "117dba1df2cc5adc441508d0e860465805c31272987dd236af1eba732317dd1a",
@@ -405,6 +409,12 @@
     "rust/crates/ca-py/src/vector_map.rs": "benchmarks/slam/executed-source/ca-py-vector-map-e9c06155.rs",
     "rust/crates/ca-py/python/cloudanalyzer_core/__init__.py": "benchmarks/slam/executed-source/ca-py-package-init-3ebd6319.py",
     "rust/crates/ca-py/python/cloudanalyzer_core/_core.pyi": "benchmarks/slam/executed-source/ca-py-core-acc3d904.pyi",
-    "rust/crates/ca-wasm/src/gpu_c2c.rs": "benchmarks/wasm-query-export/executed-source/pr338/rust/crates/ca-wasm/src/gpu_c2c.rs"
+    "rust/crates/ca-wasm/src/gpu_c2c.rs": "benchmarks/wasm-query-export/executed-source/pr338/rust/crates/ca-wasm/src/gpu_c2c.rs",
+    "rust/crates/ca-core/src/volume.rs": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs",
+    "rust/crates/ca-wasm/src/lib.rs": "benchmarks/source-history/6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555/lib.rs",
+    "rust/crates/ca-core/src/bag.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/bag.rs",
+    "rust/crates/ca-core/src/kdtree.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/kdtree.rs",
+    "rust/crates/ca-core/src/mesh.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/mesh.rs",
+    "rust/crates/ca-core/src/pose_graph.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/pose_graph.rs"
   }
 }

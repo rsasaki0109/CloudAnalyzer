@@ -3,7 +3,6 @@
 from typing import cast
 
 import numpy as np
-import open3d as o3d
 import yaml  # type: ignore[import-untyped]
 from pathlib import Path
 

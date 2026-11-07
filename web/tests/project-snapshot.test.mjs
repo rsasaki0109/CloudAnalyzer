@@ -187,3 +187,14 @@ test('oversized ZIP directory is rejected before reading the directory buffer',a
   try {await assert.rejects(indexReviewZip(file,signal(),2048,WORKSPACE_LIMIT),/directory/);assert(Math.max(...reads)<=65557);}
   finally {Blob.prototype.arrayBuffer=original;}
 });
+
+test('workspace snapshot retains survey evidence and follow-up records', async () => {
+  const { file, project } = await fixture();
+  project.surveyReview = { schema: 'cloudanalyzer.survey_change_review.v1', note: 'saved judgment' };
+  project.surveyLaneTasks = { schema: 'cloudanalyzer.survey_lane_tasks.v1', tasks: [{ id: 7, note: 'check lane' }] };
+  const zip = asFile(await writeProjectSnapshot(project, [file], signal()));
+  const files = await readProjectSnapshot(zip, signal());
+  const saved = JSON.parse(await files[0].text());
+  assert.deepEqual(saved.surveyReview, project.surveyReview);
+  assert.deepEqual(saved.surveyLaneTasks, project.surveyLaneTasks);
+});

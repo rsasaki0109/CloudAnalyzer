@@ -1,0 +1,28 @@
+{
+  "status_at_definition": "prospective development experiment; no candidate results inspected",
+  "sessions": [
+    "2012-04-29",
+    "2012-06-15"
+  ],
+  "gains": [
+    1.0,
+    1.5
+  ],
+  "repeats": 3,
+  "order": "session order, alternating gain order by repetition",
+  "threads": 1,
+  "range_m": [
+    1.5,
+    80.0
+  ],
+  "map_voxel_m": 1.0,
+  "map_points": 20,
+  "translation_tolerance_m": 0.0001,
+  "rotation_tolerance_rad": 1e-05,
+  "max_iterations": 500,
+  "proposal": "Scale normal-equation right-hand side by gain; unchanged solver and convergence test on the resulting update. No early stopping or reference-based feedback.",
+  "measurement": "Fresh processes; registration includes update trace capture for both arms. Save every pose, iteration count, termination and update norm. No scan selection.",
+  "evaluation": "Score only after all 12 estimates finish. Existing body-z-up NCLT reference, rigid position-fit ATE without scale and consecutive full SE3 RPE. Keep all failed/nonconverged frames.",
+  "decision": "Development screening only. Reject candidate if either session has ATE or RPE RMS more than 5 percent above gain 1, new iteration-limit or numeric failures, or no median runtime improvement. Passing does not authorize a default change without independent map-quality/held-out evaluation.",
+  "limitations": "Previously examined sparse motion-compensated demo recordings, shared VM; neither full-rate nor held-out. Pose metrics do not establish map consistency."
+}

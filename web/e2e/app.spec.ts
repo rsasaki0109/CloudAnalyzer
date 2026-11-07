@@ -442,7 +442,7 @@ test("volume: a 2 x 2 x 1 m mound over flat ground is 4 m³ of fill", async ({ p
     { name: "surveyed.ply", buffer: ply(site(true)) },
   ]);
   await expect(status(page)).toContainText("Loaded surveyed.ply");
-  await page.locator("#volume-panel summary").click();
+  await page.locator("#volume-options > summary").click();
   await page.locator("#volume-cell").fill("0.5");
   await page.locator("#volume-run").click();
   await expect(status(page)).toContainText("Volume: fill 4 m³, cut 0 m³, net 4 m³");

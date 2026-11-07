@@ -6,8 +6,8 @@ from typer.testing import CliRunner
 
 from ca import mapping_job as jobs, mapping_run as runs
 from cloudanalyzer_cli.main import app
-from tests.test_mapping_import import external_pair
-from tests.test_mapping_job import _corridor_report, _run_layout, job_backend
+from tests.test_mapping_import import external_pair  # noqa: F401 (pytest fixture)
+from tests.test_mapping_job import _corridor_report, _run_layout, job_backend  # noqa: F401 (pytest fixture)
 
 
 def _source(calls, fault=None):

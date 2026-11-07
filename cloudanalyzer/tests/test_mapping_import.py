@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 
 from ca import mapping_import as imports, mapping_job as jobs, mapping_run as runs
 from cloudanalyzer_cli.main import app
-from tests.test_mapping_job import job_backend, _attach_lane_native, _run_layout
+from tests.test_mapping_job import job_backend, _attach_lane_native, _run_layout  # noqa: F401 (pytest fixture)
 
 
 @pytest.fixture
@@ -330,3 +330,23 @@ def test_external_gap_inspection_rejects_changed_source_reports(external_pair, t
             "Reject stale source reports before recording an observation", run["revision"])
     assert not list(root.glob("map-gaps-*"))
     assert before == ((root / "job.json").read_bytes(), (root / "run.json").read_bytes())
+
+
+def test_read_only_preflight_reports_geometry_without_claiming_accuracy(external_pair, tmp_path):
+    cloud, trajectory, provenance = external_pair
+    before = set(tmp_path.iterdir())
+    report = imports.inspect_slam_inputs(str(cloud), str(trajectory), provenance)
+    assert report['map_points'] == 4
+    assert report['pose_rows'] == 2
+    assert report['path_length_m'] == pytest.approx(10)
+    assert report['map_bounds']['minimum'] == [0, -1, 1]
+    assert report['frame_alignment_verified'] is False
+    assert report['accuracy_verified'] is False
+    assert set(tmp_path.iterdir()) == before
+
+
+def test_preflight_rejects_nonmonotonic_external_clock(external_pair):
+    cloud, trajectory, provenance = external_pair
+    trajectory.write_text('100 0 0 1 0 0 0 1\n100 10 0 1 0 0 0 1\n')
+    with pytest.raises(ValueError, match='increase strictly'):
+        imports.inspect_slam_inputs(str(cloud), str(trajectory), provenance)

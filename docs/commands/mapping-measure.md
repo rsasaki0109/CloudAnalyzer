@@ -1,0 +1,54 @@
+# mapping-measure
+
+Measure a synchronous mapping command and save its execution receipt:
+
+```sh
+pip install 'cloudanalyzer[benchmark]'
+ca mapping-measure --run-dir runs/april --timeout 600 -- \
+  python scripts/mapping_e2e_coverage.py \
+  web/public/samples/nclt-2012-04-29.mcap runs/april 2.5
+ca mapping-scorecard runs/april
+```
+
+Put wrapper options before `--` and the executable/arguments after it. Arguments
+are passed directly, with no shell expansion. Quote paths containing spaces.
+The wrapper does not append the run directory to the child command: pass the
+same directory explicitly if the child requires it. Existing output directories
+are rejected. The child creates its normal output; the wrapper saves
+`measurement.json` afterward, even if the child fails to create the directory.
+The receipt is written and flushed to a temporary file before it is published
+atomically. A write failure leaves no partially written `measurement.json`, and
+an existing receipt (including one created by the child) is never overwritten.
+Publication requires hard-link support on the output filesystem; an unsupported
+filesystem returns an error. Abrupt process termination may leave a hidden
+`.measurement-*.tmp` file. This is not a guarantee of durability after power loss.
+
+`--interval` controls process-tree RSS sampling (0.01–1 second, default 0.05).
+`--timeout` accepts positive finite seconds; omitted means unlimited. The limit
+is checked between samples, so blocking process creation/monitoring can delay
+its observation. Termination waits may add up to ten seconds. Only synchronous
+work through the direct child's observed exit is measured; detached work is not.
+
+Child stdout/stderr are inherited. The final receipt is also printed to stdout,
+which may therefore contain child logs before the JSON. For automation, read
+`RUN_DIR/measurement.json` directly. Exit 0 means the child succeeded; failure,
+timeout, interruption or invalid options return nonzero. Check `status`,
+`exit_code`, `error` and `cleanup_error` for details. Missing output-size evidence
+is null with `output_size_error`; it does not erase independent timing metrics.
+If reading `run.json` or `job.json` for its final hash fails, the receipt still
+preserves the process result and measurements. The affected hash is null and
+`metadata_hash_errors` records the error by filename. This does not change the
+child's exit status, but prevents scorecards from attaching those measurements
+to a run. Missing or nonregular metadata already has a null hash; it does not
+necessarily produce a read error.
+
+The receipt records command/script identities, platform, elapsed time, sampled
+RSS and output bytes. RSS may miss short peaks or double-count shared pages.
+If a command exits before memory monitoring can attach, its confirmed exit code
+still determines success/failure. The receipt records zero RSS samples, a null
+peak and an unavailable process read; this does not invent a zero-memory result.
+These observations are not accuracy measurements or controlled hardware benchmarks.
+Only runs with valid `run.json` and `job.json` can subsequently be summarized by
+[mapping-scorecard](mapping-scorecard.md).
+
+The existing `python -m ca.mapping_measure` entry point remains supported.

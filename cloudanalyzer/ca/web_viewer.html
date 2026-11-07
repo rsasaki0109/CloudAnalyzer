@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CloudAnalyzer Viewer</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #1a1a2e; font-family: sans-serif; }
+  canvas { display: block; }
+  #info {
+    position: absolute; top: 10px; left: 10px; color: #e0e0e0;
+    background: rgba(0,0,0,0.7); padding: 12px 16px; border-radius: 8px;
+    font-size: 13px; line-height: 1.6; pointer-events: none;
+  }
+  #controls {
+    position: absolute; top: 10px; right: 10px; color: #e0e0e0;
+    background: rgba(0,0,0,0.7); padding: 12px 16px; border-radius: 8px;
+    font-size: 13px;
+  }
+  #controls label { display: block; margin: 4px 0; }
+  #controls input[type=range] { width: 120px; vertical-align: middle; }
+  #controls input[type=checkbox] { vertical-align: middle; }
+  #controls select { background: #333; color: #fff; border: 1px solid #555; padding: 2px 4px; }
+  #controls button {
+    background: #1f2937; color: #f8fafc; border: 1px solid #475569;
+    border-radius: 6px; padding: 4px 8px; cursor: pointer;
+  }
+  #controls button:hover { background: #334155; }
+  .control-actions { margin-top: 8px; display: flex; justify-content: flex-end; }
+  #thresholdInfo {
+    margin-top: 6px; font-size: 12px; line-height: 1.5; color: #cbd5e1;
+  }
+  #pointInspection,
+  #trajectoryInspection {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(203, 213, 225, 0.18);
+    font-size: 12px; line-height: 1.5; color: #cbd5e1;
+    max-width: 260px;
+  }
+  #pointInspectionTitle,
+  #trajectoryInspectionTitle { color: #f8fafc; font-weight: 700; margin-bottom: 4px; }
+  #pointInspectionHint,
+  #trajectoryInspectionHint { color: #94a3b8; }
+  #pointInspectionBody,
+  #trajectoryInspectionBody { margin-top: 4px; }
+  #trajectoryInspection a { color: #93c5fd; text-decoration: none; word-break: break-all; }
+  #trajectoryInspection a:hover { text-decoration: underline; }
+  .inspection-link-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .inspection-link-row button { padding: 2px 6px; font-size: 11px; }
+  .artifact-button-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 5px 0; }
+  .artifact-button-row button { padding: 2px 7px; font-size: 11px; }
+  #trajectoryTimeline {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(203, 213, 225, 0.18);
+    font-size: 12px; line-height: 1.4; color: #cbd5e1;
+    max-width: 260px;
+  }
+  #trajectoryTimelineTitle { color: #f8fafc; font-weight: 700; margin-bottom: 4px; }
+  #trajectoryTimelineHint { color: #94a3b8; margin-bottom: 6px; }
+  #trajectoryTimelineChart { display: grid; gap: 10px; }
+  #progressiveStatus {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(203, 213, 225, 0.18);
+    font-size: 12px; line-height: 1.5; color: #cbd5e1;
+    max-width: 260px;
+  }
+  .timeline-series-title { color: #e2e8f0; margin-bottom: 4px; font-weight: 600; }
+  .timeline-empty { color: #94a3b8; font-style: italic; }
+  .timeline-svg { display: block; width: 100%; height: auto; background: rgba(15, 23, 42, 0.35); border-radius: 8px; }
+  .timeline-axis-label { fill: #94a3b8; font-size: 10px; }
+  .timeline-series-line { fill: none; stroke-width: 2; }
+  .timeline-series-dot { cursor: pointer; }
+  #legend {
+    position: absolute; left: 10px; bottom: 10px; color: #e0e0e0;
+    background: rgba(0,0,0,0.7); padding: 12px 16px; border-radius: 8px;
+    font-size: 12px; width: 240px;
+  }
+  #legendBar {
+    height: 12px; border-radius: 999px; margin: 8px 0 6px;
+    background: linear-gradient(90deg, #1f3cff 0%, #00d4ff 25%, #8ef000 50%, #ffb000 75%, #ff3300 100%);
+  }
+  #legendLabels {
+    display: flex; justify-content: space-between; gap: 8px; color: #cbd5e1;
+  }
+</style>
+</head>
+<body>
+<div id="info">Loading...</div>
+<div id="controls">
+  <label>Point Size <input type="range" id="ptSize" min="0.5" max="10" step="0.5" value="2"></label>
+  <label id="refToggleWrap" style="display:none"><input type="checkbox" id="showReference" checked> Reference Overlay</label>
+  <label id="refOpacityWrap" style="display:none">Ref Opacity <input type="range" id="refOpacity" min="0.05" max="1" step="0.05" value="0.35"></label>
+  <label id="trajectoryToggleWrap" style="display:none"><input type="checkbox" id="showTrajectory" checked> Estimated Trajectory</label>
+  <label id="trajectoryReferenceToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryReference" checked> Reference Trajectory</label>
+  <label id="trajectoryMarkerToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstMarker" checked> Worst ATE Marker</label>
+  <label id="trajectorySegmentToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstSegment" checked> Worst RPE Segment</label>
+  <label id="slamDebugMarkerToggleWrap" style="display:none"><input type="checkbox" id="showSlamDebugMarkers" checked> SLAM Debug Frames</label>
+  <label id="slamDebugDiagnosisFilterWrap" style="display:none">Diagnosis <select id="slamDebugDiagnosisFilter">
+    <option value="__all__">All</option>
+  </select></label>
+  <label id="slamArtifactOverlayToggleWrap" style="display:none"><input type="checkbox" id="showSlamArtifactOverlay" checked> Artifact Overlay</label>
+  <div id="slamArtifactOverlayStatus" style="display:none"></div>
+  <label id="thresholdWrap" style="display:none">Error Threshold <input type="range" id="distThreshold" min="0" max="1" step="0.001" value="0"></label>
+  <label>Color <select id="colorMode">
+    <option value="heatmap">Heatmap</option>
+    <option value="height">Height</option>
+    <option value="distance">Distance from center</option>
+    <option value="white">White</option>
+  </select></label>
+  <label>BG <select id="bgColor">
+    <option value="#1a1a2e">Dark</option>
+    <option value="#ffffff">White</option>
+    <option value="#000000">Black</option>
+  </select></label>
+  <div id="thresholdInfo" style="display:none">
+    Threshold: <span id="distThresholdValue">0.0000</span><br>
+    Visible source points: <span id="visibleCount">0 / 0 (0.0%)</span>
+  </div>
+  <div id="progressiveStatus" style="display:none"></div>
+  <div id="pointInspection" style="display:none">
+    <div id="pointInspectionTitle">Point Inspection</div>
+    <div id="pointInspectionHint">Click a point.</div>
+    <div id="pointInspectionBody"></div>
+  </div>
+  <div id="trajectoryInspection" style="display:none">
+    <div id="trajectoryInspectionTitle">Trajectory Inspection</div>
+    <div id="trajectoryInspectionHint">Click the worst marker or segment.</div>
+    <div id="trajectoryInspectionBody"></div>
+  </div>
+  <div id="trajectoryTimeline" style="display:none">
+    <div id="trajectoryTimelineTitle">Trajectory Error Timeline</div>
+    <div id="trajectoryTimelineHint">Click a point to focus the viewer.</div>
+    <div id="trajectoryTimelineChart"></div>
+  </div>
+  <div class="control-actions">
+    <button type="button" id="resetView">Reset View</button>
+  </div>
+</div>
+<div id="legend" style="display:none">
+  <div><b>Distance Legend</b></div>
+  <div id="legendBar"></div>
+  <div id="legendLabels">
+    <span id="legendMin">0.0000</span>
+    <span id="legendMean">mean 0.0000</span>
+    <span id="legendMax">0.0000</span>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" }}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#1a1a2e');
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.1;
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points.threshold = 12;
+raycaster.params.Line.threshold = 6;
+const pointer = new THREE.Vector2();
+
+let pointCloud;
+let referenceCloud;
+let trajectoryLine;
+let trajectoryReferenceLine;
+let trajectoryWorstMarker;
+let trajectoryWorstSegment;
+let trajectorySlamDebugMarkers;
+let slamArtifactOverlay;
+let pickedPointMarker;
+let pickedReferenceMarker;
+let pickedCorrespondenceLine;
+let viewerData;
+let defaultCameraPosition;
+let defaultControlTarget;
+let trajectorySelection = null;
+let slamDebugMarkerFrames = [];
+let allSlamDebugMarkerFrames = [];
+
+function centerFlatPositions(flatPositions, center) {
+  if (!flatPositions) {
+    return flatPositions;
+  }
+  for (let i = 0; i < flatPositions.length; i += 3) {
+    flatPositions[i] -= center.x;
+    flatPositions[i + 1] -= center.y;
+    flatPositions[i + 2] -= center.z;
+  }
+  return flatPositions;
+}
+
+function updateReferenceGeometry() {
+  if (!referenceCloud) {
+    return;
+  }
+  const referencePositions = window._referenceBasePositions || [];
+  referenceCloud.geometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(new Float32Array(referencePositions), 3),
+  );
+  if (referencePositions.length > 0) {
+    referenceCloud.geometry.computeBoundingSphere();
+  }
+}
+
+function updateInfoPanel() {
+  if (!viewerData) {
+    return;
+  }
+  const loadedPoints = (window._sourceBasePositions || []).length / 3;
+  document.getElementById('info').innerHTML = makeInfo(
+    viewerData,
+    loadedPoints,
+    window._sceneExtent || 1,
+  );
+}
+
+function updateProgressiveStatus() {
+  const statusEl = document.getElementById('progressiveStatus');
+  const progressive = viewerData && viewerData.progressive_loading;
+  if (!statusEl || !progressive || !progressive.enabled) {
+    return;
+  }
+
+  const lines = [];
+  if (progressive.source) {
+    const loaded = ((window._sourceBasePositions || []).length / 3).toLocaleString();
+    lines.push(
+      `Source stream: ${loaded} / ${progressive.source.total_points.toLocaleString()} (${progressive.source.strategy})`,
+    );
+  }
+  if (progressive.reference) {
+    const loaded = ((window._referenceBasePositions || []).length / 3).toLocaleString();
+    lines.push(
+      `Reference stream: ${loaded} / ${progressive.reference.total_points.toLocaleString()} (${progressive.reference.strategy})`,
+    );
+  }
+  statusEl.innerHTML = lines.join('<br>');
+  statusEl.style.display = lines.length > 0 ? 'block' : 'none';
+}
+
+async function loadProgressiveStream(streamName, streamMeta, center) {
+  if (!streamMeta || !streamMeta.enabled || !streamMeta.chunks || streamMeta.chunks.length === 0) {
+    return;
+  }
+
+  for (const chunk of streamMeta.chunks) {
+    const resp = await fetch(chunk.path);
+    const payload = await resp.json();
+    const positions = Array.from(payload.positions || []);
+    centerFlatPositions(positions, center);
+
+    if (streamName === 'source') {
+      window._sourceBasePositions.push(...positions);
+      window._positions = window._sourceBasePositions.slice();
+      if (payload.distances) {
+        if (!window._distances) {
+          window._distances = [];
+        }
+        window._distances.push(...payload.distances);
+      }
+      updateSourceGeometry();
+    } else if (streamName === 'reference') {
+      if (!window._referenceBasePositions) {
+        window._referenceBasePositions = [];
+      }
+      window._referenceBasePositions.push(...positions);
+      updateReferenceGeometry();
+    }
+
+    updateProgressiveStatus();
+    updateInfoPanel();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+}
+
+async function loadProgressiveStreams(center) {
+  const progressive = viewerData && viewerData.progressive_loading;
+  if (!progressive || !progressive.enabled) {
+    return;
+  }
+
+  if (progressive.source) {
+    await loadProgressiveStream('source', progressive.source, center);
+  }
+  if (progressive.reference) {
+    await loadProgressiveStream('reference', progressive.reference, center);
+  }
+}
+
+async function loadPoints() {
+  const resp = await fetch('data.json');
+  const data = await resp.json();
+  viewerData = data;
+  const center = data.scene_bounds
+    ? {
+        x: data.scene_bounds.center[0],
+        y: data.scene_bounds.center[1],
+        z: data.scene_bounds.center[2],
+      }
+    : { x: 0, y: 0, z: 0 };
+  const positions = Array.from(data.positions || []);
+  const referencePositions = data.reference_positions ? Array.from(data.reference_positions) : null;
+  const trajectory = data.trajectory || null;
+  const trajectoryPositions = trajectory && trajectory.estimated_positions
+    ? Array.from(trajectory.estimated_positions)
+    : null;
+  const trajectoryReferencePositions = trajectory && trajectory.reference_positions
+    ? Array.from(trajectory.reference_positions)
+    : null;
+  centerFlatPositions(positions, center);
+  centerFlatPositions(referencePositions, center);
+  centerFlatPositions(trajectoryPositions, center);
+  centerFlatPositions(trajectoryReferencePositions, center);
+  window._trajectoryPositions = trajectoryPositions ? trajectoryPositions.slice() : null;
+  const n = positions.length / 3;
+  const heatmapOption = document.querySelector('#colorMode option[value="heatmap"]');
+  if (!data.distances && heatmapOption) {
+    heatmapOption.remove();
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+  const cx = center.x;
+  const cy = center.y;
+  const cz = center.z;
+  const extent = data.scene_bounds ? data.scene_bounds.extent : 1.0;
+  window._sceneExtent = extent;
+
+  const initialMode = data.distances ? 'heatmap' : 'height';
+  document.getElementById('colorMode').value = initialMode;
+
+  const material = new THREE.PointsMaterial({ size: 2, vertexColors: true, sizeAttenuation: true });
+  pointCloud = new THREE.Points(geometry, material);
+  scene.add(pointCloud);
+  if (referencePositions) {
+    const referenceGeometry = new THREE.BufferGeometry();
+    referenceGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array(referencePositions), 3),
+    );
+    const referenceMaterial = new THREE.PointsMaterial({
+      size: 1.5,
+      color: '#d1d5db',
+      transparent: true,
+      opacity: 0.35,
+      sizeAttenuation: true,
+    });
+    referenceCloud = new THREE.Points(referenceGeometry, referenceMaterial);
+    scene.add(referenceCloud);
+    document.getElementById('refToggleWrap').style.display = 'block';
+    document.getElementById('refOpacityWrap').style.display = 'block';
+  }
+  if (trajectoryPositions) {
+    const trajectoryGeometry = new THREE.BufferGeometry();
+    trajectoryGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array(trajectoryPositions), 3),
+    );
+    const trajectoryMaterial = new THREE.LineBasicMaterial({ color: '#f59e0b' });
+    trajectoryLine = new THREE.Line(trajectoryGeometry, trajectoryMaterial);
+    scene.add(trajectoryLine);
+    document.getElementById('trajectoryToggleWrap').style.display = 'block';
+  }
+  if (trajectoryReferencePositions) {
+    const trajectoryReferenceGeometry = new THREE.BufferGeometry();
+    trajectoryReferenceGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array(trajectoryReferencePositions), 3),
+    );
+    const trajectoryReferenceMaterial = new THREE.LineBasicMaterial({ color: '#2dd4bf' });
+    trajectoryReferenceLine = new THREE.Line(trajectoryReferenceGeometry, trajectoryReferenceMaterial);
+    scene.add(trajectoryReferenceLine);
+    document.getElementById('trajectoryReferenceToggleWrap').style.display = 'block';
+  }
+  if (trajectory && trajectory.worst_ate_index !== null && trajectoryPositions) {
+    const worstIndex = trajectory.worst_ate_index;
+    const worstGeometry = new THREE.BufferGeometry();
+    worstGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(
+        new Float32Array([
+          trajectoryPositions[worstIndex * 3],
+          trajectoryPositions[worstIndex * 3 + 1],
+          trajectoryPositions[worstIndex * 3 + 2],
+        ]),
+        3,
+      ),
+    );
+    const worstMaterial = new THREE.PointsMaterial({
+      size: 8,
+      color: '#ef4444',
+      sizeAttenuation: false,
+    });
+    trajectoryWorstMarker = new THREE.Points(worstGeometry, worstMaterial);
+    trajectoryWorstMarker.userData.inspectType = 'worst-ate';
+    scene.add(trajectoryWorstMarker);
+    document.getElementById('trajectoryMarkerToggleWrap').style.display = 'block';
+  }
+  if (trajectory && trajectory.worst_rpe_index !== null && trajectoryPositions) {
+    const worstIndex = trajectory.worst_rpe_index;
+    const segmentGeometry = new THREE.BufferGeometry();
+    segmentGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(
+        new Float32Array([
+          trajectoryPositions[worstIndex * 3],
+          trajectoryPositions[worstIndex * 3 + 1],
+          trajectoryPositions[worstIndex * 3 + 2],
+          trajectoryPositions[(worstIndex + 1) * 3],
+          trajectoryPositions[(worstIndex + 1) * 3 + 1],
+          trajectoryPositions[(worstIndex + 1) * 3 + 2],
+        ]),
+        3,
+      ),
+    );
+    const segmentMaterial = new THREE.LineBasicMaterial({ color: '#f43f5e' });
+    trajectoryWorstSegment = new THREE.Line(segmentGeometry, segmentMaterial);
+    trajectoryWorstSegment.userData.inspectType = 'worst-rpe';
+    scene.add(trajectoryWorstSegment);
+    document.getElementById('trajectorySegmentToggleWrap').style.display = 'block';
+  }
+  if (trajectory && trajectory.slam_debug_frames && trajectory.slam_debug_frames.length > 0 && trajectoryPositions) {
+    allSlamDebugMarkerFrames = [];
+    for (const frame of trajectory.slam_debug_frames) {
+      const displayIndex = frame.display_index;
+      const start = displayIndex * 3;
+      if (
+        Number.isInteger(displayIndex) &&
+        start + 2 < trajectoryPositions.length
+      ) {
+        allSlamDebugMarkerFrames.push(frame);
+      }
+    }
+    if (allSlamDebugMarkerFrames.length > 0) {
+      const slamGeometry = new THREE.BufferGeometry();
+      const slamMaterial = new THREE.PointsMaterial({
+        size: 9,
+        vertexColors: true,
+        sizeAttenuation: false,
+      });
+      trajectorySlamDebugMarkers = new THREE.Points(slamGeometry, slamMaterial);
+      trajectorySlamDebugMarkers.userData.inspectType = 'slam-debug-frame';
+      scene.add(trajectorySlamDebugMarkers);
+      document.getElementById('slamDebugMarkerToggleWrap').style.display = 'block';
+      document.getElementById('slamDebugDiagnosisFilterWrap').style.display = 'block';
+      setupSlamDebugDiagnosisFilter(allSlamDebugMarkerFrames);
+      updateSlamDebugMarkerGeometry();
+    }
+  } else {
+    slamDebugMarkerFrames = [];
+    allSlamDebugMarkerFrames = [];
+  }
+  if (
+    trajectory &&
+    (trajectory.mode === 'paired' || (trajectory.slam_debug_frames && trajectory.slam_debug_frames.length > 0))
+  ) {
+    document.getElementById('trajectoryInspection').style.display = 'block';
+  }
+  if (trajectory && trajectory.mode === 'paired') {
+    document.getElementById('trajectoryTimeline').style.display = 'block';
+  }
+
+  camera.position.set(0, 0, extent * 0.8);
+  controls.target.set(0, 0, 0);
+  controls.update();
+  defaultCameraPosition = camera.position.clone();
+  defaultControlTarget = controls.target.clone();
+
+  document.getElementById('info').innerHTML = makeInfo(data, n, extent);
+
+  // Store for recolor
+  window._positions = positions;
+  window._n = n;
+  window._minZ = data.source_z_bounds ? data.source_z_bounds[0] - cz : -extent / 2;
+  window._maxZ = data.source_z_bounds ? data.source_z_bounds[1] - cz : extent / 2;
+  window._distances = data.distances ? Array.from(data.distances) : null;
+  window._distanceStats = data.distance_stats || null;
+  window._sourceBasePositions = positions.slice();
+  window._referenceBasePositions = referencePositions ? referencePositions.slice() : null;
+  window._sourceTotalPoints = data.display_points || n;
+  window._centerOffset = { x: cx, y: cy, z: cz };
+  window._pickThreshold = Math.max(extent * 0.003, 0.03);
+
+  const pickedPointGeometry = new THREE.SphereGeometry(Math.max(extent * 0.012, 0.03), 20, 12);
+  const pickedPointMaterial = new THREE.MeshBasicMaterial({ color: '#fde68a' });
+  pickedPointMarker = new THREE.Mesh(pickedPointGeometry, pickedPointMaterial);
+  pickedPointMarker.visible = false;
+  scene.add(pickedPointMarker);
+
+  const pickedReferenceMaterial = new THREE.MeshBasicMaterial({ color: '#2dd4bf' });
+  pickedReferenceMarker = new THREE.Mesh(pickedPointGeometry.clone(), pickedReferenceMaterial);
+  pickedReferenceMarker.visible = false;
+  scene.add(pickedReferenceMarker);
+
+  const correspondenceGeometry = new THREE.BufferGeometry();
+  correspondenceGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(new Float32Array(6), 3),
+  );
+  const correspondenceMaterial = new THREE.LineBasicMaterial({ color: '#f8fafc' });
+  pickedCorrespondenceLine = new THREE.Line(correspondenceGeometry, correspondenceMaterial);
+  pickedCorrespondenceLine.visible = false;
+  scene.add(pickedCorrespondenceLine);
+
+  document.getElementById('pointInspection').style.display = 'block';
+  clearPointInspection();
+
+  if (data.distances && data.distance_stats) {
+    const thresholdInput = document.getElementById('distThreshold');
+    const maxDistance = data.distance_stats.max || 0;
+    thresholdInput.max = String(maxDistance);
+    thresholdInput.step = String(Math.max(maxDistance / 200, 0.0001));
+    thresholdInput.value = '0';
+    document.getElementById('thresholdWrap').style.display = 'block';
+    document.getElementById('thresholdInfo').style.display = 'block';
+    document.getElementById('legend').style.display = 'block';
+    document.getElementById('legendMin').textContent = data.distance_stats.min.toFixed(4);
+    document.getElementById('legendMean').textContent = `mean ${data.distance_stats.mean.toFixed(4)}`;
+    document.getElementById('legendMax').textContent = data.distance_stats.max.toFixed(4);
+  }
+
+  updateSourceGeometry();
+  renderTrajectoryTimeline();
+  updateProgressiveStatus();
+  updateInfoPanel();
+  void loadProgressiveStreams(center);
+}
+
+function makeInfo(data, n, extent) {
+  let trajectoryInfo = '';
+  let progressiveInfo = '';
+  if (data.progressive_loading && data.progressive_loading.enabled && data.progressive_loading.source) {
+    const loadedPoints = window._sourceBasePositions
+      ? (window._sourceBasePositions.length / 3)
+      : n;
+    progressiveInfo =
+      `<br>Loaded now: ${loadedPoints.toLocaleString()} / ${data.progressive_loading.source.total_points.toLocaleString()}` +
+      `<br>Progressive strategy: ${data.progressive_loading.source.strategy}`;
+  }
+  if (data.trajectory) {
+    const slamDebugInfo = data.trajectory.slam_debug
+      ? `<br>SLAM debug frames: ${data.trajectory.slam_debug.displayed_frames.toLocaleString()} / ${data.trajectory.slam_debug.total_frames.toLocaleString()}`
+      : '';
+    if (data.trajectory.mode === 'paired') {
+      trajectoryInfo =
+        `<br>Trajectory matched: ${data.trajectory.matching.matched_poses.toLocaleString()} (${(data.trajectory.matching.coverage_ratio * 100).toFixed(1)}%)` +
+        `<br>Trajectory displayed: ${data.trajectory.displayed_estimated_pose_count.toLocaleString()} / ${data.trajectory.estimated_pose_count.toLocaleString()}` +
+        `<br>Trajectory sampler: ${data.trajectory.sampling.strategy}` +
+        `<br>Trajectory align: ${data.trajectory.alignment.mode}` +
+        `<br>Trajectory ATE RMSE (display): ${data.trajectory.ate.rmse.toFixed(4)}` +
+        `<br>Trajectory RPE RMSE (display): ${data.trajectory.rpe.rmse.toFixed(4)}` +
+        `<br>Trajectory worst ATE: ${data.trajectory.error_stats.max.toFixed(4)}` +
+        `<br>Trajectory worst RPE: ${data.trajectory.rpe.max.toFixed(4)}` +
+        slamDebugInfo;
+    } else {
+      trajectoryInfo =
+        `<br>Trajectory poses: ${data.trajectory.displayed_estimated_pose_count.toLocaleString()} / ${data.trajectory.estimated_pose_count.toLocaleString()}` +
+        `<br>Trajectory sampler: ${data.trajectory.sampling.strategy}` +
+        `<br>Trajectory file: ${data.trajectory.estimated_filename}` +
+        slamDebugInfo;
+    }
+  }
+  const displayPoints = (data.display_points ?? n).toLocaleString();
+  if (data.viewer_mode === 'trajectory') {
+    return `<b>CloudAnalyzer LiDAR Odometry Viewer</b><br>` +
+      `Map points: ${displayPoints}<br>` +
+      `Extent: ${extent.toFixed(1)}m<br>` +
+      `File: ${data.filename}` +
+      trajectoryInfo;
+  }
+  if (data.viewer_mode === 'heatmap' && data.distance_stats) {
+    const original = data.original_points && data.original_points !== data.display_points
+      ? `<br>Original source points: ${data.original_points.toLocaleString()}`
+      : '';
+    const referenceOriginal = data.reference_points && data.reference_points !== data.reference_display_points
+      ? ` / ${data.reference_points.toLocaleString()} original`
+      : '';
+    return `<b>CloudAnalyzer Heatmap Viewer</b><br>` +
+      `Source: ${data.source_filename}<br>` +
+      `Reference: ${data.target_filename}<br>` +
+      `Display points: ${displayPoints}${original}<br>` +
+      `Reference overlay: ${(data.reference_display_points ?? 0).toLocaleString()}${referenceOriginal}<br>` +
+      `Mean distance: ${data.distance_stats.mean.toFixed(4)}<br>` +
+      `Max distance: ${data.distance_stats.max.toFixed(4)}<br>` +
+      `Extent: ${extent.toFixed(1)}m` +
+      progressiveInfo +
+      trajectoryInfo;
+  }
+
+  return `<b>CloudAnalyzer Web Viewer</b><br>` +
+    `Points: ${displayPoints}<br>` +
+    `Extent: ${extent.toFixed(1)}m<br>` +
+    `File: ${data.filename}` +
+    progressiveInfo +
+    trajectoryInfo;
+}
+
+function computeColors(pos, n, minZ, maxZ, mode, distances, distanceStats) {
+  const colors = new Float32Array(n * 3);
+  const rangeZ = maxZ - minZ || 1;
+  const distMin = distanceStats ? distanceStats.min : 0;
+  const distRange = distanceStats ? (distanceStats.max - distanceStats.min || 1) : 1;
+  for (let i=0; i<n; i++) {
+    let t;
+    if (mode === 'heatmap' && distances) {
+      t = (distances[i] - distMin) / distRange;
+    } else if (mode === 'height') {
+      t = (pos[i*3+2] - minZ) / rangeZ;
+    } else if (mode === 'distance') {
+      const dx=pos[i*3], dy=pos[i*3+1], dz=pos[i*3+2];
+      t = Math.sqrt(dx*dx+dy*dy+dz*dz) / (rangeZ * 0.7);
+      t = Math.min(t, 1);
+    } else {
+      colors[i*3]=1; colors[i*3+1]=1; colors[i*3+2]=1;
+      continue;
+    }
+    // Turbo-ish colormap
+    colors[i*3]   = Math.max(0, Math.min(1, 1.5 - Math.abs(t - 0.75) * 4));
+    colors[i*3+1] = Math.max(0, Math.min(1, 1.5 - Math.abs(t - 0.5) * 4));
+    colors[i*3+2] = Math.max(0, Math.min(1, 1.5 - Math.abs(t - 0.25) * 4));
+  }
+  return colors;
+}
+
+function updateThresholdInfo(threshold, visibleCount) {
+  if (!viewerData || !viewerData.distances) {
+    return;
+  }
+
+  const total = viewerData.display_points ?? visibleCount;
+  const ratio = total > 0 ? (visibleCount / total) * 100 : 0;
+  document.getElementById('distThresholdValue').textContent = threshold.toFixed(4);
+  document.getElementById('visibleCount').textContent =
+    `${visibleCount.toLocaleString()} / ${total.toLocaleString()} (${ratio.toFixed(1)}%)`;
+}
+
+function clearTrajectoryInspection() {
+  const titleEl = document.getElementById('trajectoryInspectionTitle');
+  const body = document.getElementById('trajectoryInspectionBody');
+  const hint = document.getElementById('trajectoryInspectionHint');
+  if (titleEl) {
+    titleEl.textContent = 'Trajectory Inspection';
+  }
+  if (body) {
+    body.innerHTML = '';
+  }
+  if (hint) {
+    hint.textContent = 'Click the worst marker or segment.';
+  }
+}
+
+function defaultPointInspectionHint() {
+  return referenceCloud ? 'Click a source or reference point.' : 'Click a point.';
+}
+
+function clearPointInspection() {
+  const titleEl = document.getElementById('pointInspectionTitle');
+  const body = document.getElementById('pointInspectionBody');
+  const hint = document.getElementById('pointInspectionHint');
+  if (titleEl) {
+    titleEl.textContent = 'Point Inspection';
+  }
+  if (body) {
+    body.innerHTML = '';
+  }
+  if (hint) {
+    hint.textContent = defaultPointInspectionHint();
+  }
+  if (pickedPointMarker) {
+    pickedPointMarker.visible = false;
+  }
+  if (pickedReferenceMarker) {
+    pickedReferenceMarker.visible = false;
+  }
+  if (pickedCorrespondenceLine) {
+    pickedCorrespondenceLine.visible = false;
+  }
+}
+
+function updateCorrespondenceOverlay(sourcePosition, referencePosition) {
+  if (pickedPointMarker && sourcePosition && sourcePosition.length >= 3) {
+    pickedPointMarker.position.set(sourcePosition[0], sourcePosition[1], sourcePosition[2]);
+    pickedPointMarker.visible = true;
+  }
+  if (pickedReferenceMarker && referencePosition && referencePosition.length >= 3) {
+    pickedReferenceMarker.position.set(referencePosition[0], referencePosition[1], referencePosition[2]);
+    pickedReferenceMarker.visible = true;
+  } else if (pickedReferenceMarker) {
+    pickedReferenceMarker.visible = false;
+  }
+  if (pickedCorrespondenceLine && sourcePosition && referencePosition) {
+    const attrs = pickedCorrespondenceLine.geometry.getAttribute('position');
+    attrs.setXYZ(0, sourcePosition[0], sourcePosition[1], sourcePosition[2]);
+    attrs.setXYZ(1, referencePosition[0], referencePosition[1], referencePosition[2]);
+    attrs.needsUpdate = true;
+    pickedCorrespondenceLine.visible = true;
+  } else if (pickedCorrespondenceLine) {
+    pickedCorrespondenceLine.visible = false;
+  }
+}
+
+function showPointInspection(title, lines, position, referencePosition = null) {
+  const titleEl = document.getElementById('pointInspectionTitle');
+  const body = document.getElementById('pointInspectionBody');
+  const hint = document.getElementById('pointInspectionHint');
+  if (titleEl) {
+    titleEl.textContent = title;
+  }
+  if (hint) {
+    hint.textContent = '';
+  }
+  if (body) {
+    body.innerHTML = lines.map((line) => `<div>${line}</div>`).join('');
+  }
+  updateCorrespondenceOverlay(position, referencePosition);
+}
+
+function showTrajectoryInspection(title, lines) {
+  const titleEl = document.getElementById('trajectoryInspectionTitle');
+  const body = document.getElementById('trajectoryInspectionBody');
+  const hint = document.getElementById('trajectoryInspectionHint');
+  if (titleEl) {
+    titleEl.textContent = title;
+  }
+  if (hint) {
+    hint.textContent = '';
+  }
+  if (body) {
+    body.innerHTML = lines.map(renderInspectionLine).join('');
+  }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function renderInspectionLine(line) {
+  if (line && typeof line === 'object') {
+    const label = line.label ? `${escapeHtml(line.label)}: ` : '';
+    const value = escapeHtml(line.value || line.href || '');
+    if (line.action === 'slam-artifact-actions' && Array.isArray(line.assets)) {
+      const buttons = line.assets.map((asset) => {
+        const href = escapeHtml(asset.href || '');
+        const assetLabel = escapeHtml(asset.label || asset.href || '');
+        const buttonLabel = escapeHtml(asset.buttonLabel || asset.label || 'Overlay');
+        const frameId = escapeHtml(asset.frameId || '');
+        return (
+          `<button type="button" data-slam-artifact-href="${href}" ` +
+          `data-slam-artifact-label="${assetLabel}" data-slam-artifact-frame="${frameId}">${buttonLabel}</button>`
+        );
+      }).join('');
+      return `<div>${label}</div><div class="artifact-button-row">${buttons}</div>`;
+    }
+    if (line.href) {
+      const href = escapeHtml(line.href);
+      const link = `<a href="${href}" target="_blank" rel="noopener">${value}</a>`;
+      if (line.action === 'load-slam-artifact') {
+        const buttonLabel = escapeHtml(line.buttonLabel || 'Overlay');
+        const frameId = escapeHtml(line.frameId || '');
+        return (
+          `<div class="inspection-link-row">${label}${link}` +
+          `<button type="button" data-slam-artifact-href="${href}" data-slam-artifact-label="${value}" ` +
+          `data-slam-artifact-frame="${frameId}">${buttonLabel}</button>` +
+          `</div>`
+        );
+      }
+      return `<div>${label}${link}</div>`;
+    }
+    return `<div>${label}${value}</div>`;
+  }
+  return `<div>${escapeHtml(line)}</div>`;
+}
+
+function describePointSelection(intersection) {
+  if (!intersection || intersection.index === undefined || intersection.index === null) {
+    return null;
+  }
+
+  const center = window._centerOffset || { x: 0, y: 0, z: 0 };
+  const visibleIndex = intersection.index;
+
+  if (pointCloud && intersection.object === pointCloud) {
+    const sourcePositions = window._sourceBasePositions || [];
+    const sourceDistances = window._distances || null;
+    const visibleIndices = window._sourceVisibleIndices || null;
+    const referencePositions = window._referenceBasePositions || null;
+    const sourceIndex = visibleIndices ? visibleIndices[visibleIndex] : visibleIndex;
+    const start = sourceIndex * 3;
+    if (start + 2 >= sourcePositions.length) {
+      return null;
+    }
+
+    const centeredPosition = [
+      sourcePositions[start],
+      sourcePositions[start + 1],
+      sourcePositions[start + 2],
+    ];
+    const lines = [
+      `Display index: ${visibleIndex.toLocaleString()}`,
+      `Point index: ${sourceIndex.toLocaleString()}`,
+      `X: ${(centeredPosition[0] + center.x).toFixed(4)}`,
+      `Y: ${(centeredPosition[1] + center.y).toFixed(4)}`,
+      `Z: ${(centeredPosition[2] + center.z).toFixed(4)}`,
+    ];
+    if (sourceDistances && sourceDistances[sourceIndex] !== undefined) {
+      lines.push(`Distance to reference: ${sourceDistances[sourceIndex].toFixed(4)}`);
+    }
+    let referencePosition = null;
+    if (referencePositions && referencePositions.length >= 3) {
+      let bestDistanceSq = Infinity;
+      for (let i = 0; i < referencePositions.length; i += 3) {
+        const dx = referencePositions[i] - centeredPosition[0];
+        const dy = referencePositions[i + 1] - centeredPosition[1];
+        const dz = referencePositions[i + 2] - centeredPosition[2];
+        const distanceSq = dx * dx + dy * dy + dz * dz;
+        if (distanceSq < bestDistanceSq) {
+          bestDistanceSq = distanceSq;
+          referencePosition = [
+            referencePositions[i],
+            referencePositions[i + 1],
+            referencePositions[i + 2],
+          ];
+        }
+      }
+      if (referencePosition) {
+        lines.push(
+          `Nearest displayed reference: ${Math.sqrt(bestDistanceSq).toFixed(4)}`,
+        );
+      }
+    }
+    if (
+      viewerData &&
+      viewerData.original_points &&
+      viewerData.display_points &&
+      viewerData.original_points !== viewerData.display_points
+    ) {
+      lines.push('Display cloud: downsampled for browser');
+    }
+    return {
+      title: viewerData && viewerData.viewer_mode === 'heatmap' ? 'Source Point' : 'Cloud Point',
+      lines,
+      position: centeredPosition,
+      referencePosition,
+    };
+  }
+
+  if (referenceCloud && intersection.object === referenceCloud) {
+    const referencePositions = window._referenceBasePositions || [];
+    const start = visibleIndex * 3;
+    if (start + 2 >= referencePositions.length) {
+      return null;
+    }
+
+    const centeredPosition = [
+      referencePositions[start],
+      referencePositions[start + 1],
+      referencePositions[start + 2],
+    ];
+    const lines = [
+      `Display index: ${visibleIndex.toLocaleString()}`,
+      `X: ${(centeredPosition[0] + center.x).toFixed(4)}`,
+      `Y: ${(centeredPosition[1] + center.y).toFixed(4)}`,
+      `Z: ${(centeredPosition[2] + center.z).toFixed(4)}`,
+    ];
+    if (
+      viewerData &&
+      viewerData.reference_points &&
+      viewerData.reference_display_points &&
+      viewerData.reference_points !== viewerData.reference_display_points
+    ) {
+      lines.push('Reference overlay: downsampled for browser');
+    }
+    return {
+      title: 'Reference Point',
+      lines,
+      position: centeredPosition,
+      referencePosition: null,
+    };
+  }
+
+  return null;
+}
+
+function selectPointFeature(intersection) {
+  const description = describePointSelection(intersection);
+  if (!description) {
+    clearPointInspection();
+    return;
+  }
+  trajectorySelection = null;
+  renderTrajectoryTimeline();
+  clearTrajectoryInspection();
+  showPointInspection(
+    description.title,
+    description.lines,
+    description.position,
+    description.referencePosition || null,
+  );
+}
+
+function buildTimelineSeriesSvg(label, selectionType, timestamps, values, color, activeSelection) {
+  if (!timestamps || !values || timestamps.length === 0 || values.length === 0) {
+    return `<div><div class="timeline-series-title">${label}</div><div class="timeline-empty">No samples</div></div>`;
+  }
+
+  const width = 240;
+  const height = 92;
+  const paddingLeft = 28;
+  const paddingRight = 8;
+  const paddingTop = 8;
+  const paddingBottom = 18;
+  const minTime = timestamps[0];
+  const maxTime = timestamps[timestamps.length - 1];
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const timeRange = maxTime - minTime || 1;
+  const valueRange = maxValue - minValue || 1;
+  const plotWidth = width - paddingLeft - paddingRight;
+  const plotHeight = height - paddingTop - paddingBottom;
+
+  const points = values.map((value, index) => {
+    const x = paddingLeft + (((timestamps[index] - minTime) / timeRange) * plotWidth);
+    const y = paddingTop + plotHeight - (((value - minValue) / valueRange) * plotHeight);
+    return { x, y, value, timestamp: timestamps[index], index };
+  });
+  const polyline = points.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
+  const dots = points.map((point) => {
+    const isSelected =
+      activeSelection &&
+      activeSelection.type === selectionType &&
+      activeSelection.index === point.index;
+    const radius = isSelected ? 4.5 : 2.8;
+    const stroke = isSelected ? '#f8fafc' : color;
+    const strokeWidth = isSelected ? 1.5 : 0.75;
+    return (
+      `<circle class="timeline-series-dot" ` +
+      `cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${radius}" fill="${color}" ` +
+      `stroke="${stroke}" stroke-width="${strokeWidth}" ` +
+      `data-trajectory-selection="${selectionType}" data-trajectory-index="${point.index}">` +
+      `<title>${label} @ ${point.timestamp.toFixed(3)} = ${point.value.toFixed(4)}</title>` +
+      `</circle>`
+    );
+  }).join('');
+
+  return `
+    <div>
+      <div class="timeline-series-title">${label}</div>
+      <svg class="timeline-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${label} timeline">
+        <line x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" stroke="#334155" stroke-width="1" />
+        <line x1="${paddingLeft}" y1="${paddingTop}" x2="${paddingLeft}" y2="${height - paddingBottom}" stroke="#334155" stroke-width="1" />
+        <polyline class="timeline-series-line" points="${polyline}" stroke="${color}" />
+        ${dots}
+        <text class="timeline-axis-label" x="${paddingLeft}" y="${height - 4}">${minTime.toFixed(2)}</text>
+        <text class="timeline-axis-label" x="${width - paddingRight}" y="${height - 4}" text-anchor="end">${maxTime.toFixed(2)}</text>
+        <text class="timeline-axis-label" x="${paddingLeft - 4}" y="${paddingTop + 10}" text-anchor="end">${maxValue.toFixed(3)}</text>
+        <text class="timeline-axis-label" x="${paddingLeft - 4}" y="${height - paddingBottom}" text-anchor="end">${minValue.toFixed(3)}</text>
+      </svg>
+    </div>
+  `;
+}
+
+function renderTrajectoryTimeline() {
+  const chart = document.getElementById('trajectoryTimelineChart');
+  const hint = document.getElementById('trajectoryTimelineHint');
+  if (!chart) {
+    return;
+  }
+  if (!viewerData || !viewerData.trajectory || viewerData.trajectory.mode !== 'paired') {
+    chart.innerHTML = '';
+    return;
+  }
+
+  const trajectory = viewerData.trajectory;
+  chart.innerHTML = [
+    buildTimelineSeriesSvg(
+      'ATE',
+      'ate',
+      trajectory.timestamps || [],
+      trajectory.ate_errors || [],
+      '#60a5fa',
+      trajectorySelection,
+    ),
+    buildTimelineSeriesSvg(
+      'RPE',
+      'rpe',
+      trajectory.rpe_timestamps || [],
+      trajectory.rpe_errors || [],
+      '#fb7185',
+      trajectorySelection,
+    ),
+  ].join('');
+
+  chart.querySelectorAll('[data-trajectory-selection]').forEach((node) => {
+    node.addEventListener('click', (event) => {
+      const target = event.currentTarget;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      const selectionType = target.dataset.trajectorySelection;
+      const selectionIndex = Number(target.dataset.trajectoryIndex);
+      if (selectionType && Number.isFinite(selectionIndex)) {
+        selectTrajectoryFeature(selectionType, selectionIndex, true);
+      }
+    });
+  });
+
+  if (hint) {
+    hint.textContent = trajectorySelection
+      ? 'Timeline selection is synced with the viewer.'
+      : 'Click a point to focus the viewer.';
+  }
+}
+
+function focusCameraOnSelection(selectionPositions) {
+  if (!selectionPositions || selectionPositions.length < 3) {
+    return;
+  }
+
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let i = 0; i < selectionPositions.length; i += 3) {
+    const x = selectionPositions[i];
+    const y = selectionPositions[i + 1];
+    const z = selectionPositions[i + 2];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (z < minZ) minZ = z;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+    if (z > maxZ) maxZ = z;
+  }
+
+  const target = new THREE.Vector3(
+    (minX + maxX) / 2,
+    (minY + maxY) / 2,
+    (minZ + maxZ) / 2,
+  );
+  const selectionExtent = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+  const direction = new THREE.Vector3().subVectors(camera.position, controls.target);
+  if (direction.lengthSq() < 1e-8) {
+    direction.set(0, 0, 1);
+  }
+  direction.normalize();
+  const sceneExtent = window._sceneExtent || 1;
+  const focusDistance = Math.max(selectionExtent * 4, sceneExtent * 0.18, 0.75);
+
+  camera.position.copy(target.clone().add(direction.multiplyScalar(focusDistance)));
+  controls.target.copy(target);
+  controls.update();
+}
+
+function focusTrajectorySelection(type, index) {
+  if (!viewerData || !viewerData.trajectory) {
+    return false;
+  }
+  const trajectory = viewerData.trajectory;
+  const estimatedPositions = trajectory.estimated_positions || [];
+  if (type === 'ate') {
+    const start = index * 3;
+    if (start + 2 >= estimatedPositions.length) {
+      return false;
+    }
+    focusCameraOnSelection(estimatedPositions.slice(start, start + 3));
+    return true;
+  }
+  if (type === 'rpe') {
+    const start = index * 3;
+    if (start + 5 >= estimatedPositions.length) {
+      return false;
+    }
+    focusCameraOnSelection(estimatedPositions.slice(start, start + 6));
+    return true;
+  }
+  return false;
+}
+
+function focusSlamDebugFrame(markerIndex) {
+  if (!viewerData || !viewerData.trajectory) {
+    return false;
+  }
+  const frame = slamDebugMarkerFrames[markerIndex];
+  const estimatedPositions = viewerData.trajectory.estimated_positions || [];
+  if (!frame || !Number.isInteger(frame.display_index)) {
+    return false;
+  }
+  const start = frame.display_index * 3;
+  if (start + 2 >= estimatedPositions.length) {
+    return false;
+  }
+  focusCameraOnSelection(estimatedPositions.slice(start, start + 3));
+  return true;
+}
+
+function describeTrajectorySelection(type, index) {
+  if (!viewerData || !viewerData.trajectory || viewerData.trajectory.mode !== 'paired') {
+    return null;
+  }
+  const trajectory = viewerData.trajectory;
+  if (type === 'ate' && trajectory.timestamps && trajectory.ate_errors) {
+    const timestamp = trajectory.timestamps[index];
+    const error = trajectory.ate_errors[index];
+    if (timestamp === undefined || error === undefined) {
+      return null;
+    }
+    const lines = [
+      `Timestamp: ${timestamp.toFixed(3)}`,
+      `Position error: ${error.toFixed(4)}`,
+    ];
+    if (trajectory.worst_ate_sample && trajectory.worst_ate_index === index) {
+      lines.push(`Time delta: ${trajectory.worst_ate_sample.time_delta.toFixed(4)}`);
+    }
+    return {
+      title: index === trajectory.worst_ate_index ? 'Worst ATE Pose' : 'ATE Sample',
+      lines,
+    };
+  }
+  if (type === 'rpe' && trajectory.rpe_timestamps && trajectory.rpe_errors && trajectory.timestamps) {
+    const timestamp = trajectory.rpe_timestamps[index];
+    const error = trajectory.rpe_errors[index];
+    const startTimestamp = trajectory.timestamps[index];
+    const endTimestamp = trajectory.timestamps[index + 1];
+    if (
+      timestamp === undefined ||
+      error === undefined ||
+      startTimestamp === undefined ||
+      endTimestamp === undefined
+    ) {
+      return null;
+    }
+    return {
+      title: index === trajectory.worst_rpe_index ? 'Worst RPE Segment' : 'RPE Segment',
+      lines: [
+        `Center: ${timestamp.toFixed(3)}`,
+        `Start: ${startTimestamp.toFixed(3)}`,
+        `End: ${endTimestamp.toFixed(3)}`,
+        `Translation error: ${error.toFixed(4)}`,
+      ],
+    };
+  }
+  return null;
+}
+
+function describeSlamDebugFrame(markerIndex) {
+  const frame = slamDebugMarkerFrames[markerIndex];
+  if (!frame) {
+    return null;
+  }
+  const diagnosis = frame.diagnosis || null;
+  const diagnosisLabel = diagnosis ? diagnosis.label : 'needs_review';
+  const lines = [
+    `Rank: ${frame.rank}`,
+    `Scan: ${frame.scan_id}`,
+    `Timestamp: ${Number(frame.timestamp_sec).toFixed(3)}`,
+    `Score: ${Number(frame.score || 0).toFixed(3)}`,
+    `Marker color: ${diagnosisColorName(diagnosisLabel)}`,
+  ];
+  if (Number.isFinite(frame.scan_match_rmse_m)) {
+    lines.push(`GLIM RMSE: ${Number(frame.scan_match_rmse_m).toFixed(4)}`);
+  }
+  if (Number.isFinite(frame.scan_match_weighted_rmse)) {
+    lines.push(`GLIM weighted RMSE: ${Number(frame.scan_match_weighted_rmse).toFixed(4)}`);
+  }
+  if (frame.scan_match_debug_summary) {
+    const summary = frame.scan_match_debug_summary;
+    if (Number.isFinite(summary.distance_before_mean_m) && Number.isFinite(summary.distance_after_mean_m)) {
+      lines.push(
+        `CA mean distance: ${Number(summary.distance_before_mean_m).toFixed(4)} -> ${Number(summary.distance_after_mean_m).toFixed(4)}`,
+      );
+    }
+    if (Number.isFinite(summary.mean_improvement_m)) {
+      lines.push(`CA mean improvement: ${Number(summary.mean_improvement_m).toFixed(4)}`);
+    }
+    if (Number.isFinite(summary.registration_inlier_rmse_m)) {
+      lines.push(`CA ICP RMSE: ${Number(summary.registration_inlier_rmse_m).toFixed(4)}`);
+    }
+    if (Number.isFinite(summary.registration_fitness)) {
+      lines.push(`CA fitness: ${Number(summary.registration_fitness).toFixed(3)}`);
+    }
+    if (summary.scan_points_used || summary.map_points_used) {
+      lines.push(
+        `Debug points: scan ${Number(summary.scan_points_used || 0).toLocaleString()} / map ${Number(summary.map_points_used || 0).toLocaleString()}`,
+      );
+    }
+  }
+  if (Number.isFinite(frame.prediction_delta_m)) {
+    lines.push(`Prediction delta: ${Number(frame.prediction_delta_m).toFixed(4)}`);
+  }
+  if (Number.isFinite(frame.initial_delta_m)) {
+    lines.push(`Initial delta: ${Number(frame.initial_delta_m).toFixed(4)}`);
+  }
+  if (diagnosis) {
+    lines.push(`Diagnosis: ${diagnosis.label} (${diagnosis.confidence})`);
+    if (diagnosis.secondary_labels && diagnosis.secondary_labels.length > 0) {
+      lines.push(`Secondary: ${diagnosis.secondary_labels.join(', ')}`);
+    }
+    if (diagnosis.suggested_action) {
+      lines.push(`Action: ${diagnosis.suggested_action}`);
+    }
+    if (diagnosis.signals) {
+      const signals = diagnosis.signals;
+      if (Number.isFinite(signals.raw_points) || Number.isFinite(signals.filtered_points)) {
+        const raw = Number.isFinite(signals.raw_points)
+          ? Number(signals.raw_points).toLocaleString()
+          : 'n/a';
+        const filtered = Number.isFinite(signals.filtered_points)
+          ? Number(signals.filtered_points).toLocaleString()
+          : 'n/a';
+        const ratio = Number.isFinite(signals.filtered_ratio)
+          ? ` (${(Number(signals.filtered_ratio) * 100).toFixed(2)}%)`
+          : '';
+        lines.push(`Scan points: raw ${raw} / downsampled ${filtered}${ratio}`);
+      }
+      if (Number.isFinite(signals.raw_range_mean_m) || Number.isFinite(signals.filtered_range_mean_m)) {
+        const rawRange = Number.isFinite(signals.raw_range_mean_m)
+          ? Number(signals.raw_range_mean_m).toFixed(3)
+          : 'n/a';
+        const filteredRange = Number.isFinite(signals.filtered_range_mean_m)
+          ? Number(signals.filtered_range_mean_m).toFixed(3)
+          : 'n/a';
+        lines.push(`Mean range: raw ${rawRange} / downsampled ${filteredRange}`);
+      }
+      if (Number.isFinite(signals.raw_range_min_m) && Number.isFinite(signals.raw_range_max_m)) {
+        lines.push(
+          `Raw range span: ${Number(signals.raw_range_min_m).toFixed(3)} - ${Number(signals.raw_range_max_m).toFixed(3)}`,
+        );
+      }
+    }
+  }
+  if (frame.reasons && frame.reasons.length > 0) {
+    lines.push(`Reasons: ${frame.reasons.join(', ')}`);
+  }
+  if (Number.isFinite(frame.closest_display_time_delta_sec)) {
+    lines.push(`Marker time delta: ${Number(frame.closest_display_time_delta_sec).toFixed(4)}`);
+  }
+  if (frame.scan_path) {
+    lines.push(`Scan path: ${frame.scan_path}`);
+  }
+  if (frame.artifacts) {
+    for (const [key, path] of Object.entries(frame.artifacts)) {
+      lines.push(`Artifact ${formatArtifactLabel(key)}: ${path}`);
+    }
+  }
+  if (frame.artifact_assets) {
+    const actionAssets = buildSlamArtifactActionAssets(frame);
+    if (actionAssets.length > 0) {
+      lines.push({
+        label: 'Artifact overlays',
+        action: 'slam-artifact-actions',
+        assets: actionAssets,
+      });
+    }
+    for (const [key, path] of Object.entries(frame.artifact_assets)) {
+      lines.push({
+        label: `Asset ${formatArtifactLabel(key)}`,
+        value: path,
+        href: path,
+        action: String(path).toLowerCase().endsWith('.ply') ? 'load-slam-artifact' : null,
+        buttonLabel: 'Overlay',
+        frameId: frame.scan_id,
+      });
+    }
+  }
+  return {
+    title: 'SLAM Debug Frame',
+    lines,
+  };
+}
+
+function buildSlamArtifactActionAssets(frame) {
+  if (!frame || !frame.artifact_assets) {
+    return [];
+  }
+  const ordered = [
+    ['scan_initial_error_ply', 'Initial'],
+    ['scan_aligned_error_ply', 'Aligned'],
+    ['map_debug_ply', 'Map'],
+  ];
+  const assets = [];
+  for (const [key, label] of ordered) {
+    const href = frame.artifact_assets[key];
+    if (href && String(href).toLowerCase().endsWith('.ply')) {
+      assets.push({
+        href,
+        label: `${label}: ${href}`,
+        buttonLabel: label,
+        frameId: frame.scan_id,
+      });
+    }
+  }
+  return assets;
+}
+
+function slamDiagnosisLabel(frame) {
+  return frame && frame.diagnosis && frame.diagnosis.label
+    ? String(frame.diagnosis.label)
+    : 'needs_review';
+}
+
+function slamDiagnosisLabels(frame) {
+  const labels = [slamDiagnosisLabel(frame)];
+  const secondary = frame && frame.diagnosis && Array.isArray(frame.diagnosis.secondary_labels)
+    ? frame.diagnosis.secondary_labels
+    : [];
+  for (const label of secondary) {
+    const normalized = String(label || '').trim();
+    if (normalized && !labels.includes(normalized)) {
+      labels.push(normalized);
+    }
+  }
+  return labels;
+}
+
+function diagnosisColor(label) {
+  const palette = {
+    map_too_sparse: '#f59e0b',
+    filtering_too_aggressive: '#ef4444',
+    sparse_raw_scan: '#dc2626',
+    scan_quality_issue: '#fb7185',
+    bad_initial_guess: '#60a5fa',
+    scan_match_cost_hotspot: '#14b8a6',
+    weak_geometry: '#a78bfa',
+    registration_local_minimum: '#22c55e',
+    scan_match_debug_error: '#f97316',
+    needs_review: '#c084fc',
+  };
+  return palette[label] || '#c084fc';
+}
+
+function diagnosisColorName(label) {
+  const names = {
+    map_too_sparse: 'orange',
+    filtering_too_aggressive: 'red',
+    sparse_raw_scan: 'red',
+    scan_quality_issue: 'pink',
+    bad_initial_guess: 'blue',
+    scan_match_cost_hotspot: 'teal',
+    weak_geometry: 'purple',
+    registration_local_minimum: 'green',
+    scan_match_debug_error: 'orange',
+    needs_review: 'purple',
+  };
+  return names[label] || 'purple';
+}
+
+function setupSlamDebugDiagnosisFilter(frames) {
+  const filter = document.getElementById('slamDebugDiagnosisFilter');
+  if (!filter) {
+    return;
+  }
+  const labels = Array.from(new Set(frames.flatMap(slamDiagnosisLabels))).sort();
+  filter.innerHTML = '<option value="__all__">All</option>' +
+    labels.map((label) => `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`).join('');
+}
+
+function updateSlamDebugMarkerGeometry() {
+  if (!trajectorySlamDebugMarkers) {
+    return;
+  }
+  const filter = document.getElementById('slamDebugDiagnosisFilter');
+  const selected = filter ? filter.value : '__all__';
+  const trajectoryPositions = window._trajectoryPositions || [];
+  const markerPositions = [];
+  const markerColors = [];
+  slamDebugMarkerFrames = [];
+  for (const frame of allSlamDebugMarkerFrames) {
+    const label = slamDiagnosisLabel(frame);
+    if (selected !== '__all__' && !slamDiagnosisLabels(frame).includes(selected)) {
+      continue;
+    }
+    const displayIndex = frame.display_index;
+    const start = displayIndex * 3;
+    if (!Number.isInteger(displayIndex) || start + 2 >= trajectoryPositions.length) {
+      continue;
+    }
+    markerPositions.push(
+      trajectoryPositions[start],
+      trajectoryPositions[start + 1],
+      trajectoryPositions[start + 2],
+    );
+    const color = new THREE.Color(diagnosisColor(label));
+    markerColors.push(color.r, color.g, color.b);
+    slamDebugMarkerFrames.push(frame);
+  }
+  trajectorySlamDebugMarkers.geometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(new Float32Array(markerPositions), 3),
+  );
+  trajectorySlamDebugMarkers.geometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(new Float32Array(markerColors), 3),
+  );
+  if (markerPositions.length > 0) {
+    trajectorySlamDebugMarkers.geometry.computeBoundingSphere();
+  }
+  window._slamDebugVisibleMarkerCount = slamDebugMarkerFrames.length;
+}
+
+function formatArtifactLabel(key) {
+  return String(key || 'artifact')
+    .replace(/_ply$/, '')
+    .replaceAll('_', ' ');
+}
+
+function selectTrajectoryFeature(type, index, focusCamera = false) {
+  const description = describeTrajectorySelection(type, index);
+  if (!description) {
+    trajectorySelection = null;
+    renderTrajectoryTimeline();
+    clearTrajectoryInspection();
+    return;
+  }
+  trajectorySelection = { type, index };
+  if (focusCamera) {
+    const focused = focusTrajectorySelection(type, index);
+    if (focused) {
+      description.lines.push('Camera: focused on selected feature');
+    }
+  }
+  showTrajectoryInspection(description.title, description.lines);
+  renderTrajectoryTimeline();
+}
+
+function selectSlamDebugFrame(markerIndex, focusCamera = false) {
+  const description = describeSlamDebugFrame(markerIndex);
+  if (!description) {
+    trajectorySelection = null;
+    clearTrajectoryInspection();
+    return;
+  }
+  trajectorySelection = { type: 'slam-debug', index: markerIndex };
+  if (focusCamera && focusSlamDebugFrame(markerIndex)) {
+    description.lines.push('Camera: focused on selected frame');
+  }
+  showTrajectoryInspection(description.title, description.lines);
+  renderTrajectoryTimeline();
+}
+
+function resetView() {
+  if (defaultCameraPosition && defaultControlTarget) {
+    camera.position.copy(defaultCameraPosition);
+    controls.target.copy(defaultControlTarget);
+    controls.update();
+  }
+  trajectorySelection = null;
+  renderTrajectoryTimeline();
+  clearTrajectoryInspection();
+  clearPointInspection();
+  clearSlamArtifactOverlay();
+}
+
+function clearSlamArtifactOverlay() {
+  if (slamArtifactOverlay) {
+    scene.remove(slamArtifactOverlay);
+    slamArtifactOverlay.geometry.dispose();
+    slamArtifactOverlay.material.dispose();
+    slamArtifactOverlay = null;
+  }
+  const toggleWrap = document.getElementById('slamArtifactOverlayToggleWrap');
+  if (toggleWrap) {
+    toggleWrap.style.display = 'none';
+  }
+  const status = document.getElementById('slamArtifactOverlayStatus');
+  if (status) {
+    status.style.display = 'none';
+    status.textContent = '';
+  }
+}
+
+async function loadSlamArtifactOverlay(href, label, frameId = '') {
+  const response = await fetch(href);
+  if (!response.ok) {
+    throw new Error(`Failed to load artifact: ${href}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const loader = new PLYLoader();
+  const geometry = loader.parse(buffer);
+
+  const positionAttr = geometry.getAttribute('position');
+  const center = window._centerOffset || { x: 0, y: 0, z: 0 };
+  if (positionAttr) {
+    for (let i = 0; i < positionAttr.count; i += 1) {
+      positionAttr.setXYZ(
+        i,
+        positionAttr.getX(i) - center.x,
+        positionAttr.getY(i) - center.y,
+        positionAttr.getZ(i) - center.z,
+      );
+    }
+    positionAttr.needsUpdate = true;
+  }
+  geometry.computeBoundingSphere();
+
+  clearSlamArtifactOverlay();
+  const colorAttr = geometry.getAttribute('color');
+  const sizeInput = document.getElementById('ptSize');
+  const size = sizeInput ? Math.max(2, parseFloat(sizeInput.value) * 1.2) : 2.5;
+  const material = new THREE.PointsMaterial({
+    size,
+    color: '#a78bfa',
+    vertexColors: Boolean(colorAttr),
+    transparent: true,
+    opacity: 0.92,
+    sizeAttenuation: true,
+  });
+  slamArtifactOverlay = new THREE.Points(geometry, material);
+  slamArtifactOverlay.name = label || href;
+  scene.add(slamArtifactOverlay);
+
+  const toggle = document.getElementById('showSlamArtifactOverlay');
+  if (toggle) {
+    toggle.checked = true;
+  }
+  const toggleWrap = document.getElementById('slamArtifactOverlayToggleWrap');
+  if (toggleWrap) {
+    toggleWrap.style.display = 'block';
+  }
+  const status = document.getElementById('slamArtifactOverlayStatus');
+  if (status) {
+    const pointCount = geometry.getAttribute('position')
+      ? geometry.getAttribute('position').count.toLocaleString()
+      : '0';
+    const frameText = frameId ? `Frame: ${frameId}` : 'Frame: n/a';
+    status.textContent = `Overlay: ${label || href} | ${frameText} | Points: ${pointCount}`;
+    status.style.display = 'block';
+  }
+}
+
+function onViewerClick(event) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+
+  if (viewerData && viewerData.trajectory) {
+    const trajectoryTargets = [];
+    if (trajectorySlamDebugMarkers && trajectorySlamDebugMarkers.visible) {
+      trajectoryTargets.push(trajectorySlamDebugMarkers);
+    }
+    if (viewerData.trajectory.mode === 'paired' && trajectoryWorstMarker && trajectoryWorstMarker.visible) {
+      trajectoryTargets.push(trajectoryWorstMarker);
+    }
+    if (viewerData.trajectory.mode === 'paired' && trajectoryWorstSegment && trajectoryWorstSegment.visible) {
+      trajectoryTargets.push(trajectoryWorstSegment);
+    }
+
+    if (trajectoryTargets.length > 0) {
+      const trajectoryIntersections = raycaster.intersectObjects(trajectoryTargets, false);
+      if (trajectoryIntersections.length > 0) {
+        const object = trajectoryIntersections[0].object;
+        clearPointInspection();
+        if (object.userData.inspectType === 'slam-debug-frame') {
+          selectSlamDebugFrame(trajectoryIntersections[0].index, true);
+          return;
+        }
+        if (object.userData.inspectType === 'worst-ate' && viewerData.trajectory.worst_ate_sample) {
+          selectTrajectoryFeature('ate', viewerData.trajectory.worst_ate_index, true);
+          return;
+        }
+        if (object.userData.inspectType === 'worst-rpe' && viewerData.trajectory.worst_rpe_segment) {
+          selectTrajectoryFeature('rpe', viewerData.trajectory.worst_rpe_index, true);
+          return;
+        }
+      }
+    }
+  }
+
+  const pointTargets = [];
+  if (pointCloud && pointCloud.visible) {
+    pointTargets.push(pointCloud);
+  }
+  if (referenceCloud && referenceCloud.visible) {
+    pointTargets.push(referenceCloud);
+  }
+
+  if (pointTargets.length > 0) {
+    const previousPointThreshold = raycaster.params.Points.threshold;
+    raycaster.params.Points.threshold = window._pickThreshold || previousPointThreshold;
+    const pointIntersections = raycaster.intersectObjects(pointTargets, false);
+    raycaster.params.Points.threshold = previousPointThreshold;
+    if (pointIntersections.length > 0) {
+      selectPointFeature(pointIntersections[0]);
+      return;
+    }
+  }
+
+  trajectorySelection = null;
+  renderTrajectoryTimeline();
+  clearTrajectoryInspection();
+  clearPointInspection();
+}
+
+function updateSourceGeometry() {
+  if (!pointCloud) return;
+
+  const basePositions = window._sourceBasePositions || window._positions;
+  const baseDistances = window._distances;
+  const threshold = baseDistances ? parseFloat(document.getElementById('distThreshold').value) : 0;
+  const mode = document.getElementById('colorMode').value;
+
+  let positions = basePositions;
+  let distances = baseDistances;
+  let visibleCount = basePositions.length / 3;
+  let visibleIndices = null;
+
+  if (baseDistances && threshold > 0) {
+    let kept = 0;
+    for (let i=0; i<baseDistances.length; i++) {
+      if (baseDistances[i] >= threshold) kept++;
+    }
+
+    const filteredPositions = new Float32Array(kept * 3);
+    const filteredDistances = new Float32Array(kept);
+    const filteredIndices = new Uint32Array(kept);
+    let out = 0;
+    for (let i=0; i<baseDistances.length; i++) {
+      if (baseDistances[i] < threshold) continue;
+      filteredPositions[out*3] = basePositions[i*3];
+      filteredPositions[out*3+1] = basePositions[i*3+1];
+      filteredPositions[out*3+2] = basePositions[i*3+2];
+      filteredDistances[out] = baseDistances[i];
+      filteredIndices[out] = i;
+      out++;
+    }
+
+    positions = filteredPositions;
+    distances = filteredDistances;
+    visibleCount = kept;
+    visibleIndices = filteredIndices;
+  }
+
+  const colors = computeColors(
+    positions,
+    visibleCount,
+    window._minZ,
+    window._maxZ,
+    mode,
+    distances,
+    window._distanceStats,
+  );
+
+  pointCloud.geometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(
+      positions instanceof Float32Array ? positions : new Float32Array(positions),
+      3,
+    ),
+  );
+  pointCloud.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  window._sourceVisibleIndices = visibleIndices;
+  if (visibleCount > 0) {
+    pointCloud.geometry.computeBoundingSphere();
+  }
+  updateThresholdInfo(threshold, visibleCount);
+  clearPointInspection();
+}
+
+loadPoints();
+
+// Controls
+document.getElementById('ptSize').addEventListener('input', e => {
+  const size = parseFloat(e.target.value);
+  if (pointCloud) pointCloud.material.size = size;
+  if (referenceCloud) referenceCloud.material.size = Math.max(0.5, size * 0.75);
+  if (slamArtifactOverlay) slamArtifactOverlay.material.size = Math.max(2, size * 1.2);
+});
+document.getElementById('colorMode').addEventListener('change', e => {
+  if (!pointCloud) return;
+  updateSourceGeometry();
+});
+document.getElementById('showReference').addEventListener('change', e => {
+  if (referenceCloud) {
+    referenceCloud.visible = e.target.checked;
+  }
+});
+document.getElementById('showTrajectory').addEventListener('change', e => {
+  if (trajectoryLine) {
+    trajectoryLine.visible = e.target.checked;
+  }
+});
+document.getElementById('showTrajectoryReference').addEventListener('change', e => {
+  if (trajectoryReferenceLine) {
+    trajectoryReferenceLine.visible = e.target.checked;
+  }
+});
+document.getElementById('showTrajectoryWorstMarker').addEventListener('change', e => {
+  if (trajectoryWorstMarker) {
+    trajectoryWorstMarker.visible = e.target.checked;
+  }
+});
+document.getElementById('showTrajectoryWorstSegment').addEventListener('change', e => {
+  if (trajectoryWorstSegment) {
+    trajectoryWorstSegment.visible = e.target.checked;
+  }
+});
+document.getElementById('showSlamDebugMarkers').addEventListener('change', e => {
+  if (trajectorySlamDebugMarkers) {
+    trajectorySlamDebugMarkers.visible = e.target.checked;
+  }
+});
+document.getElementById('slamDebugDiagnosisFilter').addEventListener('change', () => {
+  updateSlamDebugMarkerGeometry();
+  trajectorySelection = null;
+  clearTrajectoryInspection();
+});
+document.getElementById('showSlamArtifactOverlay').addEventListener('change', e => {
+  if (slamArtifactOverlay) {
+    slamArtifactOverlay.visible = e.target.checked;
+  }
+});
+document.getElementById('refOpacity').addEventListener('input', e => {
+  if (referenceCloud) {
+    referenceCloud.material.opacity = parseFloat(e.target.value);
+  }
+});
+document.getElementById('distThreshold').addEventListener('input', () => {
+  updateSourceGeometry();
+});
+document.getElementById('bgColor').addEventListener('change', e => {
+  scene.background = new THREE.Color(e.target.value);
+});
+document.getElementById('resetView').addEventListener('click', resetView);
+renderer.domElement.addEventListener('click', onViewerClick);
+document.addEventListener('click', event => {
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+  const button = event.target.closest('[data-slam-artifact-href]');
+  if (!button) {
+    return;
+  }
+  event.preventDefault();
+  const href = button.getAttribute('data-slam-artifact-href');
+  const label = button.getAttribute('data-slam-artifact-label') || href;
+  const frameId = button.getAttribute('data-slam-artifact-frame') || '';
+  if (!href) {
+    return;
+  }
+  button.disabled = true;
+  button.textContent = 'Loading';
+  loadSlamArtifactOverlay(href, label, frameId)
+    .then(() => {
+      button.textContent = 'Overlayed';
+    })
+    .catch((error) => {
+      console.error(error);
+      button.textContent = 'Failed';
+    })
+    .finally(() => {
+      setTimeout(() => {
+        button.disabled = false;
+        if (button.textContent !== 'Failed') {
+          button.textContent = 'Overlay';
+        }
+      }, 1200);
+    });
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>

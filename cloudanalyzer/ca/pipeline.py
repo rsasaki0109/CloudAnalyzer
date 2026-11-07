@@ -1,6 +1,5 @@
 """Pipeline: chain filter → downsample → evaluate in one call."""
 
-from ca.io import load_point_cloud
 from ca.filter import filter_outliers
 from ca.downsample import downsample
 from ca.evaluate import evaluate

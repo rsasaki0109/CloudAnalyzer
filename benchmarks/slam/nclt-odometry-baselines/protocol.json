@@ -1,0 +1,32 @@
+{
+  "sessions": {
+    "april": "2012-04-29",
+    "june": "2012-06-15"
+  },
+  "drivers": [
+    "cloudanalyzer",
+    "kiss-icp",
+    "small-gicp"
+  ],
+  "repeats": 3,
+  "thread_environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "RAYON_NUM_THREADS": "1"
+  },
+  "script": {
+    "name": "compare_nclt_odometry.py",
+    "bytes": 9269,
+    "sha256": "a4300b4c01d94b8da5e4f615d3731b4561882109639e292877b8602a20851bf0"
+  },
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "numpy": "2.2.6",
+  "scope": "Existing sparse, motion-compensated NCLT demo cohort; no held-out or SOTA claim",
+  "order": "cyclic driver order per repetition; April then June; separate process per run",
+  "accuracy": "Body-z-up reference interpolated from original archived NCLT rows; global SE3 position-fit ATE, consecutive SE3 RPE, no scale",
+  "timing": "registration loop separately from decode/setup/registration pipeline; no map export; all startup frames included",
+  "parameters": "Fixed before scoring; shared range crop; 1m map voxels; upstream/previous adapter convergence settings, not identical optimizers",
+  "reference_use": "Only after every estimator subprocess finishes; no truth supplied to estimation"
+}

@@ -271,7 +271,15 @@ export interface IcpOutput {
 /** A volume surface: a loaded cloud or mesh, or a horizontal plane. */
 export type VolumeSide = { id: number } | { z: number };
 
+export interface HeightReviewCell { index: number; x: number; y: number; before: number; after: number; difference: number }
+export interface HeightReview {
+  cells?: HeightReviewCell[]; cellLimit?: number; unlistedCells?: number;
+  threshold: number; riseCells: number; fallCells: number; withinCells: number;
+  riseArea: number; fallArea: number; riseVolume: number; fallVolume: number;
+}
 export interface VolumeOutput {
+  heightReview?: HeightReview;
+  outsideRegionCells: number;
   added: number;
   removed: number;
   addedArea: number;
@@ -924,12 +932,23 @@ export type Request =
   | { kind: "transform"; id: number; matrix: number[] }
   | {
       kind: "volume";
+      /** Return totals only, without staging a compared-cell cloud. */
+      summaryOnly?: boolean;
+      /** Raw-observation intersection, row-major 0/1 bytes on sharedGrid. */
+      supportMask?: Uint8Array;
+      /** Optional strict user-defined height screening; does not change totals. */
+      heightThreshold?: number;
+      /** Fixed lower-left cell boundary X/Y and integer dimensions. */
+      sharedGrid?: readonly [number, number, number, number];
+      region?: readonly [number, number, number, number];
       before: VolumeSide;
       after: VolumeSide;
       cell: number;
       height: "mean" | "min" | "max";
       fillEmpty: boolean;
     }
+  | { kind: "volume-support"; ids: number[]; cell: number; height: "mean" | "min" | "max";
+      sharedGrid: readonly [number, number, number, number] }
   | {
       kind: "rasterize";
       id: number;
@@ -1067,6 +1086,7 @@ export type Request =
       keep: "inside" | "outside" | "both";
     }
   | { kind: "field"; id: number; name: string }
+  | { kind: "change-core-support"; id: number; rank: number; expectedPoints: number; bounds: number[]; lanes: import("./lane-surface-overlap").SurveyLane[]; heightMargin: number }
   | { kind: "set-field"; id: number; name: string; values: Float32Array }
   | {
       kind: "filter-field";

@@ -1,0 +1,8 @@
+{
+  "sourceBaseCommit": "81c555da6b64f118b980011253544a157b67f510",
+  "workingTreeModified": true,
+  "wasmBytes": 3789122,
+  "wasmSha256": "708b86f11cc59ad08a0f7c099c3b8121a442a4c66460746635c78d42f5647461",
+  "browserVersion": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+  "note": "Main and control used the same WASM. The join-files busy-state fix was applied before the successful control; it changes no point-cloud algorithm."
+}

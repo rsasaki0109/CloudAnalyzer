@@ -14,7 +14,6 @@ from ca.experiments.web_trajectory_sampling.common import (
 from ca.experiments.web_trajectory_sampling.distance_accumulator import DistanceAccumulatorStrategy
 from ca.experiments.web_trajectory_sampling.turn_aware import TurnAwareStrategy
 from ca.experiments.web_trajectory_sampling.uniform_stride import (
-    UniformStrideStrategy,
     reduce_with_uniform_stride,
 )
 

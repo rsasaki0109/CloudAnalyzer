@@ -55,12 +55,15 @@ Issues = "https://github.com/rsasaki0109/CloudAnalyzer/issues"
 Documentation = "https://github.com/rsasaki0109/CloudAnalyzer#readme"
 
 [project.optional-dependencies]
+benchmark = ["psutil>=5.9"]
 dev = [
     "build>=1.2.2",
     "mypy",
     "pkginfo>=1.12.0",
     "pytest",
+    "psutil>=5.9",
     "pyproj>=3.6",
+    "ruff==0.17.3",
     "twine>=6.0.0",
 ]
 fast = [
@@ -77,6 +80,8 @@ slam = [
 ]
 ros = [
     "rosbags>=0.10",
+    "mcap>=1.2",
+    "zstandard>=0.22",
 ]
 gs = [
     "torch>=2.0.0",
@@ -93,6 +98,9 @@ perceptual = [
 [tool.setuptools]
 include-package-data = false
 
+[tool.setuptools.package-data]
+ca = ["web_viewer.html"]
+
 [tool.setuptools.dynamic]
 version = {attr = "ca.__version__"}
 
@@ -108,3 +116,27 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+# Bug-focused rules only: syntax errors, pyflakes (unused or undefined names),
+# bugbear and pylint errors. Style rules stay off; the code uses compact
+# one-line statements on purpose.
+select = ["E9", "F", "B", "PLE"]
+ignore = [
+    "B007",  # unused loop variables often document tuple structure
+    "B008",  # typer.Option(...) defaults are the idiomatic CLI pattern
+    "B023",  # closures here are called within the same loop iteration
+    "B904",  # raise ... from err: not enforced yet
+    "B905",  # zip(strict=...): not enforced yet
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Shared pytest fixtures are imported from other test modules and then
+# shadowed by test parameters of the same name.
+"tests/**" = ["F811"]
+# Byte-identical to the version recorded by benchmarks/cpu/io real-source
+# receipts; fix when the file next changes for another reason.
+"tests/test_io_binary_xyz_ply.py" = ["F841"]

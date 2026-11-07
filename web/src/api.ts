@@ -217,6 +217,12 @@ export function fieldValues(id: number, name: string): Promise<Float32Array> {
   return call({ kind: "field", id, name });
 }
 
+/** Read original changed cores and compute lane support off the UI thread. */
+export function changeCoreSupport(id: number, rank: number, expectedPoints: number, bounds: number[],
+  lanes: import("./lane-surface-overlap").SurveyLane[], heightMargin: number): Promise<import("./lane-core-support").LaneCoreEvidence> {
+  return call({ kind: "change-core-support", id, rank, expectedPoints, bounds, lanes, heightMargin });
+}
+
 /** Store a computed field on a cloud so exports carry it (the values are copied). */
 export function setField(id: number, name: string, values: Float32Array): Promise<void> {
   const copy = values.slice();
@@ -257,6 +263,10 @@ export function filterBatch(sources: {id:number;name:string}[], recipe: FilterRe
 export function discardCloud(id:number):Promise<void>{return call({kind:"discard-cloud",id});}
 
 /** Cut/fill volume between two surfaces (clouds, meshes or constant heights). */
+export function prepareVolumeSupport(params: Omit<Extract<Request, { kind: "volume-support" }>, "kind">): Promise<Uint8Array> {
+  return call({ kind: "volume-support", ...params });
+}
+
 export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>, "kind">): Promise<VolumeOutput> {
   return call({ kind: "volume", ...params });
 }

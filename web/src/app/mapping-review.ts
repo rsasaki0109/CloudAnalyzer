@@ -1,3 +1,7 @@
+import { locateMappingInterval, checkMappingInterval } from "../mapping-locations";
+import { clearMappingLocation, showMappingLocation } from "./mapping-locations";
+import { setMappingTrajectory } from "./mapping-trajectory";
+import { mappingReviewSummary } from "../mapping-review-summary";
 /** Open the verified point/HD pair and inspect its frozen source audits together. */
 import { readMappingReview, parseSavedAudits, type SavedAudit, type MappingReview } from "../mapping-review";
 import { loadCloud, removeCloud, vectorMap, workerBusy } from "../api";
@@ -19,11 +23,17 @@ export async function restoreReviewArchive(file: File | null, signal: AbortSigna
   const review = verified === undefined ? (file ? await readMappingReview(file, signal) : null) : verified;
   archive = file;
   current = null; selection++;
+  clearMappingLocation();
+  setMappingTrajectory(null);
   select.disabled = true;
   $("mapping-review-result").hidden = !file;
   if (review) {
     $("mapping-review-summary").textContent = `Original generated-map package retained: ${review.verifiedFiles} verified files.`;
     $("mapping-review-credit").textContent = review.attribution;
+    renderHistory(review);
+    $("mapping-review-holds").replaceChildren(...mappingReviewSummary(review.review).map(text => {
+      const li = document.createElement("li"); li.textContent = text; return li;
+    }));
     $("mapping-review-state").textContent = "The archive contains the original map pair and frozen audits. Reopen it to review that pair. Current workspace edits need a new source check.";
   }
   $<HTMLButtonElement>("mapping-review-download").disabled = !archive;
@@ -32,6 +42,9 @@ $("mapping-review-download").onclick = () => { if (archive) download(archive, ar
 function invalidate(message: string): void {
   if (!current) return;
   current.stale = true;
+  clearMappingLocation();
+  for (const button of $("mapping-review-history-list").querySelectorAll("button")) button.disabled = true;
+  setMappingTrajectory(null, "The map pair changed. Reopen the original package to display its trajectory.");
   select.disabled = true;
   $("mapping-review-state").textContent = message + " Saved audits describe the exported pair. Reopen the package to review that pair again, or run a new source check on your edits.";
 }
@@ -93,6 +106,8 @@ input.onchange = async () => {
     renderList(); viewer.fit();
     current = { cloud: cloud.id, audits, map: await captureMapProject(), stale: false, sourceCount: review.preview?.sourceCount };
     archive = file;
+    clearMappingLocation();
+    setMappingTrajectory(review.trajectory);
     $<HTMLButtonElement>("mapping-review-download").disabled = false;
     select.replaceChildren(...audits.map((audit, i) => new Option(audit.label, String(i))));
     select.disabled = false;
@@ -103,6 +118,10 @@ input.onchange = async () => {
       ? ` Source extent ${extent.generated_length_m.toFixed(1)} / ${extent.trajectory_length_m.toFixed(1)} m; ${extent.passes_requested_extent ? "requested extent met" : "requested extent unmet"}.` : "";
     $("mapping-review-summary").textContent = `${review.verifiedFiles} files verified. ${cloud.count.toLocaleString()} loaded point records${review.preview ? ` (display preview from ${review.preview.sourceCount.toLocaleString()})` : ""}.${extentText} HD draft needs review.`;
     $("mapping-review-credit").textContent = review.attribution;
+    renderHistory(review);
+    $("mapping-review-holds").replaceChildren(...mappingReviewSummary(review.review).map(text => {
+      const li = document.createElement("li"); li.textContent = text; return li;
+    }));
     endTask(signal);
     await showAudit();
     setStatus(`Opened generated maps: ${cloud.count.toLocaleString()} loaded points and the delivered HD draft. Saved review holds are retained.`);
@@ -111,3 +130,46 @@ input.onchange = async () => {
     setStatus(`Could not open generated maps: ${errorText(error)}`, true);
   } finally { button.disabled = false; endTask(signal); }
 };
+
+/** Source action IDs are historical candidate IDs, not current map lane IDs. */
+function renderHistory(review: MappingReview): void {
+  $("mapping-review-producer").replaceChildren(...review.producer.map(text => {
+    const item = document.createElement("li"); item.textContent = text; return item;
+  }));
+  const history = review.history;
+  $("mapping-review-history-summary").textContent = history.unavailable ??
+    `${history.steps.length} recorded actions. Original generation history; workspace edits are not included. Candidate IDs refer to that run, not current lane IDs.`;
+  $("mapping-review-history-list").replaceChildren(...history.steps.map(step => {
+    const item = document.createElement("li"), details = document.createElement("details"), title = document.createElement("summary");
+    title.textContent = `${step.sequence}. ${step.action} · ${step.status}`;
+    const reason = document.createElement("p"); reason.textContent = step.reason; reason.className = "archive-comment";
+    details.append(title, reason);
+    if (step.candidates.length) {
+      const candidates = document.createElement("p"); candidates.textContent = `Run candidates: ${step.candidates.join(", ")}`; details.append(candidates);
+    }
+    if (step.decisionsTotal) {
+      const label = document.createElement("p"); label.textContent = `${step.decisions.length} of ${step.decisionsTotal} source-interval decisions shown. Distances are along the recorded source proposal.`;
+      const list = document.createElement("ul");
+      for (const decision of step.decisions) {
+        const row = document.createElement("li");
+        row.textContent = `Candidate ${decision.candidate}: ${decision.action} ${decision.from}–${decision.to} m. ${decision.reason}`;
+        let available = false, unavailable = "";
+        try { checkMappingInterval(review.locations, step.proposalDigest, decision.candidate, decision.from, decision.to); available = true; }
+        catch (error) { unavailable = errorText(error); }
+        const focus = document.createElement("button"); focus.textContent = "Show source interval";
+        focus.disabled = !available || !current || current.stale;
+        const session = current;
+        focus.onclick = () => {
+          if (!available || !session || current !== session || session.stale || taskActive() || !mapProjectReady()) return;
+          const interval = locateMappingInterval(review.locations, step.proposalDigest, decision.candidate, decision.from, decision.to);
+          showMappingLocation(interval, `Action ${step.sequence}, candidate ${decision.candidate}: ${decision.action} ${decision.from}–${decision.to} m`);
+        };
+        row.append(document.createTextNode(" "), focus);
+        if (unavailable) { const why=document.createElement("span");why.textContent=` Location unavailable: ${unavailable}.`;row.append(why); }
+        list.append(row);
+      }
+      details.append(label, list);
+    }
+    item.append(details); return item;
+  }));
+}

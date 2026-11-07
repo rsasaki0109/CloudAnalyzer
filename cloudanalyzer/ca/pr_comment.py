@@ -20,7 +20,6 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from ca.core.check_triage import (
-    CheckTriageItem,
     build_check_triage_request,
     rank_failed_checks,
 )

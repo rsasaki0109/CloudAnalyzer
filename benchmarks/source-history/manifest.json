@@ -19,6 +19,138 @@
       "archived": "benchmarks/source-history/f1a9a61988e0b55518728d2cc60f8f7cad4277b1cdf3513f6e329dbadb84a62c/viewer.ts",
       "originCommit": "b4cf39b73e4b134ae4d02da39c4476c9ee0d4929",
       "originGitBlob": "7c60fb688b6f56f06e5b3b727069d3cc87ee9c22"
+    },
+    "f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4": {
+      "original": "rust/crates/ca-core/src/volume.rs",
+      "archived": "benchmarks/source-history/f82d1a03f081a12d3ef3c23016a0537cef26c20b401b66fd86fada8c24baeac4/volume.rs",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "c082dd25a60f356f0d927a6d3fb4c47f44126857"
+    },
+    "6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555": {
+      "original": "rust/crates/ca-wasm/src/lib.rs",
+      "archived": "benchmarks/source-history/6a5bc8b37a3ef36687b72419fb3e24d14ab45a8246661c849e16df47a6b86555/lib.rs",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "1a441905b645c18d1342ab347110ca81e29d3bea"
+    },
+    "4532f4c665daa9b2d85be351820858a414fe3ea713eae6399908e66093951d04": {
+      "original": "web/src/protocol.ts",
+      "archived": "benchmarks/source-history/4532f4c665daa9b2d85be351820858a414fe3ea713eae6399908e66093951d04/protocol.ts",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "b6a8264fb24d67a608e18fe68de8f250608a7fea"
+    },
+    "00194e618c601e8bc86d28a1a3af55d4d3ec937a124b9e987598bbbf73c7b3e5": {
+      "original": "web/src/worker.ts",
+      "archived": "benchmarks/source-history/00194e618c601e8bc86d28a1a3af55d4d3ec937a124b9e987598bbbf73c7b3e5/worker.ts",
+      "originCommit": "aaf4b6bb83b0befbb2e25441603360d4c209951e",
+      "originGitBlob": "38c72d935c0a6cae8d106c4bdc58ff99c7a256cf"
+    },
+    "dad0739b351f1de14833e72e3677354c1d5d69b2ef56efd7f5bc72fb993fd190": {
+      "original": "web/src/app/project.ts",
+      "archived": "benchmarks/source-history/dad0739b351f1de14833e72e3677354c1d5d69b2ef56efd7f5bc72fb993fd190/project.ts",
+      "originCommit": "fc364f0ee1ab5fe8eac013b9a22128b0870457ea",
+      "originGitBlob": "4ab30500d215119baedbc0050fa29198a03ed567"
+    },
+    "773b10551adb875690657fd43072cbd3b48fa811dc565847c48f03dd3da83c4e": {
+      "original": "web/src/project.ts",
+      "archived": "benchmarks/source-history/773b10551adb875690657fd43072cbd3b48fa811dc565847c48f03dd3da83c4e/project.ts",
+      "originCommit": "fc364f0ee1ab5fe8eac013b9a22128b0870457ea",
+      "originGitBlob": "722764fe6fb9309a2ad0eb71fb180d26a2ae7672"
+    },
+    "eb3fbaa02ff52082537a5976392afbd34d0d299af86c257520d6cf1d98ebbd87": {
+      "original": "web/src/style.css",
+      "archived": "benchmarks/source-history/eb3fbaa02ff52082537a5976392afbd34d0d299af86c257520d6cf1d98ebbd87/style.css",
+      "originCommit": "fc364f0ee1ab5fe8eac013b9a22128b0870457ea",
+      "originGitBlob": "4818c7a22305107c5788ba322645001af7fcd389"
+    },
+    "0c651f5a8abd1fb03fb7aaaecc6b07b119e2c4028dbfe04ba8e582c600081079": {
+      "original": "web/src/app/distance-regions.ts",
+      "archived": "benchmarks/source-history/0c651f5a8abd1fb03fb7aaaecc6b07b119e2c4028dbfe04ba8e582c600081079/distance-regions.ts",
+      "originCommit": "571e638a9fa0aa86e0b872081702d0d3c099faf3",
+      "originGitBlob": "cc1b575a67501d6e9e1f6329d507c6a0c2a822ab"
+    },
+    "524d289d96a55fdb05254b8607469e609531adc07ebb095509ed4fb17664023d": {
+      "original": "web/src/api.ts",
+      "archived": "benchmarks/source-history/524d289d96a55fdb05254b8607469e609531adc07ebb095509ed4fb17664023d/api.ts",
+      "originCommit": "fc939070f86972acb442cf6ad558bfcac4b68035",
+      "originGitBlob": "781790fa7138259e5bc1ebd1fdbd97372fa1fac0"
+    },
+    "ed0ba210057bf66f01736b84b1d0268d5a7469cf5c6f3ce7f623e73d626e8e93": {
+      "original": "web/src/app/demos.ts",
+      "archived": "benchmarks/source-history/ed0ba210057bf66f01736b84b1d0268d5a7469cf5c6f3ce7f623e73d626e8e93/demos.ts",
+      "originCommit": "4370342c7bb4b869903eaf6d36c5fc220cbd2925",
+      "originGitBlob": "133dcf42034a238e7494b1856ed8a645500b1517"
+    },
+    "1efe1207854c66fe0cc43a9589f99f3883e4f07183df0c7d95c7b5b474be68b7": {
+      "original": "web/src/app/posegraph.ts",
+      "archived": "benchmarks/source-history/1efe1207854c66fe0cc43a9589f99f3883e4f07183df0c7d95c7b5b474be68b7/posegraph.ts",
+      "originCommit": "81c555da6b64f118b980011253544a157b67f510",
+      "originGitBlob": "5cf173bfe0d1bacaab998fada69de541a4f82976"
+    },
+    "e66ed8e686f10b7f5d78863c7e9f53388962f855c7201854d84dc2fb6f1b0a58": {
+      "original": "web/src/app/vectormap.ts",
+      "archived": "benchmarks/source-history/e66ed8e686f10b7f5d78863c7e9f53388962f855c7201854d84dc2fb6f1b0a58/vectormap.ts",
+      "originCommit": "81c555da6b64f118b980011253544a157b67f510",
+      "originGitBlob": "34626f965c725dd429ba15bd257da87e8b3a15e6"
+    },
+    "1f0e144a65635c58dc8a443f08cb6ff634a27b76fc780e09cbe11bd734f94876": {
+      "original": "web/src/app/mapping-review.ts",
+      "archived": "benchmarks/source-history/1f0e144a65635c58dc8a443f08cb6ff634a27b76fc780e09cbe11bd734f94876/mapping-review.ts",
+      "originCommit": "87789b1c8917d0fe7402ee5dedaade2f12766250",
+      "originGitBlob": "f515800ae9e7807980e6210f80e29b19fb47d214"
+    },
+    "30ec0c1cb165b0f570feb697372ff9ac06fb4bb8ed97a9f561e1aae6a3685583": {
+      "original": "web/src/mapping-review.ts",
+      "archived": "benchmarks/source-history/30ec0c1cb165b0f570feb697372ff9ac06fb4bb8ed97a9f561e1aae6a3685583/mapping-review.ts",
+      "originCommit": "87789b1c8917d0fe7402ee5dedaade2f12766250",
+      "originGitBlob": "f613cd75ea4c2dae59291f6b4828d7d64d78b2fc"
+    },
+    "c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f": {
+      "original": "rust/crates/ca-core/src/odometry.rs",
+      "archived": "benchmarks/source-history/c9722a523b2796488eb0da40d8905e7f3d84f988c470d4f41c6d757a7253b79f/odometry.rs",
+      "originCommit": "437223a406108986337ebc090804e449fd2eeace",
+      "originGitBlob": "02ae49fcefb28c0c5f3b1c3ac9e466f59dff9f9b"
+    },
+    "50b7341b036461456dfe5b33a474f473d488ccaff2333b7da68ae8c4bdc6e770": {
+      "original": "web/package-lock.json",
+      "archived": "benchmarks/source-history/50b7341b036461456dfe5b33a474f473d488ccaff2333b7da68ae8c4bdc6e770/package-lock.json",
+      "originCommit": "279e1b9c01da0a5a6ef49efff729f08476f6657a",
+      "originGitBlob": "4ab85dc58410b26aacfddad3ddeaa4d69bb4fba9"
+    },
+    "1b69b6e7d9c43f2dda55f4dc0683200f13d8e491b87350cb2a7416623b039124": {
+      "original": "web/package.json",
+      "archived": "benchmarks/source-history/1b69b6e7d9c43f2dda55f4dc0683200f13d8e491b87350cb2a7416623b039124/package.json",
+      "originCommit": "279e1b9c01da0a5a6ef49efff729f08476f6657a",
+      "originGitBlob": "ef8946c0f3631a3c3703ccf1c294c711bfdde59b"
+    },
+    "36e2d8e2040e9dd335999fc5ef29c7fcb2f8d25c815a8d2ca2d1255318f8e417": {
+      "original": "rust/crates/ca-core/src/odometry.rs",
+      "archived": "benchmarks/source-history/36e2d8e2040e9dd335999fc5ef29c7fcb2f8d25c815a8d2ca2d1255318f8e417/odometry.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "7382395f4b21188610ab9ca61e2e1baa13675ed3"
+    },
+    "ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27": {
+      "original": "rust/crates/ca-core/src/bag.rs",
+      "archived": "benchmarks/source-history/ccbdd5e379deb437bb2cb9493051623848dd67b7019657031e763bc48cc7bd27/bag.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "a508ea77b9cf9d4569206e8a7fa42fa5ba85e257"
+    },
+    "bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3": {
+      "original": "rust/crates/ca-core/src/kdtree.rs",
+      "archived": "benchmarks/source-history/bc492481fa324a5fcb0e483071d7aeffe3b355aff37f9aa63e2691365636cdf3/kdtree.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "d7dcfeba08526916f90ead8e80bcc4ee5ee4d2db"
+    },
+    "292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855": {
+      "original": "rust/crates/ca-core/src/mesh.rs",
+      "archived": "benchmarks/source-history/292b74be943842c9642f2c96f5b6c8f707b8a30902b37734c1ae743e62fa6855/mesh.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "9f683e760d44bcab17b8ed1fffff0e6e91457f95"
+    },
+    "e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799": {
+      "original": "rust/crates/ca-core/src/pose_graph.rs",
+      "archived": "benchmarks/source-history/e6645056de69dc7897e14f4407229a746a10ce9d123dbf79ea48bd8ee77b1799/pose_graph.rs",
+      "originCommit": "c4037f79724539dc22627f272ba316ec3d6961ab",
+      "originGitBlob": "b1eba1277179145680c026e3b9ff4452aa6b083b"
     }
   }
 }

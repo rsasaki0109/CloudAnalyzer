@@ -102,6 +102,13 @@
           <p class="hint small">Open a review ZIP from your mapping agent. The point map and HD map share their original coordinates. Opening replaces the current HD map.</p>
           <div id="mapping-review-result" hidden>
             <p id="mapping-review-summary" class="small" role="status"></p>
+            <details open><summary>Saved quality and unresolved items</summary><ul id="mapping-review-holds" class="small"></ul></details>
+            <details id="mapping-review-provenance"><summary>Original SLAM producer</summary><ul id="mapping-review-producer" class="small"></ul></details>
+            <details id="mapping-review-history"><summary>Generation decision history</summary><p id="mapping-review-history-summary" class="small"></p><ol id="mapping-review-history-list" class="small"></ol></details>
+            <button id="mapping-location-clear" hidden>Clear source interval</button><p id="mapping-location-status" class="hint small"></p>
+            <label class="inline"><input id="mapping-trajectory-show" type="checkbox" disabled /> Show saved trajectory</label>
+            <button id="mapping-trajectory-fit" disabled>Fit saved trajectory</button>
+            <p id="mapping-trajectory-status" class="hint small"></p>
             <button id="mapping-review-download" disabled>Download original map package</button>
             <label>Saved source audit <select id="mapping-review-audit"></select></label>
             <p id="mapping-review-state" class="hint small" role="status"></p>
@@ -246,7 +253,7 @@
         <button id="coverage-compare" disabled>Prepare quality / overlap comparison</button>
         <button id="coverage-volume" disabled>Prepare cut/fill volume comparison</button>
         <button id="coverage-mesh" disabled>Prepare terrain mesh</button>
-        <p class="hint small">Volume uses reference as Before and source as After, across the full loaded surfaces. Crop the inputs to limit volume to a site; the expected-overlap rectangle below applies to distance review.</p>
+        <p class="hint small">Volume uses reference as Before and source as After. In the volume panel, use a review area to select grid-cell centers; copy the distance-review rectangle when both analyses should use the same bounds.</p>
         <details class="options">
           <summary>Locate distance discrepancies</summary>
           <div class="range">
@@ -272,7 +279,10 @@
               <p class="hint small">Ratios use measured points in each direction separately. Reference → source can reveal areas absent from the source, but sampling, occlusion and different survey footprints also cause discrepancies. This is not a confirmed missing-map or registration-defect classifier.</p>
             </div>
             <p id="regions-summary" class="small" role="status"></p>
+            <p id="regions-review-summary" class="hint small"></p>
+            <p class="hint small">State and comments update immediately, independently for each direction. Save review JSON before rerunning or leaving: project/workspace saves do not retain these records.</p>
             <ol id="regions-list" class="loop-list"></ol>
+            <div class="button-row"><button id="regions-review-json">Save candidate reviews JSON</button><button id="regions-review-csv">Save candidate reviews CSV</button></div>
             <div class="button-row"><button id="regions-json">Save regions JSON</button><button id="regions-csv">Save listed regions CSV</button></div>
             <label>Inspection XY cell <input id="regions-fine-cell" type="number" min="0" step="any" value="1" /></label>
             <details class="options"><summary>Cell section settings</summary>
@@ -288,6 +298,26 @@
             </div>
           </div>
           <p class="hint small">Source → reference unsigned nearest distances only. Changes, occlusion and missing reference coverage can also produce large distances. Groups are XY inspection candidates, not confirmed registration defects. Threshold/cell edits reuse distances only while both loaded clouds remain unchanged. Cancellation discards diagnostics; an active C2C call may finish first.</p>
+        </details>
+        <details id="review-archive-panel" class="options">
+          <summary>Archived candidate reviews</summary>
+          <button id="review-archive-open">Open saved review JSON…</button>
+          <input id="review-archive-file" type="file" accept=".json" hidden />
+          <p class="hint small">Read past records without loading point clouds. No decisions are applied to current analysis. Keep the original JSON; this viewer is not saved in projects.</p>
+          <div id="review-archive-result" hidden>
+            <p id="review-archive-name"></p><p id="review-archive-scope" class="hint small"></p>
+            <div id="review-archive-list"></div>
+            <div class="button-row"><button id="review-archive-json">Save original JSON</button><button id="review-archive-csv">Save archive CSV</button><button id="review-archive-html">Save archive HTML</button><button id="review-archive-close">Close archive</button></div>
+            <h3>Compare review records</h3>
+            <p class="hint small">The open archive is A. Load B to compare decisions from identical archived analysis metadata. Different analyses are not matched by rank or filename. A/B order does not imply chronology. No live decisions are changed.</p>
+            <div class="button-row"><button id="review-compare-open">Load archive B for comparison…</button><button id="review-compare-clear">Clear comparison</button></div>
+            <input id="review-compare-file" type="file" accept=".json" hidden />
+            <div id="review-compare-result" hidden>
+              <p id="review-compare-names"></p><p id="review-compare-scope" class="hint small"></p>
+              <div id="review-compare-list"></div>
+              <div class="button-row"><button id="review-compare-original">Save original B JSON</button><button id="review-compare-json">Save comparison JSON</button><button id="review-compare-csv">Save comparison CSV</button><button id="review-compare-html">Save comparison HTML</button></div>
+            </div>
+          </div>
         </details>
         <p class="hint small">Load an aligned reference in the same coordinate frame to inspect map distances and completeness. Check comparison settings before computing. Coverage metrics also appear in QA report exports.</p>
       </section>
@@ -333,7 +363,37 @@
         <label id="volume-before-z-row" hidden>Before height <input id="volume-before-z" type="number" step="any" value="0" /></label>
         <label>After <select id="volume-after"></select></label>
         <label id="volume-after-z-row" hidden>After height <input id="volume-after-z" type="number" step="any" value="0" /></label>
-        <details class="options">
+        <details id="volume-area-options" class="options">
+          <summary>Review area</summary>
+          <label class="check"><input id="volume-area-enabled" type="checkbox" /> Limit volume to a world XY rectangle</label>
+          <div id="volume-area-bounds" hidden>
+            <div class="range"><label>Min X <input id="volume-area-min-x" type="number" step="any" /></label><label>Min Y <input id="volume-area-min-y" type="number" step="any" /></label></div>
+            <div class="range"><label>Max X <input id="volume-area-max-x" type="number" step="any" /></label><label>Max Y <input id="volume-area-max-y" type="number" step="any" /></label></div>
+          </div>
+          <div class="button-row"><button id="volume-use-distance-area">Use distance review area</button><button id="volume-send-distance-area">Use this area for distance review</button></div>
+          <label>Area name <input id="volume-area-name" maxlength="80" placeholder="Work area A" /></label>
+          <button id="volume-area-save">Save / update area by name</button>
+          <label>Saved areas <select id="volume-areas"></select></label>
+          <div class="button-row"><button id="volume-area-apply">Apply selected area</button><button id="volume-area-remove">Remove selected area</button></div>
+          <div class="button-row"><button id="volume-areas-export">Save area definitions JSON</button><button id="volume-areas-import">Load area definitions…</button></div>
+          <input id="volume-areas-file" type="file" accept=".json" hidden />
+          <button id="volume-areas-run">Compute all saved areas</button>
+          <p class="hint small">Up to 32 named rectangles, saved with projects or separately as JSON. Loading definitions replaces the saved list. Check coordinate frame and units before reuse. Area summaries use the same Before/After and options, add no point clouds, and are independent: overlapping areas must not be summed.</p>
+          <p class="hint small">Includes cells whose centers are inside the rectangle, edges included. Each included cell contributes its full square area; boundary cells are not clipped. Grid and interpolation still use full loaded surfaces. Missing heights are excluded, not zero change. Copying bounds does not run either analysis.</p>
+        </details>
+        <details id="volume-visits-options" class="options">
+          <summary>Repeated visits by area</summary>
+          <label>Visit surfaces <select id="volume-visits" multiple size="5" aria-describedby="volume-visits-help"></select></label>
+          <p id="volume-visits-help" class="hint small">Select up to 8 loaded surfaces (Ctrl / Command to select several). Before is the fixed baseline; After is unused here. All saved areas and volume options apply. Initial order is loaded order. Check acquisition order and use the arrows below; dates are not inferred. Selections and results are not saved in projects.</p>
+          <ol id="volume-visit-order" class="loop-list" aria-label="Visit comparison order"></ol>
+          <label>Comparison cells <select id="volume-visits-support"><option value="independent">Each baseline / visit pair</option><option value="common_observed">Observed in baseline and all visits</option></select></label>
+          <p class="hint small">Common observed cells require loaded point clouds and interpolation off. Constant baselines and meshes are not raw point observations. Changing the visit selection can change both the shared grid and common support.</p>
+          <label class="check"><input id="volume-visits-intervals" type="checkbox" disabled /> Also compute adjacent visit intervals</label>
+          <p class="hint small">Intervals require at least two visits and common observed cells. Each consecutive pair is compared directly on the same mask, including the baseline's observed footprint.</p>
+          <button id="volume-visits-run">Compare visits with baseline</button>
+          <p class="hint small">Each-pair mode uses a shared grid but support can differ between visits, even with equal counts. Common mode uses identical observed cells. Totals are relative to the baseline; differences of gross fill/cut totals are not between-visit fill/cut.</p>
+        </details>
+        <details id="volume-options" class="options">
           <summary>Options</summary>
           <div class="range">
             <label title="Grid cell edge length, in the clouds' units">Cell size <input id="volume-cell" type="number" min="0" step="any" /></label>
@@ -352,7 +412,38 @@
           <p class="hint small">Units label the coordinates; no conversion. Use aligned ground surfaces for earthwork. This is a 2.5D height difference, not closed-solid volume. Undefined cells are excluded; interpolation is optional. Increase cell size or crop if the grid exceeds 1,000,000 cells.</p>
         </details>
         <button id="volume-run" class="primary" disabled>Compute volume</button>
+        <details id="height-review-options" class="options">
+          <summary>Height-change screening</summary>
+          <label class="check"><input id="height-review-enabled" type="checkbox" /> Screen single Before / After</label>
+          <label class="check"><input id="height-review-batch-enabled" type="checkbox" /> Screen saved areas and repeated visits (including intervals)</label>
+          <label>Absolute height threshold <input id="height-review-threshold" type="number" min="0" step="any" value="0.1" disabled /></label>
+          <p class="hint small">Set before computing. Strictly above / below ±threshold; equality stays within-band. Reports full differences in selected cells, not only excess. This is a user review criterion, not calibrated uncertainty or an M3C2 detection limit. Single-pair and saved-area/visit screening are separate opt-ins; the threshold is shared.</p>
+        </details>
         <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
+        <div id="height-review-result" hidden><h3>Height-change screening</h3><table class="stats"><tbody id="height-review-stats"></tbody></table><p id="height-review-scope" class="hint small"></p><button id="height-review-csv">Save height screening CSV</button><button id="height-review-inspect">Inspect screened cells</button></div>
+        <div id="height-cell-inspection" hidden><h3>Listed screened grid cells</h3><button id="height-cell-close">Close cell inspection</button><p id="height-cell-context" class="hint small"></p><details class="options" id="height-section-options"><summary>Point section settings</summary><label>Direction <select id="height-section-axis"><option value="x">X</option><option value="y">Y</option></select></label><div class="range"><label>Length <input id="height-section-length" type="number" min="0" step="any" value="20" /></label><label>Band width <input id="height-section-width" type="number" min="0" step="any" value="2" /></label></div><p class="hint small">Compare point section uses this cell's two loaded point clouds, including hidden inputs and all band points. The band extends beyond parent bounds/masks. Constant planes and meshes cannot provide two original point sets. Display-coordinate precision and loaded preview/thinning apply.</p></details><p class="hint small">Review records are session-only human inspection notes, not confirmed physical changes or accepted earthwork. Close/reopen retains them; rerunning or invalidating the parent resets them. Exports include all opened comparison lists.</p><p id="height-cell-review-counts" class="hint small"></p><div class="button-row"><button id="height-cell-reviews-json">Save cell reviews JSON</button><button id="height-cell-reviews-csv">Save cell reviews CSV</button></div><ol id="height-cell-list" class="loop-list" tabindex="0" aria-label="Listed screened grid cells; scroll for more"></ol><button id="height-cell-csv">Save listed screened cells CSV</button><p class="hint small">Only the largest 50 absolute exceedances per comparison/area are listed. Full aggregates include the unlisted cells. Save summary JSON for input, bounds, settings and support provenance. Focus changes the camera; it does not filter the point cloud or confirm a physical cause.</p></div>
+        <div id="volume-areas-result" hidden>
+          <div id="volume-areas-screening" hidden></div>
+          <p id="volume-areas-scope" class="hint small"></p>
+          <div class="review-table-wrap" tabindex="0" aria-label="Area volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-areas-rows"></tbody></table></div>
+          <div class="button-row"><button id="volume-areas-json">Save area summaries JSON</button><button id="volume-areas-csv">Save area summaries CSV</button></div>
+        </div>
+        <div id="volume-visits-result" hidden>
+          <div id="volume-visits-screening" hidden></div>
+          <p id="volume-visits-scope" class="hint small"></p>
+          <div class="review-table-wrap" tabindex="0" aria-label="Repeated visit volume summaries; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Visit / area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Missing</th><th>Outside</th></tr></thead><tbody id="volume-visits-rows"></tbody></table></div>
+          <div id="volume-intervals-result" hidden>
+            <h3>Direct intervals (visit to visit)</h3>
+            <div id="volume-intervals-screening" hidden></div>
+            <p id="volume-intervals-scope" class="hint small"></p>
+            <div class="review-table-wrap" tabindex="0" aria-label="Direct visit interval volumes; scroll horizontally for coverage counts"><table class="stats review-table area-volume-table"><thead><tr><th>Interval / area</th><th>Fill</th><th>Cut</th><th>Net</th><th>Compared</th><th>Uncompared</th><th>Outside</th></tr></thead><tbody id="volume-intervals-rows"></tbody></table></div>
+            <button id="volume-intervals-csv">Save direct intervals CSV</button>
+            <p class="hint small">Interval results and the explicit visit order are included in visit summaries JSON. Intervals use every selected input's common mask, not each interval's larger pair-only support.</p>
+          </div>
+          <div class="button-row"><button id="volume-visits-json">Save visit summaries JSON</button><button id="volume-visits-csv">Save visit summaries CSV</button><button id="volume-visits-mask" disabled>Save common cells mask</button></div>
+          <button id="volume-visits-report">Save volume report HTML</button>
+          <p class="hint small">Standalone report with baseline and optional direct interval tables, input scope and calculation settings. No combined total; retain the JSON and separate common-cell mask for exact cell provenance.</p>
+        </div>
         <div id="volume-exports" hidden>
           <p id="volume-scope" class="hint small"></p>
           <div class="button-row"><button id="volume-isolate" disabled>Hide input surfaces</button><button id="volume-mesh" disabled>Mesh compared After cells</button><button id="volume-json">Save volume summary JSON</button><button id="volume-csv">Save compared cells CSV</button></div>
@@ -391,6 +482,21 @@
           <button id="raster-tiff" disabled title="Single-band Float32 heights, NoData −9999, no coordinate system">Save GeoTIFF</button>
           <button id="raster-png" disabled title="The heights in the current color ramp">Save PNG</button>
         </div>
+      </section>
+
+      <section id="height-archive-panel">
+        <h2>Saved height-cell reviews</h2>
+        <details id="height-archive-options" class="options">
+          <summary>Read saved height-cell reviews</summary>
+          <button id="height-archive-open">Open height-cell review JSON…</button>
+          <input id="height-archive-file" type="file" accept=".json" hidden />
+          <p class="hint small">Read-only records without point clouds. Maximum 64 MiB, 480 comparison lists and 50 cells per list. No decisions applied to current analysis or QA. Keep the original JSON and volume/grid/mask evidence.</p>
+          <div id="height-archive-result" hidden>
+            <p id="height-archive-name"></p><p id="height-archive-count" class="hint small"></p><p id="height-archive-scope" class="hint small"></p>
+            <div class="button-row"><button id="height-archive-json">Save original height reviews JSON</button><button id="height-archive-csv">Save height review archive CSV</button><button id="height-archive-html">Save height review archive HTML</button><button id="height-archive-close">Close height review archive</button></div>
+            <div id="height-archive-list"></div>
+          </div>
+        </details>
       </section>
 
       <section id="mesh-panel">
@@ -868,12 +974,107 @@
             <label title="The first node of the second part: the path before it is compared with the path from it (for two joined sessions, the second session's first node)">Split at node <input id="pg-split" type="number" step="1" /></label>
             <button id="pg-parts" title="The map of the path before the split against the map from it, by M3C2: what changed between two sessions, or how well two passes agree">Compare parts (M3C2)</button>
           </div>
-          <div id="pg-changes" hidden>
-            <h3>Changes</h3>
-            <p id="pg-changes-hint" class="hint small"></p>
-            <ol id="pg-change-list" class="loop-list"></ol>
-          </div>
         </div>
+        <div id="pg-changes" hidden>
+          <h3>Changes · survey review</h3>
+          <p id="pg-change-stale" class="hint small" role="status" hidden></p>
+          <p id="pg-change-quality" class="hint small"></p>
+          <p id="pg-changes-hint" class="hint small"></p>
+          <label>Review view
+            <select id="pg-change-view">
+              <option value="before">Before</option>
+              <option value="after">After</option>
+              <option value="difference" selected>Difference (M3C2)</option>
+            </select>
+          </label>
+          <label>Candidate filter
+            <select id="pg-change-filter">
+              <option value="all">All candidates</option>
+              <option value="decided">With a decision</option>
+            </select>
+          </label>
+          <button id="pg-change-next-unreviewed">Next unreviewed</button>
+          <p id="pg-change-filter-summary" class="hint small"></p>
+          <p id="pg-change-empty" class="hint small" hidden>No candidates match this filter. Choose another filter to continue.</p>
+          <ol id="pg-change-list" class="loop-list"></ol>
+          <div class="button-row">
+            <button id="pg-change-prev">Previous candidates</button>
+            <span id="pg-change-page" class="hint small"></span>
+            <button id="pg-change-next">Next candidates</button>
+          </div>
+          <div id="pg-change-editor" hidden>
+            <h4 id="pg-change-selected"></h4>
+            <p id="pg-change-selected-context" class="hint small"></p>
+            <button id="pg-change-show-selected" hidden>Show selected candidate</button>
+            <label>Decision <select id="pg-change-decision"></select></label>
+            <label>Review note <textarea id="pg-change-note" rows="3" maxlength="2000" placeholder="Evidence for this judgment; what to inspect next"></textarea></label>
+            <details id="pg-change-lanes">
+              <summary>Related map lanes</summary>
+              <label><input id="pg-change-lane-frame" type="checkbox" /> I confirmed that this map and the comparison use the same Cartesian metre frame</label>
+              <div class="range">
+                <label>XY margin m <input id="pg-change-lane-xy" type="number" min="0" max="10" step="0.1" value="0" /></label>
+                <label>Height margin m <input id="pg-change-lane-z" type="number" min="0" max="10" step="0.1" value="1" /></label>
+              </div>
+              <p id="pg-change-lane-hint" class="hint small" role="status"></p>
+              <ol id="pg-change-lane-list" class="loop-list"></ol>
+              <button id="pg-core-overlay-clear" hidden>Clear core overlay</button>
+              <p id="pg-core-overlay-hint" class="hint small" role="status"></p>
+              <p class="hint small">Core support tests individual changed points inside the lane's XY surface and within the height margin of its interpolated Z. XY margin expands boxes only. Zero support is an inspection cue; it does not establish that no update is needed. Unavailable is not zero.</p>
+              <p class="hint small">Geometric overlap with the candidate's box is a review hint, not proof that a lane changed. Margins expand the box. Coordinate alignment is not performed. Map edits and loading a new map require confirmation again.</p>
+            </details>
+          </div>
+          <p id="pg-change-summary" class="hint small" aria-live="polite"></p>
+          <p class="hint small">Decisions are human judgments. Weighted residuals are not metres or independent accuracy checks. Unmeasured areas and small changes remain outside the candidate list. Signed distances do not label additions or removals; newly visible surfaces may need a reverse comparison.</p>
+          <button id="pg-change-export">Save review JSON</button>
+          <p class="hint small">Save before rerunning or leaving this page. Project saves include review decisions; resuming them requires matching comparison contents.</p>
+        </div>
+        <details id="pg-lane-tasks">
+          <summary>Lane follow-up tasks</summary>
+          <p id="pg-lane-task-summary" class="hint small" aria-live="polite"></p>
+          <p class="hint small">Record a related lane for human follow-up. Decisions here do not edit the map. Project autosave includes saved task decisions. After reopening, use Resume saved task in Related map lanes to verify the source evidence before editing.</p>
+          <ol id="pg-lane-task-list" class="loop-list"></ol>
+          <div class="button-row">
+            <button id="pg-lane-task-prev">Previous tasks</button>
+            <span id="pg-lane-task-page" class="hint small"></span>
+            <button id="pg-lane-task-next">Next tasks</button>
+          </div>
+          <div id="pg-lane-task-editor" hidden>
+            <h3 id="pg-lane-task-title"></h3>
+            <p id="pg-lane-task-source" class="hint small"></p>
+            <button id="pg-lane-task-inspect">Inspect task lane</button>
+            <label>Follow-up state <select id="pg-lane-task-state"></select></label>
+            <label>Task note <textarea id="pg-lane-task-note" rows="3" maxlength="2000"></textarea></label>
+            <button id="pg-lane-task-save">Save task decision</button>
+          </div>
+          <button id="pg-lane-task-export">Save lane tasks JSON</button>
+          <button id="pg-lane-task-open">Open lane tasks JSON…</button>
+          <input id="pg-lane-task-file" type="file" accept=".json,application/json" hidden />
+          <div id="pg-lane-task-archive" hidden>
+            <h3 id="pg-lane-task-archive-name"></h3>
+            <p class="hint small">Historical file only. No task decisions are applied to the current queue, map or reused lane IDs. File consistency checks do not verify reviewer identity.</p>
+            <ol id="pg-lane-task-archive-list"></ol>
+            <button id="pg-lane-task-archive-close">Close lane tasks file</button>
+          </div>
+        </details>
+        <details id="pg-review-archive">
+          <summary>Saved survey reviews</summary>
+          <button id="pg-review-open">Open review JSON…</button>
+          <input id="pg-review-file" type="file" accept=".json,application/json" hidden />
+          <div id="pg-review-result" hidden>
+            <h3 id="pg-review-name"></h3>
+            <p id="pg-review-summary" class="hint small"></p>
+            <p class="hint small">Saved file shown as history. Opening it keeps current decisions unchanged. Resume replaces decisions only when comparison contents match. File checks do not verify reviewer identity.</p>
+            <p id="pg-review-match" class="hint small" role="status"></p>
+            <button id="pg-review-resume" disabled>Resume saved decisions</button>
+            <ol id="pg-review-list"></ol>
+            <div class="button-row">
+              <button id="pg-review-prev">Previous saved candidates</button>
+              <span id="pg-review-page" class="hint small"></span>
+              <button id="pg-review-next">Next saved candidates</button>
+            </div>
+            <button id="pg-review-close">Close saved review</button>
+          </div>
+        </details>
       </section>
 
       <section id="trajectory-panel">
@@ -1344,5 +1545,7 @@
     <script type="module" src="/src/app/lidar-ai.ts"></script>
     <script type="module" src="/src/app/map-coverage.ts"></script>
     <script type="module" src="/src/app/distance-regions.ts"></script>
+    <script type="module" src="/src/app/candidate-review-archive.ts"></script>
+    <script type="module" src="/src/app/height-review-archive.ts"></script>
   </body>
 </html>

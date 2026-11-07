@@ -25,6 +25,12 @@ function obj(text: string) {
     faces: lines.filter(l => l.startsWith('f ')).map(l => l.trim().split(/\s+/).slice(1).map(v => Number(v.split('/')[0]) - 1)) };
 }
 
+// Autosave reads the workspace through the worker about a second after the
+// load. A mesh click during that read is refused as busy, so keep it off.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('cloudanalyzer-autosave-enabled', 'off'));
+});
+
 test('terrain patches retain heights and separated faces; wireframe still exports faces, QA and one Undo', async ({ page }, info) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => {

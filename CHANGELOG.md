@@ -149,6 +149,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The terrain-mesh e2e tests turn browser autosave off, as 17 other specs
+  already do. Autosave reads the workspace through the worker about a second
+  after a load. A mesh click that landed during that read was refused with
+  "Finish the current operation before meshing", which failed
+  `cancelled and changed in-flight triangulations` twice on one CI run.
 - `test_hard_intersection.py` no longer fails on machines with less than
   6 GiB free. The preparation test stubs the free-space guard, as the
   download tests already did, and a new test covers the guard itself.

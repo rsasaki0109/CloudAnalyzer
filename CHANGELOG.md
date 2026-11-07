@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- `ruzstd` 0.9.1 (was 0.9.0) fixes RUSTSEC-2026-0344: a crafted `.zst` input
+  under 128 KB could make the decoder allocate gigabytes. `ca-core` uses it to
+  read zstd-compressed ROS bag and MCAP chunks, so a crafted bag could exhaust
+  memory.
+- Vite 8.3.6 (was 8.3.1) and source-map-js 1.2.2 fix high-severity advisories
+  in the development server (files outside `server.fs.allow`, cross-origin
+  script execution, `launch-editor` command handling). The built app was not
+  affected. Only the lock files change.
+
 ### Changed
 
 - The Web workflow runs its end-to-end tests in three parallel shards
@@ -90,6 +101,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A Dependency audit workflow runs `npm audit --audit-level=high` for `web/`,
+  `cargo audit` for `rust/` and `pip-audit` for the installed `cloudanalyzer`
+  package. It runs weekly, on demand, and when a dependency manifest or lock
+  file changes.
 - Web e2e runs start with a boot check (`web/e2e/boot.setup.ts`). It loads the
   app, waits for the vector map's "No map yet." status, which needs the page,
   the worker and the WebAssembly core, and fails on any page error. Every

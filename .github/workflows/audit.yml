@@ -1,0 +1,66 @@
+name: Dependency audit
+
+# Known vulnerabilities in the locked web and Rust dependencies, and in the
+# Python packages the cloudanalyzer package installs. Runs weekly, so a new
+# advisory shows up without waiting for an unrelated change, and on changes to
+# the dependency files, so a vulnerable update cannot land.
+
+on:
+  schedule:
+    - cron: "41 3 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: &dependency-files
+      - "web/package.json"
+      - "web/package-lock.json"
+      - "rust/Cargo.toml"
+      - "rust/Cargo.lock"
+      - "rust/crates/*/Cargo.toml"
+      - "cloudanalyzer/pyproject.toml"
+      - "cloudanalyzer/requirements.txt"
+      - ".github/workflows/audit.yml"
+  pull_request:
+    branches: [main]
+    paths: *dependency-files
+
+permissions:
+  contents: read
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      # Development dependencies count too: the Vite dev server runs on
+      # developers' machines.
+      - name: npm audit
+        working-directory: web
+        run: npm audit --audit-level=high
+
+  cargo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: cargo audit
+        working-directory: rust
+        run: cargo audit
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: pip-audit
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          python -m pip install -e "./cloudanalyzer[dev]"
+          pip-audit --skip-editable

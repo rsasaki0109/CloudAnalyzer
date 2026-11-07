@@ -212,6 +212,7 @@
     "rust/crates/ca-core/src/bag.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/bag.rs",
     "rust/crates/ca-core/src/kdtree.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/kdtree.rs",
     "rust/crates/ca-core/src/mesh.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/mesh.rs",
-    "rust/crates/ca-core/src/pose_graph.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/pose_graph.rs"
+    "rust/crates/ca-core/src/pose_graph.rs": "benchmarks/slam/flatwall-balance-stages/executed-source/rust/crates/ca-core/src/pose_graph.rs",
+    "rust/Cargo.lock": "benchmarks/source-history/d6a7df7883221f6efc76b54401123c9b7fc684982c2c6b5ff1e7da3e2cdcdb12/Cargo.lock"
   }
 }

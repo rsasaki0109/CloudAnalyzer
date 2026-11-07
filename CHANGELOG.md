@@ -101,6 +101,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Experimental LiDAR AI scan review (**Clouds → LiDAR AI scan review**). The
+  `ca-lidar-ai` native command (`rust/experiments/lidar-ai`, outside the main
+  workspace) runs a pretrained SalsaNext model on Burn/wgpu over one
+  KITTI/HDL-64 scan and writes point-removal candidates. The browser loads the
+  original `.bin`, the native `report.json` and `candidate-mask.u8`, checks
+  their bindings and hashes, shows the candidates in red, and downloads exact
+  original records. The opt-in CPU `ca-lidar-complete` command adds
+  near-surface completion, which the browser compares in orange. No inference
+  runs in the browser. Evidence and its known failures are in
+  `benchmarks/lidar-ai/`.
 - A Dependency audit workflow runs `npm audit --audit-level=high` for `web/`,
   `cargo audit` for `rust/` and `pip-audit` for the installed `cloudanalyzer`
   package. It runs weekly, on demand, and when a dependency manifest or lock

@@ -148,6 +148,7 @@ def test_archived_executed_native_source_is_still_hash_checked(tmp_path):
     'rust/crates/ca-core/src/kdtree.rs',
     'rust/crates/ca-core/src/mesh.rs',
     'rust/crates/ca-core/src/pose_graph.rs',
+    'rust/Cargo.lock',
 ])
 def test_development_native_source_can_change_but_resigned_executed_source_cannot(tmp_path,name):
     target=copy_packet(tmp_path)

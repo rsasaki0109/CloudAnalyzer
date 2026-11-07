@@ -1,0 +1,2832 @@
+[
+  {
+    "frame": "000000",
+    "group": "development",
+    "check": {
+      "app": "CloudAnalyzer surface completion check",
+      "version": 1,
+      "independent_mask_and_counts_exact": true,
+      "source_record_split_exact": true,
+      "baseline_report_sha256": "a5a82f5015bea138f04ec1ac5c67c02ab81a09e7a4c06d9b782f443166c36766",
+      "completion_report_sha256": "71223f6370279ff86cd1678a9f583848b7130e721d43762cb4bc5ed1dd43b674",
+      "counts": {
+        "distance_rejected": 223,
+        "crowded_rejected": 0,
+        "conflict_rejected": 0,
+        "support_rejected": 33,
+        "original_removed": 1143,
+        "added": 159,
+        "total_removed": 1302,
+        "retained": 122087
+      },
+      "hashes": {
+        "source": "92e945f37a6cd4a58acc8aa15b275af2e271ecf69c0a44a311d888524473c451",
+        "probabilities": "9a1f30747cb5c0dff5d4c4d8e7a94e4b58efe7b00391a5535ad9a7b92e93a849",
+        "mask": "979e7b06a26f81ac584019eae32374b037896cf4438c4d2afe0dbceca52ed9cb"
+      },
+      "baseline_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "000000",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 123389,
+        "removed": 1143,
+        "retained": 122246,
+        "evaluated_labeled_points": 116465,
+        "ignored_removed": 27,
+        "ignored_retained": 6897,
+        "full_scan": {
+          "tp": 1102,
+          "fp": 14,
+          "fn": 432,
+          "tn": 114917,
+          "precision": 0.9874551971326165,
+          "recall": 0.7183833116036505,
+          "iou": 0.7118863049095607,
+          "non_target_false_removal_rate": 0.00012181221776544187
+        },
+        "projected_owners_only": {
+          "tp": 1102,
+          "fp": 14,
+          "fn": 61,
+          "tn": 91178,
+          "precision": 0.9874551971326165,
+          "recall": 0.9475494411006019,
+          "iou": 0.9362786745964317,
+          "non_target_false_removal_rate": 0.00015352223879287657
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9641294838145232,
+        "target_unclassified_retained": 371,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.758148631029987,
+        "false_removals_by_raw_class": {
+          "11": 3,
+          "40": 10,
+          "48": 1
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 1,
+            "points": 433,
+            "removed": 322,
+            "retained": 111,
+            "projected": 323,
+            "removed_fraction": 0.74364896073903,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 2,
+            "points": 171,
+            "removed": 115,
+            "retained": 56,
+            "projected": 132,
+            "removed_fraction": 0.672514619883041,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 3,
+            "points": 386,
+            "removed": 293,
+            "retained": 93,
+            "projected": 301,
+            "removed_fraction": 0.7590673575129534,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 194,
+            "points": 302,
+            "removed": 218,
+            "retained": 84,
+            "projected": 219,
+            "removed_fraction": 0.7218543046357616,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 195,
+            "points": 208,
+            "removed": 145,
+            "retained": 63,
+            "projected": 160,
+            "removed_fraction": 0.6971153846153846,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 196,
+            "points": 14,
+            "removed": 7,
+            "retained": 7,
+            "projected": 11,
+            "removed_fraction": 0.5,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 198,
+            "points": 20,
+            "removed": 2,
+            "retained": 18,
+            "projected": 17,
+            "removed_fraction": 0.1,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "92e945f37a6cd4a58acc8aa15b275af2e271ecf69c0a44a311d888524473c451",
+          "labels_sha256": "cd33562bda69c88e09a4d8f600cb5c254186bf20d695897a61d56b129ff1c7d3",
+          "mask_sha256": "44f79163a0de1fba369b7f48031d6583657ed57bcb91dde42b3de84dddd0471c",
+          "retained_sha256": "6bdd9b9cf123f739be1a68aee8c065ca4731dce10a76f1d02b1ddc05f070e747",
+          "candidates_sha256": "c1d2d9b588fb4ebc535f48753ecfb34847a154aaba87359f61b4ecd0b4590d8c",
+          "pairing_sha256": "7f8c796c0422f45dad3610b68a7a4c1c043dfc4b7db0f0e87bf38335fe8c69fa"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "000000",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "92e945f37a6cd4a58acc8aa15b275af2e271ecf69c0a44a311d888524473c451",
+          "labels_sha256": "cd33562bda69c88e09a4d8f600cb5c254186bf20d695897a61d56b129ff1c7d3",
+          "scan_member": "dataset/sequences/08/velodyne/000000.bin",
+          "labels_member": "dataset/sequences/08/labels/000000.label",
+          "source_provenance": "bounded ZIP ranges; source.json records URLs, ETags, member CRCs and raw file hashes"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "completed_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "000000",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 123389,
+        "removed": 1302,
+        "retained": 122087,
+        "evaluated_labeled_points": 116465,
+        "ignored_removed": 27,
+        "ignored_retained": 6897,
+        "full_scan": {
+          "tp": 1259,
+          "fp": 16,
+          "fn": 275,
+          "tn": 114915,
+          "precision": 0.9874509803921568,
+          "recall": 0.8207301173402868,
+          "iou": 0.812258064516129,
+          "non_target_false_removal_rate": 0.000139213963160505
+        },
+        "projected_owners_only": {
+          "tp": 1102,
+          "fp": 14,
+          "fn": 61,
+          "tn": 91178,
+          "precision": 0.9874551971326165,
+          "recall": 0.9475494411006019,
+          "iou": 0.9362786745964317,
+          "non_target_false_removal_rate": 0.00015352223879287657
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.966973886328725,
+        "target_unclassified_retained": 214,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.758148631029987,
+        "false_removals_by_raw_class": {
+          "11": 3,
+          "40": 12,
+          "48": 1
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 1,
+            "points": 433,
+            "removed": 370,
+            "retained": 63,
+            "projected": 323,
+            "removed_fraction": 0.8545034642032333,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 2,
+            "points": 171,
+            "removed": 124,
+            "retained": 47,
+            "projected": 132,
+            "removed_fraction": 0.7251461988304093,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 3,
+            "points": 386,
+            "removed": 355,
+            "retained": 31,
+            "projected": 301,
+            "removed_fraction": 0.9196891191709845,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 194,
+            "points": 302,
+            "removed": 247,
+            "retained": 55,
+            "projected": 219,
+            "removed_fraction": 0.8178807947019867,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 195,
+            "points": 208,
+            "removed": 154,
+            "retained": 54,
+            "projected": 160,
+            "removed_fraction": 0.7403846153846154,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 196,
+            "points": 14,
+            "removed": 7,
+            "retained": 7,
+            "projected": 11,
+            "removed_fraction": 0.5,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 198,
+            "points": 20,
+            "removed": 2,
+            "retained": 18,
+            "projected": 17,
+            "removed_fraction": 0.1,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "92e945f37a6cd4a58acc8aa15b275af2e271ecf69c0a44a311d888524473c451",
+          "labels_sha256": "cd33562bda69c88e09a4d8f600cb5c254186bf20d695897a61d56b129ff1c7d3",
+          "mask_sha256": "979e7b06a26f81ac584019eae32374b037896cf4438c4d2afe0dbceca52ed9cb",
+          "retained_sha256": "6265b7304391cc7d22c853672f1e11031b8a541d9d3b09a1b4adb344d6277724",
+          "candidates_sha256": "e89b20eb4f8658cd0a918fb1c2853164d98f7882af0317e4047567eabb156d7e",
+          "pairing_sha256": "7f8c796c0422f45dad3610b68a7a4c1c043dfc4b7db0f0e87bf38335fe8c69fa"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "000000",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "92e945f37a6cd4a58acc8aa15b275af2e271ecf69c0a44a311d888524473c451",
+          "labels_sha256": "cd33562bda69c88e09a4d8f600cb5c254186bf20d695897a61d56b129ff1c7d3",
+          "scan_member": "dataset/sequences/08/velodyne/000000.bin",
+          "labels_member": "dataset/sequences/08/labels/000000.label",
+          "source_provenance": "bounded ZIP ranges; source.json records URLs, ETags, member CRCs and raw file hashes"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "delta": {
+        "tp": 157,
+        "fp": 2,
+        "fn": -157,
+        "tn": -2,
+        "ignored_removed": 0
+      },
+      "diagnostic_gate_passed": false,
+      "limits": [
+        "Completed masks can exceed the counterfactual nearest-only recall ceiling; it remains labelled as that baseline ceiling",
+        "Small validation sample, not independent held-out model accuracy; no automatic adoption"
+      ]
+    }
+  },
+  {
+    "frame": "001000",
+    "group": "development",
+    "check": {
+      "app": "CloudAnalyzer surface completion check",
+      "version": 1,
+      "independent_mask_and_counts_exact": true,
+      "source_record_split_exact": true,
+      "baseline_report_sha256": "6f144b20ef9cf663490d7058a01dfbab1af622b53f731c0977c32d722316db2f",
+      "completion_report_sha256": "0b9519d31ff851929489bb55532ef5181574d22b35932208586b7735f2941bae",
+      "counts": {
+        "distance_rejected": 329,
+        "crowded_rejected": 0,
+        "conflict_rejected": 0,
+        "support_rejected": 21,
+        "original_removed": 1636,
+        "added": 293,
+        "total_removed": 1929,
+        "retained": 124695
+      },
+      "hashes": {
+        "source": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+        "probabilities": "c3281a1612600537ebac08e4565a30fef3c0648d1f24c34dc968442799741cc4",
+        "mask": "f26436ad506a56ce841a9d2b5fe62d9e4b662694f8079fa296686c4589a5cce4"
+      },
+      "baseline_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "001000",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 126624,
+        "removed": 1636,
+        "retained": 124988,
+        "evaluated_labeled_points": 123829,
+        "ignored_removed": 20,
+        "ignored_retained": 2775,
+        "full_scan": {
+          "tp": 1488,
+          "fp": 128,
+          "fn": 558,
+          "tn": 121655,
+          "precision": 0.9207920792079208,
+          "recall": 0.7272727272727273,
+          "iou": 0.6844526218951242,
+          "non_target_false_removal_rate": 0.0010510498181191136
+        },
+        "projected_owners_only": {
+          "tp": 1488,
+          "fp": 128,
+          "fn": 41,
+          "tn": 95999,
+          "precision": 0.9207920792079208,
+          "recall": 0.973185088293002,
+          "iou": 0.8980084490042245,
+          "non_target_false_removal_rate": 0.0013315717748395351
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9095354523227384,
+        "target_unclassified_retained": 517,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.7473118279569892,
+        "false_removals_by_raw_class": {
+          "15": 87,
+          "40": 3,
+          "44": 1,
+          "50": 37
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 8,
+            "points": 710,
+            "removed": 527,
+            "retained": 183,
+            "projected": 528,
+            "removed_fraction": 0.7422535211267606,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 324,
+            "points": 53,
+            "removed": 34,
+            "retained": 19,
+            "projected": 37,
+            "removed_fraction": 0.6415094339622641,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 329,
+            "points": 5,
+            "removed": 4,
+            "retained": 1,
+            "projected": 5,
+            "removed_fraction": 0.8,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 335,
+            "points": 2,
+            "removed": 0,
+            "retained": 2,
+            "projected": 2,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 336,
+            "points": 49,
+            "removed": 44,
+            "retained": 5,
+            "projected": 44,
+            "removed_fraction": 0.8979591836734694,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 368,
+            "points": 251,
+            "removed": 173,
+            "retained": 78,
+            "projected": 184,
+            "removed_fraction": 0.6892430278884463,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 369,
+            "points": 918,
+            "removed": 671,
+            "retained": 247,
+            "projected": 686,
+            "removed_fraction": 0.7309368191721133,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 370,
+            "points": 27,
+            "removed": 14,
+            "retained": 13,
+            "projected": 20,
+            "removed_fraction": 0.5185185185185185,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 371,
+            "points": 2,
+            "removed": 1,
+            "retained": 1,
+            "projected": 1,
+            "removed_fraction": 0.5,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 372,
+            "points": 10,
+            "removed": 7,
+            "retained": 3,
+            "projected": 9,
+            "removed_fraction": 0.7,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 385,
+            "points": 19,
+            "removed": 13,
+            "retained": 6,
+            "projected": 13,
+            "removed_fraction": 0.6842105263157895,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+          "labels_sha256": "ae5ea78d9a3ac817f0d7c2eedbde5c7b5ecbe438c9f91e857ae4c173c255c69d",
+          "mask_sha256": "596a410836e2ab03ba1937f7921eab6d006f984384c6402dbacc45aee3919c35",
+          "retained_sha256": "2441202c4a68b560554aa60bf1c5b0d56fc1fd53f704e14a930415a5adfd7f79",
+          "candidates_sha256": "7f67d0ae5a3162dca40c0d8d782fe30ee7ea2edd5e342be62505e1a72c83bddc",
+          "pairing_sha256": "bf84ffb1636d0975012fdcb1d8fed326fb0bcbf8a02ba498c9b9f6c78af8cca4"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "001000",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+          "labels_sha256": "ae5ea78d9a3ac817f0d7c2eedbde5c7b5ecbe438c9f91e857ae4c173c255c69d",
+          "scan_member": "dataset/sequences/08/velodyne/001000.bin",
+          "labels_member": "dataset/sequences/08/labels/001000.label",
+          "source_provenance": "bounded ZIP ranges; source.json records URLs, ETags, member CRCs and raw file hashes"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "completed_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "001000",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 126624,
+        "removed": 1929,
+        "retained": 124695,
+        "evaluated_labeled_points": 123829,
+        "ignored_removed": 20,
+        "ignored_retained": 2775,
+        "full_scan": {
+          "tp": 1769,
+          "fp": 140,
+          "fn": 277,
+          "tn": 121643,
+          "precision": 0.926663174436878,
+          "recall": 0.864613880742913,
+          "iou": 0.8092406221408966,
+          "non_target_false_removal_rate": 0.0011495857385677803
+        },
+        "projected_owners_only": {
+          "tp": 1488,
+          "fp": 128,
+          "fn": 41,
+          "tn": 95999,
+          "precision": 0.9207920792079208,
+          "recall": 0.973185088293002,
+          "iou": 0.8980084490042245,
+          "non_target_false_removal_rate": 0.0013315717748395351
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9170554691550026,
+        "target_unclassified_retained": 236,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.7473118279569892,
+        "false_removals_by_raw_class": {
+          "15": 99,
+          "40": 3,
+          "44": 1,
+          "50": 37
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 8,
+            "points": 710,
+            "removed": 644,
+            "retained": 66,
+            "projected": 528,
+            "removed_fraction": 0.9070422535211268,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 324,
+            "points": 53,
+            "removed": 36,
+            "retained": 17,
+            "projected": 37,
+            "removed_fraction": 0.6792452830188679,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 329,
+            "points": 5,
+            "removed": 4,
+            "retained": 1,
+            "projected": 5,
+            "removed_fraction": 0.8,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 335,
+            "points": 2,
+            "removed": 0,
+            "retained": 2,
+            "projected": 2,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 336,
+            "points": 49,
+            "removed": 46,
+            "retained": 3,
+            "projected": 44,
+            "removed_fraction": 0.9387755102040817,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 368,
+            "points": 251,
+            "removed": 201,
+            "retained": 50,
+            "projected": 184,
+            "removed_fraction": 0.8007968127490039,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 369,
+            "points": 918,
+            "removed": 802,
+            "retained": 116,
+            "projected": 686,
+            "removed_fraction": 0.8736383442265795,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 370,
+            "points": 27,
+            "removed": 14,
+            "retained": 13,
+            "projected": 20,
+            "removed_fraction": 0.5185185185185185,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 371,
+            "points": 2,
+            "removed": 1,
+            "retained": 1,
+            "projected": 1,
+            "removed_fraction": 0.5,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 372,
+            "points": 10,
+            "removed": 7,
+            "retained": 3,
+            "projected": 9,
+            "removed_fraction": 0.7,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 385,
+            "points": 19,
+            "removed": 14,
+            "retained": 5,
+            "projected": 13,
+            "removed_fraction": 0.7368421052631579,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+          "labels_sha256": "ae5ea78d9a3ac817f0d7c2eedbde5c7b5ecbe438c9f91e857ae4c173c255c69d",
+          "mask_sha256": "f26436ad506a56ce841a9d2b5fe62d9e4b662694f8079fa296686c4589a5cce4",
+          "retained_sha256": "d33880b6cbc884eeb37cbd45bece304c61f5a0f2566c2de861b4f107d12e4315",
+          "candidates_sha256": "b5fa2786be38091981b8a2e3ca7ae2a0a965084f59a64ce14d8e36d54012797f",
+          "pairing_sha256": "bf84ffb1636d0975012fdcb1d8fed326fb0bcbf8a02ba498c9b9f6c78af8cca4"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "001000",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "f81b9df45136afb7d2cb388e07afe9fa2d1287fdedc45effbdc14b0f99f70214",
+          "labels_sha256": "ae5ea78d9a3ac817f0d7c2eedbde5c7b5ecbe438c9f91e857ae4c173c255c69d",
+          "scan_member": "dataset/sequences/08/velodyne/001000.bin",
+          "labels_member": "dataset/sequences/08/labels/001000.label",
+          "source_provenance": "bounded ZIP ranges; source.json records URLs, ETags, member CRCs and raw file hashes"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "delta": {
+        "tp": 281,
+        "fp": 12,
+        "fn": -281,
+        "tn": -12,
+        "ignored_removed": 0
+      },
+      "diagnostic_gate_passed": false,
+      "limits": [
+        "Completed masks can exceed the counterfactual nearest-only recall ceiling; it remains labelled as that baseline ceiling",
+        "Small validation sample, not independent held-out model accuracy; no automatic adoption"
+      ]
+    }
+  },
+  {
+    "frame": "002000",
+    "group": "development",
+    "check": {
+      "app": "CloudAnalyzer surface completion check",
+      "version": 1,
+      "independent_mask_and_counts_exact": true,
+      "source_record_split_exact": true,
+      "baseline_report_sha256": "26890dae0df44d302736a592d4f6c3ac61ceb243e47353de7da7ae472d5b81a5",
+      "completion_report_sha256": "7248e6ce8109b04fd39e50d17df7169306638fc202a8939cda1d38bb6304cd35",
+      "counts": {
+        "distance_rejected": 257,
+        "crowded_rejected": 0,
+        "conflict_rejected": 0,
+        "support_rejected": 6,
+        "original_removed": 2155,
+        "added": 161,
+        "total_removed": 2316,
+        "retained": 122833
+      },
+      "hashes": {
+        "source": "15b8589cc1d203966b8055a159178bb2706e9eec491c6d840c4ec460d65532a4",
+        "probabilities": "e2f0a8e798584ea4eeaededa0b534dca9302967550a99ff4c1db73146e4575d3",
+        "mask": "ff7fe5c50398dde359585a622c1e7f562e7a3f5d3f68250f42a48bb08535c89a"
+      },
+      "baseline_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "002000",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 125149,
+        "removed": 2155,
+        "retained": 122994,
+        "evaluated_labeled_points": 119551,
+        "ignored_removed": 6,
+        "ignored_retained": 5592,
+        "full_scan": {
+          "tp": 2140,
+          "fp": 9,
+          "fn": 460,
+          "tn": 116942,
+          "precision": 0.9958120055839925,
+          "recall": 0.823076923076923,
+          "iou": 0.8202376389421234,
+          "non_target_false_removal_rate": 7.695530606835341e-05
+        },
+        "projected_owners_only": {
+          "tp": 2140,
+          "fp": 9,
+          "fn": 58,
+          "tn": 86643,
+          "precision": 0.9958120055839925,
+          "recall": 0.9736123748862603,
+          "iou": 0.9696420480289987,
+          "non_target_false_removal_rate": 0.0001038637307852098
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9930394431554525,
+        "target_unclassified_retained": 402,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.8453846153846154,
+        "false_removals_by_raw_class": {
+          "48": 3,
+          "51": 6
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 13,
+            "points": 217,
+            "removed": 121,
+            "retained": 96,
+            "projected": 124,
+            "removed_fraction": 0.5576036866359447,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 124,
+            "points": 4,
+            "removed": 4,
+            "retained": 0,
+            "projected": 4,
+            "removed_fraction": 1.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 201,
+            "points": 4,
+            "removed": 0,
+            "retained": 4,
+            "projected": 3,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 202,
+            "points": 74,
+            "removed": 60,
+            "retained": 14,
+            "projected": 63,
+            "removed_fraction": 0.8108108108108109,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 203,
+            "points": 1785,
+            "removed": 1604,
+            "retained": 181,
+            "projected": 1633,
+            "removed_fraction": 0.8985994397759104,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 204,
+            "points": 208,
+            "removed": 155,
+            "retained": 53,
+            "projected": 158,
+            "removed_fraction": 0.7451923076923077,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 205,
+            "points": 34,
+            "removed": 28,
+            "retained": 6,
+            "projected": 29,
+            "removed_fraction": 0.8235294117647058,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 206,
+            "points": 128,
+            "removed": 79,
+            "retained": 49,
+            "projected": 92,
+            "removed_fraction": 0.6171875,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 207,
+            "points": 74,
+            "removed": 48,
+            "retained": 26,
+            "projected": 48,
+            "removed_fraction": 0.6486486486486487,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 208,
+            "points": 69,
+            "removed": 41,
+            "retained": 28,
+            "projected": 41,
+            "removed_fraction": 0.5942028985507246,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 392,
+            "points": 3,
+            "removed": 0,
+            "retained": 3,
+            "projected": 3,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "15b8589cc1d203966b8055a159178bb2706e9eec491c6d840c4ec460d65532a4",
+          "labels_sha256": "aeed60683ac8e3174d08d79d679068847beb471690b942d7e35caae49dc13baa",
+          "mask_sha256": "bf2f325c11e58f21d1b944c2405355b46530aa4f8d1d607dae4a2f41afa35704",
+          "retained_sha256": "47a88db438fa262e7c63c6c4a750df4d2455c4fb543b1275f5b08f6961185d4a",
+          "candidates_sha256": "9648089b940c0055fe5ae9f9f480ce2465fb58f178316a9fb9c288932cdeff33",
+          "pairing_sha256": "e5d67a31dccc974f3374fc7591e43e5ebfb6176bf5686cd0c030e68a1a4e9553"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "002000",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "15b8589cc1d203966b8055a159178bb2706e9eec491c6d840c4ec460d65532a4",
+          "labels_sha256": "aeed60683ac8e3174d08d79d679068847beb471690b942d7e35caae49dc13baa",
+          "scan_member": "dataset/sequences/08/velodyne/002000.bin",
+          "labels_member": "dataset/sequences/08/labels/002000.label",
+          "source_provenance": "bounded ZIP ranges; source.json records URLs, ETags, member CRCs and raw file hashes"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "completed_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "002000",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 125149,
+        "removed": 2316,
+        "retained": 122833,
+        "evaluated_labeled_points": 119551,
+        "ignored_removed": 6,
+        "ignored_retained": 5592,
+        "full_scan": {
+          "tp": 2301,
+          "fp": 9,
+          "fn": 299,
+          "tn": 116942,
+          "precision": 0.9961038961038962,
+          "recall": 0.885,
+          "iou": 0.8819471061709467,
+          "non_target_false_removal_rate": 7.695530606835341e-05
+        },
+        "projected_owners_only": {
+          "tp": 2140,
+          "fp": 9,
+          "fn": 58,
+          "tn": 86643,
+          "precision": 0.9958120055839925,
+          "recall": 0.9736123748862603,
+          "iou": 0.9696420480289987,
+          "non_target_false_removal_rate": 0.0001038637307852098
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9935233160621761,
+        "target_unclassified_retained": 241,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.8453846153846154,
+        "false_removals_by_raw_class": {
+          "48": 3,
+          "51": 6
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 13,
+            "points": 217,
+            "removed": 146,
+            "retained": 71,
+            "projected": 124,
+            "removed_fraction": 0.6728110599078341,
+            "raw_ids": [
+              252
+            ]
+          },
+          {
+            "instance_id": 124,
+            "points": 4,
+            "removed": 4,
+            "retained": 0,
+            "projected": 4,
+            "removed_fraction": 1.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 201,
+            "points": 4,
+            "removed": 0,
+            "retained": 4,
+            "projected": 3,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 202,
+            "points": 74,
+            "removed": 61,
+            "retained": 13,
+            "projected": 63,
+            "removed_fraction": 0.8243243243243243,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 203,
+            "points": 1785,
+            "removed": 1722,
+            "retained": 63,
+            "projected": 1633,
+            "removed_fraction": 0.9647058823529412,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 204,
+            "points": 208,
+            "removed": 165,
+            "retained": 43,
+            "projected": 158,
+            "removed_fraction": 0.7932692307692307,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 205,
+            "points": 34,
+            "removed": 30,
+            "retained": 4,
+            "projected": 29,
+            "removed_fraction": 0.8823529411764706,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 206,
+            "points": 128,
+            "removed": 80,
+            "retained": 48,
+            "projected": 92,
+            "removed_fraction": 0.625,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 207,
+            "points": 74,
+            "removed": 50,
+            "retained": 24,
+            "projected": 48,
+            "removed_fraction": 0.6756756756756757,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 208,
+            "points": 69,
+            "removed": 43,
+            "retained": 26,
+            "projected": 41,
+            "removed_fraction": 0.6231884057971014,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 392,
+            "points": 3,
+            "removed": 0,
+            "retained": 3,
+            "projected": 3,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "15b8589cc1d203966b8055a159178bb2706e9eec491c6d840c4ec460d65532a4",
+          "labels_sha256": "aeed60683ac8e3174d08d79d679068847beb471690b942d7e35caae49dc13baa",
+          "mask_sha256": "ff7fe5c50398dde359585a622c1e7f562e7a3f5d3f68250f42a48bb08535c89a",
+          "retained_sha256": "44018ddfce814c95a76b54d2d9b78ccf0a415f76386e14c1e71ee6650ebb10f5",
+          "candidates_sha256": "75802116ab656ef4e1db3c2d0f4ce56bd21727cb22d205691cac8d2b8f7b16dd",
+          "pairing_sha256": "e5d67a31dccc974f3374fc7591e43e5ebfb6176bf5686cd0c030e68a1a4e9553"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "002000",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "15b8589cc1d203966b8055a159178bb2706e9eec491c6d840c4ec460d65532a4",
+          "labels_sha256": "aeed60683ac8e3174d08d79d679068847beb471690b942d7e35caae49dc13baa",
+          "scan_member": "dataset/sequences/08/velodyne/002000.bin",
+          "labels_member": "dataset/sequences/08/labels/002000.label",
+          "source_provenance": "bounded ZIP ranges; source.json records URLs, ETags, member CRCs and raw file hashes"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "delta": {
+        "tp": 161,
+        "fp": 0,
+        "fn": -161,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "diagnostic_gate_passed": true,
+      "limits": [
+        "Completed masks can exceed the counterfactual nearest-only recall ceiling; it remains labelled as that baseline ceiling",
+        "Small validation sample, not independent held-out model accuracy; no automatic adoption"
+      ]
+    }
+  },
+  {
+    "frame": "000500",
+    "group": "additional",
+    "check": {
+      "app": "CloudAnalyzer surface completion check",
+      "version": 1,
+      "independent_mask_and_counts_exact": true,
+      "source_record_split_exact": true,
+      "baseline_report_sha256": "066e9c0607d093807eeaf33dcfe68455a58491cf967b6094b4706d978902ea84",
+      "completion_report_sha256": "fc6edf4cf31a4e35020acb4ccc3b580da8bcdb87c6b6a5ee4974a16a79300058",
+      "counts": {
+        "distance_rejected": 612,
+        "crowded_rejected": 5,
+        "conflict_rejected": 1,
+        "support_rejected": 11,
+        "original_removed": 4150,
+        "added": 492,
+        "total_removed": 4642,
+        "retained": 120670
+      },
+      "hashes": {
+        "source": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+        "probabilities": "355353117ca1a642e9c5c63e5b74b605b28604ed100ae09717f123805c9cdd14",
+        "mask": "ee6f8a4e027e7b5a991b3d84213df1f9cafe787c37dc0f31d48eb2a914e0cf98"
+      },
+      "baseline_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "000500",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 125312,
+        "removed": 4150,
+        "retained": 121162,
+        "evaluated_labeled_points": 122468,
+        "ignored_removed": 9,
+        "ignored_retained": 2835,
+        "full_scan": {
+          "tp": 4123,
+          "fp": 18,
+          "fn": 895,
+          "tn": 117432,
+          "precision": 0.9956532238589713,
+          "recall": 0.8216420884814667,
+          "iou": 0.8187053216838761,
+          "non_target_false_removal_rate": 0.0001532567049808429
+        },
+        "projected_owners_only": {
+          "tp": 4123,
+          "fp": 18,
+          "fn": 56,
+          "tn": 92156,
+          "precision": 0.9956532238589713,
+          "recall": 0.9865996649916248,
+          "iou": 0.9823683583512033,
+          "non_target_false_removal_rate": 0.00019528283463883525
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9934939759036144,
+        "target_unclassified_retained": 839,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.832801913112794,
+        "false_removals_by_raw_class": {
+          "40": 15,
+          "48": 3
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 320,
+            "points": 22,
+            "removed": 19,
+            "retained": 3,
+            "projected": 20,
+            "removed_fraction": 0.8636363636363636,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 321,
+            "points": 7,
+            "removed": 6,
+            "retained": 1,
+            "projected": 6,
+            "removed_fraction": 0.8571428571428571,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 322,
+            "points": 69,
+            "removed": 51,
+            "retained": 18,
+            "projected": 51,
+            "removed_fraction": 0.7391304347826086,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 359,
+            "points": 25,
+            "removed": 3,
+            "retained": 22,
+            "projected": 15,
+            "removed_fraction": 0.12,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 360,
+            "points": 311,
+            "removed": 215,
+            "retained": 96,
+            "projected": 220,
+            "removed_fraction": 0.6913183279742765,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 361,
+            "points": 438,
+            "removed": 326,
+            "retained": 112,
+            "projected": 330,
+            "removed_fraction": 0.7442922374429224,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 363,
+            "points": 393,
+            "removed": 301,
+            "retained": 92,
+            "projected": 301,
+            "removed_fraction": 0.7659033078880407,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 364,
+            "points": 3037,
+            "removed": 2741,
+            "retained": 296,
+            "projected": 2747,
+            "removed_fraction": 0.9025353967731313,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 365,
+            "points": 95,
+            "removed": 9,
+            "retained": 86,
+            "projected": 27,
+            "removed_fraction": 0.09473684210526316,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 366,
+            "points": 601,
+            "removed": 452,
+            "retained": 149,
+            "projected": 459,
+            "removed_fraction": 0.7520798668885191,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 367,
+            "points": 20,
+            "removed": 0,
+            "retained": 20,
+            "projected": 3,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+          "labels_sha256": "4431cf6446d91cb8967c07328aafcd29a170188da22c322aa8398a9effef8836",
+          "mask_sha256": "47144f358bfcaf36304fafb35e46b1eda8a5aae9f9ee641a5f9c4de705060733",
+          "retained_sha256": "f70a2384c4983120d7347969eefc8dfcb7e02681b4d0a35289ac53dc5caa8f14",
+          "candidates_sha256": "1d035fb0935c9595d181267a3bc1b33f1d08f5805b9c9f9bbf9278bc95685660",
+          "pairing_sha256": "4b1d9fd631e17347efc5592e8a5049eb1c9be7a74b1020d29d971b5693fda9a2"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "000500",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+          "labels_sha256": "4431cf6446d91cb8967c07328aafcd29a170188da22c322aa8398a9effef8836",
+          "scan_member": "dataset/sequences/08/velodyne/000500.bin",
+          "labels_member": "dataset/sequences/08/labels/000500.label",
+          "source_provenance": "Pinned archives/ZIP members/CRC and source hash records in inputs.json"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "completed_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "000500",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 125312,
+        "removed": 4642,
+        "retained": 120670,
+        "evaluated_labeled_points": 122468,
+        "ignored_removed": 9,
+        "ignored_retained": 2835,
+        "full_scan": {
+          "tp": 4615,
+          "fp": 18,
+          "fn": 403,
+          "tn": 117432,
+          "precision": 0.9961148284049213,
+          "recall": 0.9196891191709845,
+          "iou": 0.9164019062748213,
+          "non_target_false_removal_rate": 0.0001532567049808429
+        },
+        "projected_owners_only": {
+          "tp": 4123,
+          "fp": 18,
+          "fn": 56,
+          "tn": 92156,
+          "precision": 0.9956532238589713,
+          "recall": 0.9865996649916248,
+          "iou": 0.9823683583512033,
+          "non_target_false_removal_rate": 0.00019528283463883525
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9941835415769065,
+        "target_unclassified_retained": 347,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.832801913112794,
+        "false_removals_by_raw_class": {
+          "40": 15,
+          "48": 3
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 320,
+            "points": 22,
+            "removed": 19,
+            "retained": 3,
+            "projected": 20,
+            "removed_fraction": 0.8636363636363636,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 321,
+            "points": 7,
+            "removed": 6,
+            "retained": 1,
+            "projected": 6,
+            "removed_fraction": 0.8571428571428571,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 322,
+            "points": 69,
+            "removed": 54,
+            "retained": 15,
+            "projected": 51,
+            "removed_fraction": 0.782608695652174,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 359,
+            "points": 25,
+            "removed": 3,
+            "retained": 22,
+            "projected": 15,
+            "removed_fraction": 0.12,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 360,
+            "points": 311,
+            "removed": 234,
+            "retained": 77,
+            "projected": 220,
+            "removed_fraction": 0.752411575562701,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 361,
+            "points": 438,
+            "removed": 369,
+            "retained": 69,
+            "projected": 330,
+            "removed_fraction": 0.8424657534246576,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 363,
+            "points": 393,
+            "removed": 361,
+            "retained": 32,
+            "projected": 301,
+            "removed_fraction": 0.9185750636132316,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 364,
+            "points": 3037,
+            "removed": 3006,
+            "retained": 31,
+            "projected": 2747,
+            "removed_fraction": 0.9897925584458347,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 365,
+            "points": 95,
+            "removed": 9,
+            "retained": 86,
+            "projected": 27,
+            "removed_fraction": 0.09473684210526316,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 366,
+            "points": 601,
+            "removed": 554,
+            "retained": 47,
+            "projected": 459,
+            "removed_fraction": 0.9217970049916805,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 367,
+            "points": 20,
+            "removed": 0,
+            "retained": 20,
+            "projected": 3,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+          "labels_sha256": "4431cf6446d91cb8967c07328aafcd29a170188da22c322aa8398a9effef8836",
+          "mask_sha256": "ee6f8a4e027e7b5a991b3d84213df1f9cafe787c37dc0f31d48eb2a914e0cf98",
+          "retained_sha256": "96692866fae8f1b55b9e02294307ed1f6d68a1ed292405b377a0f766792796ea",
+          "candidates_sha256": "840bc0f59d3e754ecff867c98ad9a7ef1346124a70049686c97a33cfc728c4c9",
+          "pairing_sha256": "4b1d9fd631e17347efc5592e8a5049eb1c9be7a74b1020d29d971b5693fda9a2"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "000500",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+          "labels_sha256": "4431cf6446d91cb8967c07328aafcd29a170188da22c322aa8398a9effef8836",
+          "scan_member": "dataset/sequences/08/velodyne/000500.bin",
+          "labels_member": "dataset/sequences/08/labels/000500.label",
+          "source_provenance": "Pinned archives/ZIP members/CRC and source hash records in inputs.json"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "delta": {
+        "tp": 492,
+        "fp": 0,
+        "fn": -492,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "diagnostic_gate_passed": true,
+      "limits": [
+        "Completed masks can exceed the counterfactual nearest-only recall ceiling; it remains labelled as that baseline ceiling",
+        "Small validation sample, not independent held-out model accuracy; no automatic adoption"
+      ]
+    }
+  },
+  {
+    "frame": "001500",
+    "group": "additional",
+    "check": {
+      "app": "CloudAnalyzer surface completion check",
+      "version": 1,
+      "independent_mask_and_counts_exact": true,
+      "source_record_split_exact": true,
+      "baseline_report_sha256": "13a5619a5acbe48189df56432edac8d1af6f7d0cf736e062c33ac3215d1a85cf",
+      "completion_report_sha256": "7807c3f2387c3fbd6a3dc16cdbee7bb6f81d6542482df8d602f4fd027a3f5003",
+      "counts": {
+        "distance_rejected": 271,
+        "crowded_rejected": 0,
+        "conflict_rejected": 0,
+        "support_rejected": 3,
+        "original_removed": 1103,
+        "added": 177,
+        "total_removed": 1280,
+        "retained": 125178
+      },
+      "hashes": {
+        "source": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+        "probabilities": "0937c939f7f026b22071b6c81c51529eea3c8db7d0ec8647b3b94fffb026b5b3",
+        "mask": "62b8534daabce40ce78ce15112bc8fb424950b4a3dd48d1f57ab043b84493240"
+      },
+      "baseline_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "001500",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 126458,
+        "removed": 1103,
+        "retained": 125355,
+        "evaluated_labeled_points": 123993,
+        "ignored_removed": 6,
+        "ignored_retained": 2459,
+        "full_scan": {
+          "tp": 1088,
+          "fp": 9,
+          "fn": 500,
+          "tn": 122396,
+          "precision": 0.99179580674567,
+          "recall": 0.6851385390428212,
+          "iou": 0.6812773951158422,
+          "non_target_false_removal_rate": 7.352640823495772e-05
+        },
+        "projected_owners_only": {
+          "tp": 1088,
+          "fp": 9,
+          "fn": 115,
+          "tn": 98817,
+          "precision": 0.99179580674567,
+          "recall": 0.9044056525353283,
+          "iou": 0.8976897689768977,
+          "non_target_false_removal_rate": 9.106915184263251e-05
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.986400725294651,
+        "target_unclassified_retained": 385,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.7575566750629723,
+        "false_removals_by_raw_class": {
+          "40": 9
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 271,
+            "points": 190,
+            "removed": 152,
+            "retained": 38,
+            "projected": 152,
+            "removed_fraction": 0.8,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 272,
+            "points": 901,
+            "removed": 673,
+            "retained": 228,
+            "projected": 676,
+            "removed_fraction": 0.7469478357380688,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 273,
+            "points": 142,
+            "removed": 112,
+            "retained": 30,
+            "projected": 114,
+            "removed_fraction": 0.7887323943661971,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 274,
+            "points": 139,
+            "removed": 99,
+            "retained": 40,
+            "projected": 103,
+            "removed_fraction": 0.7122302158273381,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 275,
+            "points": 136,
+            "removed": 12,
+            "retained": 124,
+            "projected": 98,
+            "removed_fraction": 0.08823529411764706,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 276,
+            "points": 19,
+            "removed": 18,
+            "retained": 1,
+            "projected": 19,
+            "removed_fraction": 0.9473684210526315,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 277,
+            "points": 16,
+            "removed": 10,
+            "retained": 6,
+            "projected": 11,
+            "removed_fraction": 0.625,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 308,
+            "points": 27,
+            "removed": 0,
+            "retained": 27,
+            "projected": 17,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 314,
+            "points": 18,
+            "removed": 12,
+            "retained": 6,
+            "projected": 13,
+            "removed_fraction": 0.6666666666666666,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+          "labels_sha256": "3fdc49f069b1b32c4771711b484393f882715b993c210ffdd1205d9e4129ea53",
+          "mask_sha256": "16eed5692dd9b403c554852cdd54779ca2a5c92ed6b9f33f033e5170d116ba46",
+          "retained_sha256": "f062214703e68c60bb8ebcde117b25a918ee331668bd0ee658ea7fab22ac7ec8",
+          "candidates_sha256": "1b09faf9cf5e0bf69eb4a7caafb0ad0ba418c7e6fe5bfaaad4ce49eae1b475eb",
+          "pairing_sha256": "37e0bb4ba199f02fa6a2fdd6e4664730eb98a40dc3451d530e06500f56e1e88b"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "001500",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+          "labels_sha256": "3fdc49f069b1b32c4771711b484393f882715b993c210ffdd1205d9e4129ea53",
+          "scan_member": "dataset/sequences/08/velodyne/001500.bin",
+          "labels_member": "dataset/sequences/08/labels/001500.label",
+          "source_provenance": "Pinned archives/ZIP members/CRC and source hash records in inputs.json"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "completed_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "001500",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 126458,
+        "removed": 1280,
+        "retained": 125178,
+        "evaluated_labeled_points": 123993,
+        "ignored_removed": 6,
+        "ignored_retained": 2459,
+        "full_scan": {
+          "tp": 1265,
+          "fp": 9,
+          "fn": 323,
+          "tn": 122396,
+          "precision": 0.9929356357927787,
+          "recall": 0.7965994962216625,
+          "iou": 0.7921102066374452,
+          "non_target_false_removal_rate": 7.352640823495772e-05
+        },
+        "projected_owners_only": {
+          "tp": 1088,
+          "fp": 9,
+          "fn": 115,
+          "tn": 98817,
+          "precision": 0.99179580674567,
+          "recall": 0.9044056525353283,
+          "iou": 0.8976897689768977,
+          "non_target_false_removal_rate": 9.106915184263251e-05
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.98828125,
+        "target_unclassified_retained": 208,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.7575566750629723,
+        "false_removals_by_raw_class": {
+          "40": 9
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 271,
+            "points": 190,
+            "removed": 161,
+            "retained": 29,
+            "projected": 152,
+            "removed_fraction": 0.8473684210526315,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 272,
+            "points": 901,
+            "removed": 835,
+            "retained": 66,
+            "projected": 676,
+            "removed_fraction": 0.9267480577136515,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 273,
+            "points": 142,
+            "removed": 115,
+            "retained": 27,
+            "projected": 114,
+            "removed_fraction": 0.8098591549295775,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 274,
+            "points": 139,
+            "removed": 102,
+            "retained": 37,
+            "projected": 103,
+            "removed_fraction": 0.7338129496402878,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 275,
+            "points": 136,
+            "removed": 12,
+            "retained": 124,
+            "projected": 98,
+            "removed_fraction": 0.08823529411764706,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 276,
+            "points": 19,
+            "removed": 18,
+            "retained": 1,
+            "projected": 19,
+            "removed_fraction": 0.9473684210526315,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 277,
+            "points": 16,
+            "removed": 10,
+            "retained": 6,
+            "projected": 11,
+            "removed_fraction": 0.625,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 308,
+            "points": 27,
+            "removed": 0,
+            "retained": 27,
+            "projected": 17,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 314,
+            "points": 18,
+            "removed": 12,
+            "retained": 6,
+            "projected": 13,
+            "removed_fraction": 0.6666666666666666,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+          "labels_sha256": "3fdc49f069b1b32c4771711b484393f882715b993c210ffdd1205d9e4129ea53",
+          "mask_sha256": "62b8534daabce40ce78ce15112bc8fb424950b4a3dd48d1f57ab043b84493240",
+          "retained_sha256": "6553f0db5960745d6782cae29bed039f0f1acee39e0f0fab8f001209c3c14892",
+          "candidates_sha256": "8c0f00464ceaa86b7afc2cfde0ff10ca17747121d2b88e9384dfd1af4ccaef8f",
+          "pairing_sha256": "37e0bb4ba199f02fa6a2fdd6e4664730eb98a40dc3451d530e06500f56e1e88b"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "001500",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+          "labels_sha256": "3fdc49f069b1b32c4771711b484393f882715b993c210ffdd1205d9e4129ea53",
+          "scan_member": "dataset/sequences/08/velodyne/001500.bin",
+          "labels_member": "dataset/sequences/08/labels/001500.label",
+          "source_provenance": "Pinned archives/ZIP members/CRC and source hash records in inputs.json"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "delta": {
+        "tp": 177,
+        "fp": 0,
+        "fn": -177,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "diagnostic_gate_passed": true,
+      "limits": [
+        "Completed masks can exceed the counterfactual nearest-only recall ceiling; it remains labelled as that baseline ceiling",
+        "Small validation sample, not independent held-out model accuracy; no automatic adoption"
+      ]
+    }
+  },
+  {
+    "frame": "002500",
+    "group": "additional",
+    "check": {
+      "app": "CloudAnalyzer surface completion check",
+      "version": 1,
+      "independent_mask_and_counts_exact": true,
+      "source_record_split_exact": true,
+      "baseline_report_sha256": "590ea30be609fc98ee29eded9a7165392b08f6f8620c5b4cb7fed30617e3f763",
+      "completion_report_sha256": "35123f95bcd63332271116c59371de575b641e26d6ff4b9bb9616974fdb96d0e",
+      "counts": {
+        "distance_rejected": 788,
+        "crowded_rejected": 0,
+        "conflict_rejected": 0,
+        "support_rejected": 15,
+        "original_removed": 4793,
+        "added": 708,
+        "total_removed": 5501,
+        "retained": 119328
+      },
+      "hashes": {
+        "source": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+        "probabilities": "c29791153d1ba731bc0b69290937847452a8ae75fa3c615fe0b51ce2e06e2b08",
+        "mask": "7f851f94d81bb46332531f78ef71c6dca686191b47349e4060e0b3d746268987"
+      },
+      "baseline_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "002500",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 124829,
+        "removed": 4793,
+        "retained": 120036,
+        "evaluated_labeled_points": 120291,
+        "ignored_removed": 27,
+        "ignored_retained": 4511,
+        "full_scan": {
+          "tp": 4701,
+          "fp": 65,
+          "fn": 1379,
+          "tn": 114146,
+          "precision": 0.9863617289131347,
+          "recall": 0.7731907894736842,
+          "iou": 0.7650122050447519,
+          "non_target_false_removal_rate": 0.0005691220635490452
+        },
+        "projected_owners_only": {
+          "tp": 4701,
+          "fp": 65,
+          "fn": 142,
+          "tn": 91848,
+          "precision": 0.9863617289131347,
+          "recall": 0.970679330993186,
+          "iou": 0.9578239608801956,
+          "non_target_false_removal_rate": 0.0007071904953597424
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9808053411224703,
+        "target_unclassified_retained": 1237,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.796546052631579,
+        "false_removals_by_raw_class": {
+          "20": 47,
+          "40": 15,
+          "44": 1,
+          "71": 1,
+          "72": 1
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 146,
+            "points": 2,
+            "removed": 0,
+            "retained": 2,
+            "projected": 2,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 148,
+            "points": 59,
+            "removed": 32,
+            "retained": 27,
+            "projected": 37,
+            "removed_fraction": 0.5423728813559322,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 149,
+            "points": 75,
+            "removed": 30,
+            "retained": 45,
+            "projected": 47,
+            "removed_fraction": 0.4,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 150,
+            "points": 196,
+            "removed": 154,
+            "retained": 42,
+            "projected": 154,
+            "removed_fraction": 0.7857142857142857,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 151,
+            "points": 900,
+            "removed": 834,
+            "retained": 66,
+            "projected": 835,
+            "removed_fraction": 0.9266666666666666,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 152,
+            "points": 341,
+            "removed": 265,
+            "retained": 76,
+            "projected": 266,
+            "removed_fraction": 0.7771260997067448,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 153,
+            "points": 7,
+            "removed": 5,
+            "retained": 2,
+            "projected": 6,
+            "removed_fraction": 0.7142857142857143,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 154,
+            "points": 8,
+            "removed": 7,
+            "retained": 1,
+            "projected": 7,
+            "removed_fraction": 0.875,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 155,
+            "points": 13,
+            "removed": 1,
+            "retained": 12,
+            "projected": 10,
+            "removed_fraction": 0.07692307692307693,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 157,
+            "points": 30,
+            "removed": 26,
+            "retained": 4,
+            "projected": 27,
+            "removed_fraction": 0.8666666666666667,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 159,
+            "points": 18,
+            "removed": 15,
+            "retained": 3,
+            "projected": 15,
+            "removed_fraction": 0.8333333333333334,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 160,
+            "points": 84,
+            "removed": 71,
+            "retained": 13,
+            "projected": 72,
+            "removed_fraction": 0.8452380952380952,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 161,
+            "points": 152,
+            "removed": 120,
+            "retained": 32,
+            "projected": 121,
+            "removed_fraction": 0.7894736842105263,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 162,
+            "points": 401,
+            "removed": 313,
+            "retained": 88,
+            "projected": 314,
+            "removed_fraction": 0.7805486284289277,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 163,
+            "points": 1248,
+            "removed": 1016,
+            "retained": 232,
+            "projected": 1022,
+            "removed_fraction": 0.8141025641025641,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 164,
+            "points": 1025,
+            "removed": 746,
+            "retained": 279,
+            "projected": 773,
+            "removed_fraction": 0.7278048780487805,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 165,
+            "points": 535,
+            "removed": 394,
+            "retained": 141,
+            "projected": 394,
+            "removed_fraction": 0.7364485981308411,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 166,
+            "points": 350,
+            "removed": 238,
+            "retained": 112,
+            "projected": 255,
+            "removed_fraction": 0.68,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 167,
+            "points": 245,
+            "removed": 179,
+            "retained": 66,
+            "projected": 191,
+            "removed_fraction": 0.7306122448979592,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 168,
+            "points": 10,
+            "removed": 0,
+            "retained": 10,
+            "projected": 0,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 169,
+            "points": 152,
+            "removed": 111,
+            "retained": 41,
+            "projected": 116,
+            "removed_fraction": 0.7302631578947368,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 170,
+            "points": 32,
+            "removed": 21,
+            "retained": 11,
+            "projected": 24,
+            "removed_fraction": 0.65625,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 171,
+            "points": 78,
+            "removed": 59,
+            "retained": 19,
+            "projected": 63,
+            "removed_fraction": 0.7564102564102564,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 172,
+            "points": 21,
+            "removed": 18,
+            "retained": 3,
+            "projected": 20,
+            "removed_fraction": 0.8571428571428571,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 173,
+            "points": 25,
+            "removed": 0,
+            "retained": 25,
+            "projected": 18,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 387,
+            "points": 73,
+            "removed": 46,
+            "retained": 27,
+            "projected": 54,
+            "removed_fraction": 0.6301369863013698,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+          "labels_sha256": "aa0323db02d08c4228d93814d50b9b28937aa00ab0f4ad5e63a380b418efebbd",
+          "mask_sha256": "90dfead0ce0c2e32bc88248dede92ec80a0d07adc4465c2a26666ecba7b14fd6",
+          "retained_sha256": "d5c55e456e4f3803a5c25b21d577f4042ea874c4982c06dce07b4ae23036d25e",
+          "candidates_sha256": "87d521d3f4a36bd308298f3848c99e19933fbe269b1b21445f39de3c75e1ab4c",
+          "pairing_sha256": "f763df19073c633a0e4e9045ac01424b67939002bd947c68733cf0a95f8b733b"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "002500",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+          "labels_sha256": "aa0323db02d08c4228d93814d50b9b28937aa00ab0f4ad5e63a380b418efebbd",
+          "scan_member": "dataset/sequences/08/velodyne/002500.bin",
+          "labels_member": "dataset/sequences/08/labels/002500.label",
+          "source_provenance": "Pinned archives/ZIP members/CRC and source hash records in inputs.json"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "completed_audit": {
+        "app": "CloudAnalyzer LiDAR removal audit",
+        "version": 1,
+        "evaluation_scope": "binary selected-class point removal on one annotated scan; not official semantic-segmentation mIoU",
+        "dataset": "SemanticKITTI",
+        "sequence": "08",
+        "frame": "002500",
+        "split": "validation",
+        "target_classes": [
+          "car"
+        ],
+        "score_threshold": 0.8999999761581421,
+        "points": 124829,
+        "removed": 5501,
+        "retained": 119328,
+        "evaluated_labeled_points": 120291,
+        "ignored_removed": 27,
+        "ignored_retained": 4511,
+        "full_scan": {
+          "tp": 5409,
+          "fp": 65,
+          "fn": 671,
+          "tn": 114146,
+          "precision": 0.9881256850566313,
+          "recall": 0.8896381578947369,
+          "iou": 0.8802278275020342,
+          "non_target_false_removal_rate": 0.0005691220635490452
+        },
+        "projected_owners_only": {
+          "tp": 4701,
+          "fp": 65,
+          "fn": 142,
+          "tn": 91848,
+          "precision": 0.9863617289131347,
+          "recall": 0.970679330993186,
+          "iou": 0.9578239608801956,
+          "non_target_false_removal_rate": 0.0007071904953597424
+        },
+        "precision_if_all_ignored_removals_are_errors": 0.9832757680421742,
+        "target_unclassified_retained": 529,
+        "full_scan_recall_ceiling_from_nearest_only_ownership": 0.796546052631579,
+        "false_removals_by_raw_class": {
+          "20": 47,
+          "40": 15,
+          "44": 1,
+          "71": 1,
+          "72": 1
+        },
+        "target_instance_zero_points": 0,
+        "target_instances": [
+          {
+            "instance_id": 146,
+            "points": 2,
+            "removed": 0,
+            "retained": 2,
+            "projected": 2,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 148,
+            "points": 59,
+            "removed": 32,
+            "retained": 27,
+            "projected": 37,
+            "removed_fraction": 0.5423728813559322,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 149,
+            "points": 75,
+            "removed": 30,
+            "retained": 45,
+            "projected": 47,
+            "removed_fraction": 0.4,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 150,
+            "points": 196,
+            "removed": 173,
+            "retained": 23,
+            "projected": 154,
+            "removed_fraction": 0.8826530612244898,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 151,
+            "points": 900,
+            "removed": 890,
+            "retained": 10,
+            "projected": 835,
+            "removed_fraction": 0.9888888888888889,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 152,
+            "points": 341,
+            "removed": 287,
+            "retained": 54,
+            "projected": 266,
+            "removed_fraction": 0.841642228739003,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 153,
+            "points": 7,
+            "removed": 5,
+            "retained": 2,
+            "projected": 6,
+            "removed_fraction": 0.7142857142857143,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 154,
+            "points": 8,
+            "removed": 7,
+            "retained": 1,
+            "projected": 7,
+            "removed_fraction": 0.875,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 155,
+            "points": 13,
+            "removed": 1,
+            "retained": 12,
+            "projected": 10,
+            "removed_fraction": 0.07692307692307693,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 157,
+            "points": 30,
+            "removed": 26,
+            "retained": 4,
+            "projected": 27,
+            "removed_fraction": 0.8666666666666667,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 159,
+            "points": 18,
+            "removed": 15,
+            "retained": 3,
+            "projected": 15,
+            "removed_fraction": 0.8333333333333334,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 160,
+            "points": 84,
+            "removed": 72,
+            "retained": 12,
+            "projected": 72,
+            "removed_fraction": 0.8571428571428571,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 161,
+            "points": 152,
+            "removed": 127,
+            "retained": 25,
+            "projected": 121,
+            "removed_fraction": 0.8355263157894737,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 162,
+            "points": 401,
+            "removed": 375,
+            "retained": 26,
+            "projected": 314,
+            "removed_fraction": 0.9351620947630923,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 163,
+            "points": 1248,
+            "removed": 1188,
+            "retained": 60,
+            "projected": 1022,
+            "removed_fraction": 0.9519230769230769,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 164,
+            "points": 1025,
+            "removed": 955,
+            "retained": 70,
+            "projected": 773,
+            "removed_fraction": 0.9317073170731708,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 165,
+            "points": 535,
+            "removed": 455,
+            "retained": 80,
+            "projected": 394,
+            "removed_fraction": 0.8504672897196262,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 166,
+            "points": 350,
+            "removed": 290,
+            "retained": 60,
+            "projected": 255,
+            "removed_fraction": 0.8285714285714286,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 167,
+            "points": 245,
+            "removed": 206,
+            "retained": 39,
+            "projected": 191,
+            "removed_fraction": 0.8408163265306122,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 168,
+            "points": 10,
+            "removed": 0,
+            "retained": 10,
+            "projected": 0,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 169,
+            "points": 152,
+            "removed": 127,
+            "retained": 25,
+            "projected": 116,
+            "removed_fraction": 0.8355263157894737,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 170,
+            "points": 32,
+            "removed": 22,
+            "retained": 10,
+            "projected": 24,
+            "removed_fraction": 0.6875,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 171,
+            "points": 78,
+            "removed": 60,
+            "retained": 18,
+            "projected": 63,
+            "removed_fraction": 0.7692307692307693,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 172,
+            "points": 21,
+            "removed": 18,
+            "retained": 3,
+            "projected": 20,
+            "removed_fraction": 0.8571428571428571,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 173,
+            "points": 25,
+            "removed": 0,
+            "retained": 25,
+            "projected": 18,
+            "removed_fraction": 0.0,
+            "raw_ids": [
+              10
+            ]
+          },
+          {
+            "instance_id": 387,
+            "points": 73,
+            "removed": 48,
+            "retained": 25,
+            "projected": 54,
+            "removed_fraction": 0.6575342465753424,
+            "raw_ids": [
+              10
+            ]
+          }
+        ],
+        "hashes": {
+          "scan_sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+          "labels_sha256": "aa0323db02d08c4228d93814d50b9b28937aa00ab0f4ad5e63a380b418efebbd",
+          "mask_sha256": "7f851f94d81bb46332531f78ef71c6dca686191b47349e4060e0b3d746268987",
+          "retained_sha256": "81f45bd64554340613d540d440835a2e07481e14aadaa9963c721dd9c51ea4a6",
+          "candidates_sha256": "3d0695377a1c8df71e95350c8e95b72c660b75023148d7c6b4a8beea2299d24c",
+          "pairing_sha256": "f763df19073c633a0e4e9045ac01424b67939002bd947c68733cf0a95f8b733b"
+        },
+        "annotation_pairing": {
+          "app": "CloudAnalyzer SemanticKITTI pairing",
+          "version": 1,
+          "sequence": "08",
+          "frame": "002500",
+          "split": "validation",
+          "point_order": "original-kitti-xyzi",
+          "label_format": "semantickitti-uint32-le",
+          "scan_sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+          "labels_sha256": "aa0323db02d08c4228d93814d50b9b28937aa00ab0f4ad5e63a380b418efebbd",
+          "scan_member": "dataset/sequences/08/velodyne/002500.bin",
+          "labels_member": "dataset/sequences/08/labels/002500.label",
+          "source_provenance": "Pinned archives/ZIP members/CRC and source hash records in inputs.json"
+        },
+        "limits": [
+          "References are evaluated after frozen inference and never passed to the model",
+          "Ignored raw IDs 0,1,52,99 are excluded from confusion; removed ignored points are reported separately",
+          "Full-scan recall counts retained occluded/out-of-view target points as false negatives",
+          "Softmax threshold is not calibrated correctness probability",
+          "A few validation frames do not establish held-out accuracy, complete-object removal or fused-map support"
+        ]
+      },
+      "delta": {
+        "tp": 708,
+        "fp": 0,
+        "fn": -708,
+        "tn": 0,
+        "ignored_removed": 0
+      },
+      "diagnostic_gate_passed": true,
+      "limits": [
+        "Completed masks can exceed the counterfactual nearest-only recall ceiling; it remains labelled as that baseline ceiling",
+        "Small validation sample, not independent held-out model accuracy; no automatic adoption"
+      ]
+    }
+  }
+]

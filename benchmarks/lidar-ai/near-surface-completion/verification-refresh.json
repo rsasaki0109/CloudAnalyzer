@@ -1,0 +1,45 @@
+{
+  "verification_source_commit": "a8e2d374835735f99251c461ac3492a1fbbfbf9c",
+  "normalized_verifier_sha256": "1bbe5eac9e54669f12a555d5f6ec0f69c89785408df2a796261d42fffcfb6c52",
+  "change": "Explicit f32 conversion of default scalar threshold; all real runs already supplied native f32 threshold",
+  "completion_outputs_regenerated": false,
+  "all_six_audits_identical": true,
+  "runs": [
+    {
+      "frame": "000000",
+      "group": "development",
+      "identical_to_frozen_audit": true,
+      "audit_sha256": "ae24d961a6d066680c0f235d99163b16c2dd05aa9ffe83a76a10112e84d94a1a"
+    },
+    {
+      "frame": "001000",
+      "group": "development",
+      "identical_to_frozen_audit": true,
+      "audit_sha256": "c9519afafe4b8d837a4c8c6798ba20687a3f5188a044b522d68b62bdadb96eff"
+    },
+    {
+      "frame": "002000",
+      "group": "development",
+      "identical_to_frozen_audit": true,
+      "audit_sha256": "2d7ff48bed4ee7ad61330ab24a79b7c679b7ec43124bdc667d1ec263b6a9a2eb"
+    },
+    {
+      "frame": "000500",
+      "group": "additional",
+      "identical_to_frozen_audit": true,
+      "audit_sha256": "9154716f750de702de9b82a992a65be9ec486ec40b1c5a6762ac43f919966a52"
+    },
+    {
+      "frame": "001500",
+      "group": "additional",
+      "identical_to_frozen_audit": true,
+      "audit_sha256": "8ff35db222e46d58a0ea69e83700fbfd160640eace70923324878929a9cd4c49"
+    },
+    {
+      "frame": "002500",
+      "group": "additional",
+      "identical_to_frozen_audit": true,
+      "audit_sha256": "4facbed09d77ee6d3c3732f8df4b907a0672ed93042619c3ed830593475e5530"
+    }
+  ]
+}

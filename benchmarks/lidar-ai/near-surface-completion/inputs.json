@@ -1,0 +1,223 @@
+{
+  "development_inputs": {
+    "file": "../semantic-kitti-smoke/inputs.json",
+    "sha256": "410e3eafccfd25206138380bd8f7033ab8beddeb01018fa4ce442dca928323d3"
+  },
+  "additional_inputs": {
+    "protocol_sha256": "93f1e2f83c7e67b99b0e037dae4882e0b0d60b047ef254d54bdd18f390314667",
+    "sequence": "08",
+    "frames": [
+      {
+        "frame": "000500",
+        "role": "scan",
+        "member": "dataset/sequences/08/velodyne/000500.bin",
+        "file": "000500.bin",
+        "bytes": 2004992,
+        "sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3",
+        "zip_crc32": "1065bc10"
+      },
+      {
+        "frame": "001500",
+        "role": "scan",
+        "member": "dataset/sequences/08/velodyne/001500.bin",
+        "file": "001500.bin",
+        "bytes": 2023328,
+        "sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22",
+        "zip_crc32": "fd291dcd"
+      },
+      {
+        "frame": "002500",
+        "role": "scan",
+        "member": "dataset/sequences/08/velodyne/002500.bin",
+        "file": "002500.bin",
+        "bytes": 1997264,
+        "sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90",
+        "zip_crc32": "0fbc039d"
+      },
+      {
+        "frame": "000500",
+        "role": "labels",
+        "member": "dataset/sequences/08/labels/000500.label",
+        "file": "000500.label",
+        "bytes": 501248,
+        "sha256": "4431cf6446d91cb8967c07328aafcd29a170188da22c322aa8398a9effef8836",
+        "zip_crc32": "23d3c025"
+      },
+      {
+        "frame": "001500",
+        "role": "labels",
+        "member": "dataset/sequences/08/labels/001500.label",
+        "file": "001500.label",
+        "bytes": 505832,
+        "sha256": "3fdc49f069b1b32c4771711b484393f882715b993c210ffdd1205d9e4129ea53",
+        "zip_crc32": "ea3ae0e1"
+      },
+      {
+        "frame": "002500",
+        "role": "labels",
+        "member": "dataset/sequences/08/labels/002500.label",
+        "file": "002500.label",
+        "bytes": 499316,
+        "sha256": "aa0323db02d08c4228d93814d50b9b28937aa00ab0f4ad5e63a380b418efebbd",
+        "zip_crc32": "9e6c3b14"
+      }
+    ],
+    "total_downloaded_range_bytes": 13897679,
+    "labels_lfs_metadata": {
+      "type": "file",
+      "oid": "1655b381f02497c07942a5c1a3dce55bba785556",
+      "size": 179298418,
+      "lfs": {
+        "oid": "408ec524636a393bae0288a0b2f48bf5418a1af988e82dee8496f89ddb7e6dda",
+        "size": 179298418,
+        "pointerSize": 134
+      },
+      "xetHash": "9e2de7e9f2c350f7228b199e1619eef019fa39eb0f7865a3120425ec4b30162d",
+      "path": "data_odometry_labels.zip"
+    },
+    "full_archive_hash_computed": false,
+    "label_archive_hash_cross_reference": "https://interdigitalinc.github.io/CompressAI/_modules/compressai/datasets/pointcloud/semantic_kitti.html",
+    "provenance_note": "Labels fetched by bounded ranges from a pinned mirror revision whose LFS OID matches the published original archive hash. ZIP CRC verified per member. Full remote ZIP was not downloaded.",
+    "scan_archive": {
+      "url": "https://s3.eu-central-1.amazonaws.com/avg-kitti/data_odometry_velodyne.zip",
+      "archive_bytes": 84786535790,
+      "etag": "\"34d95a5a43ab5c3c4bd2190b4f380190-5054\"",
+      "ranges": [
+        {
+          "offset": 84786535768,
+          "bytes": 22,
+          "sha256": "651c32615341a66d092c1be9399fc133b6093a72d7f804b740cc9c3b0a0251fc"
+        },
+        {
+          "offset": 84786535748,
+          "bytes": 20,
+          "sha256": "d2bd4f39cbdd2b17b720370770bf78bf43a077ab9b06bac037e0185036ea86a6"
+        },
+        {
+          "offset": 84786535692,
+          "bytes": 56,
+          "sha256": "7261bba05f30b1196a921ce88a09c004fde49895ded19b72189096fd5f882112"
+        },
+        {
+          "offset": 84781246416,
+          "bytes": 5289276,
+          "sha256": "5a2ffe67066bb4e63bbf80513194c09f97f3ec90e5b15bc6186e217059af4354"
+        },
+        {
+          "offset": 36305490810,
+          "bytes": 30,
+          "sha256": "9305c3be8206fcad06c2a2c379302da31d08a00d9d885e5fd7f0694d0fe6904d"
+        },
+        {
+          "offset": 36305490840,
+          "bytes": 40,
+          "sha256": "3e45b0984314b5ff815e18cebd4fbba1041777ac5efc3c03fefbac6c622d3a9c"
+        },
+        {
+          "offset": 36305490908,
+          "bytes": 2004992,
+          "sha256": "71e2fbe37eac748cde2a30847b0554c02215e59539bb9c493210767bb67545a3"
+        },
+        {
+          "offset": 34703657798,
+          "bytes": 30,
+          "sha256": "3a1f811ac550a80379b352059c7b53bf89e1859f54d4dcaafe48bdc533a52f62"
+        },
+        {
+          "offset": 34703657828,
+          "bytes": 40,
+          "sha256": "8389d32223e713df981d7265ed4cff11be431894017ff8de393abcd32b441b17"
+        },
+        {
+          "offset": 34703657896,
+          "bytes": 2023328,
+          "sha256": "ef75a501618b5c7ceff52e8d4b51e2f89c7961da2d5d6f5e3c7f571d74e8ed22"
+        },
+        {
+          "offset": 35965777710,
+          "bytes": 30,
+          "sha256": "2ee1fb5fd29b78c1a914cc01933845757e6ec5cd7b099f5bd336a15c1f24f415"
+        },
+        {
+          "offset": 35965777740,
+          "bytes": 40,
+          "sha256": "a2eb9413940d85151ef1cb5e5a8f671253ad07c8b62329f77374ced0c6b6a680"
+        },
+        {
+          "offset": 35965777808,
+          "bytes": 1997264,
+          "sha256": "aa0290dde0a1a25a9011cf736168e742e09ea99bee50b4282a22bacb289ccf90"
+        }
+      ],
+      "range_bytes": 11315168
+    },
+    "labels_archive": {
+      "url": "https://huggingface.co/datasets/WWZzz/SemanticKITTI/resolve/a62ad7160d88cde7a6e319716dbab19151a4cdc4/data_odometry_labels.zip",
+      "archive_bytes": 179298418,
+      "etag": "\"9e2de7e9f2c350f7228b199e1619eef019fa39eb0f7865a3120425ec4b30162d\"",
+      "ranges": [
+        {
+          "offset": 179298396,
+          "bytes": 22,
+          "sha256": "5a7031df9b9ef4ef8345b971797c721c768f2226c468675ee0468a1fcf591e50"
+        },
+        {
+          "offset": 179298376,
+          "bytes": 20,
+          "sha256": "bb313844fb17addfe64383361fc702f31d9736c76964519676b312cdebffd0ce"
+        },
+        {
+          "offset": 176740764,
+          "bytes": 2557632,
+          "sha256": "a672c016bf839bf27acbc9b369ac4906a85e65f6cd6bb85c0d792e51eede2873"
+        },
+        {
+          "offset": 22546313,
+          "bytes": 30,
+          "sha256": "1680783cee4357194e7562e5081d7376d212f4e6aedc5113c307a6f2f556326f"
+        },
+        {
+          "offset": 22546343,
+          "bytes": 40,
+          "sha256": "c037e480edf514ac0dddd69185245b68c611de9fbeee8465a37021af13dde2fc"
+        },
+        {
+          "offset": 22546411,
+          "bytes": 7042,
+          "sha256": "c63c1302987f4ceefa8b5b6eca16c8e21e0296e6ea1bd00b22a4ba943737f416"
+        },
+        {
+          "offset": 24710059,
+          "bytes": 30,
+          "sha256": "52fba5bd1b90d4be47f3a7e59b75f5b67b7a74cdc54bebf4745886b721bbfc47"
+        },
+        {
+          "offset": 24710089,
+          "bytes": 40,
+          "sha256": "e7c896d3f48e990e870960197b6b671d1c1dd60b969144de9d4786a49a7fe3c0"
+        },
+        {
+          "offset": 24710157,
+          "bytes": 7813,
+          "sha256": "c77a7757f1e19821cc327b6d6349a8ddf3e2530ab63e5577d57f15c62ffad682"
+        },
+        {
+          "offset": 35226826,
+          "bytes": 30,
+          "sha256": "09c48bb84e4a324af3311e0fd8dbeb0a834b5c1741625bc85c065bccc3665fbc"
+        },
+        {
+          "offset": 35226856,
+          "bytes": 40,
+          "sha256": "ac6243cb715b1f919fdcb2af5930562488f31bf3d9e7e211594a5c6044f2ad43"
+        },
+        {
+          "offset": 35226924,
+          "bytes": 9772,
+          "sha256": "912f883a394ccc72f7fea8d1d91c89b82f7ad14272d0c8df2c2b1c7b0c333e7f"
+        }
+      ],
+      "range_bytes": 2582511
+    }
+  }
+}

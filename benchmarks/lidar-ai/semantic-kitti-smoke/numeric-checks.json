@@ -1,0 +1,44 @@
+{
+  "000000": {
+    "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+    "cpu_runtime_version": "1.22.0",
+    "preprocessing_byte_exact": true,
+    "probability_max_absolute_difference": 1.4066696166992188e-05,
+    "probability_mean_absolute_difference": 2.675676569197094e-08,
+    "all_pixel_argmax_agreement": 1.0,
+    "candidate_mask_byte_exact": true,
+    "retained_and_candidate_source_records_byte_exact": true,
+    "source_points": 123389,
+    "candidate_points": 1143,
+    "unclassified_retained": 26415,
+    "source_unchanged": true
+  },
+  "001000": {
+    "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+    "cpu_runtime_version": "1.22.0",
+    "preprocessing_byte_exact": true,
+    "probability_max_absolute_difference": 1.5079975128173828e-05,
+    "probability_mean_absolute_difference": 2.5382780322047438e-08,
+    "all_pixel_argmax_agreement": 1.0,
+    "candidate_mask_byte_exact": true,
+    "retained_and_candidate_source_records_byte_exact": true,
+    "source_points": 126624,
+    "candidate_points": 1636,
+    "unclassified_retained": 27057,
+    "source_unchanged": true
+  },
+  "002000": {
+    "reference_role": "ONNX Runtime CPU, same pretrained CNN; not semantic ground truth",
+    "cpu_runtime_version": "1.22.0",
+    "preprocessing_byte_exact": true,
+    "probability_max_absolute_difference": 1.3023614883422852e-05,
+    "probability_mean_absolute_difference": 3.063454201424065e-08,
+    "all_pixel_argmax_agreement": 1.0,
+    "candidate_mask_byte_exact": true,
+    "retained_and_candidate_source_records_byte_exact": true,
+    "source_points": 125149,
+    "candidate_points": 2155,
+    "unclassified_retained": 31946,
+    "source_unchanged": true
+  }
+}
